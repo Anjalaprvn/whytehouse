@@ -1,0 +1,282 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sidebar</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body{
+  background:#f2f2f2;
+}
+
+/* Hidden checkbox toggle */
+#toggle-sidebar{
+  display:none;
+}
+
+/* Sidebar */
+.sidebar{
+  width:280px;
+  height:100vh;
+  background: linear-gradient(180deg, #0f0f0f, #1a1a1a);
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  position:fixed;
+  left:0;
+  top:0;
+  transition:0.3s ease;
+}
+
+/* Collapsed State */
+#toggle-sidebar:checked ~ .sidebar{
+  width:70px;
+}
+
+/* Logo */
+.logo{
+  padding:20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+.logo img{
+  height:40px;
+}
+
+/* Toggle Button */
+.toggle-btn{
+  font-size:20px;
+  cursor:pointer;
+  color:#fff;
+}
+
+/* Menu */
+.menu{
+  flex:1;
+  padding:20px 10px;
+  overflow-y:auto;
+}
+
+.menu a,
+.menu label{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 16px;
+  margin-bottom:10px;
+  color:#eee;
+  text-decoration:none;
+  border-radius:14px;
+  transition:0.3s;
+  font-size:16px;
+  cursor:pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menu a:hover,
+.menu label:hover{
+  background:rgba(255,255,255,0.08);
+}
+
+.menu a.active{
+  background:#d4a847;
+  color:#000;
+  font-weight:600;
+}
+
+.menu svg{
+  flex-shrink:0;
+  width:22px;
+  height:22px;
+  stroke:currentColor;
+}
+
+/* Hide text when collapsed */
+#toggle-sidebar:checked ~ .sidebar .menu a,
+#toggle-sidebar:checked ~ .sidebar .menu label{
+  justify-content:center;
+}
+
+#toggle-sidebar:checked ~ .sidebar .menu a span,
+#toggle-sidebar:checked ~ .sidebar .menu label span,
+#toggle-sidebar:checked ~ .sidebar .bottom-user .info{
+  display:none;
+}
+
+/* Accordion */
+.accordion input{
+  display:none;
+}
+
+.submenu{
+  max-height:0;
+  overflow:hidden;
+  transition:0.4s ease;
+  margin-left:36px;
+}
+
+.submenu a{
+  font-size:14px;
+  padding:10px 16px;
+  margin-bottom:6px;
+  color:#bbb;
+}
+
+.submenu a:hover{
+  background:rgba(255,255,255,0.05);
+  color:#fff;
+}
+
+.submenu a.active{
+  background:#d4a847;
+  color:#000;
+  font-weight:600;
+}
+
+.accordion input:checked ~ .submenu{
+  max-height:400px;
+}
+
+.arrow{
+  margin-left:auto;
+  transition:0.3s;
+}
+
+.accordion input:checked + label .arrow{
+  transform:rotate(180deg);
+}
+
+/* Bottom User */
+.bottom-user{
+  padding:16px 18px;
+  border-top:1px solid rgba(255,255,255,0.08);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.bottom-user .info strong{
+  display:block;
+  font-size:15px;
+}
+
+.bottom-user .info span{
+  font-size:13px;
+  color:#aaa;
+}
+
+.logout{
+  text-decoration:none;
+  color:#fff;
+  font-size:20px;
+  padding:6px 10px;
+  border-radius:8px;
+}
+
+.logout:hover{
+  background:rgba(255,255,255,0.1);
+}
+</style>
+</head>
+
+<body>
+
+<!-- Hidden Toggle Checkbox -->
+<input type="checkbox" id="toggle-sidebar">
+
+<div class="sidebar">
+
+  <div class="logo">
+    <img src="{% static 'logo1.png' %}" alt="Whyte House">
+    <label for="toggle-sidebar" class="toggle-btn">☰</label>
+  </div>
+
+  <div class="menu">
+
+    <a href="{% url 'dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}>
+      <svg fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+      <span>Dashboard</span>
+    </a>
+
+    <!-- Sales Accordion -->
+    <div class="accordion">
+      <input type="checkbox" id="sales-toggle" {% if request.resolver_match.namespace == 'sales' %}checked{% endif %}>
+      <label for="sales-toggle" {% if request.resolver_match.namespace == 'sales' %}class="active"{% endif %}>
+        <svg fill="none" viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        <span>Sales</span>
+        <span class="arrow">⌄</span>
+      </label>
+
+      <div class="submenu">
+        <a href="#" {% if request.resolver_match.url_name == 'customer_list' %}class="active"{% endif %}>Customers</a>
+        <a href="#" {% if request.resolver_match.url_name == 'resort_list' %}class="active"{% endif %}>Resorts</a>
+        <a href="#" {% if request.resolver_match.url_name == 'account_list' %}class="active"{% endif %}>Account Details</a>
+        <a href="#" {% if request.resolver_match.url_name == 'meals_list' %}class="active"{% endif %}>Meals Plan</a>
+        <a href="#" {% if request.resolver_match.url_name == 'invoice_list' %}class="active"{% endif %}>Invoice</a>
+        <a href="#" {% if request.resolver_match.url_name == 'voucher_list' %}class="active"{% endif %}>Vouchers</a>
+      </div>
+    </div>
+
+    <a href="#">
+      <svg fill="none" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a6.5 6.5 0 0113 0"/></svg>
+      <span>Leads</span>
+    </a>
+
+    <a href="#" {% if request.resolver_match.namespace == 'employee' %}class="active"{% endif %}>
+      <svg fill="none" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><circle cx="17" cy="7" r="3"/><path d="M2 21a7 7 0 0114 0"/><path d="M14 21a5 5 0 015-5"/></svg>
+      <span>Employee Management</span>
+    </a>
+
+    <a href="#" {% if request.resolver_match.namespace == 'report' %}class="active"{% endif %}>
+      <svg fill="none" viewBox="0 0 24 24"><path d="M4 19h16"/><path d="M8 17V7"/><path d="M12 17V3"/><path d="M16 17v-5"/></svg>
+      <span>Report Generation</span>
+    </a>
+
+    <a href="#">
+      <svg fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M3 17h18"/></svg>
+      <span>Hospitality Management</span>
+    </a>
+
+    <a href="#" {% if request.resolver_match.namespace == 'package' %}class="active"{% endif %}>
+      <svg fill="none" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+      <span>Travel Packages</span>
+    </a>
+
+    <a href="#" {% if request.resolver_match.namespace == 'blog' %}class="active"{% endif %}>
+      <svg fill="none" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h6"/></svg>
+      <span>Blog Management</span>
+    </a>
+
+    <a href="#">
+      <svg fill="none" viewBox="0 0 24 24"><path d="M21 15a4 4 0 01-4 4H7l-4 3V7a4 4 0 014-4h10a4 4 0 014 4z"/></svg>
+      <span>Customer Enquiry</span>
+    </a>
+
+  </div>
+
+  <div class="bottom-user">
+    <div class="info">
+      <strong>Admin User</strong>
+      <span>admin@whytehouse.com</span>
+    </div>
+    <a href="#" class="logout">⎋</a>
+  </div>
+
+</div>
+
+</body>
+</html>
