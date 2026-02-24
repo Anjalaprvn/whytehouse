@@ -1,15 +1,9 @@
+{% extends 'admin/sidebar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Add New Invoice | Whyte House</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-
-  <style>
-    :root{
+{% block extra_css %}
+<style>
+:root{
       --bg:#f6f7fb;
       --card:#ffffff;
       --border:#ececf2;
@@ -27,11 +21,6 @@
 
     *{box-sizing:border-box;margin:0;padding:0;font-family:"Poppins",sans-serif}
     body{background:var(--bg);color:var(--text)}
-
-    .main{
-      margin-left:280px;
-      padding:30px 40px 70px;
-    }
 
     /* Header */
     .header{
@@ -247,25 +236,17 @@
       .grid-3{grid-template-columns:1fr 1fr}
     }
     @media (max-width: 720px){
-      .main{margin-left:0;padding:22px 16px 60px}
+      .main{padding:22px 16px 60px}
       .title h1{font-size:32px}
       .grid{grid-template-columns:1fr}
       .grid-3{grid-template-columns:1fr}
       .rooms{gap:8px}
     }
-  </style>
-</head>
-<body>
+</style>
+{% endblock %}
 
-    <!-- Header -->
-  {% include "admin/header.html" %}
-
-  <!-- Sidebar -->
-  {% include "admin/sidebar.html" %}
-
-  <main class="main">
-
-    <div class="header">
+{% block content %}
+<div class="header">
       <button class="back-btn" type="button" onclick="history.back()" aria-label="Back">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
           <path d="M15 18L9 12L15 6" stroke="#1a1d24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -532,12 +513,11 @@
         <button type="button" class="btn" onclick="history.back()">Cancel</button>
         <button type="submit" class="btn primary">Create Invoice</button>
       </div>
-    </form>
-  </main>
+</form>
 
-  <button class="help-fab" type="button" aria-label="Help">
-    <span>?</span>
-  </button>
+<button class="help-fab" type="button" aria-label="Help">
+  <span>?</span>
+</button>
 
   <script>
     // Customer data from Django
@@ -768,5 +748,4 @@
       }
     });
   </script>
-</body>
-</html>
+{% endblock %}

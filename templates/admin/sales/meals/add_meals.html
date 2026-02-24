@@ -1,15 +1,9 @@
+{% extends 'admin/sidebar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Add Meal Plan | Whyte House</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-
-  <style>
-    :root{
+{% block extra_css %}
+<style>
+:root{
       --bg:#f6f7fb;
       --card:#ffffff;
       --border:#ececf2;
@@ -27,7 +21,7 @@
 
     /* main offset for sidebar */
     .main{
-      margin-left:280px; /* match sidebar width */
+       /* match sidebar width */
       padding:34px 40px 70px;
     }
 
@@ -202,17 +196,11 @@
     @media (max-width: 720px){
       .main{margin-left:0}
     }
-  </style>
-</head>
-<body>
+</style>
+{% endblock %}
 
-  <!-- Header -->
-  {% include "admin/header.html" %}
-
-  <!-- Sidebar -->
-  {% include "admin/sidebar.html" %}
-
-  <main class="main">
+{% block content %}
+<main class="main">
 
     <div class="page-top">
       <!-- change URL name as your list page -->
@@ -306,5 +294,4 @@
     </section>
 
   </main>
-</body>
-</html>
+{% endblock %}

@@ -1,21 +1,55 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from admin_panel.models import TravelPackage, Property, Inquiry
 
-# Create your views here.
 def index(request):
-     return render(request, 'user/international.html')
+    packages = TravelPackage.objects.filter(active=True, category='International')[:6]
+    return render(request, 'user/international.html', {'packages': packages})
+
 def domestic(request):
-    return render(request, 'user/domestic.html') 
+    packages = TravelPackage.objects.filter(active=True, category='Domestic')[:6]
+    return render(request, 'user/domestic.html', {'packages': packages})
+
 def about(request):
     return render(request, 'user/about.html')
+
 def blog(request):
     return render(request, 'user/blog.html')
-def blog_detail(request,slug):
+
+def blog_detail(request, slug):
     return render(request, 'user/blog_detail.html')
+
 def contact(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        package = request.POST.get('package', '').strip()
+        message = request.POST.get('message', '').strip()
+        
+        if name and email and phone and message:
+            Inquiry.objects.create(
+                name=name,
+                email=email,
+                phone=phone,
+                package=package or 'General Inquiry',
+                message=message
+            )
+            messages.success(request, 'Thank you! Your inquiry has been submitted successfully.')
+            return redirect('contact')
+        else:
+            messages.error(request, 'Please fill all required fields.')
+    
     return render(request, 'user/contact.html')
+
 def packages(request):
-    return render(request,'user/packages.html')
-def package_detail(request,slug):
-    return render(request, 'user/package_detail.html')
+    all_packages = TravelPackage.objects.filter(active=True)
+    return render(request, 'user/packages.html', {'packages': all_packages})
+
+def package_detail(request, slug):
+    package = get_object_or_404(TravelPackage, id=slug, active=True)
+    return render(request, 'user/package_detail.html', {'package': package})
+
 def hospitality(request):
-    return render(request, 'user/hospitality.html')
+    properties = Property.objects.all()
+    return render(request, 'user/hospitality.html', {'properties': properties})

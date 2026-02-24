@@ -1,14 +1,8 @@
+{% extends 'admin/sidebar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Add Employee | Whyte House</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-
-  <style>
+{% block extra_css %}
+<style>
     :root{
       --bg:#f6f7fb;
       --card:#ffffff;
@@ -26,7 +20,7 @@
     body{background:var(--bg);color:var(--text)}
 
     .main{
-      margin-left:280px;
+      
       padding:34px 40px 70px;
     }
 
@@ -220,17 +214,11 @@
     @media (max-width:720px){
       .main{margin-left:0}
     }
-  </style>
-</head>
-<body>
+</style>
+{% endblock %}
 
-  <!-- Header -->
-  {% include "admin/header.html" %}
-
-  <!-- Sidebar -->
-  {% include "admin/sidebar.html" %}
-
-  <main class="main">
+{% block content %}
+<main class="main">
 
     <div class="page-top">
       <a class="back-btn" href="{% url 'employee:employee_list' %}">
@@ -343,20 +331,19 @@
       </form>
     </section>
 
-  </main>
+</main>
 
-  <script>
-    document.getElementById('profilePicture').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          const avatarDiv = document.getElementById('avatarPreview');
-          avatarDiv.innerHTML = '<img src="' + event.target.result + '" alt="Preview">';
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-  </script>
-</body>
-</html>
+<script>
+  document.getElementById('profilePicture').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const avatarDiv = document.getElementById('avatarPreview');
+        avatarDiv.innerHTML = '<img src="' + event.target.result + '" alt="Preview">';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+</script>
+{% endblock %}

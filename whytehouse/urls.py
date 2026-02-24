@@ -29,8 +29,8 @@ urlpatterns = [
     path('sales/', include((sales_patterns, 'sales'))),
     # Employee URLs
     path('employee/', include((employee_patterns, 'employee'))),
-    # Blog URLs
-    path('blog/', include((blog_patterns, 'blog'))),
+    # Blog URLs (Admin)
+    path('admin-blog/', include((blog_patterns, 'blog'))),
 ]
 
 if settings.DEBUG:

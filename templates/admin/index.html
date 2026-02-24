@@ -1,198 +1,41 @@
+{% extends 'admin/sidebar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Admin Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+{% block extra_css %}
 <style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:"Poppins", sans-serif;
-}
-
-body{
-  background:#f5f7fb;
-}
-
-/* Main content area */
-.main{
-  margin-left:260px;
-  padding:0px 40px 30px;
-  margin-top:0px;
-}
-
-/* Top bar */
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:0px;
-}
-
-.menu-btn{
-  font-size:22px;
-}
-
-.date{
-  color:#666;
-}
-
-/* Headings */
-h1{
-  font-size:28px;
-  margin-bottom:6px;
-  margin-top:0px;
-}
-
-.subtitle{
-  color:#777;
-  margin-bottom:25px;
-}
-
-/* Cards */
-.cards{
-  display:grid;
-  grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
-  gap:20px;
-  margin-bottom:30px;
-}
-
-.card{
-  background:#fff;
-  border-radius:18px;
-  padding:20px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.04);
-}
-
-.card-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:18px;
-  color:#666;
-}
-
-.icon{
-  width:40px;
-  height:40px;
-  border-radius:12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:18px;
-}
-
-.blue{ background:#e9f0ff; color:#2f5cff; }
-.green{ background:#e8fff1; color:#00b85c; }
-.purple{ background:#f2e9ff; color:#9b5cff; }
-.yellow{ background:#fff4dd; color:#f1a500; }
-.orange{ background:#fff0e8; color:#ff6a00; }
-.pink{ background:#ffe9f4; color:#ff3d9a; }
-
-.value{
-  font-size:32px;
-  font-weight:700;
-}
-
-.growth{
-  color:#00b85c;
-  font-size:14px;
-  margin-left:6px;
-}
-
-/* Sections */
-.section{
-  background:#fff;
-  border-radius:20px;
-  padding:22px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.04);
-  margin-bottom:30px;
-}
-
-.section-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:20px;
-}
-
-.section-head h2{
-  font-size:20px;
-}
-
-.section-head p{
-  color:#777;
-  font-size:14px;
-}
-
-.view-btn{
-  padding:6px 14px;
-  border-radius:20px;
-  border:1px solid #ddd;
-  background:#fff;
-  cursor:pointer;
-}
-
-/* Booking & Leads rows */
-.row{
-  border:1px solid #eee;
-  border-radius:14px;
-  padding:16px 18px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:12px;
-}
-
-.row small{
-  color:#777;
-}
-
-/* Table */
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-
-th,td{
-  padding:14px 10px;
-  border-bottom:1px solid #eee;
-  text-align:left;
-}
-
-th{
-  color:#777;
-  font-weight:500;
-}
-
-.green-text{ color:#00b85c; font-weight:600; }
-.red-text{ color:#ff3b30; font-weight:600; }
-
-/* Responsive */
-@media(max-width:900px){
-  .main{ margin-left:220px; padding:0px 20px; margin-top:0px; }
-}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:0}
+.menu-btn{font-size:22px}
+.date{color:#666}
+h1{font-size:28px;margin-bottom:6px;margin-top:0}
+.subtitle{color:#777;margin-bottom:25px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:30px}
+.card{background:#fff;border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,0.04)}
+.card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;color:#666}
+.icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.blue{background:#e9f0ff;color:#2f5cff}
+.green{background:#e8fff1;color:#00b85c}
+.purple{background:#f2e9ff;color:#9b5cff}
+.yellow{background:#fff4dd;color:#f1a500}
+.orange{background:#fff0e8;color:#ff6a00}
+.pink{background:#ffe9f4;color:#ff3d9a}
+.value{font-size:32px;font-weight:700}
+.growth{color:#00b85c;font-size:14px;margin-left:6px}
+.section{background:#fff;border-radius:20px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,0.04);margin-bottom:30px}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.section-head h2{font-size:20px}
+.section-head p{color:#777;font-size:14px}
+.view-btn{padding:6px 14px;border-radius:20px;border:1px solid #ddd;background:#fff;cursor:pointer}
+.row{border:1px solid #eee;border-radius:14px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.row small{color:#777}
+table{width:100%;border-collapse:collapse}
+th,td{padding:14px 10px;border-bottom:1px solid #eee;text-align:left}
+th{color:#777;font-weight:500}
+.green-text{color:#00b85c;font-weight:600}
+.red-text{color:#ff3b30;font-weight:600}
 </style>
-</head>
+{% endblock %}
 
-<body>
-
-<!-- Header -->
-{% include "admin/header.html" %}
-
-<!-- Sidebar -->
-{% include "admin/sidebar.html" %}
-
-<div class="main">
-
-  <!-- Top Bar -->
-  <div class="topbar">
-    <i class="fa-solid fa-bars menu-btn"></i>
-  </div>
+{% block content %}
 
   <h1>Dashboard Overview</h1>
   <div class="subtitle">Welcome back! Here's what's happening with your business today.</div>
@@ -372,6 +215,4 @@ th{
   </div>
 
 </div>
-
-</body>
-</html>
+{% endblock %}

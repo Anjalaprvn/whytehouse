@@ -1,5 +1,4 @@
-from django.shortcuts import render
-from django.shortcuts import redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db import IntegrityError
@@ -8,7 +7,7 @@ import random
 from django.core.mail import send_mail
 from django.contrib import messages
 from datetime import datetime
-from .models import Account, Customer, Resort, Meal, Voucher, Invoice
+from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, Amenity, TravelPackage, Inquiry
 from .models import Employee
 
 # Create your views here.
@@ -85,6 +84,183 @@ def forgot_password(request):
 
 def dashboard(request):
     return render(request, 'admin/index.html')
+
+# LEADS
+def lead_management(request):
+    leads = Lead.objects.all().order_by('-created_at')
+    return render(request, 'admin/lead/lead.html', {'leads': leads})
+
+def add_lead(request):
+    if request.method == "POST":
+        Lead.objects.create(
+            full_name=request.POST.get('full_name'),
+            mobile_number=request.POST.get('mobile_number'),
+            place=request.POST.get('place'),
+            source=request.POST.get('source'),
+            remarks=request.POST.get('remarks')
+        )
+        messages.success(request, "Lead added successfully!")
+        return redirect('admin_panel:leads')
+    return render(request, 'admin/lead/lead_add.html')
+
+def edit_lead(request, id):
+    lead = get_object_or_404(Lead, id=id)
+    if request.method == "POST":
+        lead.full_name = request.POST.get('full_name')
+        lead.mobile_number = request.POST.get('mobile_number')
+        lead.place = request.POST.get('place')
+        lead.source = request.POST.get('source')
+        lead.remarks = request.POST.get('remarks')
+        lead.save()
+        messages.success(request, "Lead updated successfully!")
+        return redirect('admin_panel:leads')
+    return render(request, 'admin/lead/lead_edit.html', {'lead': lead})
+
+def delete_lead(request, lead_id):
+    lead = get_object_or_404(Lead, id=lead_id)
+    lead.delete()
+    messages.success(request, 'Lead deleted successfully!')
+    return redirect('admin_panel:leads')
+
+# HOSPITALITY
+def hospitality_management(request):
+    properties = Property.objects.all().order_by('-created_at')
+    return render(request, 'admin/hospitality/hospitality_management.html', {'properties': properties})
+
+def add_property(request):
+    amenities = Amenity.objects.all()
+    if request.method == "POST":
+        selected_amenities = request.POST.getlist('amenities')
+        new_amenity = request.POST.get('new_amenity', '').strip()
+        if new_amenity:
+            amenity_obj, created = Amenity.objects.get_or_create(name=new_amenity)
+            selected_amenities.append(str(amenity_obj.id))
+        property = Property.objects.create(
+            name=request.POST.get("name"),
+            property_type=request.POST.get("property_type"),
+            location=request.POST.get("location"),
+            website=request.POST.get("website"),
+            address=request.POST.get("address"),
+            summary=request.POST.get("summary"),
+            owner_name=request.POST.get("owner_name"),
+            owner_contact=request.POST.get("owner_contact"),
+            image=request.FILES.get("image")
+        )
+        property.amenities.set(selected_amenities)
+        messages.success(request, "Property added successfully!")
+        return redirect("admin_panel:admin_hospitality")
+    return render(request, "admin/hospitality/hospitality_add.html", {'amenities': amenities})
+
+def edit_property(request, property_id):
+    property = get_object_or_404(Property, id=property_id)
+    amenities = Amenity.objects.all()
+    if request.method == "POST":
+        property.name = request.POST.get("name")
+        property.property_type = request.POST.get("property_type")
+        property.location = request.POST.get("location")
+        property.website = request.POST.get("website")
+        property.address = request.POST.get("address")
+        property.summary = request.POST.get("summary")
+        property.owner_name = request.POST.get("owner_name")
+        property.owner_contact = request.POST.get("owner_contact")
+        selected_amenities = request.POST.getlist('amenities')
+        new_amenity = request.POST.get('new_amenity', '').strip()
+        if new_amenity:
+            amenity_obj, created = Amenity.objects.get_or_create(name=new_amenity)
+            selected_amenities.append(str(amenity_obj.id))
+        if request.FILES.get("image"):
+            property.image = request.FILES.get("image")
+        property.save()
+        property.amenities.set(selected_amenities)
+        messages.success(request, "Property updated successfully!")
+        return redirect("admin_panel:admin_hospitality")
+    return render(request, "admin/hospitality/hospitality_edit.html", {"property": property, "amenities": amenities})
+
+def delete_property(request, property_id):
+    property = get_object_or_404(Property, id=property_id)
+    property.delete()
+    return redirect('admin_panel:admin_hospitality')
+
+# TRAVEL PACKAGES
+def travel_packages(request):
+    category = request.GET.get('cat', 'Domestic')
+    packages = TravelPackage.objects.filter(category=category).order_by('-created_at')
+    domestic_count = TravelPackage.objects.filter(category='Domestic').count()
+    international_count = TravelPackage.objects.filter(category='International').count()
+    context = {
+        'packages': packages,
+        'selected_category': category,
+        'domestic_count': domestic_count,
+        'international_count': international_count,
+    }
+    return render(request, 'admin/packages/travel_packages.html', context)
+
+def travel_package_add(request):
+    if request.method == "POST":
+        TravelPackage.objects.create(
+            name=request.POST.get('name'),
+            category=request.POST.get('category'),
+            price=request.POST.get('price'),
+            duration=request.POST.get('duration'),
+            location=request.POST.get('location'),
+            country=request.POST.get('country'),
+            description=request.POST.get('description'),
+            itinerary='\n'.join(request.POST.getlist('itinerary[]')),
+            inclusions='\n'.join(request.POST.getlist('inclusions[]')),
+            exclusions='\n'.join(request.POST.getlist('exclusions[]')),
+            meta_title=request.POST.get('meta_title'),
+            meta_description=request.POST.get('meta_description'),
+            active=request.POST.get('active') == 'on',
+            image=request.FILES.get('image')
+        )
+        messages.success(request, "Package added successfully!")
+        return redirect('admin_panel:travel_packages')
+    return render(request, 'admin/packages/travel_package_add.html')
+
+def travel_package_edit(request, package_id):
+    package = get_object_or_404(TravelPackage, id=package_id)
+    if request.method == "POST":
+        package.name = request.POST.get('name')
+        package.category = request.POST.get('category')
+        package.price = request.POST.get('price')
+        package.duration = request.POST.get('duration')
+        package.location = request.POST.get('location')
+        package.country = request.POST.get('country')
+        package.description = request.POST.get('description')
+        package.itinerary = '\n'.join(request.POST.getlist('itinerary[]'))
+        package.inclusions = '\n'.join(request.POST.getlist('inclusions[]'))
+        package.exclusions = '\n'.join(request.POST.getlist('exclusions[]'))
+        package.meta_title = request.POST.get('meta_title')
+        package.meta_description = request.POST.get('meta_description')
+        package.active = request.POST.get('active') == 'on'
+        if request.FILES.get('image'):
+            package.image = request.FILES.get('image')
+        package.save()
+        messages.success(request, "Package updated successfully!")
+        return redirect('admin_panel:travel_packages')
+    return render(request, 'admin/packages/travel_package_add.html', {'package': package})
+
+def travel_package_delete(request, package_id):
+    package = get_object_or_404(TravelPackage, id=package_id)
+    package.delete()
+    messages.success(request, "Package deleted successfully!")
+    return redirect('admin_panel:travel_packages')
+
+# CUSTOMER INQUIRIES
+def customer_inquiries(request):
+    inquiries = Inquiry.objects.all().order_by('-created_at')
+    context = {
+        'inquiries': inquiries,
+        'total_count': inquiries.count(),
+        'new_count': inquiries.filter(status='New').count(),
+        'contacted_count': inquiries.filter(status='Contacted').count(),
+        'converted_count': inquiries.filter(status='Converted').count(),
+        'junk_count': inquiries.filter(status='Junk').count(),
+    }
+    return render(request, 'admin/enquiry/customer_inquiries', context)
+
+def blog_list(request):
+    return render(request, 'admin/blog/blog_list.html')
 
 #EMPLOYEE-----------------------------------------------------------------
 

@@ -1,19 +1,13 @@
+{% extends 'admin/sidebar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Add New Voucher | Whyte House</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+{% block extra_css %}
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif}
 body{background:#f5f7fb;color:#111}
 
 /* MAIN */
-.main{margin-left:280px;padding:30px 40px}
+.main{padding:30px 40px}
 
 /* HEADER */
 .page-header{
@@ -210,22 +204,16 @@ body{background:#f5f7fb;color:#111}
 
 /* RESPONSIVE */
 @media(max-width:900px){
-  .main{margin-left:0;padding:18px}
+  .main{padding:18px}
   .grid-2,.counter-row,.price-grid{grid-template-columns:1fr}
 }
 </style>
-</head>
+{% endblock %}
 
-<body>
-  <!-- Header -->
-  {% include "admin/header.html" %}
-
-  <!-- Sidebar -->
-  {% include "admin/sidebar.html" %}
-
+{% block content %}
 <div class="main">
 
-  <!-- Header -->
+  
   <div class="page-header">
     <a class="back-btn" href="{% url 'sales:voucher_list' %}">←</a>
     <div class="hgroup">
@@ -603,6 +591,4 @@ if (packagePrice) packagePrice.addEventListener('input', calculateTotal);
 if (resortPrice) resortPrice.addEventListener('input', calculateTotal);
 if (received) received.addEventListener('input', calculatePending);
 </script>
-
-</body>
-</html>
+{% endblock %}
