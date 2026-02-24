@@ -1,0 +1,280 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whyte House Holidays - Stories & About</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --brand-gold: #f5a623;
+            --text-muted: #777;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            width: 100%;
+            overflow-x: hidden;
+            background: #fff url('https://www.transparenttextures.com/patterns/pinstripe.png');
+            color: #333;
+        }
+
+        .serif { font-family: 'Playfair Display', serif; }
+
+        /* --- NAVIGATION --- */
+        nav {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 80px;
+            z-index: 10;
+        }
+
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            padding: 10px 30px;
+            display: flex;
+            gap: 25px;
+        }
+
+        .glass-pill a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 300;
+            opacity: 0.8;
+        }
+
+        .glass-pill a.active { color: var(--brand-gold); opacity: 1; font-weight: 600; }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            position: relative;
+            height: 600px;
+            width: 100%;
+            background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url("{% static 'images/about.png' %}") no-repeat center center/cover;
+            display: flex;
+            align-items: flex-end;
+            padding: 0 80px 100px;
+            color: #fff;
+        }
+
+        .hero-content h1 {
+            font-size: 64px;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .hero-content h1 span { color: var(--brand-gold); }
+
+        .hero-content p {
+            margin-top: 15px;
+            font-size: 18px;
+            max-width: 600px;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+
+        /* REMOVED LEFT/RIGHT MARGINS AND MAX-WIDTH HERE */
+        .container { 
+            width: 100%; 
+            padding: 100px 80px; 
+        }
+
+        /* --- STORY SECTION --- */
+        .story-flex { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; margin-bottom: 120px; }
+        .story-text p.label { color: var(--brand-gold); font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+        .story-text h2 { font-size: 48px; margin-bottom: 30px; font-weight: 700; }
+        .story-text .desc { color: var(--text-muted); line-height: 1.8; margin-bottom: 20px; font-weight: 300; }
+        .story-image { border-radius: 40px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.1); height: 500px; }
+
+        /* --- VALUES & TEAM --- */
+        .section-header { text-align: center; margin-bottom: 60px; }
+        .values-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
+        .value-card { background: white; padding: 50px 30px; border-radius: 24px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.03); }
+        .team-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 60px; }
+        .team-card { border-radius: 30px; overflow: hidden; position: relative; height: 450px; filter: grayscale(100%); transition: 0.5s; }
+        .team-card:hover { filter: grayscale(0%); }
+        .team-info { position: absolute; bottom: 0; width: 100%; padding: 30px 20px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); color: white; text-align: center; }
+
+        /* --- NEW PROMISE SECTION --- */
+        .promise-banner {
+            height: 400px;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("{% static 'images/aboutbg.png' %}") no-repeat center center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #fff;
+            margin-top: 100px;
+        }
+
+        .promise-banner h2 { font-size: 42px; margin-bottom: 20px; }
+        .promise-banner .btn-group { display: flex; gap: 20px; margin-top: 30px; }
+        .btn-gold { background: var(--brand-gold); color: #000; padding: 15px 35px; border-radius: 50px; font-weight: 700; text-decoration: none; }
+        .btn-outline { border: 1px solid #fff; color: #fff; padding: 15px 35px; border-radius: 50px; text-decoration: none; }
+
+        /* --- FOOTER --- */
+        .footer {
+            background: #000;
+            padding: 80px 80px 40px;
+            color: #fff;
+        }
+
+        .footer-cta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 60px; }
+        .subscribe-box { background: #111; border: 1px solid #333; border-radius: 50px; padding: 5px 5px 5px 20px; display: flex; width: 450px; }
+        .subscribe-box input { flex: 1; background: transparent; border: none; color: #fff; outline: none; }
+        .subscribe-box button { background: var(--brand-gold); border: none; padding: 12px 25px; border-radius: 50px; font-weight: 700; cursor: pointer; }
+
+        .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 40px; border-top: 1px solid #222; padding-top: 60px; }
+        .footer-col h4 { color: var(--brand-gold); margin-bottom: 20px; font-size: 14px; text-transform: uppercase; }
+        .footer-col a, .footer-col p { color: #888; text-decoration: none; font-size: 13px; line-height: 2; display: block; }
+        
+        .social-icons { display: flex; gap: 15px; margin-top: 30px; }
+        .social-icons div { width: 35px; height: 35px; background: #fff; border-radius: 50px; display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Logo" height="40">
+        </div>
+        <div class="glass-pill">
+            <a href="{% url 'index' %}" class="hover:text-[#D39C52]">Home</a>
+            <a href="#" class="active">About</a>
+            <a href="{% url 'blog'%}" class="hover:text-[#D39C52]">Blog</a>
+            <a href="{% url 'packages' %}" class="hover:text-[#D39C52]">Packages</a>
+            <a href="{% url 'contact'%}" class="hover:text-[#D39C52]">Contact Us</a>
+        </div>
+        <div class="glass-pill">
+            <a href="{% url 'domestic'%}">Domestic</a>
+            <span style="color:rgba(255,255,255,0.3)">|</span>
+            <a href="{% url 'index' %}" class="hover:text-[#D39C52]">International</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>About <span>Whyte House</span></h1>
+            <p>Creating unforgettable travel experiences across Vietnam and Southeast Asia for over a decade.</p>
+        </div>
+    </section>
+
+    <div class="container">
+        <div class="story-flex">
+            <div class="story-text">
+                <p class="label">Our Story</p>
+                <h2>A Passion for <span class="serif italic">Travel</span></h2>
+                <p class="desc">With over 10 years of experience in the travel and hospitality industry, Whyte House Holidays is a name trusted by travelers and property owners alike.</p>
+                <p class="desc">We specialize in crafting seamless holiday experiences and managing exclusive properties with the highest standards of quality and care.</p>
+                <p class="desc">With over 10 years of experience in the travel and hospitality industry, Whyte House Holidays is a name trusted by travelers and property owners alike.</p>
+            </div>
+            <div class="story-image">
+                <img src="{% static 'images/about.png' %}" alt="About Image" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2 class="serif italic">Our <span class="not-italic">Mission & Values</span></h2>
+            <p>We're guided by principles that ensure every journey is meaningful and unforgettable.</p>
+        </div>
+
+        <div class="values-grid">
+            <div class="value-card"><h3>Passion for Travel</h3><p>We live and breathe travel. Our team's genuine passion drives everything we do.</p></div>
+            <div class="value-card"><h3>Quality First</h3><p>We never compromise. Every experience is carefully vetted.</p></div>
+            <div class="value-card"><h3>Customer Centric</h3><p>Your satisfaction is our priority. We listen and adapt.</p></div>
+            <div class="value-card"><h3>Sustainable Tourism</h3><p>We respect local cultures and support communities.</p></div>
+            <div class="value-card"><h3>Trust & Transparency</h3><p>We believe in honest communication and fair pricing.</p></div>
+            <div class="value-card"><h3>Excellence</h3><p>We strive for excellence in every aspect of our service.</p></div>
+        </div>
+
+        <div class="section-header" style="margin-top: 120px;">
+            <p class="label" style="color:var(--brand-gold);">OUR TEAM</p>
+            <h2 class="serif italic">Meet the <span class="not-italic">Professionals</span></h2>
+        </div>
+
+        <div class="team-grid">
+            <div class="team-card"><img src="{% static 'images/group.png' %}" style="width:100%; height:100%; object-fit:cover;"><div class="team-info"><strong>Evan Thomas</strong><small>Founder & CEO</small></div></div>
+            <div class="team-card"><img src="{% static 'images/group.png' %}" style="width:100%; height:100%; object-fit:cover;"><div class="team-info"><strong>Evan Thomas</strong><small>Head of Operations</small></div></div>
+            <div class="team-card"><img src="{% static 'images/group.png' %}" style="width:100%; height:100%; object-fit:cover;"><div class="team-info"><strong>Evan Thomas</strong><small>Travel Consultant</small></div></div>
+            <div class="team-card"><img src="{% static 'images/group.png' %}" style="width:100%; height:100%; object-fit:cover;"><div class="team-info"><strong>Evan Thomas</strong><small>Customer Success Manager</small></div></div>
+        </div>
+    </div>
+
+    <div class="promise-banner">
+        <h2 class="serif">Our <span class="italic">Promise</span></h2>
+        <p style="max-width: 600px; opacity: 0.8;">Join Thousands Of Happy Travelers Who Experience The Magic Of Southeast Asia With Us</p>
+        <div class="btn-group">
+            <a href="#" class="btn-gold">Browse Packages →</a>
+            <a href="#" class="btn-outline">Contact Us</a>
+        </div>
+    </div>
+
+    <footer class="footer">
+    <div class="footer-cta">
+        <div>
+            <h2>Book Your Tour Today</h2>
+            <p style="color:#666; margin-top: 5px;">Join us for an unforgettable getaway and adventures</p>
+        </div>
+        <div class="subscribe-box">
+            <input type="email" placeholder="Enter your email">
+            <button>Subscribe</button>
+        </div>
+    </div>
+
+    <div class="footer-grid">
+        <div>
+            <img src="{% static 'images/logo.png' %}" width="60" style="filter: brightness(0) invert(1);">
+            <p style="margin-top: 20px;">Whether you're booking a holiday or managing a property, our promise remains the same.</p>
+            
+            <div class="social-icons">
+                <a href="#"><div><img src="{% static 'images/facebook.png' %}" width="18"></div></a>
+                <a href="#"><div><img src="{% static 'images/instagram.png' %}" width="18"></div></a>
+                <a href="#"><div><img src="{% static 'images/youtube.png' %}" width="18"></div></a>
+                <a href="#"><div><img src="{% static 'images/whatsapp.png' %}" width="18"></div></a>
+            </div>
+            
+            <a href="#" class="btn-gold" style="display: inline-block; margin-top: 20px; padding: 10px 25px; font-size: 14px;">Enquire Now</a>
+        </div>
+        
+        <div class="footer-col">
+            <h4>Location</h4>
+            <p>Kozhikode, Kerala<br>Kakkanchery 673521<br>Since 2015</p>
+        </div>
+        <div class="footer-col">
+            <h4>Contact Us</h4>
+            <p>+91 78 523 521 45<br>info@whytehouseholidays.com</p>
+        </div>
+        <div class="footer-col">
+            <h4>Company & Legals</h4>
+            <a href="#">About Us</a>
+            <a href="#">Frequently ask question</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">License</a>
+        </div>
+    </div>
+    
+    <div style="text-align: right; margin-top: 60px; font-size: 12px; color: #444; border-top: 1px solid #222; padding-top: 20px;">
+        © 2025 Whyte House Holidays All Rights Reserved
+    </div>
+</footer>
+
+</body>
+</html>

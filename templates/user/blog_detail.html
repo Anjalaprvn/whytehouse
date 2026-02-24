@@ -1,0 +1,303 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Detail | Whyte House</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --brand-gold: #D4A373;
+            --brand-black: #000000;
+            --text-gray: #444444;
+            --light-gray: #F8F9FA;
+            --white: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        /* Navigation */
+        .navbar {
+            position: absolute;
+            top: 0; width: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 30px 80px; z-index: 100;
+        }
+        .nav-links {
+            display: flex; gap: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            padding: 10px 30px; border-radius: 50px;
+        }
+        .nav-links a { text-decoration: none; color: white; font-size: 14px; }
+
+        /* Hero Section */
+        .detail-hero {
+            height: 70vh;
+            background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url("{% static 'images/blogdetail.png' %}");
+            background-size: cover;
+            background-position: center;
+            display: flex; align-items: flex-end;
+            padding: 0 80px 60px;
+            color: white;
+        }
+        .hero-content { max-width: 800px; }
+        .featured-tag { background: var(--brand-gold); padding: 5px 15px; border-radius: 5px; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 15px; display: inline-block; }
+        .hero-content h1 { font-size: 48px; font-weight: 700; margin-bottom: 20px; line-height: 1.2; }
+        .author-meta { display: flex; align-items: center; gap: 15px; font-size: 14px; opacity: 0.9; }
+        .author-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid white; }
+
+        /* Article Content */
+        .main-container { max-width: 900px; margin: 0 auto; padding: 60px 20px; }
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: var(--brand-gold); color: white;
+            padding: 12px 25px; border-radius: 50px;
+            text-decoration: none; font-weight: 600; margin-bottom: 40px;
+            transition: 0.3s;
+        }
+        .back-btn:hover { opacity: 0.9; transform: translateX(-5px); }
+
+        .article-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .article-header h2 { font-size: 28px; color: var(--brand-black); flex: 1; }
+        .content-tags { display: flex; gap: 10px; }
+        .content-tag { background: #F2E9E1; color: var(--brand-gold); padding: 5px 15px; border-radius: 5px; font-size: 12px; font-weight: 600; }
+
+        .article-body { font-size: 18px; line-height: 1.8; color: var(--text-gray); margin-bottom: 50px; }
+        .article-body p { margin-bottom: 25px; }
+
+        /* Author Box */
+        .author-card {
+            background: var(--light-gray);
+            padding: 30px; border-radius: 20px;
+            display: flex; gap: 25px; align-items: center;
+            margin-top: 60px; border: 1px solid #eee;
+        }
+        .author-card-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; }
+        .author-info h4 { font-size: 20px; margin-bottom: 8px; }
+        .author-info p { font-size: 15px; color: #666; line-height: 1.5; }
+
+        /* Footer - Reusing your existing style */
+        .site-footer { background: var(--brand-black); color: white; padding: 80px 80px 40px; }
+        .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 40px; border-top: 1px solid #222; padding-top: 40px; }
+/* --- FOOTER & CTA SECTION --- */
+.footer-section {
+    background-color: #000;
+    color: #ffffff;
+    padding: 60px 80px 30px;
+}
+
+/* CTA Banner */
+.cta-banner {
+    text-align: center;
+    padding-bottom: 60px;
+    border-bottom: 1px solid #333;
+    margin-bottom: 60px;
+}
+
+.cta-banner h2 {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+.cta-banner p {
+    color: #999;
+    margin-bottom: 30px;
+}
+
+.subscribe-form {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.subscribe-form input {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    padding: 15px 25px;
+    border-radius: 50px 0 0 50px;
+    color: white;
+    width: 100%;
+    outline: none;
+}
+
+.subscribe-form button {
+    background: var(--brand-gold);
+    border: none;
+    padding: 0 30px;
+    border-radius: 0 50px 50px 0;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Main Footer Grid */
+.footer-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 40px;
+}
+
+.footer-col h4 {
+    font-size: 18px;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.footer-col p, .footer-col a {
+    color: #999;
+    text-decoration: none;
+    font-size: 14px;
+    line-height: 1.8;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.enquire-btn {
+    display: inline-block;
+    background: var(--brand-gold);
+    color: white !important;
+    padding: 10px 25px;
+    border-radius: 50px;
+    margin-top: 15px;
+    font-weight: 600;
+}
+
+/* Social & Copyright */
+.footer-bottom {
+    margin-top: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #222;
+    padding-top: 30px;
+}
+
+.social-links { display: flex; gap: 15px; }
+.social-links a {
+    width: 35px;
+    height: 35px;
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: white;
+    transition: 0.3s;
+}
+
+.social-links a:hover { background: var(--brand-gold); }
+.copyright { color: #666; font-size: 12px; }    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo"><img src="{% static 'images/logo.png' %}" alt="Logo" height="40"></div>
+        <div class="nav-links">
+            <a href="{% url 'index' %}" class="hover:text-[#D39C52]">Home</a>
+            <a href="{% url 'about' %}" class="hover:text-[#D39C52]">About</a>
+            <a href="/blog">Blog</a>
+            <a href="{%url 'packages'}" class="hover:text-[#D39C52]">Packages</a>
+            <a href="{% url 'contact%' %}" class="hover:text-[#D39C52]">Contact Us</a>
+        </div>
+        <div style="color: white; font-size: 14px; border: 1px solid #555; padding: 8px 20px; border-radius: 50px;">Domestic | International</div>
+    </nav>
+
+    <header class="detail-hero">
+        <div class="hero-content">
+            <span class="featured-tag">Featured</span>
+            <h1>Top 10 Hidden Gems in Vietnam</h1>
+            <div class="author-meta">
+                <img src="{% static 'images/person.png'%}" alt="Author" class="author-img">
+                <span>Evan Thomas • Dec 25, 2025 • 8 min read</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <a href="{% url 'blog' %}" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Blog
+        </a>
+
+        <div class="article-header">
+            <h2>Exploring the Spectrum: Vietnam's 10 Best-Kept Secrets</h2>
+            <div class="content-tags">
+                <span class="content-tag">Vietnam</span>
+                <span class="content-tag">Hidden Gem</span>
+                <span class="content-tag">Heritage</span>
+            </div>
+        </div>
+
+        <article class="article-body">
+            <p>Beyond the well-trodden paths of Ha Long Bay and the bustling streets of the capital lies a Vietnam shaped by quiet grandeur and centuries of untold history. At Whyte House, we leverage our strategic vision to curate experiences that transcend traditional tourism, guiding our guests toward the country’s true heritage gems.</p>
+            
+            <p>From the mist-shrouded limestone peaks of Ha Giang to the untouched, emerald lagoons of Bai Tu Long Bay, we have identified ten destinations where the unique history of the land remains remarkably preserved. These locations offer more than just a view; they provide a profound connection to a past that is being thoughtfully transformed into the future of luxury travel.</p>
+
+            <p>Our commitment to "Life's Spectrum" means finding beauty in the contrast between ancient traditions and modern refinement. Imagine waking up in a boutique retreat in Pu Luong, where centuries-old bamboo waterwheels still turn amidst golden rice terraces, or exploring the forgotten Cham towers of Quy Nhon that stand as silent witnesses to a lost kingdom.</p>
+        </article>
+
+        <div class="author-card">
+            <img src="{% static 'images/person.png'%}" alt="Evan" class="author-card-img">
+            <div class="author-info">
+                <h4>About <b>Evan Thomas</b></h4>
+                <p>Travel enthusiast and writer passionate about sharing authentic experiences and insider tips from across Southeast Asia.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer-section">
+    <div class="cta-banner">
+        <h2>Book Your Tour Today</h2>
+        <p>Join us for an unforgettable getaway and adventures</p>
+        <form class="subscribe-form">
+            <input type="email" placeholder="Enter your email">
+            <button type="submit">Subscribe</button>
+        </form>
+    </div>
+
+    <div class="footer-grid">
+        <div class="footer-col">
+            <img src="{% static 'images/logo.png' %}" alt="Logo" height="40" style="margin-bottom: 20px;">
+            <p>Whether you're booking a holiday or managing a property, our promise remains the same.</p>
+            <a href="#" class="enquire-btn">Enquire Now</a>
+        </div>
+
+        <div class="footer-col">
+            <h4>Location</h4>
+            <p>Kozhikode, Kerala<br>Kakkanchery 673321<br>Since 2015</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>Contact Us</h4>
+            <p>+91 78 523 521 45</p>
+            <p>info@whytehouse.com</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>Company & Legals</h4>
+            <a href="#">About Us</a>
+            <a href="#">Frequently ask question</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">License</a>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="social-links">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+            <a href="#"><i class="fab fa-whatsapp"></i></a>
+        </div>
+        <div class="copyright">
+            © 2025 Whyte House Holidays All Rights Reserved
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

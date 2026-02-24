@@ -1,0 +1,239 @@
+{% extends 'admin/sidebar.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container">
+
+    <h2>Customer Inquiries</h2>
+    <p class="subtitle">Manage and track customer contact form submissions</p>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f6fa;
+        }
+
+        .container {
+            padding: 30px;
+        }
+
+        h2 {
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: gray;
+            margin-bottom: 25px;
+        }
+
+        /* Stat Cards */
+        .stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 150px;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 2px solid transparent;
+        }
+
+        .stat-card.active {
+            border: 2px solid #d4a017;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .stat-label {
+            color: gray;
+            font-size: 14px;
+        }
+
+        /* Search Bar */
+        .search-filter {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .search-filter input,
+        .search-filter select {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            width: 100%;
+        }
+
+        /* Inquiry Card */
+        .inquiry-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .inquiry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge {
+            background: #eaeaea;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .badge.new {
+            background: #d4a017;
+            color: white;
+        }
+
+        .badge.contacted {
+            background: #3498db;
+            color: white;
+        }
+
+        .contact-info {
+            margin-top: 8px;
+            font-size: 14px;
+            color: gray;
+        }
+
+        .interest {
+            margin-top: 10px;
+            color: #d4a017;
+            font-weight: 500;
+        }
+
+        .message {
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        .view-btn {
+            background: #f5f5f5;
+            padding: 6px 15px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .view-btn:hover {
+            background: #ddd;
+        }
+
+        @media (max-width: 768px) {
+            .stats {
+                flex-direction: column;
+            }
+
+            .search-filter {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- <h2>Customer Inquiries</h2>
+    <p class="subtitle">Manage and track customer contact form submissions</p> -->
+
+    <!-- Stats Section -->
+    <div class="stats">
+        <div class="stat-card active">
+            <div class="stat-number">{{ total_count }}</div>
+            <div class="stat-label">Total</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-number">{{ new_count }}</div>
+            <div class="stat-label">New</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-number">{{ contacted_count }}</div>
+            <div class="stat-label">Contacted</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-number">{{ converted_count }}</div>
+            <div class="stat-label">Converted</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-number">{{ junk_count }}</div>
+            <div class="stat-label">Junk</div>
+        </div>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="search-filter">
+        <input type="text" placeholder="Search by name, email, or message...">
+        <select>
+            <option>All Status</option>
+            <option>New</option>
+            <option>Contacted</option>
+            <option>Converted</option>
+            <option>Junk</option>
+        </select>
+    </div>
+
+    <!-- Inquiry List -->
+    {% for inquiry in inquiries %}
+    <div class="inquiry-card">
+        <div class="inquiry-header">
+            <div>
+                <strong>{{ inquiry.name }}</strong>
+                <span class="badge {{ inquiry.status|lower }}">{{ inquiry.status }}</span>
+            </div>
+            <div>
+                <small>{{ inquiry.created_at }}</small>
+                <button class="view-btn">View</button>
+            </div>
+        </div>
+
+        <div class="contact-info">
+            <i class="fa fa-envelope"></i> {{ inquiry.email }} &nbsp;
+            <i class="fa fa-phone"></i> {{ inquiry.phone }}
+        </div>
+
+        <div class="interest">
+            Interested in: {{ inquiry.package }}
+        </div>
+
+        <div class="message">
+            {{ inquiry.message }}
+        </div>
+    </div>
+    {% empty %}
+        <p>No inquiries found.</p>
+    {% endfor %}
+
+</div>
+{% endblock %}
+</body>
+</html>
