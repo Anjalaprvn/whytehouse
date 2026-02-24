@@ -1,0 +1,19 @@
+{% include "admin/header.html" %}
+{% include "admin/sidebar.html" %}
+
+<div class="main">
+  <div class="content-section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="margin: 0;">Meal Details</h2>
+      <a href="{% url 'sales:meal_list' %}" class="btn btn-secondary">Back</a>
+    </div>
+
+    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 5px; max-width: 600px;">
+      <p><strong>Meal Name:</strong> {{ meal.meal_name }}</p>
+      <p><strong>Price:</strong> Rs. {{ meal.price }}</p>
+      <p><strong>Description:</strong> {{ meal.description|default:"N/A" }}</p>
+      <p><strong>Status:</strong> <span style="background-color: {% if meal.status == 'Available' %}#d4edda{% else %}#f8d7da{% endif %}; padding: 5px 10px; border-radius: 4px;">{{ meal.status }}</span></p>
+      <p><strong>Created:</strong> {{ meal.created_at|date:"d M Y, h:i A" }}</p>
+    </div>
+  </div>
+</div>

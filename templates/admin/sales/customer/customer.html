@@ -1,0 +1,363 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Customers | Whyte House</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --border:#ececf2;
+      --text:#111318;
+      --muted:#7a7f8c;
+      --shadow:0 10px 24px rgba(17,19,24,.06);
+      --accent:#d4a42f;
+      --danger:#e11d48;
+      --input:#f3f4f6;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0;font-family:"Poppins",sans-serif}
+    body{background:var(--bg);color:var(--text)}
+
+    /* Layout offset for sidebar */
+    .main{
+      margin-left:280px;       /* match sidebar width */
+      padding:34px 40px 70px;
+    }
+
+    /* Page title */
+    .page-title{margin:6px 0 18px}
+    .page-title h1{
+      font-size:34px;
+      font-weight:600;
+      letter-spacing:-.2px;
+      margin-bottom:6px;
+    }
+    .page-title p{
+      color:var(--muted);
+      font-size:16px;
+      font-weight:400;
+    }
+
+    /* Card */
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:22px;
+      max-width:1160px;
+    }
+
+    /* Card head row */
+    .card-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:6px 6px 10px;
+    }
+    .card-head h2{
+      font-size:18px;
+      font-weight:600;
+    }
+
+    /* Right actions (search + add button) */
+    .head-actions{
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+
+    /* Search */
+    .search{
+      position:relative;
+      width:320px;
+      max-width:46vw;
+    }
+    .search input{
+      width:100%;
+      height:46px;
+      border:1px solid transparent;
+      border-radius:12px;
+      background:var(--input);
+      padding:0 14px 0 44px;
+      outline:none;
+      font-size:14px;
+      color:var(--text);
+    }
+    .search input::placeholder{color:#8a90a0}
+    .search svg{
+      position:absolute;
+      left:14px;
+      top:50%;
+      transform:translateY(-50%);
+      width:18px;height:18px;
+      stroke:#7a7f8c;
+    }
+
+    /* Add button */
+    .btn-add{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      background:var(--accent);
+      color:#111;
+      border:none;
+      border-radius:12px;
+      padding:12px 18px;
+      font-weight:600;
+      cursor:pointer;
+      white-space:nowrap;
+      text-decoration:none;
+      box-shadow:0 10px 18px rgba(212,164,47,.20);
+    }
+    .btn-add svg{width:18px;height:18px}
+
+    /* Table */
+    .table-wrap{
+      margin-top:14px;
+      border-radius:14px;
+      overflow:hidden;
+      border:1px solid var(--border);
+      background:#fff;
+    }
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+    }
+    thead th{
+      text-align:left;
+      font-size:15px;
+      font-weight:600;
+      padding:18px 22px;
+      border-bottom:1px solid var(--border);
+      white-space:nowrap;
+      color:#0f1220;
+    }
+    tbody td{
+      padding:20px 22px;
+      font-size:15px;
+      border-bottom:1px solid var(--border);
+      vertical-align:middle;
+      white-space:nowrap;
+    }
+    tbody tr:last-child td{border-bottom:none}
+    thead th:last-child, tbody td:last-child{text-align:right}
+
+    /* Actions buttons */
+    .actions{
+      display:inline-flex;
+      gap:12px;
+      align-items:center;
+      justify-content:flex-end;
+    }
+    .icon-btn{
+      width:44px;height:40px;
+      border-radius:12px;
+      border:1px solid #e7e7ee;
+      background:#fff;
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      text-decoration:none;
+      transition:.2s ease;
+    }
+    .icon-btn svg{width:18px;height:18px}
+    .icon-btn:hover{
+      background:#f6f7fb;
+      border-color:#dedee8;
+    }
+    .icon-btn.delete{
+      border-color:#ffd1da;
+      background:#fff;
+    }
+    .icon-btn.delete:hover{
+      background:#fff1f3;
+      border-color:#ffc1cc;
+    }
+    .icon-btn.delete svg{stroke:var(--danger)}
+    .icon-btn:focus{
+      outline:2px solid rgba(212,164,47,.35);
+      outline-offset:2px;
+    }
+
+    /* Messages */
+    .alert-msg{border-left:4px solid #4caf50}
+    .alert-success{background:#d4edda;color:#155724;border-left-color:#4caf50}
+    .alert-error{background:#f8d7da;color:#721c24;border-left-color:#f5415a}
+    .alert-info{background:#d1ecf1;color:#0c5460;border-left-color:#17a2b8}
+    @keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeOut{from{opacity:1}to{opacity:0}}
+
+    /* Help bubble bottom-right */
+    .help-fab{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      width:44px;height:44px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#111;
+      display:grid;
+      place-items:center;
+      box-shadow:0 14px 26px rgba(0,0,0,.10);
+      cursor:pointer;
+    }
+    .help-fab span{font-weight:700;color:#fff}
+
+    /* Responsive */
+    @media (max-width: 900px){
+      .main{padding:18px 18px 70px}
+      .page-title h1{font-size:30px}
+      .search{width:280px}
+    }
+    @media (max-width: 720px){
+      .main{margin-left:0}
+      .head-actions{width:100%; justify-content:flex-start; flex-wrap:wrap}
+      .search{width:100%; max-width:100%}
+      thead th:last-child, tbody td:last-child{text-align:left}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  {% include "admin/header.html" %}
+
+  <!-- Sidebar -->
+  {% include "admin/sidebar.html" %}
+
+  <main class="main">
+    <!-- Messages -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert-msg {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-error{% else %}alert-info{% endif %}" style="margin-bottom:16px;padding:14px 16px;border-radius:12px;font-weight:500;animation:slideIn 0.3s ease;">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+    
+    <div class="page-title">
+      <h1>Customers</h1>
+      <p>Manage your customer database</p>
+    </div>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Customer List</h2>
+
+        <div class="head-actions">
+          <div class="search">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="11" cy="11" r="7" stroke-width="2"/>
+              <path d="M20 20L17.2 17.2" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <input type="text" placeholder="Search customers..." />
+          </div>
+
+          <a href="{% url 'sales:add_customer' %}" class="btn-add">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 5V19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M5 12H19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
+            </svg>
+            Add Customer
+          </a>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:110px;">Sl No</th>
+              <th style="min-width:260px;">Name</th>
+              <th style="min-width:230px;">Mobile</th>
+              <th style="min-width:180px;">Place</th>
+              <th style="min-width:200px;">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for c in customers %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ c.display_name }}</td>
+              <td>{{ c.contact_number }}</td>
+              <td>{{ c.place|default:"—" }}</td>
+              <td>
+                <div class="actions">
+                  <!-- View -->
+                  <a href="{% url 'sales:view_customer' c.id %}" class="icon-btn" title="View" aria-label="View">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </a>
+
+                  <!-- Edit -->
+                  <a href="{% url 'sales:edit_customer' c.id %}" class="icon-btn" title="Edit" aria-label="Edit">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 20H21"/>
+                      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-5 1 1-5 12.5-10.5Z"/>
+                    </svg>
+                  </a>
+
+                  <!-- Delete -->
+                  <form method="POST" action="{% url 'sales:delete_customer' c.id %}" style="display:inline;" onsubmit="return confirm('Delete {{ c.display_name }}?');">
+                    {% csrf_token %}
+                    <button type="submit" class="icon-btn delete" title="Delete" aria-label="Delete">
+                      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6H21"/>
+                        <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+                        <path d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/>
+                        <path d="M10 11v6"/>
+                        <path d="M14 11v6"/>
+                      </svg>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" style="text-align:center;padding:22px;color:var(--muted);">
+                No customers found.
+                <a href="{% url 'sales:add_customer' %}" style="color:var(--accent);text-decoration:none;font-weight:600;">
+                  Add your first customer
+                </a>.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <button class="help-fab" type="button" aria-label="Help">
+    <span>?</span>
+  </button>
+
+  <script>
+  // Auto-dismiss messages after 5 seconds
+  document.addEventListener('DOMContentLoaded', function() {
+    const messages = document.querySelectorAll('.alert-msg');
+    messages.forEach(msg => {
+      setTimeout(() => {
+        msg.style.animation = 'fadeOut 0.5s ease';
+        msg.style.opacity = '0';
+        setTimeout(() => msg.remove(), 500);
+      }, 5000);
+    });
+  });
+  </script>
+
+</body>
+</html>

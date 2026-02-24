@@ -18,11 +18,19 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from admin_panel.urls import sales_patterns, employee_patterns, blog_patterns
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('user_panel.urls')),
     path('', include('admin_panel.urls')),
+    
+    # Sales URLs 
+    path('sales/', include((sales_patterns, 'sales'))),
+    # Employee URLs
+    path('employee/', include((employee_patterns, 'employee'))),
+    # Blog URLs
+    path('blog/', include((blog_patterns, 'blog'))),
 ]
 
 if settings.DEBUG:

@@ -1,6 +1,7 @@
 from . import views
-from django.urls import path, include
+from django.urls import path
 
+app_name = 'admin_panel'
 
 urlpatterns = [
     # Auth and main dashboard
@@ -8,5 +9,64 @@ urlpatterns = [
     path('forgot-password/', views.forgot_password, name='forgot_password'), 
     path('verify-otp/', views.verify_otp, name='verify_otp'),
     path('resend-otp/', views.resend_otp, name='resend_otp'),
-    path('dashboard/', views.dashboard, name='dashboard'),
+    path('dashboard/', views.dashboard, name='dashboard'), 
+]
+#employee---------------
+employee_patterns = [
+    path('', views.employee_list, name='employee_list'),
+    path('add/', views.add_employee, name='add_employee'),
+    path('<int:pk>/', views.view_employee, name='view_employee'),
+    path('edit/<int:pk>/', views.edit_employee, name='edit_employee'),
+    path('delete/<int:pk>/', views.delete_employee, name='delete_employee'),
+]
+
+# SALES URL PATTERNS (to be included with 'sales' namespace in main urls.py)
+sales_patterns = [
+    #ACCOUNT URLS---------------------------------
+    path('accounts/', views.account_list, name='account_list'),
+    path('accounts/add/', views.add_account, name='add_account'),
+    path('accounts/<int:account_id>/', views.view_account, name='view_account'),
+    path('accounts/<int:account_id>/edit/', views.edit_account, name='edit_account'),
+    path('accounts/<int:account_id>/delete/', views.delete_account, name='delete_account'),
+    #CUSTOMER URLS---------------------------------
+    path('customers/', views.customer_list, name='customer_list'),
+    path('customers/add/', views.add_customer, name='add_customer'),
+    path('customers/<int:customer_id>/', views.view_customer, name='view_customer'),
+    path('customers/<int:customer_id>/edit/', views.edit_customer, name='edit_customer'),
+    path('customers/<int:customer_id>/delete/', views.delete_customer, name='delete_customer'),
+    #RESORT URLS---------------------------------
+    path('resorts/', views.resort_list, name='resort_list'),
+    path('resorts/add/', views.add_resort, name='add_resort'),
+    path('resorts/<int:resort_id>/', views.view_resort, name='view_resort'),
+    path('resorts/<int:resort_id>/edit/', views.edit_resort, name='edit_resort'),
+    path('resorts/<int:resort_id>/delete/', views.delete_resort, name='delete_resort'),
+    #MEAL URLS---------------------------------
+    path('meals/', views.meal_list, name='meal_list'),
+    path('meals/add/', views.add_meal, name='add_meal'),
+    path('meals/<int:meal_id>/', views.view_meal, name='view_meal'),
+    path('meals/<int:meal_id>/edit/', views.edit_meal, name='edit_meal'),
+    path('meals/<int:meal_id>/delete/', views.delete_meal, name='delete_meal'),
+    #VOUCHER URLS---------------------------------
+    path('vouchers/', views.voucher_list, name='voucher_list'),
+    path('vouchers/add/', views.add_voucher, name='add_voucher'),
+    path('vouchers/<int:voucher_id>/', views.view_voucher, name='view_voucher'),
+    path('vouchers/<int:voucher_id>/edit/', views.edit_voucher, name='edit_voucher'),
+    path('vouchers/<int:voucher_id>/delete/', views.delete_voucher, name='delete_voucher'),
+    #INVOICE URLS---------------------------------
+    path('invoices/', views.invoice_list, name='invoice_list'),
+    path('invoices/add/', views.add_invoice, name='add_invoice'),
+    path('invoices/<int:invoice_id>/', views.view_invoice, name='view_invoice'),
+    path('invoices/<int:invoice_id>/edit/', views.edit_invoice, name='edit_invoice'),
+    path('invoices/<int:invoice_id>/delete/', views.delete_invoice, name='delete_invoice'),
+    #REPORT URLS---------------------------------
+    path('reports/invoice/', views.invoice_report, name='invoice_report'),
+    path('reports/voucher/', views.voucher_report, name='voucher_report'),
+    path('reports/leads/', views.leads_report, name='leads_report'),
+    path('reports/profit/', views.profit_report, name='profit_report'),
+    path('reports/customer/', views.customer_report, name='customer_report'),
+]
+
+# BLOG URL PATTERNS
+blog_patterns = [
+    path('', views.blog_list, name='blog_list'),
 ]

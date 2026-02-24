@@ -1,0 +1,376 @@
+{% load static %}
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leads Report | Whyte House</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --border:#e9eaef;
+      --text:#111318;
+      --muted:#7a7f8c;
+      --input:#f3f4f6;
+      --shadow:0 10px 24px rgba(17,19,24,.06);
+      --radius:18px;
+      --accent:#d4a42f;
+      --pill:#eff0f4;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0;font-family:"Poppins",sans-serif}
+    body{background:var(--bg);color:var(--text)}
+
+    /* main offset for sidebar */
+    .main{
+      margin-left:280px; /* match your sidebar width */
+      padding:34px 40px 60px;
+    }
+
+    /* Headings */
+    .page-title{
+      font-size:40px;
+      font-weight:600;
+      letter-spacing:.2px;
+      margin-bottom:6px;
+    }
+    .page-sub{
+      color:var(--muted);
+      font-size:16px;
+      margin-bottom:18px;
+    }
+
+    /* Tabs pill bar */
+    .tabs{
+      background:var(--pill);
+      border-radius:22px;
+      padding:6px;
+      display:flex;
+      gap:6px;
+      width:100%;
+      max-width:980px;
+      margin:0 0 16px;
+      overflow:auto;
+    }
+    .tab{
+      flex:1;
+      min-width:150px;
+      text-align:center;
+      padding:12px 14px;
+      border-radius:18px;
+      font-weight:600;
+      color:#111;
+      text-decoration:none;
+      background:transparent;
+      border:0;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .tab.active{
+      background:#fff;
+      box-shadow:0 10px 18px rgba(17,19,24,.06);
+    }
+
+    /* Card */
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      padding:26px;
+      max-width:980px;
+    }
+
+    .card h3{
+      font-size:22px;
+      font-weight:600;
+      margin-bottom:18px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px 18px;
+    }
+    .span-2{grid-column:1/-1}
+
+    .field label{
+      display:block;
+      font-size:13px;
+      font-weight:600;
+      margin-bottom:8px;
+      color:#20222a;
+    }
+    .req{color:#d13b3b;margin-left:4px}
+
+    .input-wrap{
+      position:relative;
+    }
+    input[type="date"],
+    input[type="text"],
+    select{
+      width:100%;
+      background:var(--input);
+      border:1px solid transparent;
+      border-radius:12px;
+      padding:14px 14px;
+      font-size:14px;
+      outline:none;
+      transition:.2s ease;
+    }
+    input:focus, select:focus{
+      background:#fff;
+      border-color:#d9dbe4;
+      box-shadow:0 0 0 4px rgba(212,164,47,.12);
+    }
+
+    /* date icon (visual) */
+    .cal-ic{
+      position:absolute;
+      right:14px;
+      top:50%;
+      transform:translateY(-50%);
+      width:18px;height:18px;
+      opacity:.65;
+      pointer-events:none;
+    }
+    input[type="date"]{
+      padding-right:44px;
+    }
+
+    /* select caret */
+    .select-wrap{position:relative}
+    select{
+      appearance:none;
+      -webkit-appearance:none;
+      -moz-appearance:none;
+      padding-right:44px;
+      cursor:pointer;
+    }
+    .caret{
+      position:absolute;
+      right:14px;
+      top:50%;
+      transform:translateY(-50%);
+      width:18px;height:18px;
+      opacity:.65;
+      pointer-events:none;
+    }
+
+    /* Toggle row */
+    .toggle-row{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding-top:4px;
+    }
+    .toggle-row span{
+      font-weight:600;
+      color:#111;
+    }
+    .switch{position:relative;width:50px;height:28px;display:inline-block}
+    .switch input{display:none}
+    .slider{
+      position:absolute;inset:0;background:#e4e6ee;border-radius:999px;
+      transition:.2s ease;border:1px solid #dde0ea;
+    }
+    .slider:before{
+      content:"";
+      position:absolute;height:22px;width:22px;left:3px;top:50%;
+      transform:translateY(-50%);
+      background:#fff;border-radius:50%;
+      box-shadow:0 6px 14px rgba(0,0,0,.12);
+      transition:.2s ease;
+    }
+    .switch input:checked + .slider{
+      background:rgba(212,164,47,.95);
+      border-color:rgba(212,164,47,.95);
+    }
+    .switch input:checked + .slider:before{
+      transform:translate(22px,-50%);
+    }
+
+    /* Buttons row */
+    .btn-row{
+      margin-top:18px;
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:12px;
+      padding:12px 18px;
+      border-radius:14px;
+      font-weight:600;
+      border:1px solid var(--border);
+      background:#fff;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .btn svg{width:18px;height:18px}
+    .btn.primary{
+      background:var(--accent);
+      border-color:transparent;
+      color:#111;
+      box-shadow:0 10px 18px rgba(212,164,47,.22);
+    }
+
+    /* Help bubble */
+    .help-fab{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      width:44px;height:44px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:#fff;
+      display:grid;
+      place-items:center;
+      box-shadow:0 14px 26px rgba(0,0,0,.10);
+      cursor:pointer;
+    }
+    .help-fab span{font-weight:700;color:#2a2d36}
+
+    @media (max-width: 900px){
+      .grid{grid-template-columns:1fr}
+      .page-title{font-size:34px}
+      .tab{min-width:120px}
+    }
+    @media (max-width: 720px){
+      .main{margin-left:0}
+      .tabs,.card{max-width:100%}
+    }
+  </style>
+  
+  <script>
+    function toggleEmployeeSelect() {
+      const checkbox = document.getElementById('employee_view');
+      const employeeField = document.getElementById('employee_select_field');
+      
+      if (checkbox.checked) {
+        employeeField.style.display = 'block';
+        document.getElementById('employee_select').required = true;
+      } else {
+        employeeField.style.display = 'none';
+        document.getElementById('employee_select').required = false;
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Sidebar -->
+ {% include "admin/sidebar.html" %}
+  {% include "admin/header.html" %}
+
+  <main class="main">
+    <h1 class="page-title">Report Generation</h1>
+    <p class="page-sub">Generate and export comprehensive reports</p>
+
+    <!-- Tabs (form-based UI) -->
+    <div class="tabs">
+      <a href="{% url 'sales:invoice_report' %}" class="tab">Invoice</a>
+      <a href="{% url 'sales:voucher_report' %}" class="tab">Voucher</a>
+      <a href="{% url 'sales:leads_report' %}" class="tab active">Leads</a>
+      <a href="{% url 'sales:profit_report' %}" class="tab">Profit</a>
+      <a href="{% url 'sales:customer_report' %}" class="tab">Customer</a>
+    </div>
+
+    <!-- Leads Report Card -->
+    <section class="card">
+      <h3>Leads Report</h3>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="grid">
+          <div class="field">
+            <label>Start Date <span class="req">*</span></label>
+            <div class="input-wrap">
+              <input type="date" name="start_date" required>
+              <svg class="cal-ic" viewBox="0 0 24 24" fill="none">
+                <path d="M8 3V5" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M16 3V5" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M4 9H20" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M6 5H18C19.105 5 20 5.895 20 7V19C20 20.105 19.105 21 18 21H6C4.895 21 4 20.105 4 19V7C4 5.895 4.895 5 6 5Z" stroke="#111" stroke-width="2.2" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>End Date <span class="req">*</span></label>
+            <div class="input-wrap">
+              <input type="date" name="end_date" required>
+              <svg class="cal-ic" viewBox="0 0 24 24" fill="none">
+                <path d="M8 3V5" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M16 3V5" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M4 9H20" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M6 5H18C19.105 5 20 5.895 20 7V19C20 20.105 19.105 21 18 21H6C4.895 21 4 20.105 4 19V7C4 5.895 4.895 5 6 5Z" stroke="#111" stroke-width="2.2" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+          
+          <div class="field span-2">
+            <div class="toggle-row">
+              <label class="switch" aria-label="Employee View Report">
+                <input type="checkbox" name="employee_view" id="employee_view" onchange="toggleEmployeeSelect()">
+                <span class="slider"></span>
+              </label>
+              <span>Employee View Report</span>
+            </div>
+          </div>
+          
+          <div class="field span-2" id="employee_select_field" style="display: none;">
+            <label>Select Employee <span class="req">*</span></label>
+            <div class="select-wrap">
+              <select name="employee" id="employee_select">
+                <option value="" disabled selected>Select employee</option>
+                <!-- Employee options will be populated dynamically -->
+                <option value="emp001">John Smith</option>
+                <option value="emp002">Sarah Johnson</option>
+                <option value="emp003">Michael Brown</option>
+                <option value="emp004">Emily Davis</option>
+              </select>
+              <svg class="caret" viewBox="0 0 24 24" fill="none">
+                <path d="M7 10L12 15L17 10" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn primary" type="submit" name="action" value="search">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M21 21L16.6 16.6" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M10.8 18.2C14.887 18.2 18.2 14.887 18.2 10.8C18.2 6.713 14.887 3.4 10.8 3.4C6.713 3.4 3.4 6.713 3.4 10.8C3.4 14.887 6.713 18.2 10.8 18.2Z" stroke="#111" stroke-width="2.2"/>
+            </svg>
+            Search
+          </button>
+
+          <button class="btn" type="submit" name="action" value="excel">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 3V14" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M8 10L12 14L16 10" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 17V19C4 20.105 4.895 21 6 21H18C19.105 21 20 20.105 20 19V17" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+            Export to Excel
+          </button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <button class="help-fab" type="button" aria-label="Help">
+    <span>?</span>
+  </button>
+
+</body>
+</html>

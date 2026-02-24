@@ -1,0 +1,319 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Account Details | Whyte House</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --border:#ececf2;
+      --text:#111318;
+      --muted:#7a7f8c;
+      --shadow:0 10px 24px rgba(17,19,24,.06);
+      --accent:#d4a42f;
+      --danger:#e11d48;
+      --row:#fbf7ef;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0;font-family:"Poppins",sans-serif}
+    body{background:var(--bg);color:var(--text)}
+
+    /* Main offset for sidebar */
+    .main{
+      margin-left:280px; /* match your sidebar width */
+      padding:40px 40px 60px;
+      margin-top:0px; /* account for header height */
+    }
+
+    /* Topbar (hamburger left, date right) */
+  
+    .menu-btn{
+      width:44px;height:44px;
+      border-radius:14px;
+      border:1px solid transparent;
+      background:transparent;
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+    }
+    .menu-btn svg{width:22px;height:22px}
+    .date{
+      color:var(--muted);
+      font-size:15px;
+      font-weight:400;
+    }
+
+    /* Page header (Account Details + subtitle) */
+    .page-title{
+      margin:6px 0 18px;
+    }
+    .page-title h1{
+      font-size:34px;
+      font-weight:600;
+      letter-spacing:-.2px;
+      margin-bottom:6px;
+    }
+    .page-title p{
+      color:var(--muted);
+      font-size:16px;
+      font-weight:400;
+    }
+
+    /* Card */
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      padding:18px;
+      max-width:1120px;
+    }
+
+    /* Card head row */
+    .card-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:6px 6px 14px;
+    }
+    .card-head h2{
+      font-size:18px;
+      font-weight:600;
+    }
+
+    /* Add button */
+    .btn-add{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      background:var(--accent);
+      color:#111;
+      border:none;
+      border-radius:14px;
+      padding:12px 18px;
+      font-weight:600;
+      cursor:pointer;
+      box-shadow:0 10px 18px rgba(212,164,47,.22);
+      white-space:nowrap;
+      text-decoration:none;
+    }
+    .btn-add svg{width:18px;height:18px}
+
+    /* Table wrapper */
+    .table-wrap{
+      margin-top:10px;
+      border-radius:18px;
+      overflow:hidden;
+      border:1px solid var(--border);
+      background:#fff;
+    }
+
+    .scroll{
+      overflow-x:auto;
+      background:#fff;
+    }
+
+    /* Horizontal scrollbar like screenshot */
+    .scroll::-webkit-scrollbar{height:10px}
+    .scroll::-webkit-scrollbar-track{background:transparent}
+    .scroll::-webkit-scrollbar-thumb{background:#6b6f7a;border-radius:999px}
+    .scroll::-webkit-scrollbar-thumb:hover{background:#555a64}
+
+    table{
+      width:1150px; /* keep slight horizontal scroll */
+      border-collapse:separate;
+      border-spacing:0;
+    }
+
+    thead th{
+      text-align:left;
+      font-size:14px;
+      font-weight:600;
+      padding:18px 22px;
+      border-bottom:1px solid var(--border);
+      white-space:nowrap;
+    }
+
+    tbody td{
+      padding:22px 22px;
+      font-size:15px;
+      border-bottom:1px solid var(--border);
+      vertical-align:middle;
+      white-space:nowrap;
+    }
+
+    tbody tr.strip td{background:var(--row)}
+
+    .wrap{
+      white-space:normal;
+      line-height:1.4;
+      max-width:260px;
+      font-weight:600;
+    }
+
+    /* Actions */
+    .actions{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .icon-btn{
+      width:44px;height:40px;
+      border-radius:12px;
+      border:1px solid #e7e7ee;
+      background:#fff;
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      text-decoration:none;
+    }
+    .icon-btn svg{width:18px;height:18px}
+    .icon-btn.delete svg{stroke:var(--danger)}
+    .icon-btn:focus{outline:2px solid rgba(212,164,47,.35); outline-offset:2px;}
+
+    /* Help bubble bottom-right */
+    .help-fab{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      width:44px;height:44px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#111;
+      display:grid;
+      place-items:center;
+      box-shadow:0 14px 26px rgba(0,0,0,.10);
+      cursor:pointer;
+    }
+    .help-fab span{font-weight:700;color:#fff}
+
+    @media (max-width: 900px){
+      .main{padding:18px 18px 50px}
+      .page-title h1{font-size:30px}
+    }
+    @media (max-width: 720px){
+      .main{margin-left:0}
+      .card{max-width:100%}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  {% include "admin/header.html" %}
+
+  <!-- Sidebar -->
+  {% include "admin/sidebar.html" %}
+
+  <main class="main">
+
+  
+
+      
+
+    <!-- Page title -->
+    <div class="page-title">
+      <h1>Account Details</h1>
+      <p>Manage bank account information</p>
+    </div>
+
+    <!-- Card -->
+    <section class="card">
+      <div class="card-head">
+        <h2>Bank Accounts</h2>
+
+        <a href="{% url 'sales:add_account' %}" class="btn-add">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 5V19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M5 12H19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
+          </svg>
+          Add Bank Account
+        </a>
+      </div>
+
+      <div class="table-wrap">
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:90px;">Sl No</th>
+                <th style="min-width:240px;">Account Name</th>
+                <th>Account Number</th>
+                <th>Bank Name</th>
+                <th>IFSC Code</th>
+                <th>Account Type</th>
+                <th style="min-width:160px;">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for acc in accounts %}
+              <tr class="{% if forloop.counter|divisibleby:2 %}strip{% endif %}">
+                <td>{{ forloop.counter }}</td>
+                <td class="wrap">{{ acc.account_name }}</td>
+                <td>{{ acc.account_number }}</td>
+                <td>{{ acc.bank_name }}</td>
+                <td>{{ acc.ifsc_code }}</td>
+                <td>{{ acc.account_type }}</td>
+                <td>
+                  <div class="actions">
+                    <a href="{% url 'sales:view_account' acc.id %}" class="icon-btn" title="View" aria-label="View">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2">
+                        <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </a>
+                    
+                    <a href="{% url 'sales:edit_account' acc.id %}" class="icon-btn" title="Edit" aria-label="Edit">
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M12 20H21" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
+                        <path d="M16.5 3.5C17.328 2.672 18.672 2.672 19.5 3.5C20.328 4.328 20.328 5.672 19.5 6.5L8 18L3 19L4 14L16.5 3.5Z" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </a>
+
+                    <form method="POST" action="{% url 'sales:delete_account' acc.id %}" style="display:inline;" onsubmit="return confirm('Delete {{ acc.account_name }}?');">
+                      {% csrf_token %}
+                      <button type="submit" class="icon-btn delete" title="Delete" aria-label="Delete">
+                        <svg viewBox="0 0 24 24" fill="none">
+                          <path d="M3 6H21" stroke="#e11d48" stroke-width="2.2" stroke-linecap="round"/>
+                          <path d="M8 6V4C8 3.448 8.448 3 9 3H15C15.552 3 16 3.448 16 4V6" stroke="#e11d48" stroke-width="2.2" stroke-linecap="round"/>
+                          <path d="M19 6L18.2 20C18.137 20.552 17.668 21 17.113 21H6.887C6.332 21 5.863 20.552 5.8 20L5 6" stroke="#e11d48" stroke-width="2.2" stroke-linecap="round"/>
+                          <path d="M10 11V17" stroke="#e11d48" stroke-width="2.2" stroke-linecap="round"/>
+                          <path d="M14 11V17" stroke="#e11d48" stroke-width="2.2" stroke-linecap="round"/>
+                        </svg>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" style="text-align:center;padding:22px;color:var(--muted);">
+                  No accounts found.
+                  <a href="{% url 'sales:add_account' %}" style="color:var(--accent);text-decoration:none;font-weight:600;">
+                    Add your first account
+                  </a>.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <button class="help-fab" type="button" aria-label="Help">
+    <span>?</span>
+  </button>
+
+</body>
+</html>

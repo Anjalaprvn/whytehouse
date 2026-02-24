@@ -1,0 +1,275 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Customer Report | Whyte House</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --border:#e9eaef;
+      --text:#111318;
+      --muted:#7a7f8c;
+      --input:#f3f4f6;
+      --shadow:0 10px 24px rgba(17,19,24,.06);
+      --radius:18px;
+      --accent:#d4a42f;
+      --pill:#eff0f4;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0;font-family:"Poppins",sans-serif}
+    body{background:var(--bg);color:var(--text)}
+
+    /* main offset for sidebar */
+    .main{
+      margin-left:280px;
+      padding:34px 40px 60px;
+    }
+
+    /* Headings */
+    .page-title{
+      font-size:40px;
+      font-weight:600;
+      letter-spacing:.2px;
+      margin-bottom:6px;
+    }
+    .page-sub{
+      color:var(--muted);
+      font-size:16px;
+      margin-bottom:18px;
+    }
+
+    /* Tabs pill bar */
+    .tabs{
+      background:var(--pill);
+      border-radius:22px;
+      padding:6px;
+      display:flex;
+      gap:6px;
+      width:100%;
+      max-width:980px;
+      margin:0 0 16px;
+      overflow:auto;
+    }
+    .tab{
+      flex:1;
+      min-width:150px;
+      text-align:center;
+      padding:12px 14px;
+      border-radius:18px;
+      font-weight:600;
+      color:#111;
+      text-decoration:none;
+      background:transparent;
+      border:0;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .tab.active{
+      background:#fff;
+      box-shadow:0 10px 18px rgba(17,19,24,.06);
+    }
+
+    /* Card */
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      padding:26px;
+      max-width:980px;
+    }
+
+    .card h3{
+      font-size:22px;
+      font-weight:600;
+      margin-bottom:18px;
+    }
+
+    /* Buttons row */
+    .btn-row{
+      margin-top:18px;
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:12px;
+      padding:12px 18px;
+      border-radius:14px;
+      font-weight:600;
+      border:1px solid var(--border);
+      background:#fff;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .btn svg{width:18px;height:18px}
+    .btn.primary{
+      background:var(--accent);
+      border-color:transparent;
+      color:#111;
+      box-shadow:0 10px 18px rgba(212,164,47,.22);
+    }
+
+    /* Table */
+    .table-wrap{
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+      background:#fff;
+    }
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+    }
+
+    thead th{
+      background:#f8f9fb;
+      text-align:left;
+      padding:14px 16px;
+      font-size:14px;
+      font-weight:600;
+      border-bottom:1px solid var(--border);
+      white-space:nowrap;
+    }
+
+    tbody td{
+      padding:14px 16px;
+      font-size:14px;
+      border-bottom:1px solid var(--border);
+      white-space:nowrap;
+    }
+
+    tbody tr:nth-child(odd){
+      background:#f6f6f7;
+    }
+
+    tbody tr:last-child td{
+      border-bottom:0;
+    }
+
+    .col-sl{width:90px}
+
+    /* Help bubble */
+    .help-fab{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      width:44px;height:44px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:#fff;
+      display:grid;
+      place-items:center;
+      box-shadow:0 14px 26px rgba(0,0,0,.10);
+      cursor:pointer;
+    }
+    .help-fab span{font-weight:700;color:#2a2d36}
+
+    @media (max-width: 900px){
+      .page-title{font-size:34px}
+      .tab{min-width:120px}
+    }
+    @media (max-width: 720px){
+      .main{margin-left:0}
+      .tabs,.card{max-width:100%}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  {% include "admin/sidebar.html" %}
+  {% include "admin/header.html" %}
+
+  <main class="main">
+    <h1 class="page-title">Report Generation</h1>
+    <p class="page-sub">Generate and export comprehensive reports</p>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <a href="{% url 'sales:invoice_report' %}" class="tab">Invoice</a>
+      <a href="{% url 'sales:voucher_report' %}" class="tab">Voucher</a>
+      <a href="{% url 'sales:leads_report' %}" class="tab">Leads</a>
+      <a href="{% url 'sales:profit_report' %}" class="tab">Profit</a>
+      <a href="{% url 'sales:customer_report' %}" class="tab active">Customer</a>
+    </div>
+
+    <!-- Customer Report -->
+    <section class="card">
+      <h3>Customer Report</h3>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-sl">Sl No</th>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Customer Place</th>
+              <th>Mobile</th>
+              <th>WhatsApp Num</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% if customers %}
+              {% for c in customers %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ c.first_name }}</td>
+                  <td>{{ c.last_name }}</td>
+                  <td>{{ c.customer_place }}</td>
+                  <td>{{ c.mobile }}</td>
+                  <td>{{ c.whatsapp_number }}</td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td>1</td><td>Rajesh</td><td>Kumar</td><td>Mumbai</td><td>+91 9876543210</td><td>+91 9876543210</td>
+              </tr>
+              <tr>
+                <td>2</td><td>Priya</td><td>Sharma</td><td>Delhi</td><td>+91 9988776655</td><td>+91 9988776655</td>
+              </tr>
+              <tr>
+                <td>3</td><td>Amit</td><td>Patel</td><td>Bangalore</td><td>+91 8877665544</td><td>+91 8877665544</td>
+              </tr>
+              <tr>
+                <td>4</td><td>Sneha</td><td>Reddy</td><td>Hyderabad</td><td>+91 7766554433</td><td>+91 9876501234</td>
+              </tr>
+              <tr>
+                <td>5</td><td>Vikram</td><td>Singh</td><td>Jaipur</td><td>+91 9988001122</td><td>+91 9988001122</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn primary" type="submit" name="action" value="excel">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 3V14" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M8 10L12 14L16 10" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 17V19C4 20.105 4.895 21 6 21H18C19.105 21 20 20.105 20 19V17" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+          Export to Excel
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <button class="help-fab" type="button" aria-label="Help">
+    <span>?</span>
+  </button>
+
+</body>
+</html>

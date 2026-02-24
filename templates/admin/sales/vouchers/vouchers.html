@@ -1,0 +1,354 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Voucher Management | Whyte House</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --border:#ececf2;
+      --text:#111318;
+      --muted:#7a7f8c;
+      --input:#f3f4f6;
+      --shadow:0 10px 24px rgba(17,19,24,.06);
+      --accent:#d4a42f;
+
+      --warn:#f97316;   /* pending */
+      --good:#16a34a;   /* paid */
+      --row:#f3f4f6;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0;font-family:"Poppins",sans-serif}
+    body{background:var(--bg);color:var(--text)}
+
+    .main{
+      margin-left:280px; /* match sidebar */
+      padding:34px 40px 60px;
+    }
+
+    /* Header */
+    .topbar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:18px;
+      max-width:1200px;
+    }
+
+    .title h1{
+      font-size:42px;
+      font-weight:600;
+      margin-bottom:6px;
+    }
+    .title p{
+      color:var(--muted);
+      font-size:16px;
+    }
+
+    .btn-add{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      background:var(--accent);
+      color:#111;
+      border:none;
+      border-radius:14px;
+      padding:12px 18px;
+      font-weight:600;
+      cursor:pointer;
+      box-shadow:0 10px 18px rgba(212,164,47,.22);
+      white-space:nowrap;
+      margin-top:8px;
+      text-decoration:none;
+    }
+    .btn-add svg{width:18px;height:18px}
+
+    /* Search card */
+    .search-card{
+      max-width:1200px;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      padding:18px;
+      margin-bottom:18px;
+    }
+    .search{
+      position:relative;
+      width:100%;
+    }
+    .search input{
+      width:100%;
+      border:1px solid transparent;
+      background:var(--input);
+      border-radius:16px;
+      padding:14px 16px 14px 48px;
+      outline:none;
+      font-size:15px;
+      transition:.2s ease;
+    }
+    .search input:focus{
+      background:#fff;
+      border-color:#d9dbe4;
+      box-shadow:0 0 0 4px rgba(212,164,47,.12);
+    }
+    .search svg{
+      position:absolute;
+      left:16px;
+      top:50%;
+      transform:translateY(-50%);
+      width:18px;height:18px;
+      opacity:.65;
+    }
+
+    /* Table card */
+    .table-card{
+      max-width:1200px;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .scroll{
+      overflow-x:auto;
+      background:#fff;
+    }
+    .scroll::-webkit-scrollbar{height:10px}
+    .scroll::-webkit-scrollbar-track{background:transparent}
+    .scroll::-webkit-scrollbar-thumb{background:#6b6f7a;border-radius:999px}
+    .scroll::-webkit-scrollbar-thumb:hover{background:#555a64}
+
+    table{
+      width:1450px; /* horizontal scroll like screenshot */
+      border-collapse:separate;
+      border-spacing:0;
+    }
+
+    thead th{
+      text-align:left;
+      font-size:14px;
+      font-weight:600;
+      padding:16px 18px;
+      border-bottom:1px solid var(--border);
+      background:#fff;
+      white-space:nowrap;
+    }
+
+    tbody td{
+      padding:18px 18px;
+      border-bottom:1px solid var(--border);
+      font-size:15px;
+      vertical-align:middle;
+      white-space:nowrap;
+    }
+
+    tbody tr.alt td{background:var(--row)}
+
+    /* status pill */
+    .status{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 14px;
+      border-radius:999px;
+      font-weight:600;
+      font-size:13px;
+      border:1px solid;
+      background:#fff;
+    }
+    .status.pending{color:var(--warn); border-color:var(--warn)}
+    .status.paid{color:var(--good); border-color:var(--good)}
+
+    /* actions */
+    .actions{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .icon{
+      width:42px;height:40px;
+      border-radius:12px;
+      border:1px solid #e7e7ee;
+      background:#fff;
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      text-decoration:none;
+    }
+    .icon svg{width:18px;height:18px}
+    .icon.whatsapp svg{stroke:var(--good)}
+    .icon.mail svg{stroke:#2563eb}
+    .icon.eye svg{stroke:#111}
+    .icon.edit svg{stroke:#111}
+
+    /* Help bubble */
+    .help-fab{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      width:44px;height:44px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:#fff;
+      display:grid;
+      place-items:center;
+      box-shadow:0 14px 26px rgba(0,0,0,.10);
+      cursor:pointer;
+    }
+    .help-fab span{font-weight:700;color:#2a2d36}
+
+    @media (max-width: 900px){
+      .main{padding:26px 18px 50px}
+      .title h1{font-size:34px}
+    }
+    @media (max-width: 720px){
+      .main{margin-left:0}
+    }
+  </style>
+</head>
+<body>
+
+   <!-- Header -->
+  {% include "admin/header.html" %}
+
+  <!-- Sidebar -->
+  {% include "admin/sidebar.html" %}
+
+  <main class="main">
+    <!-- Messages -->
+    {% if messages %}
+    <div style="max-width:1200px;margin-bottom:18px;">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}" style="padding:14px 18px;border-radius:14px;margin-bottom:10px;font-weight:500;{% if message.tags == 'success' %}background:#eefbf1;border:1px solid #bbf0c5;color:#16a34a;{% elif message.tags == 'error' %}background:#fff1f2;border:1px solid #fda0a6;color:#dc2626;{% else %}background:#fff6e8;border:1px solid #fde096;color:#d97706;{% endif %}">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="topbar">
+      <div class="title">
+        <h1>Voucher Management</h1>
+        <p>Manage travel vouchers and bookings</p>
+      </div>
+
+      <a href="{% url 'sales:add_voucher' %}" class="btn-add">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 5V19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M5 12H19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+        Add Voucher
+      </a>
+    </div>
+
+    <!-- Search -->
+    <section class="search-card">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M21 21L16.6 16.6" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M10.8 18.2C14.887 18.2 18.2 14.887 18.2 10.8C18.2 6.713 14.887 3.4 10.8 3.4C6.713 3.4 3.4 6.713 3.4 10.8C3.4 14.887 6.713 18.2 10.8 18.2Z" stroke="#111" stroke-width="2.2"/>
+        </svg>
+        <input type="text" placeholder="Search by voucher number, customer, resort, or sales person..." />
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="table-card">
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Voucher No</th>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Mobile</th>
+              <th>Sales Person</th>
+              <th>Resort</th>
+              <th>Check-in</th>
+              <th>Nights</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th style="min-width:240px;">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for v in vouchers %}
+            <tr class="{% if forloop.counter|divisibleby:2 %}alt{% endif %}">
+              <td><b>{{ v.voucher_no }}</b></td>
+              <td>{{ v.voucher_date|date:"d M Y" }}</td>
+              <td>{{ v.customer.display_name|default:"—" }}</td>
+              <td>{{ v.customer.contact_number|default:"—" }}</td>
+              <td>{{ v.sales_person.name|default:"—" }}</td>
+              <td>{{ v.resort.resort_name|default:"—" }}</td>
+              <td>{{ v.checkin_date|date:"d M Y" }}</td>
+              <td>{{ v.nights }}</td>
+              <td>₹{{ v.total_amount }}</td>
+              <td><span class="status {% if v.pending > 0 %}pending{% else %}paid{% endif %}">{% if v.pending > 0 %}Pending{% else %}Paid{% endif %}</span></td>
+              <td>
+                <div class="actions">
+                  <a href="{% url 'sales:view_voucher' v.id %}" class="icon eye" title="View" aria-label="View">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M1 12C1 12 5 5 12 5C19 5 23 12 23 12C23 12 19 19 12 19C5 19 1 12 1 12Z" stroke-width="2"/>
+                      <circle cx="12" cy="12" r="3" stroke-width="2"/>
+                    </svg>
+                  </a>
+                  <a href="{% url 'sales:edit_voucher' v.id %}" class="icon edit" title="Edit" aria-label="Edit">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M12 20H21" stroke-width="2.2" stroke-linecap="round"/>
+                      <path d="M16.5 3.5C17.328 2.672 18.672 2.672 19.5 3.5C20.328 4.328 20.328 5.672 19.5 6.5L8 18L3 19L4 14L16.5 3.5Z" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </a>
+                  <form method="POST" action="{% url 'sales:delete_voucher' v.id %}" style="display:inline;" onsubmit="return confirm('Delete voucher {{ v.voucher_code }}?');">
+                    {% csrf_token %}
+                    <button type="submit" class="icon" style="border-color:#ffd1da;" title="Delete" aria-label="Delete">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2">
+                        <path d="M3 6H21" stroke-linecap="round"/>
+                        <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" stroke-linecap="round"/>
+                        <path d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6" stroke-linecap="round"/>
+                        <path d="M10 11v6" stroke-linecap="round"/>
+                        <path d="M14 11v6" stroke-linecap="round"/>
+                      </svg>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="11" style="text-align:center;padding:40px;color:var(--muted);">
+                No vouchers found. <a href="{% url 'sales:add_voucher' %}" style="color:var(--accent);font-weight:600;text-decoration:none;">Add your first voucher</a>.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <button class="help-fab"><span>?</span></button>
+
+  <script>
+    // Auto-dismiss messages after 5 seconds
+    setTimeout(function() {
+      const alerts = document.querySelectorAll('.alert');
+      alerts.forEach(alert => {
+        alert.style.transition = 'opacity 0.5s';
+        alert.style.opacity = '0';
+        setTimeout(() => alert.remove(), 500);
+      });
+    }, 5000);
+  </script>
+
+</body>
+</html>
