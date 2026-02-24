@@ -1,0 +1,379 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whyte House Stories | Blog</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --brand-gold: #D4A373;
+            --brand-black: #000000;
+            --text-gray: #666666;
+            --footer-text: #999999;
+            --white: #ffffff;
+            --radius: 24px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body { background-color: var(--white); color: var(--brand-black); overflow-x: hidden; }
+
+        /* --- NAVIGATION --- */
+        .navbar {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px 80px;
+            z-index: 100;
+        }
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 10px 30px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .nav-links a { text-decoration: none; color: white; font-size: 14px; font-weight: 500; }
+        .nav-links a.active { color: var(--brand-gold); }
+
+        /* --- HERO --- */
+        .hero {
+            height: 65vh;
+            width: 100%;
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url("{% static 'images/aboutbg.png' %}");
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+        .hero h1 { font-size: 56px; font-weight: 700; }
+        .hero h1 span { color: var(--brand-gold); font-style: italic; font-weight: 400; }
+
+        /* --- BLOG CONTENT --- */
+        /* REMOVED MAX-WIDTH AND UPDATED PADDING TO MATCH NAVBAR */
+        .container { width: 100%; margin: 0; padding: 0 80px 100px; }
+        
+        .filter-section {
+            width: 100%;
+            max-width: 100%;
+            margin: -60px auto 50px;
+            background: var(--white);
+            padding: 40px;
+            border-radius: var(--radius);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            position: relative;
+            z-index: 20;
+        }
+        .search-container { display: flex; gap: 15px; margin-bottom: 25px; }
+        .search-input { flex: 1; padding: 18px 25px; border-radius: 50px; border: 1px solid #E5E5E5; outline: none; }
+        .filter-btn { background: var(--brand-gold); border: none; width: 55px; border-radius: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .category-tabs { display: flex; gap: 12px; }
+        .tab { padding: 10px 24px; border-radius: 50px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; }
+        .tab.active { background: var(--brand-gold); color: white; }
+        .tab.inactive { background: var(--brand-black); color: white; }
+
+        .blog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        .card { background: var(--white); border-radius: var(--radius); overflow: hidden; border: 1px solid #F0F0F0; transition: transform 0.3s ease; }
+        .card:hover { transform: translateY(-10px); }
+        .card-img-wrapper { position: relative; height: 240px; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; }
+        .featured-badge { position: absolute; top: 20px; left: 20px; background: var(--brand-gold); color: white; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .card-body { padding: 25px; }
+        .card-meta { font-size: 12px; color: var(--text-gray); margin-bottom: 12px; }
+        .card-title { font-size: 20px; font-weight: 700; margin-bottom: 12px; line-height: 1.4; }
+        .card-text { color: var(--text-gray); font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+        .tag-group { display: flex; flex-wrap: wrap; gap: 8px; }
+        .tag-item { font-size: 11px; background: #F2F2F2; padding: 5px 12px; border-radius: 6px; color: #888; }
+
+        /* --- FOOTER --- */
+        .site-footer {
+            background-color: var(--brand-black);
+            color: white;
+            padding: 80px 80px 40px;
+            width: 100%;
+        }
+
+        .footer-cta-section {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .footer-cta-section h2 { 
+            font-size: 32px; 
+            margin-bottom: 12px; 
+            font-weight: 600;
+        }
+
+        .footer-cta-section p { 
+            color: var(--footer-text); 
+            margin-bottom: 35px;
+            font-weight: 300;
+        }
+
+        .subscribe-form {
+            max-width: 550px;
+            margin: 0 auto;
+            display: flex;
+            background: #1A1A1A;
+            border: 1px solid #333;
+            padding: 8px;
+            border-radius: 50px;
+        }
+
+        .subscribe-form input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 0 25px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .subscribe-form button {
+            background: var(--brand-gold);
+            color: white;
+            border: none;
+            padding: 14px 35px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .subscribe-form button:hover { opacity: 0.9; }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            gap: 40px;
+            padding-top: 60px;
+            border-top: 1px solid #222;
+        }
+
+        .footer-col h4 {
+            font-size: 15px;
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .footer-col p, .footer-col a {
+            color: var(--footer-text);
+            text-decoration: none;
+            font-size: 13px;
+            line-height: 1.8;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .footer-logo { height: 45px; margin-bottom: 25px; }
+
+        .enquire-btn {
+            display: inline-block;
+            background: var(--brand-gold);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        .footer-nav-bottom {
+            display: flex;
+            justify-content: flex-end;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .footer-nav-bottom a {
+            color: var(--footer-text);
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .footer-bottom {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #222;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .social-links a {
+            color: white;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        .social-links a:hover { color: var(--brand-gold); }
+
+        .copyright-text {
+            color: #444;
+            font-size: 12px;
+        }
+
+        @media (max-width: 992px) {
+            .footer-grid { grid-template-columns: repeat(2, 1fr); }
+            .blog-grid { grid-template-columns: repeat(2, 1fr); }
+            .navbar, .container, .site-footer { padding: 30px 40px; }
+        }
+        
+        .card-link {
+            transition: all 0.3s ease;
+            border-radius: var(--radius);
+        }
+
+        .card-link:hover { transform: translateY(-8px); }
+        .card-link:hover .card {
+            border-color: var(--brand-gold);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Logo">
+        </div>
+        <div class="nav-links">
+            <a href="{% url 'index' %}" class="hover:text-[#D39C52]">Home</a>
+            <a href="{% url 'about' %}" class="hover:text-[#D39C52]">About</a>
+            <a href="#" class="active">Blog</a>
+            <a href="{%url 'packages'%}" class="hover:text-[#D39C52]">Packages</a>
+            <a href="{%url 'contact'%}" class="hover:text-[#D39C52]">Contact Us</a>
+        </div>
+<div class="glass-pill">
+            <a href="{%url 'domestic'%}">Domestic</a>
+            <span style="color:rgba(255,255,255,0.3)">|</span>
+            <a href="{% url 'index' %}" class="hover:text-[#D39C52]">International</a>
+        </div>    
+    </nav>
+
+    <section class="hero">
+        <h1>Whyte House <span>Stories</span></h1>
+        <p>Stories, tips, and insights from our adventures across the world.</p>
+    </section>
+
+    <section class="container">
+        <div class="filter-section">
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search articles...">
+                <button class="filter-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                </button>
+            </div>
+            <div class="category-tabs">
+                <button class="tab active">All</button>
+                <button class="tab inactive">Travel Tips</button>
+                <button class="tab inactive">Food & Culture</button>
+            </div>
+        </div>
+
+        <div class="blog-grid">
+    {% for i in "123456" %}
+        <a href="{% url 'blog_detail' slug='top-10-hidden-gems-vietnam' %}" class="card-link" style="text-decoration: none; color: inherit; display: block;">        <article class="card">
+            <div class="card-img-wrapper">
+                <span class="featured-badge">Featured</span>
+                <img src="{% static 'images/blog.png' %}" class="card-img" alt="Blog Image">
+            </div>
+            <div class="card-body">
+                <div class="card-meta">Dec 28, 2025 • 8 min read</div>
+                <h2 class="card-title">Top 10 Hidden Gems in Vietnam</h2>
+                <p class="card-text">Discover the lesser-known destinations in Vietnam that offer authentic experiences away from tourist crowds.</p>
+                <div class="tag-group">
+                    <span class="tag-item">Vietnam</span>
+                    <span class="tag-item">Hidden Gems</span>
+                    <span class="tag-item">Off the beaten Path</span>
+                </div>
+            </div>
+        </article>
+    </a>
+    {% endfor %}
+</div>
+    </section>
+
+    <footer class="site-footer">
+    <div class="footer-cta-section">
+        <h2>Book Your Tour Today</h2>
+        <p>Join us for an unforgettable getaway and adventures</p>
+        <form class="subscribe-form">
+            <input type="email" placeholder="Enter your email">
+            <button type="submit">Subscribe</button>
+        </form>
+    </div>
+
+    <div class="footer-grid">
+        <div class="footer-col">
+            <img src="{% static 'images/logo.png' %}" alt="Whyte House" class="footer-logo">
+            <p>Whether you're booking a holiday or managing a property, our promise remains the same.</p>
+            <a href="#" class="enquire-btn">Enquire Now</a>
+        </div>
+
+        <div class="footer-col">
+            <h4>Location</h4>
+            <p>Kozhikode, Kerala<br>Kakkanchery 673321<br>Since 2015</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>Contact Us</h4>
+            <p>+98 78 523 521 45</p>
+            <p>@whytehouseholidays.com</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>Company & Legals</h4>
+            <a href="#">About Us</a>
+            <a href="#">Frequently ask question</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">License</a>
+        </div>
+    </div>
+
+    <div class="footer-bottom-container" style="margin-top: 40px;">
+        <div class="footer-nav-bottom">
+            <a href="#">Home</a>
+            <a href="#">Packages</a>
+            <a href="#">Grow Property</a>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="social-links">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+                <a href="#"><i class="fab fa-whatsapp"></i></a>
+            </div>
+            <p class="copyright-text">© 2025 Whyte House Holidays All Rights Reserved</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

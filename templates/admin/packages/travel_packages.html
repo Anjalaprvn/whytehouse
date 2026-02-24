@@ -1,0 +1,144 @@
+{% extends 'admin/sidebar.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .page-header h1 { font-size: 26px; font-weight: 600; }
+    .page-header p { color: #777; margin-top: 5px; }
+
+    /* Category Pills */
+    .category-tabs { margin-top: 20px; display: flex; gap: 15px; margin-bottom: 25px; }
+    .tab { 
+        padding: 8px 18px; border-radius: 20px; cursor: pointer; font-size: 14px; 
+        text-decoration: none; transition: 0.3s; font-weight: 500;
+    }
+
+    /* Package Grid */
+    .package-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
+    .package-card { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .package-card img { width: 100%; height: 180px; object-fit: cover; background: #f9f9f9; }
+    .package-content { padding: 18px; }
+    .package-title { font-weight: 600; font-size: 18px; margin-bottom: 5px; }
+    .package-location { font-size: 14px; color: #777; margin-bottom: 10px; }
+    .package-price { font-weight: 700; color: #c89b2d; font-size: 18px; }
+
+    /* Custom Toggle Switch */
+    .switch { position: relative; display: inline-block; width: 38px; height: 20px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { 
+        position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; 
+        background-color: #ccc; transition: .4s; border-radius: 20px; 
+    }
+    .slider:before { 
+        position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; 
+        background-color: white; transition: .4s; border-radius: 50%; 
+    }
+    input:checked + .slider { background-color: #c89b2d; }
+    input:checked + .slider:before { transform: translateX(18px); }
+
+    /* Dynamic Badges */
+    .status-badge { padding: 4px 12px; border-radius: 8px; font-size: 12px; display: inline-block; }
+    .badge-active { background: #fdf6e7; color: #c89b2d; font-weight: bold; }
+    .badge-inactive { background: #f1f1f1; color: #999; font-weight: normal; }
+
+    /* Action Buttons */
+    .card-actions { display: flex; gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #f1f1f1; }
+    .btn-edit { 
+        flex: 1; text-align: center; padding: 8px; border: 1px solid #eee; 
+        border-radius: 8px; text-decoration: none; color: #333; font-size: 14px; 
+    }
+    .btn-delete { padding: 8px 12px; border: 1px solid #fee; border-radius: 8px; color: #ff4d4d; text-decoration: none; }
+</style>
+
+<div class="page-header">
+    <div>
+        <h1>Travel Packages Management</h1>
+        <p>Manage your domestic and international travel packages</p>
+    </div>
+    <a href="{% url 'admin_panel:travel_package_add' %}" style="background:#c89b2d; color:white; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">
+        + Add New Package
+    </a>
+</div>
+
+<div class="category-tabs">
+    <a href="?cat=Domestic" class="tab" 
+       style="background: {% if selected_category == 'Domestic' %}#c89b2d{% else %}#f1f1f1{% endif %}; 
+              color: {% if selected_category == 'Domestic' %}white{% else %}#555{% endif %};">
+        Domestic ({{ domestic_count }})
+    </a>
+    <a href="?cat=International" class="tab" 
+       style="background: {% if selected_category == 'International' %}#c89b2d{% else %}#f1f1f1{% endif %}; 
+              color: {% if selected_category == 'International' %}white{% else %}#555{% endif %};">
+        International ({{ international_count }})
+    </a>
+</div>
+
+<div class="package-grid">
+    {% for package in packages %}
+    <div class="package-card">
+        <img src="{% if package.image %}{{ package.image.url }}{% else %}{% static 'images/placeholder.png' %}{% endif %}">
+        
+        <div class="package-content">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div class="package-title">{{ package.name }}</div>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-{{ package.id }}" {% if package.active %}checked{% endif %} 
+                           onchange="updateStatus('{{ package.id }}')">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="package-location">
+                <i class="fas fa-map-marker-alt"></i> {{ package.location }}
+            </div>
+
+            <p style="color: #666; font-size: 13px;">{{ package.description|truncatewords:12 }}</p>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                <div class="package-price">₹ {{ package.price }}</div>
+                
+                <div id="badge-{{ package.id }}" class="status-badge {% if package.active %}badge-active{% else %}badge-inactive{% endif %}">
+                    {% if package.active %}Active{% else %}Inactive{% endif %}
+                </div>
+            </div>
+
+            <div style="font-size: 12px; color: #999; margin-top: 8px;">{{ package.duration }}</div>
+
+            <div class="card-actions">
+    <a href="{% url 'admin_panel:travel_package_edit' package.id %}" class="btn-edit">
+        <i class="far fa-edit"></i> Edit
+    </a>
+    
+    <a href="{% url 'admin_panel:travel_package_delete' package.id %}" 
+       class="btn-delete" 
+       onclick="return confirm('Are you sure you want to delete this package?')">
+        <i class="far fa-trash-alt"></i>
+    </a>
+</div>
+                </div>
+    </div>
+    {% empty %}
+    <p>No {{ selected_category }} packages available.</p>
+    {% endfor %}
+</div>
+
+<script>
+function updateStatus(packageId) {
+    const checkbox = document.getElementById('toggle-' + packageId);
+    const badge = document.getElementById('badge-' + packageId);
+
+    // 1. Instantly Update UI Colors
+    if (checkbox.checked) {
+        badge.innerText = "Active";
+        badge.className = "status-badge badge-active";
+    } else {
+        badge.innerText = "Inactive";
+        badge.className = "status-badge badge-inactive";
+    }
+
+    // 2. Optional: Send to Database via AJAX
+    // fetch(`/custom-admin/toggle-status/${packageId}/`);
+}
+</script>
+{% endblock %}

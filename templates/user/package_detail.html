@@ -1,0 +1,465 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tropical Paradise Recreation | Whyte House Holidays</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --brand-gold: #D4A373;
+            --brand-black: #000000;
+            --text-gray: #777777;
+            --white: #ffffff;
+            --soft-bg: #F3F4F6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { 
+            /* Replace background-color with background image */
+            background: url("{% static 'images/wavy_bg.png' %}");
+            background-size: cover;          /* Ensures the waves cover the screen */
+            background-attachment: fixed;    /* Keeps the waves still while you scroll (optional, looks premium) */
+            background-repeat: repeat;       /* If the image is a small pattern, it will tile seamlessly */
+            color: var(--brand-black); 
+            line-height: 1.6; 
+        }
+        /* --- NAVIGATION --- */
+        .navbar {
+            position: absolute;
+            top: 0; width: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 30px 80px; z-index: 100;
+        }
+        .nav-links {
+            display: flex; gap: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            padding: 12px 40px; border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .nav-links a { text-decoration: none; color: white; font-size: 14px; transition: 0.3s; }
+        .nav-links a:hover { color: var(--brand-gold); }
+
+        /* --- HERO SECTION --- */
+        .detail-hero {
+            height: 70vh;
+            background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.2)), 
+                        url("{% static 'images/a1.png' %}");
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            padding: 0 80px 40px;
+        }
+        .back-btn {
+            background: var(--brand-gold);
+            color: black;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.3s;
+        }
+
+        /* --- MAIN LAYOUT --- */
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 60px 80px;
+            display: grid;
+            grid-template-columns: 1.8fr 1fr;
+            gap: 60px;
+        }
+
+        /* --- LEFT SIDE: CONTENT --- */
+        .package-header h1 { font-size: 42px; font-weight: 700; margin-bottom: 10px; }
+        .location-meta { display: flex; align-items: center; gap: 20px; color: var(--text-gray); margin-bottom: 40px; font-size: 15px; }
+        .location-meta i { color: var(--brand-gold); }
+
+        .price-stats {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+        .stat-item label { display: block; color: var(--text-gray); font-size: 14px; margin-bottom: 5px; }
+        .stat-item span { font-weight: 700; font-size: 18px; }
+
+        .description-text { color: #555; margin-bottom: 40px; font-size: 16px; line-height: 1.8; }
+
+        .includes-section h3 { font-size: 24px; margin-bottom: 20px; }
+        .includes-list { list-style: none; margin-bottom: 60px; }
+        .includes-list li { margin-bottom: 15px; display: flex; align-items: center; gap: 12px; color: #444; }
+        .includes-list li i { color: var(--brand-gold); font-size: 14px; }
+
+        /* --- TRAVEL PLANS (ITINERARY) --- */
+        .itinerary-section h2 { font-size: 28px; margin-bottom: 30px; }
+        .itinerary-item {
+            background: #E5E7EB;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: 0.3s;
+        }
+        .itinerary-header {
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .itinerary-header .day-label { color: #333; margin-right: 20px; font-weight: 700; }
+        .itinerary-content {
+            padding: 0 30px 25px;
+            display: grid;
+            grid-template-columns: 1fr 200px;
+            gap: 20px;
+        }
+        .itinerary-content ul { list-style: none; padding-left: 20px; }
+        .itinerary-content ul li { font-size: 14px; color: #555; margin-bottom: 10px; position: relative; }
+        .itinerary-content ul li::before { content: "•"; color: var(--brand-gold); position: absolute; left: -15px; font-weight: bold; }
+        .itinerary-img { width: 100%; border-radius: 10px; height: 120px; object-fit: cover; }
+
+        /* --- RIGHT SIDE: BOOKING FORM --- */
+       .booking-card {
+    background: rgba(255, 255, 255, 0.8); /* Adjusted for better transparency */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 25px;
+    padding: 35px;
+    /* This shadow makes it pop against the light wavy background */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05); 
+    position: sticky;
+    top: 40px;
+}
+
+.itinerary-item {
+    background: rgba(255, 255, 255, 0.6); /* Swapped grey for white-glass */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 15px;
+    margin-bottom: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+/* Make sure the text stays sharp */
+.itinerary-header {
+    color: var(--brand-black);
+    padding: 20px 30px;
+}
+        .form-tabs { display: flex; gap: 25px; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .tab { cursor: pointer; font-weight: 600; color: #BBB; font-size: 15px; padding-bottom: 10px; }
+        .tab.active { color: var(--brand-black); border-bottom: 2px solid var(--brand-black); }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #333; }
+        .input-wrapper {
+            background: #F3F4F6;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+        }
+        .input-wrapper input, .input-wrapper select {
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 14px 10px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .total-price-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed #DDD;
+        }
+        .total-price-box h4 { font-size: 22px; color: var(--brand-gold); }
+
+        .book-now-btn {
+            width: 100%;
+            background: var(--brand-gold);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 50px;
+            font-weight: 700;
+            margin-top: 25px;
+            cursor: pointer;
+        }
+        /* --- REAL STORIES SECTION --- */
+/* --- REAL STORIES SECTION --- */
+        .stories-section { 
+         padding: 80px; 
+    /* Remove background: #fdfdfd; */
+            background: transparent; 
+}        .stories-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .stories-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; }
+        .main-story { position: relative; border-radius: 20px; overflow: hidden; height: 500px; }
+        .main-story img { width: 100%; height: 100%; object-fit: cover; }
+        .story-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 40px; background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: white; }
+        .side-imgs { display: flex; flex-direction: column; gap: 30px; }
+        .side-imgs img { height: 235px; width: 100%; object-fit: cover; border-radius: 20px; }
+
+        /* --- FOOTER --- */
+        .footer { background: #000; color: white; padding: 80px 80px 30px; margin-top: 100px; }
+        .footer-cta { text-align: center; border-bottom: 1px solid #222; padding-bottom: 60px; margin-bottom: 60px; }
+        .subscribe-box { background: #111; padding: 8px; border-radius: 50px; display: flex; max-width: 500px; margin: 30px auto; border: 1px solid #333; }
+        .subscribe-box input { background: transparent; border: none; flex: 1; padding-left: 20px; color: white; outline: none; }
+        .sub-btn { background: var(--brand-gold); border: none; padding: 12px 35px; border-radius: 50px; cursor: pointer; font-weight: 600; color: white;}
+        .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 60px; }
+        .footer-bottom { margin-top: 60px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #222; padding-top: 30px; }
+        .social-circle { width: 40px; height: 40px; border-radius: 50%; background: white; color: black; display: inline-flex; align-items: center; justify-content: center; margin-right: 10px; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo"><img src="{% static 'images/logo.png' %}" alt="Logo" height="40"></div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+            <a href="/blog">Blog</a>
+            <a href="{% url 'packages' %}">Packages</a>
+            <a href="/contact">Contact Us</a>
+        </div>
+        <div class="glass-pill">
+            <a href="{%url 'domestic'%}">Domestic</a>
+            <span style="color:rgba(255,255,255,0.3)">|</span>
+            <a href="{% url 'index' %}" class="hover:text-[#D39C52]">International</a>
+        </div> 
+    </nav>
+
+    <header class="detail-hero">
+        <a href="{% url 'packages' %}" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Packages
+        </a>
+    </header>
+
+    <div class="container">
+        <main>
+            <div class="package-header">
+                <div class="location-meta">
+                    <span><i class="fas fa-map-marker-alt"></i> Ngoc Con Valley, Vietnam</span>
+                    <span><i class="fas fa-moon"></i> 5 / <i class="fas fa-sun"></i> 4</span>
+                </div>
+                <h1>Tropical Paradise Recreation</h1>
+            </div>
+
+            <div class="price-stats">
+                <div class="stat-item">
+                    <label>Price</label>
+                    <span style="font-weight: 700; font-size: 18px;">₹ 42,200.0</span>
+                </div>
+                <div class="stat-item">
+                    <label>Quota</label>
+                    <span style="font-weight: 700; font-size: 18px;">20 Available</span>
+                </div>
+                <div class="stat-item">
+                    <label>Schedule</label>
+                    <span style="font-weight: 700; font-size: 18px;">10 - 17 January 2026</span>
+                </div>
+            </div>
+
+            <div class="description-text">
+                <p>Unveil the beauty of a nation that captivates every sense. From the emerald waters of Ha Long Bay to the golden rice terraces of Sapa, Vietnam is a masterpiece of nature.</p>
+            </div>
+
+            <div class="includes-section">
+                <h3>Includes:</h3>
+                <ul class="includes-list">
+                    <li><i class="fas fa-check-circle"></i> Accommodation in luxury beachfront resorts</li>
+                    <li><i class="fas fa-check-circle"></i> Guided heritage tours and entrance fees</li>
+                    <li><i class="fas fa-check-circle"></i> Daily gourmet breakfast and selected local dinners</li>
+                </ul>
+            </div>
+
+            <section class="itinerary-section">
+                <h2>Travel Plans</h2>
+                
+                <div class="itinerary-item">
+                    <div class="itinerary-header">
+                        <span><span class="day-label">DAY 01</span> Hanoi Arrival & Heritage</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+
+                <div class="itinerary-item" style="background: #D1D5DB;"> 
+                    <div class="itinerary-header">
+                        <span><span class="day-label">DAY 02</span> Hanoi Cultural Immersion</span>
+                        <i class="fas fa-chevron-up"></i>
+                    </div>
+                    <div class="itinerary-content">
+                        <ul>
+                            <li>Visit the Ho Chi Minh Mausoleum and One Pillar Pagoda.</li>
+                            <li>Explore the Temple of Literature, Vietnam's first national university site.</li>
+                            <li>Attend a private traditional Water Puppet performance in the evening.</li>
+                        </ul>
+                        <img src="{% static 'images/v1.png' %}" alt="Vietnam" class="itinerary-img">
+                    </div>
+                </div>
+
+                <div class="itinerary-item">
+                    <div class="itinerary-header">
+                        <span><span class="day-label">DAY 03</span> Halong Bay Luxury Cruise</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+
+                <div class="itinerary-item">
+                    <div class="itinerary-header">
+                        <span><span class="day-label">DAY 04</span> Halong to Hoi An</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+
+                <div class="itinerary-item">
+                    <div class="itinerary-header">
+                        <span><span class="day-label">DAY 05</span> Ba Na Hills & Golden Bridge</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+
+                <div class="itinerary-item">
+                    <div class="itinerary-header">
+                        <span><span class="day-label">DAY 06</span> Ho Chi Minh City Energy</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+
+                <div class="itinerary-item">
+                    <div class="itinerary-header">
+                        <span><span class="day-label">DAY 07</span> Cu Chi Tunnels & Departure</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <aside>
+            <div class="booking-card">
+                <div class="form-tabs">
+                    <div class="tab active">Book Tour</div>
+                    <div class="tab">Message</div>
+                </div>
+
+                <form>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <div class="input-wrapper"><input type="text" placeholder="Name"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Tour package</label>
+                        <div class="input-wrapper"><input type="text" value="Tropical Paradise recreation" readonly></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Starting Date</label>
+                        <div class="input-wrapper"><input type="text" value="10 January 2026"><i class="fas fa-calendar-alt"></i></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Guests</label>
+                        <div class="input-wrapper">
+                            <select><option>1 Person</option><option selected>2 Persons</option></select>
+                        </div>
+                    </div>
+                    <div class="total-price-box">
+                        <span>Total Cost / Pax</span>
+                        <h4>₹ 42,200.0</h4>
+                    </div>
+                    <button type="submit" class="book-now-btn">Book Now</button>
+                </form>
+            </div>
+        </aside>
+    </div>
+    <section class="stories-section">
+        <div class="stories-header">
+            <h2>Real Stories From Travelers</h2>
+            <div><i class="fas fa-arrow-left"></i> <i class="fas fa-arrow-right"></i></div>
+        </div>
+        <div class="stories-grid">
+            <div class="main-story">
+                <img src="{% static 'images/v2.png' %}">
+                <div class="story-overlay">
+                    <p>"Whyte House leveraged our property's unique history, implementing a strategic vision..."</p>
+                    
+        <div style="display: flex; align-items: center; gap: 15px; margin-top: 15px;">
+        <img src="{% static 'images/person.png' %}" 
+         alt="Evan Thomas" 
+         style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;">
+    
+    <div>
+        <strong style="display: block; font-size: 16px;">Evan Thomas</strong>
+        <div style="color: #D9902B; font-size: 12px;">⭐⭐⭐⭐⭐</div>
+    </div>
+</div>                </div>
+            </div>
+            <div class="side-imgs">
+                <img src="{% static 'images/a2.png' %}">
+                <img src="{% static 'images/a1.png' %}">
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-cta">
+            <h2>Book Your Tour Today</h2>
+            <p>Join us for an unforgettable getaway and adventures</p>
+            <div class="subscribe-box">
+                <input type="email" placeholder="Enter your email">
+                <button class="sub-btn">Subscribe</button>
+            </div>
+        </div>
+
+        <div class="footer-grid">
+            <div>
+                <img src="{% static 'images/logo.png' %}" alt="Logo" height="35" style="margin-bottom: 20px;">
+                <p style="color: #888; font-size: 14px;">Whether you're booking a holiday or managing a property, our promise remains the same.</p>
+                <button style="background: var(--brand-gold); border: none; padding: 10px 25px; border-radius: 5px; margin-top: 20px; cursor: pointer; font-weight: 600;">Enquire Now</button>
+            </div>
+            <div>
+                <h4>Location</h4>
+                <p style="color: #888; font-size: 14px; margin-top: 15px;">Kozhikode, Kerala<br>Kakkanchery 673321</p>
+            </div>
+            <div>
+                <h4>Contact Us</h4>
+                <p style="color: #888; font-size: 14px; margin-top: 15px;">+98 78 523 521 45<br>@whytehouseholidays.com</p>
+            </div>
+            <div>
+                <h4>Company & Legals</h4>
+                <ul style="list-style: none; color: #888; font-size: 14px; margin-top: 15px;">
+                    <li>About Us</li>
+                    <li>Frequently ask question</li>
+                    <li>Terms of Service</li>
+                    <li>License</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="social-links">
+                <a href="#" class="social-circle"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="social-circle"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="social-circle"><i class="fab fa-youtube"></i></a>
+                <a href="#" class="social-circle"><i class="fab fa-whatsapp"></i></a>
+            </div>
+            <p style="color: #555; font-size: 12px;">© 2025 Whyte House Holidays All Rights Reserved</p>
+        </div>
+    </footer>
+
+</body>
+</html>

@@ -3,7 +3,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Sidebar</title>
+<title>{% block title %}Admin Dashboard{% endblock %}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
@@ -16,6 +18,7 @@
 
 body{
   background:#f2f2f2;
+  display:flex;
 }
 
 /* Hidden checkbox toggle */
@@ -35,11 +38,24 @@ body{
   left:0;
   top:0;
   transition:0.3s ease;
+  z-index:1000;
 }
 
 /* Collapsed State */
 #toggle-sidebar:checked ~ .sidebar{
   width:70px;
+}
+
+/* Main Content */
+.main-content{
+  flex:1;
+  margin-left:280px;
+  transition:0.3s ease;
+  min-height:100vh;
+}
+
+#toggle-sidebar:checked ~ .main-content{
+  margin-left:70px;
 }
 
 /* Logo */
@@ -190,6 +206,23 @@ body{
 .logout:hover{
   background:rgba(255,255,255,0.1);
 }
+
+/* Content Styles */
+.content-wrapper{
+  padding:30px;
+  background:#f5f7fb;
+  min-height:100vh;
+}
+
+/* Responsive */
+@media(max-width:768px){
+  .sidebar{
+    width:70px;
+  }
+  .main-content{
+    margin-left:70px;
+  }
+}
 </style>
 </head>
 
@@ -207,7 +240,7 @@ body{
 
   <div class="menu">
 
-    <a href="{% url 'dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}>
+    <a href="{% url 'admin_panel:dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}>
       <svg fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
       <span>Dashboard</span>
     </a>
@@ -231,7 +264,7 @@ body{
       </div>
     </div>
 
-    <a href="#">
+    <a href="{% url 'admin_panel:leads' %}" {% if request.resolver_match.url_name == 'leads' or request.resolver_match.url_name == 'add_lead' or request.resolver_match.url_name == 'edit_lead' %}class="active"{% endif %}>
       <svg fill="none" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a6.5 6.5 0 0113 0"/></svg>
       <span>Leads</span>
     </a>
@@ -246,12 +279,12 @@ body{
       <span>Report Generation</span>
     </a>
 
-    <a href="#">
+    <a href="{% url 'admin_panel:admin_hospitality' %}">
       <svg fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M3 17h18"/></svg>
       <span>Hospitality Management</span>
     </a>
 
-    <a href="#" {% if request.resolver_match.namespace == 'package' %}class="active"{% endif %}>
+    <a href="{% url 'admin_panel:travel_packages' %}" {% if request.resolver_match.url_name == 'travel_packages' %}class="active"{% endif %}>
       <svg fill="none" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
       <span>Travel Packages</span>
     </a>
@@ -261,7 +294,7 @@ body{
       <span>Blog Management</span>
     </a>
 
-    <a href="#">
+    <a href="{% url 'admin_panel:customer_inquiries' %}" {% if request.resolver_match.url_name == 'customer_inquiries' %}class="active"{% endif %}>
       <svg fill="none" viewBox="0 0 24 24"><path d="M21 15a4 4 0 01-4 4H7l-4 3V7a4 4 0 014-4h10a4 4 0 014 4z"/></svg>
       <span>Customer Enquiry</span>
     </a>
@@ -277,6 +310,25 @@ body{
   </div>
 
 </div>
+
+<div class="main-content">
+  <div class="content-wrapper">
+    {% block content %}
+    <!-- Default content will go here -->
+    {% endblock %}
+  </div>
+</div>
+
+<script>
+  setTimeout(function() {
+    const alerts = document.querySelectorAll('.alert-success, .alert, [class*="alert-"]');
+    alerts.forEach(alert => {
+      alert.style.transition = 'opacity 0.5s ease';
+      alert.style.opacity = '0';
+      setTimeout(() => alert.remove(), 500);
+    });
+  }, 3000);
+</script>
 
 </body>
 </html>
