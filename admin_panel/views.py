@@ -122,6 +122,10 @@ def delete_lead(request, lead_id):
     messages.success(request, 'Lead deleted successfully!')
     return redirect('admin_panel:leads')
 
+def view_lead(request, lead_id):
+    lead = get_object_or_404(Lead, id=lead_id)
+    return render(request, 'admin/lead/lead_view.html', {'lead': lead})
+
 # HOSPITALITY
 def hospitality_management(request):
     properties = Property.objects.all().order_by('-created_at')
@@ -277,7 +281,7 @@ def update_inquiry_status(request, inquiry_id):
             inquiry.status = new_status
             inquiry.save()
             messages.success(request, f'Inquiry status updated to {new_status}')
-        return redirect('admin_panel:customer_inquiries')
+        return redirect('admin_panel:view_inquiry', inquiry_id=inquiry_id)
     return redirect('admin_panel:customer_inquiries')
 
 def blog_list(request):

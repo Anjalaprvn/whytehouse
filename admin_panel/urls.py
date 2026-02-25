@@ -12,6 +12,7 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('leads/', views.lead_management, name='leads'),
     path('leads/add/', views.add_lead, name='add_lead'),
+    path('leads/<int:lead_id>/', views.view_lead, name='view_lead'),
     path('leads/edit/<int:id>/', views.edit_lead, name='edit_lead'),
     path('leads/delete/<int:lead_id>/', views.delete_lead, name='delete_lead'),
     path("hospitality-management/", views.hospitality_management, name="admin_hospitality"),

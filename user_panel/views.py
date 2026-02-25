@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from admin_panel.models import TravelPackage, Property, Inquiry
+from admin_panel.models import TravelPackage, Property, Inquiry, Lead
 
 def index(request):
     packages = TravelPackage.objects.filter(active=True, category='International')[:6]
@@ -35,6 +35,14 @@ def contact(request):
                 package=package or 'General Inquiry',
                 message=message
             )
+            
+            Lead.objects.create(
+                full_name=name,
+                mobile_number=phone,
+                source='Website',
+                remarks=f'Package: {package or "General Inquiry"} | Email: {email} | Message: {message}'
+            )
+            
             messages.success(request, 'Thank you! Your inquiry has been submitted successfully.')
             return redirect('contact')
         else:
