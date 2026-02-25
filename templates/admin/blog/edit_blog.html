@@ -1,11 +1,8 @@
+{% extends 'admin/sidebar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Edit Blog Post | Whyte House</title>
- <style>
+
+{% block extra_css %}
+<style>
     :root{
       --bg:#f5f7fb;
       --card:#ffffff;
@@ -24,20 +21,14 @@
     a{text-decoration:none;color:inherit}
 
     .main { 
-      margin-right: 0; 
-       padding: 30px 20px;
       margin-left:280px; 
-       
-     width: 100vw;               /* FULL viewport width */
-  max-width: 100%;            /* No max limit */
-  overflow-x: auto;           /* Scroll if needed */
-  }
+      padding: 30px 20px;
+    }
 
     .page{
-      max-width: none !important;   /* NO WIDTH LIMIT */
-  width: 100%;                 /* FULL WIDTH */
-  margin: 0 !important;        /* NO MARGINS */
-  padding: 0 15px 40px;        /* MINIMAL PADDING */
+      max-width: 1200px;
+      margin: 0;
+      padding: 0 0 40px;
     }
 
     /* Header */
@@ -257,17 +248,9 @@
       .title-wrap h1{font-size:28px}
     }
   </style>
-  <!-- keep same CSS from add_blog.html -->
-  <!-- easiest: copy your whole add_blog.html head+style exactly -->
-  <!-- (paste your full <style> here) -->
-</head>
+{% endblock %}
 
-<body>
-  {% include "admin/sidebar.html" %}
-  
-
-  <div class="main">
-    <div class="page">
+{% block content %}
 
       <div class="top">
         <a class="back-btn" href="{% url 'blog:blog_list' %}" aria-label="Back">
@@ -420,8 +403,4 @@
         </div>
 
       </form>
-
-    </div>
-  </div>
-</body>
-</html>
+{% endblock %}

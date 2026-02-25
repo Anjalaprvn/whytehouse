@@ -1,12 +1,8 @@
+{% extends 'admin/sidebar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ blog.title }} | Whyte House</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <style>
+
+{% block extra_css %}
+<style>
     :root{
       --bg:#f5f7fb;
       --card:#ffffff;
@@ -18,8 +14,6 @@
     }
     *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif}
     body{background:var(--bg);color:var(--text)}
-    .main{margin-left:280px;padding:30px 40px}
-    .page{max-width:900px;margin:0 auto;padding:20px}
     .back-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:20px;text-decoration:none;color:var(--text)}
     .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:30px;margin-bottom:20px}
     h1{font-size:32px;margin-bottom:10px}
@@ -38,12 +32,9 @@
     .btn-primary{background:var(--btn);color:#000}
     .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--text)}
   </style>
-</head>
-<body>
-  {% include "admin/sidebar.html" %}
-  
-  <div class="main">
-    <div class="page">
+{% endblock %}
+
+{% block content %}
       <a href="{% url 'blog:blog_list' %}" class="back-btn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
           <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -113,7 +104,4 @@
           <a href="{% url 'blog:blog_list' %}" class="btn btn-secondary">Back to List</a>
         </div>
       </div>
-    </div>
-  </div>
-</body>
-</html>
+{% endblock %}
