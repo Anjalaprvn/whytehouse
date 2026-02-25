@@ -2,14 +2,16 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db import IntegrityError
+from django.core.paginator import Paginator
 from django.db.models import Q
+from django.utils.text import slugify
+from django.db import transaction
 import random
 from django.core.mail import send_mail
 from django.contrib import messages
 from datetime import datetime
 from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, Amenity, TravelPackage, Inquiry
-from .models import Employee
-
+from .models import Employee,Blog
 # Create your views here.
 def home(request):
     return redirect('login')
@@ -1205,5 +1207,122 @@ def profit_report(request):
 def customer_report(request):
     return render(request, "admin/report/customer_report.html")
 
+
 def blog_list(request):
-    return render(request, "admin/blog/blog.html")
+    blogs = Blog.objects.all()
+
+    search_query = request.GET.get("search", "").strip()
+    if search_query:
+        blogs = blogs.filter(
+            Q(title__icontains=search_query) |
+            Q(author_name__icontains=search_query) |
+            Q(slug__icontains=search_query) |
+            Q(status__icontains=search_query)
+        )
+
+    status_filter = request.GET.get("status", "").strip()
+    if status_filter:
+        blogs = blogs.filter(status=status_filter)
+
+    published_count = blogs.filter(status="published").count()
+    draft_count = blogs.filter(status="draft").count()
+    scheduled_count = blogs.filter(status="scheduled").count()
+
+    context = {
+        "blogs": blogs,
+        "search_query": search_query,
+        "status_filter": status_filter,
+        "published_count": published_count,
+        "draft_count": draft_count,
+        "scheduled_count": scheduled_count,
+        "now": datetime.now().strftime("%B %d, %Y"),
+    }
+    return render(request, "admin/blog/blog.html", context)
+
+
+def add_blog(request):
+    if request.method == "POST":
+        try:
+            blog = Blog.objects.create(
+                title=(request.POST.get("title") or "").strip(),
+                slug=(request.POST.get("slug") or "").strip(),
+                excerpt=(request.POST.get("excerpt") or "").strip(),
+                content=(request.POST.get("content") or "").strip(),
+                status=request.POST.get("status", "draft"),
+                package_id=(request.POST.get("package_id") or "").strip() or None,
+
+                author_name=(request.POST.get("author_name") or "").strip(),
+                author_summary=(request.POST.get("author_summary") or "").strip(),
+                reading_time=int(request.POST.get("reading_time") or 1),
+                publish_date=request.POST.get("publish_date"),
+
+                featured_image_url=(request.POST.get("featured_image_url") or "").strip() or None,
+                hashtags=(request.POST.get("hashtags") or "").strip(),
+            )
+
+            if request.FILES.get("featured_image"):
+                blog.featured_image = request.FILES["featured_image"]
+                blog.save()
+
+            messages.success(request, "Blog created successfully!")
+            return redirect("blog:blog_list")
+
+        except Exception as e:
+            messages.error(request, f"Error creating blog: {str(e)}")
+
+    return render(request, "admin/blog/add_blog.html")
+
+
+def edit_blog(request, blog_id):
+    blog = get_object_or_404(Blog, id=blog_id)
+
+    if request.method == "POST":
+        try:
+            blog.title = (request.POST.get("title") or "").strip()
+            blog.slug = (request.POST.get("slug") or "").strip()
+            blog.excerpt = (request.POST.get("excerpt") or "").strip()
+            blog.content = (request.POST.get("content") or "").strip()
+            blog.status = request.POST.get("status", "draft")
+            blog.package_id = (request.POST.get("package_id") or "").strip() or None
+
+            blog.author_name = (request.POST.get("author_name") or "").strip()
+            blog.author_summary = (request.POST.get("author_summary") or "").strip()
+            blog.reading_time = int(request.POST.get("reading_time") or 1)
+            blog.publish_date = request.POST.get("publish_date")
+
+            blog.featured_image_url = (request.POST.get("featured_image_url") or "").strip() or None
+            blog.hashtags = (request.POST.get("hashtags") or "").strip()
+
+            if request.FILES.get("featured_image"):
+                blog.featured_image = request.FILES["featured_image"]
+
+            blog.save()
+
+            messages.success(request, "Blog updated successfully!")
+            return redirect("blog:blog_list")
+
+        except Exception as e:
+            messages.error(request, f"Error updating blog: {str(e)}")
+
+    return render(request, "admin/blog/edit_blog.html", {"blog": blog})
+
+
+def view_blog(request, slug):
+    blog = get_object_or_404(Blog, slug=slug)
+
+    tags = []
+    if blog.hashtags:
+        tags = [t.strip() for t in blog.hashtags.split(",") if t.strip()]
+
+    return render(request, "admin/blog/view_blog.html", {"blog": blog, "tags": tags})
+
+
+def delete_blog(request, blog_id):
+    if request.method != "POST":
+        return redirect("blog:blog_list")
+
+    blog = get_object_or_404(Blog, id=blog_id)
+    title = blog.title
+    blog.delete()
+    messages.success(request, f"Blog '{title}' deleted successfully!")
+    return redirect("blog:blog_list")

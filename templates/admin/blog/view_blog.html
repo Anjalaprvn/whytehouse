@@ -1,0 +1,119 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ blog.title }} | Whyte House</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e9eef6;
+      --btn:#d7aa3c;
+      --btnHover:#c99722;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif}
+    body{background:var(--bg);color:var(--text)}
+    .main{margin-left:280px;padding:30px 40px}
+    .page{max-width:900px;margin:0 auto;padding:20px}
+    .back-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:20px;text-decoration:none;color:var(--text)}
+    .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:30px;margin-bottom:20px}
+    h1{font-size:32px;margin-bottom:10px}
+    .meta{display:flex;gap:20px;color:var(--muted);font-size:14px;margin-bottom:20px;flex-wrap:wrap}
+    .meta span{display:flex;align-items:center;gap:6px}
+    .status{display:inline-block;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600}
+    .status.published{background:#d1fae5;color:#065f46}
+    .status.draft{background:#fef3c7;color:#92400e}
+    .status.scheduled{background:#dbeafe;color:#1e40af}
+    .featured-img{width:100%;max-height:400px;object-fit:cover;border-radius:12px;margin:20px 0}
+    .content{line-height:1.8;font-size:16px;color:#374151}
+    .hashtags{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+    .hashtag{background:#f1f5f9;padding:6px 12px;border-radius:20px;font-size:13px;color:#475569}
+    .actions{display:flex;gap:12px;margin-top:20px}
+    .btn{padding:10px 20px;border-radius:10px;text-decoration:none;font-weight:500;display:inline-block}
+    .btn-primary{background:var(--btn);color:#000}
+    .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--text)}
+  </style>
+</head>
+<body>
+  {% include "admin/sidebar.html" %}
+  
+  <div class="main">
+    <div class="page">
+      <a href="{% url 'blog:blog_list' %}" class="back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Back to Blogs
+      </a>
+
+      <div class="card">
+        <h1>{{ blog.title }}</h1>
+        
+        <div class="meta">
+          <span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
+              <path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            {{ blog.author_name }}
+          </span>
+          <span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+              <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            {{ blog.publish_date|date:"M d, Y" }}
+          </span>
+          <span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            {{ blog.reading_time }} min read
+          </span>
+          <span class="status {{ blog.status }}">{{ blog.get_status_display }}</span>
+        </div>
+
+        {% if blog.featured_image %}
+          <img src="{{ blog.featured_image.url }}" alt="{{ blog.title }}" class="featured-img">
+        {% elif blog.featured_image_url %}
+          <img src="{{ blog.featured_image_url }}" alt="{{ blog.title }}" class="featured-img">
+        {% endif %}
+
+        <div style="background:#f9fafb;padding:20px;border-radius:12px;margin:20px 0">
+          <strong>Excerpt:</strong>
+          <p style="margin-top:8px;color:#4b5563">{{ blog.excerpt }}</p>
+        </div>
+
+        <div style="background:#f9fafb;padding:20px;border-radius:12px;margin:20px 0">
+          <strong>Author Bio:</strong>
+          <p style="margin-top:8px;color:#4b5563">{{ blog.author_summary }}</p>
+        </div>
+
+        <div class="content">
+          <h3 style="margin-bottom:16px">Content</h3>
+          {{ blog.content|linebreaks }}
+        </div>
+
+      {% if tags %}
+  <div class="hashtags">
+    {% for tag in tags %}
+      <span class="hashtag">#{{ tag }}</span>
+    {% endfor %}
+  </div>
+{% endif %}
+
+        <div class="actions">
+          <a href="{% url 'blog:edit_blog' blog.id %}" class="btn btn-primary">Edit Blog</a>
+          <a href="{% url 'blog:blog_list' %}" class="btn btn-secondary">Back to List</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

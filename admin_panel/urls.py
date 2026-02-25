@@ -84,5 +84,9 @@ sales_patterns = [
 
 # BLOG URL PATTERNS
 blog_patterns = [
-    path('', views.blog_list, name='blog_list'),
+    path('blogs/', views.blog_list, name='blog_list'),
+    path('blogs/add/', views.add_blog, name='add_blog'),
+    path('blogs/edit/<int:blog_id>/', views.edit_blog, name='edit_blog'),
+    path('blogs/delete/<int:blog_id>/', views.delete_blog, name='delete_blog'),
+    path('blogs/view/<slug:slug>/', views.view_blog, name='view_blog'),
 ]

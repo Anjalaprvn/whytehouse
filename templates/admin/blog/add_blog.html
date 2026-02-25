@@ -26,9 +26,22 @@
     body{background:var(--bg);color:var(--text)}
     a{text-decoration:none;color:inherit}
 
-    .main { margin-left:280px; padding:30px 40px; }
+    .main { 
+      margin-right: 0; 
+       padding: 30px 20px;
+      margin-left:280px; 
+       
+     width: 100vw;               /* FULL viewport width */
+  max-width: 100%;            /* No max limit */
+  overflow-x: auto;           /* Scroll if needed */
+  }
 
-    .page{max-width:1100px;margin:28px auto;padding:0 18px 40px}
+    .page{
+      max-width: none !important;   /* NO WIDTH LIMIT */
+  width: 100%;                 /* FULL WIDTH */
+  margin: 0 !important;        /* NO MARGINS */
+  padding: 0 15px 40px;        /* MINIMAL PADDING */
+    }
 
     /* Header */
     .top{
@@ -251,13 +264,13 @@
 
 <body>
   {% include "admin/sidebar.html" %}
-  {% include "admin/header.html" %}
+  
   <div class="main">
   <div class="page">
 
     <div class="top">
       <!-- Change href to your blog list URL -->
-      <a class="back-btn" href="{% url 'blog:blog_management' %}" aria-label="Back">
+      <a class="back-btn" href="{% url 'blog:blog_list' %}" aria-label="Back">
         <svg viewBox="0 0 24 24" fill="none">
           <path d="M15 18l-6-6 6-6" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -440,7 +453,7 @@
 
           <div class="actions">
           <!-- Change href to your blog list URL -->
-          <a class="btn" href="{% url 'blog:blog_management' %}">Cancel</a>
+          <a class="btn" href="{% url 'blog:blog_list' %}">Cancel</a>
           <button class="btn primary" type="submit" name="action" value="draft">Save Draft</button>
         </div>
       </div>

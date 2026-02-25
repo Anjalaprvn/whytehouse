@@ -1,6 +1,7 @@
 from django.db import models
 from datetime import time
 from django.utils import timezone
+from django.utils.text import slugify
 
 # LEAD MODEL
 class Lead(models.Model):
@@ -329,3 +330,49 @@ class Invoice(models.Model):
     
     class Meta:
         ordering = ['-created_at']
+
+class Blog(models.Model):
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('published', 'Published'),
+        ('scheduled', 'Scheduled'),
+    ]
+    
+    # Matches your add_blog.html form EXACTLY
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=200, unique=True, blank=True)
+    excerpt = models.TextField(max_length=500)
+    content = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    package_id = models.CharField(max_length=50, blank=True, null=True)
+    
+    # Author fields
+    author_name = models.CharField(max_length=100)
+    author_summary = models.TextField(max_length=500)
+    reading_time = models.PositiveIntegerField(default=1)
+    publish_date = models.DateField()
+    
+    # Images - matches your form
+    featured_image = models.ImageField(upload_to='blog_images/featured/', blank=True, null=True)
+    featured_image_url = models.URLField(blank=True, null=True)
+    
+    # Hashtags - matches your JS
+    hashtags = models.CharField(max_length=500, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return self.title
+    
+    @property
+    def image_url(self):
+        return self.featured_image.url if self.featured_image else self.featured_image_url
