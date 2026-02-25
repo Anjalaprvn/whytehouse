@@ -202,7 +202,7 @@
             z-index: 5;
             background: 
                 linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)), 
-                url("{% static 'dashboard/images/bg.png' %}") center/cover;
+                url("{% static 'images/bg.png' %}") center/cover;
             border-radius: 40px;
             min-height: 700px;
             display: flex;
@@ -675,7 +675,7 @@
         <div class="stats-grid">
     <div class="stat-item">
         <div class="stat-icon">
-            <img src="{% static 'images/icons/ribbon.svg' %}" alt="Icon">
+            <img src="{% static 'images/r1.png' %}" alt="Icon">
         </div>
         <h3 class="stat-number">10+</h3>
         <p class="stat-label">Years of Excellence</p>
@@ -685,7 +685,7 @@
 
     <div class="stat-item">
         <div class="stat-icon">
-            <img src="{% static 'images/icons/globe.svg' %}" alt="Icon">
+            <img src="{% static 'images/r2.png' %}" alt="Icon">
         </div>
         <h3 class="stat-number">50+</h3>
         <p class="stat-label">Years of Excellence</p>
@@ -695,7 +695,7 @@
 
     <div class="stat-item">
         <div class="stat-icon">
-            <img src="{% static 'images/icons/building.svg' %}" alt="Icon">
+            <img src="{% static 'images/r3.png' %}" alt="Icon">
         </div>
         <h3 class="stat-number">200+</h3>
         <p class="stat-label">Managed Properties</p>
@@ -705,7 +705,7 @@
 
     <div class="stat-item">
         <div class="stat-icon">
-            <img src="{% static 'images/icons/users.svg' %}" alt="Icon">
+            <img src="{% static 'images/r4.png' %}" alt="Icon">
         </div>
         <h3 class="stat-number">5000+</h3>
         <p class="stat-label">Happy Travelers</p>
@@ -715,7 +715,7 @@
 
     <div class="stat-item">
         <div class="stat-icon">
-            <img src="{% static 'images/icons/star.svg' %}" alt="Icon">
+            <img src="{% static 'images/r5.png' %}" alt="Icon">
         </div>
         <h3 class="stat-number">4.9/5</h3>
         <p class="stat-label">Client Satisfaction</p>
@@ -746,7 +746,7 @@
                     </svg>
                 </div>
             </div>
-            <img src="{% static 'dashboard/images/vietnam-outline.png' %}" class="map-silhouette">
+            <img src="{% static 'images/outline.png' %}" class="map-silhouette">
             <div class="top-right-info">
                 Vietnam is a perfect blend of stunning landscapes, rich culture, delicious food, and affordable luxury. From emerald bays to lantern-lit ancient towns, it offers experiences for everyone.
             </div>
@@ -765,10 +765,10 @@
                         <div class="arrow">→</div>
                     </div>
                     <div class="mini-gallery">
-                        <div class="gallery-item active"><img src="{% static 'dashboard/images/v1.png' %}"></div>
-                        <div class="gallery-item"><img src="{% static 'dashboard/images/v2.png' %}"></div>
-                        <div class="gallery-item"><img src="{% static 'dashboard/images/v3.png' %}"></div>
-                        <div class="gallery-item"><img src="{% static 'dashboard/images/v4.png' %}"></div>
+                        <div class="gallery-item active"><img src="{% static 'images/i1.png' %}"></div>
+                        <div class="gallery-item"><img src="{% static 'images/i7.png' %}"></div>
+                        <div class="gallery-item"><img src="{% static 'images/i3.png' %}"></div>
+                        <div class="gallery-item"><img src="{% static 'images/i6.png' %}"></div>
                     </div>
                 </div>
             </div>
@@ -789,7 +789,7 @@
             <div class="quote-icon">“</div>
             <p class="testimonial-text">Moody maldives and Sceneric sunsets made the weekend.</p>
             <div class="user-info">
-                <img src="{% static 'dashboard/images/user.png' %}" class="avatar">
+                <img src="{% static 'images/user.png' %}" class="avatar">
                 <div class="user-details">
                     <h4 class="user-name">Arjun das</h4>
                     <p class="user-handle">Arjun das</p>
@@ -813,15 +813,23 @@
 
     <div class="footer-content">
         <div class="footer-brand">
-            <img src="{% static 'dashboard/images/logo.png' %}" class="logo" alt="Whyte House">
+            <img src="{% static 'images/logo.png' %}" class="logo" alt="Whyte House">
             <p class="brand-desc">
                 Whether you're booking a holiday or managing a property, our promise remains the same.
             </p>
             <div class="social-links">
-                <a href="#" class="social-icon">f</a>
-                <a href="#" class="social-icon">i</a>
-                <a href="#" class="social-icon">y</a>
-                <a href="#" class="social-icon">w</a>
+                <a href="#" class="social-circle" title="Facebook">
+                    <img src="{% static 'images/facebook.png' %}" alt="Facebook">
+                </a>
+                <a href="#" class="social-circle" title="Instagram">
+                    <img src="{% static 'images/instagram.png' %}" alt="Instagram">
+                </a>
+                <a href="#" class="social-circle" title="YouTube">
+                    <img src="{% static 'images/youtube.png' %}" alt="YouTube">
+                </a>
+                <a href="#" class="social-circle" title="WhatsApp">
+                    <img src="{% static 'images/whatsapp.png' %}" alt="WhatsApp">
+                </a>
             </div>
         </div>
 
