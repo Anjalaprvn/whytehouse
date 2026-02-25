@@ -10,109 +10,80 @@
 .tab.active{background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
 .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.05);max-width:980px}
 .card h3{font-size:20px;font-weight:600;margin-bottom:18px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.span-2{grid-column:1/-1}
-.field label{display:block;font-size:13px;font-weight:600;margin-bottom:8px;color:#111}
-.req{color:#dc2626;margin-left:4px}
-.input-wrap{position:relative}
-input[type="date"],input[type="text"],select{width:100%;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;font-size:14px;outline:none}
-input:focus,select:focus{border-color:#d4a017;background:#fff}
-.cal-ic{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;opacity:0.5;pointer-events:none}
-input[type="date"]{padding-right:44px}
-.select-wrap{position:relative}
-select{appearance:none;padding-right:44px;cursor:pointer}
-.caret{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;opacity:0.5;pointer-events:none}
-.toggle-row{display:flex;align-items:center;gap:14px;padding-top:4px}
-.toggle-row span{font-weight:600;color:#111}
-.switch{position:relative;width:50px;height:28px;display:inline-block}
-.switch input{display:none}
-.slider{position:absolute;inset:0;background:#e4e6ee;border-radius:999px;transition:0.2s;border:1px solid #dde0ea}
-.slider:before{content:"";position:absolute;height:22px;width:22px;left:3px;top:50%;transform:translateY(-50%);background:#fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.12);transition:0.2s}
-.switch input:checked+.slider{background:#d4a017;border-color:#d4a017}
-.switch input:checked+.slider:before{transform:translate(22px,-50%)}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+thead th{padding:12px;text-align:left;border-bottom:1px solid #e5e7eb;background:#f9fafb;font-size:13px;font-weight:600}
+tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
 .btn-row{margin-top:18px;display:flex;gap:12px;flex-wrap:wrap}
 .btn{display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border-radius:10px;font-weight:600;border:1px solid #e5e7eb;background:#fff;cursor:pointer;white-space:nowrap;font-size:14px}
 .btn svg{width:16px;height:16px}
 .btn.primary{background:#d4a017;border-color:transparent;color:#000}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-thead th{padding:12px;text-align:left;border-bottom:1px solid #e5e7eb;background:#f9fafb;font-size:13px;font-weight:600}
-tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
-@media (max-width:900px){.grid{grid-template-columns:1fr}.tab{min-width:100px}}
 </style>
 {% endblock %}
 
 {% block content %}
 <h1 class="page-title">Report Generation</h1>
-    <p class="page-sub">Generate and export comprehensive reports</p>
+<p class="page-sub">Generate and export comprehensive reports</p>
 
-    <!-- Tabs -->
-    <div class="tabs">
-      <a href="{% url 'sales:invoice_report' %}" class="tab">Invoice</a>
-      <a href="{% url 'sales:voucher_report' %}" class="tab">Voucher</a>
-      <a href="{% url 'sales:leads_report' %}" class="tab">Leads</a>
-      <a href="{% url 'sales:profit_report' %}" class="tab">Profit</a>
-      <a href="{% url 'sales:customer_report' %}" class="tab active">Customer</a>
+<div class="tabs">
+  <a href="{% url 'sales:invoice_report' %}" class="tab">Invoice</a>
+  <a href="{% url 'sales:voucher_report' %}" class="tab">Voucher</a>
+  <a href="{% url 'sales:leads_report' %}" class="tab">Leads</a>
+  <a href="{% url 'sales:profit_report' %}" class="tab">Profit</a>
+  <a href="{% url 'sales:customer_report' %}" class="tab active">Customer</a>
+  
+</div>
+
+<section class="card">
+  <h3>Customer Report</h3>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Sl No</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Customer Place</th>
+            <th>Mobile</th>
+            <th>WhatsApp Num</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for c in customers %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ c.first_name }}</td>
+              <td>{{ c.last_name|default:"" }}</td>
+              <td>{{ c.place|default:"—" }}</td>
+              <td>{{ c.contact_number }}</td>
+              <td>{{ c.whatsapp_number }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" style="text-align:center;padding:18px;color:#666;">
+                No customers found.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
 
-    <!-- Customer Report -->
-    <section class="card">
-      <h3>Customer Report</h3>
+    <div class="btn-row">
+      <button class="btn primary" type="submit" name="action" value="excel">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 3V14" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M8 10L12 14L16 10" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 17V19C4 20.105 4.895 21 6 21H18C19.105 21 20 20.105 20 19V17" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+        Export to Excel
+      </button>
+    </div>
 
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th class="col-sl">Sl No</th>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>Customer Place</th>
-              <th>Mobile</th>
-              <th>WhatsApp Num</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {% if customers %}
-              {% for c in customers %}
-                <tr>
-                  <td>{{ forloop.counter }}</td>
-                  <td>{{ c.first_name }}</td>
-                  <td>{{ c.last_name }}</td>
-                  <td>{{ c.customer_place }}</td>
-                  <td>{{ c.mobile }}</td>
-                  <td>{{ c.whatsapp_number }}</td>
-                </tr>
-              {% endfor %}
-            {% else %}
-              <tr>
-                <td>1</td><td>Rajesh</td><td>Kumar</td><td>Mumbai</td><td>+91 9876543210</td><td>+91 9876543210</td>
-              </tr>
-              <tr>
-                <td>2</td><td>Priya</td><td>Sharma</td><td>Delhi</td><td>+91 9988776655</td><td>+91 9988776655</td>
-              </tr>
-              <tr>
-                <td>3</td><td>Amit</td><td>Patel</td><td>Bangalore</td><td>+91 8877665544</td><td>+91 8877665544</td>
-              </tr>
-              <tr>
-                <td>4</td><td>Sneha</td><td>Reddy</td><td>Hyderabad</td><td>+91 7766554433</td><td>+91 9876501234</td>
-              </tr>
-              <tr>
-                <td>5</td><td>Vikram</td><td>Singh</td><td>Jaipur</td><td>+91 9988001122</td><td>+91 9988001122</td>
-              </tr>
-            {% endif %}
-          </tbody>
-        </table>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn primary" type="submit" name="action" value="excel">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 3V14" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
-            <path d="M8 10L12 14L16 10" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M4 17V19C4 20.105 4.895 21 6 21H18C19.105 21 20 20.105 20 19V17" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
-          </svg>
-          Export to Excel
-        </button>
-      </div>
-    </section>
+  </form>
+</section>
 {% endblock %}

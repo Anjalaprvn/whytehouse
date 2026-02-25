@@ -12,6 +12,10 @@ from django.contrib import messages
 from datetime import datetime
 from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, Amenity, TravelPackage, Inquiry
 from .models import Employee,Blog
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from django.http import HttpResponse
+from django.utils import timezone
 # Create your views here.
 def home(request):
     return redirect('login')
@@ -1204,10 +1208,6 @@ def leads_report(request):
 def profit_report(request):
     return render(request, "admin/report/profit_report.html")
 
-def customer_report(request):
-    return render(request, "admin/report/customer_report.html")
-
-
 def blog_list(request):
     blogs = Blog.objects.all()
 
@@ -1326,3 +1326,46 @@ def delete_blog(request, blog_id):
     blog.delete()
     messages.success(request, f"Blog '{title}' deleted successfully!")
     return redirect("blog:blog_list")
+
+
+def customer_report(request):
+    customers = Customer.objects.all().order_by("-created_at")
+
+    # Export excel
+    if request.method == "POST" and request.POST.get("action") == "excel":
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Customers"
+
+        headers = ["Sl No", "First Name", "Last Name", "Display Name", "Place", "Mobile", "WhatsApp"]
+        ws.append(headers)
+
+        for i, c in enumerate(customers, start=1):
+            ws.append([
+                i,
+                c.first_name or "",
+                c.last_name or "",
+                c.display_name or "",
+                c.place or "",
+                c.contact_number or "",
+                c.whatsapp_number or "",
+            ])
+
+        # Auto width
+        for col in range(1, len(headers) + 1):
+            letter = get_column_letter(col)
+            max_len = 0
+            for cell in ws[letter]:
+                if cell.value is not None:
+                    max_len = max(max_len, len(str(cell.value)))
+            ws.column_dimensions[letter].width = min(max_len + 3, 45)
+
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        filename = f"customer_report_{timezone.now().strftime('%Y-%m-%d')}.xlsx"
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        wb.save(response)
+        return response
+
+    return render(request, "admin/report/customer_report.html", {"customers": customers})
