@@ -43,8 +43,14 @@ def contact(request):
     return render(request, 'user/contact.html')
 
 def packages(request):
-    all_packages = TravelPackage.objects.filter(active=True)
-    return render(request, 'user/packages.html', {'packages': all_packages})
+    country = request.GET.get('country', 'all')
+    
+    if country == 'all':
+        all_packages = TravelPackage.objects.filter(active=True)
+    else:
+        all_packages = TravelPackage.objects.filter(active=True, country__iexact=country)
+    
+    return render(request, 'user/packages.html', {'packages': all_packages, 'selected_country': country})
 
 def package_detail(request, slug):
     package = get_object_or_404(TravelPackage, id=slug, active=True)

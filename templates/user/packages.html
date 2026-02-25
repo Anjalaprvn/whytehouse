@@ -179,92 +179,48 @@
     </div>
 
     <div class="categories-container">
-        <a href="#" class="cat-pill active">All</a>
-        <a href="#" class="cat-pill">Thailand</a>
-        <a href="#" class="cat-pill">Vietnam</a>
-        <a href="#" class="cat-pill">Malaysia</a>
-        <a href="#" class="cat-pill">Paris</a>
-        <a href="#" class="cat-pill">London</a>
+        <a href="?country=all" class="cat-pill {% if selected_country == 'all' %}active{% endif %}">All</a>
+        <a href="?country=thailand" class="cat-pill {% if selected_country == 'thailand' %}active{% endif %}">Thailand</a>
+        <a href="?country=vietnam" class="cat-pill {% if selected_country == 'vietnam' %}active{% endif %}">Vietnam</a>
+        <a href="?country=malaysia" class="cat-pill {% if selected_country == 'malaysia' %}active{% endif %}">Malaysia</a>
+        <a href="?country=paris" class="cat-pill {% if selected_country == 'paris' %}active{% endif %}">Paris</a>
+        <a href="?country=london" class="cat-pill {% if selected_country == 'london' %}active{% endif %}">London</a>
     </div>
 
     <main class="packages-grid">
+        {% for package in packages %}
         <div class="package-card">
-        <a href="{% url 'package_detail' 'vietnam-tropical-tour' %}">                
-            <div class="card-img-box">
-                    <img src="{% static 'images/a1.png' %}" alt="Vietnam">
+            <a href="{% url 'package_detail' package.id %}">                
+                <div class="card-img-box">
+                    <img src="{{ package.image.url }}" alt="{{ package.name }}">
                     <div class="badge-wrap">
-                        <span class="badge badge-dom">Domestic</span>
-                        <span class="badge badge-feat">Featured</span>
+                        <span class="badge {% if package.category == 'Domestic' %}badge-dom{% else %}badge-feat{% endif %}">{{ package.category }}</span>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="card-header">
-                        <h3>Vietnam Tropical Tour</h3>
+                        <h3>{{ package.name }}</h3>
                         <div class="price-box">
-                            <span class="price">₹ 1299</span>
+                            <span class="price">₹ {{ package.price }}</span>
                             <span class="unit">Per person</span>
                         </div>
                     </div>
-                    <p class="card-desc">Explore Vietnam's UNESCO World Heritage Sites and hidden valleys.</p>
+                    <p class="card-desc">{{ package.description|truncatewords:15 }}</p>
                     <div class="card-meta">
-                        <span><i class="fas fa-map-marker-alt"></i> Ngoc Con Valley, Vietnam</span>
-                        <span><i class="fas fa-moon"></i> 5 / <i class="fas fa-sun"></i> 4</span>
+                        <span><i class="fas fa-map-marker-alt"></i> {{ package.location }}, {{ package.country }}</span>
+                        <span><i class="fas fa-calendar"></i> {{ package.duration|default:"Contact us" }}</span>
                     </div>
                 </div>
             </a>
         </div>
-
-        <div class="package-card">
-    <a href="{% url 'package_detail' 'vietnam-tropical-tour' %}">                
-    <div class="card-img-box">
-                    <img src="{% static 'images/a2.png' %}" alt="Vietnam">
-                    <div class="badge-wrap">
-                        <span class="badge badge-feat">Featured</span>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="card-header">
-                        <h3>Vietnam Heritage Tour</h3>
-                        <div class="price-box">
-                            <span class="price">₹ 1299</span>
-                            <span class="unit">Per person</span>
-                        </div>
-                    </div>
-                    <p class="card-desc">A deep dive into the cultural heritage and ancient architecture.</p>
-                    <div class="card-meta">
-                        <span><i class="fas fa-map-marker-alt"></i> Ha Long Bay, Vietnam</span>
-                        <span><i class="fas fa-moon"></i> 5 / <i class="fas fa-sun"></i> 4</span>
-                    </div>
-                </div>
-            </a>
+        {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #999;">
+            <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 20px; display: block;"></i>
+            <h3 style="margin-bottom: 10px;">No Packages Available</h3>
+            <p>Check back soon for exciting travel packages!</p>
         </div>
-
-        <div class="package-card">
-    <a href="{% url 'package_detail' 'vietnam-tropical-tour' %}">                
-    <div class="card-img-box">
-                    <img src="{% static 'images/a3.png' %}" alt="Vietnam">
-                    <div class="badge-wrap">
-                        <span class="badge badge-dom">Domestic</span>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="card-header">
-                        <h3>Vietnam Heritage Tour</h3>
-                        <div class="price-box">
-                            <span class="price">₹ 1299</span>
-                            <span class="unit">Per person</span>
-                        </div>
-                    </div>
-                    <p class="card-desc">Discover the untouched beauty of northern Vietnam.</p>
-                    <div class="card-meta">
-                        <span><i class="fas fa-map-marker-alt"></i> Ngoc Con Valley, Vietnam</span>
-                        <span><i class="fas fa-moon"></i> 5 / <i class="fas fa-sun"></i> 4</span>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        </main>
+        {% endfor %}
+    </main>
 
     <section class="help-section">
         <h2>Need Help For Choosing?</h2>

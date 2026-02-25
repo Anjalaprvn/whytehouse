@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tropical Paradise Recreation | Whyte House Holidays</title>
+    <title>{{ package.name }} | Whyte House Holidays</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -47,7 +47,7 @@
         .detail-hero {
             height: 70vh;
             background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.2)), 
-                        url("{% static 'images/a1.png' %}");
+                        url("{{ package.image.url }}");
             background-size: cover;
             background-position: center;
             position: relative;
@@ -256,99 +256,62 @@
         <main>
             <div class="package-header">
                 <div class="location-meta">
-                    <span><i class="fas fa-map-marker-alt"></i> Ngoc Con Valley, Vietnam</span>
-                    <span><i class="fas fa-moon"></i> 5 / <i class="fas fa-sun"></i> 4</span>
+                    <span><i class="fas fa-map-marker-alt"></i> {{ package.location }}, {{ package.country }}</span>
+                    <span><i class="fas fa-calendar"></i> {{ package.duration|default:"Contact us" }}</span>
                 </div>
-                <h1>Tropical Paradise Recreation</h1>
+                <h1>{{ package.name }}</h1>
             </div>
 
             <div class="price-stats">
                 <div class="stat-item">
                     <label>Price</label>
-                    <span style="font-weight: 700; font-size: 18px;">₹ 42,200.0</span>
+                    <span style="font-weight: 700; font-size: 18px;">₹ {{ package.price }}</span>
                 </div>
                 <div class="stat-item">
-                    <label>Quota</label>
-                    <span style="font-weight: 700; font-size: 18px;">20 Available</span>
+                    <label>Category</label>
+                    <span style="font-weight: 700; font-size: 18px;">{{ package.category }}</span>
                 </div>
                 <div class="stat-item">
-                    <label>Schedule</label>
-                    <span style="font-weight: 700; font-size: 18px;">10 - 17 January 2026</span>
+                    <label>Duration</label>
+                    <span style="font-weight: 700; font-size: 18px;">{{ package.duration|default:"Contact us" }}</span>
                 </div>
             </div>
 
             <div class="description-text">
-                <p>Unveil the beauty of a nation that captivates every sense. From the emerald waters of Ha Long Bay to the golden rice terraces of Sapa, Vietnam is a masterpiece of nature.</p>
+                <p>{{ package.description|default:"Explore this amazing destination with us." }}</p>
             </div>
 
             <div class="includes-section">
                 <h3>Includes:</h3>
                 <ul class="includes-list">
-                    <li><i class="fas fa-check-circle"></i> Accommodation in luxury beachfront resorts</li>
-                    <li><i class="fas fa-check-circle"></i> Guided heritage tours and entrance fees</li>
-                    <li><i class="fas fa-check-circle"></i> Daily gourmet breakfast and selected local dinners</li>
+                    {% if package.inclusions %}
+                        {% for inclusion in package.inclusions.splitlines %}
+                            {% if inclusion.strip %}
+                                <li><i class="fas fa-check-circle"></i> {{ inclusion }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <li><i class="fas fa-check-circle"></i> Contact us for package details</li>
+                    {% endif %}
                 </ul>
             </div>
 
             <section class="itinerary-section">
                 <h2>Travel Plans</h2>
-                
-                <div class="itinerary-item">
-                    <div class="itinerary-header">
-                        <span><span class="day-label">DAY 01</span> Hanoi Arrival & Heritage</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
-
-                <div class="itinerary-item" style="background: #D1D5DB;"> 
-                    <div class="itinerary-header">
-                        <span><span class="day-label">DAY 02</span> Hanoi Cultural Immersion</span>
-                        <i class="fas fa-chevron-up"></i>
-                    </div>
-                    <div class="itinerary-content">
-                        <ul>
-                            <li>Visit the Ho Chi Minh Mausoleum and One Pillar Pagoda.</li>
-                            <li>Explore the Temple of Literature, Vietnam's first national university site.</li>
-                            <li>Attend a private traditional Water Puppet performance in the evening.</li>
-                        </ul>
-                        <img src="{% static 'images/v1.png' %}" alt="Vietnam" class="itinerary-img">
-                    </div>
-                </div>
-
-                <div class="itinerary-item">
-                    <div class="itinerary-header">
-                        <span><span class="day-label">DAY 03</span> Halong Bay Luxury Cruise</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
-
-                <div class="itinerary-item">
-                    <div class="itinerary-header">
-                        <span><span class="day-label">DAY 04</span> Halong to Hoi An</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
-
-                <div class="itinerary-item">
-                    <div class="itinerary-header">
-                        <span><span class="day-label">DAY 05</span> Ba Na Hills & Golden Bridge</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
-
-                <div class="itinerary-item">
-                    <div class="itinerary-header">
-                        <span><span class="day-label">DAY 06</span> Ho Chi Minh City Energy</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
-
-                <div class="itinerary-item">
-                    <div class="itinerary-header">
-                        <span><span class="day-label">DAY 07</span> Cu Chi Tunnels & Departure</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
+                {% if package.itinerary %}
+                    {% for day in package.itinerary.splitlines %}
+                        {% if day.strip %}
+                        <div class="itinerary-item">
+                            <div class="itinerary-header">
+                                <span><span class="day-label">DAY {{ forloop.counter }}</span> {{ day|truncatewords:5 }}</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <p style="color: #666;">Detailed itinerary available upon request.</p>
+                {% endif %}
             </section>
         </main>
 
@@ -366,7 +329,7 @@
                     </div>
                     <div class="form-group">
                         <label>Tour package</label>
-                        <div class="input-wrapper"><input type="text" value="Tropical Paradise recreation" readonly></div>
+                        <div class="input-wrapper"><input type="text" value="{{ package.name }}" readonly></div>
                     </div>
                     <div class="form-group">
                         <label>Starting Date</label>
@@ -380,7 +343,7 @@
                     </div>
                     <div class="total-price-box">
                         <span>Total Cost / Pax</span>
-                        <h4>₹ 42,200.0</h4>
+                        <h4>₹ {{ package.price }}</h4>
                     </div>
                     <button type="submit" class="book-now-btn">Book Now</button>
                 </form>
