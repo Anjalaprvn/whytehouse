@@ -214,6 +214,16 @@ body{
   padding:30px;
   background:#f5f7fb;
   min-height:100vh;
+  position:relative;
+}
+
+.date-display{
+  position:absolute;
+  top:30px;
+  right:30px;
+  font-size:14px;
+  color:#666;
+  font-weight:500;
 }
 
 /* Responsive */
@@ -334,6 +344,7 @@ body{
 
 <div class="main-content">
   <div class="content-wrapper">
+    <div class="date-display" id="current-date"></div>
     {% block content %}
     <!-- Default content will go here -->
     {% endblock %}
@@ -341,6 +352,12 @@ body{
 </div>
 
 <script>
+  // Display current date
+  const dateDisplay = document.getElementById('current-date');
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  const today = new Date();
+  dateDisplay.textContent = today.toLocaleDateString('en-US', options);
+
   setTimeout(function() {
     const alerts = document.querySelectorAll('.alert-success, .alert, [class*="alert-"]');
     alerts.forEach(alert => {

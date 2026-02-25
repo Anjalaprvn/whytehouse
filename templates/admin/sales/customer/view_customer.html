@@ -1,13 +1,7 @@
+{% extends 'admin/sidebar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Customer Details | Whyte House</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-
+{% block extra_css %}
   <style>
     :root{
       --bg:#f6f7fb;
@@ -28,7 +22,6 @@
 
     /* Layout */
     .main{
-      margin-left:280px;
       padding:34px 40px 70px;
     }
 
@@ -183,16 +176,9 @@
       .tab{font-size:13px;padding:9px 10px}
     }
   </style>
-</head>
-<body>
+{% endblock %}
 
-  <!-- Sidebar -->
-  {% include "admin/sidebar.html" %}
-
-  <!-- Header (if you have it) -->
-  {% include "admin/header.html" %}
-
-  <main class="main">
+{% block content %}
 
     <!-- Top title area -->
     <div class="page-head">
@@ -293,7 +279,4 @@
       </div>
     </section>
 
-  </main>
-
-</body>
-</html>
+  {% endblock %}

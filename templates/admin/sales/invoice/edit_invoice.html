@@ -1,13 +1,7 @@
+{% extends 'admin/sidebar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Edit Invoice | Whyte House</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-
+{% block extra_css %}
   <style>
     :root{
       --bg:#f6f7fb;
@@ -29,7 +23,6 @@
     body{background:var(--bg);color:var(--text)}
 
     .main{
-      margin-left:280px;
       padding:30px 40px 70px;
     }
 
@@ -254,16 +247,9 @@
       .rooms{gap:8px}
     }
   </style>
-</head>
-<body>
+{% endblock %}
 
-    <!-- Header -->
-  {% include "admin/header.html" %}
-
-  <!-- Sidebar -->
-  {% include "admin/sidebar.html" %}
-
-  <main class="main">
+{% block content %}
 
     <div class="header">
       <button class="back-btn" type="button" onclick="history.back()" aria-label="Back">

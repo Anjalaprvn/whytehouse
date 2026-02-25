@@ -1,14 +1,7 @@
-{# ========================= edit_employee.html ========================= #}
+{% extends 'admin/sidebar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Edit Employee | Whyte House</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-
+{% block extra_css %}
 <style>
 :root{
   --bg:#f6f7fb;
@@ -26,7 +19,7 @@
 body{background:var(--bg);color:var(--text)}
 
 /* Layout */
-.main{margin-left:280px;padding:34px 40px 60px}
+.main{padding:34px 40px 60px}
 
 /* Header */
 .header{
@@ -162,13 +155,9 @@ input, select{
   .header-left{align-items:flex-start}
 }
 </style>
-</head>
+{% endblock %}
 
-<body>
-
-{% include "admin/sidebar.html" %}
-{% include "admin/header.html" %}
-<main class="main">
+{% block content %}
 
   <div class="header">
     <div>
@@ -177,12 +166,6 @@ input, select{
         <h1 class="page-title">Edit Employee</h1>
       </div>
       <p class="page-sub">Update employee details</p>
-    </div>
-
-    <div class="top-actions">
-      <span class="chip">Employee ID: {{ employee.id }}</span>
-      <a class="action-btn" href="{% url 'employee:view_employee' employee.id %}">View</a>
-      <button class="action-btn danger" type="button">Delete</button>
     </div>
   </div>
 
@@ -282,7 +265,4 @@ input, select{
     </form>
   </div>
 
-</main>
-
-</body>
-</html>
+{% endblock %}

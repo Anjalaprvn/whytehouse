@@ -1,19 +1,13 @@
+{% extends 'admin/sidebar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Voucher Details | Whyte House</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-<style>
+{% block extra_css %}
+  <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif}
 body{background:#f5f7fb;color:#111}
 
 /* MAIN */
-.main{margin-left:280px;padding:30px 40px}
+.main{padding:30px 40px}
 
 /* HEADER */
 .top-row{

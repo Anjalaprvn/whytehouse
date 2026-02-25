@@ -1,14 +1,7 @@
-{# ========================= view_employee.html ========================= #}
+{% extends 'admin/sidebar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Employee Details | Whyte House</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-
+{% block extra_css %}
 <style>
 :root{
   --bg:#f6f7fb;
@@ -24,7 +17,7 @@
 
 *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif}
 body{background:var(--bg);color:var(--text)}
-.main{margin-left:280px;padding:34px 40px 60px}
+.main{padding:34px 40px 60px}
 
 /* Top */
 .topbar{
@@ -144,14 +137,9 @@ body{background:var(--bg);color:var(--text)}
   .sub{margin-left:0}
 }
 </style>
-</head>
+{% endblock %}
 
-<body>
-
-{% include "admin/sidebar.html" %}
-{% include "admin/header.html" %}
-
-<main class="main">
+{% block content %}
 
   <div class="topbar">
     <div>
@@ -160,12 +148,6 @@ body{background:var(--bg);color:var(--text)}
         <div class="h1">Employee Details</div>
       </div>
       <div class="sub">View employee information</div>
-    </div>
-
-    <div class="actions">
-      <a class="btn" href="{% url 'employee:employee_list' %}">All Employees</a>
-      <a class="btn primary" href="{% url 'employee:edit_employee' employee.id %}">Edit</a>
-      <button class="btn danger" type="button">Delete</button>
     </div>
   </div>
 
@@ -239,7 +221,4 @@ body{background:var(--bg);color:var(--text)}
 
   </div>
 
-</main>
-
-</body>
-</html>
+{% endblock %}
