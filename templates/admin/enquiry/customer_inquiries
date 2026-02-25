@@ -164,30 +164,40 @@
 
     <!-- Stats Section -->
     <div class="stats">
-        <div class="stat-card active">
-            <div class="stat-number">{{ total_count }}</div>
-            <div class="stat-label">Total</div>
-        </div>
+        <a href="{% url 'admin_panel:customer_inquiries' %}" style="text-decoration:none;color:inherit;flex:1;min-width:150px">
+            <div class="stat-card {% if not request.GET.status %}active{% endif %}">
+                <div class="stat-number">{{ total_count }}</div>
+                <div class="stat-label">Total</div>
+            </div>
+        </a>
 
-        <div class="stat-card">
-            <div class="stat-number">{{ new_count }}</div>
-            <div class="stat-label">New</div>
-        </div>
+        <a href="{% url 'admin_panel:customer_inquiries' %}?status=New" style="text-decoration:none;color:inherit;flex:1;min-width:150px">
+            <div class="stat-card {% if request.GET.status == 'New' %}active{% endif %}">
+                <div class="stat-number">{{ new_count }}</div>
+                <div class="stat-label">New</div>
+            </div>
+        </a>
 
-        <div class="stat-card">
-            <div class="stat-number">{{ contacted_count }}</div>
-            <div class="stat-label">Contacted</div>
-        </div>
+        <a href="{% url 'admin_panel:customer_inquiries' %}?status=Contacted" style="text-decoration:none;color:inherit;flex:1;min-width:150px">
+            <div class="stat-card {% if request.GET.status == 'Contacted' %}active{% endif %}">
+                <div class="stat-number">{{ contacted_count }}</div>
+                <div class="stat-label">Contacted</div>
+            </div>
+        </a>
 
-        <div class="stat-card">
-            <div class="stat-number">{{ converted_count }}</div>
-            <div class="stat-label">Converted</div>
-        </div>
+        <a href="{% url 'admin_panel:customer_inquiries' %}?status=Converted" style="text-decoration:none;color:inherit;flex:1;min-width:150px">
+            <div class="stat-card {% if request.GET.status == 'Converted' %}active{% endif %}">
+                <div class="stat-number">{{ converted_count }}</div>
+                <div class="stat-label">Converted</div>
+            </div>
+        </a>
 
-        <div class="stat-card">
-            <div class="stat-number">{{ junk_count }}</div>
-            <div class="stat-label">Junk</div>
-        </div>
+        <a href="{% url 'admin_panel:customer_inquiries' %}?status=Junk" style="text-decoration:none;color:inherit;flex:1;min-width:150px">
+            <div class="stat-card {% if request.GET.status == 'Junk' %}active{% endif %}">
+                <div class="stat-number">{{ junk_count }}</div>
+                <div class="stat-label">Junk</div>
+            </div>
+        </a>
     </div>
 
     <!-- Search & Filter -->
@@ -210,15 +220,16 @@
                 <strong>{{ inquiry.name }}</strong>
                 <span class="badge {{ inquiry.status|lower }}">{{ inquiry.status }}</span>
             </div>
-            <div>
-                <small>{{ inquiry.created_at }}</small>
-                <button class="view-btn">View</button>
+            <div style="display:flex;gap:10px;align-items:center">
+                <small>{{ inquiry.created_at|date:"M d, Y" }}</small>
+                <a href="{% url 'admin_panel:view_inquiry' inquiry.id %}" class="view-btn" style="text-decoration:none;color:#111">View</a>
             </div>
         </div>
 
         <div class="contact-info">
-            <i class="fa fa-envelope"></i> {{ inquiry.email }} &nbsp;
-            <i class="fa fa-phone"></i> {{ inquiry.phone }}
+            <i class="fa fa-envelope"></i> <a href="mailto:{{ inquiry.email }}" style="color:gray;text-decoration:none">{{ inquiry.email }}</a> &nbsp;
+            <i class="fa fa-phone"></i> <a href="tel:{{ inquiry.phone }}" style="color:gray;text-decoration:none">{{ inquiry.phone }}</a> &nbsp;
+            <a href="https://wa.me/{{ inquiry.phone }}" target="_blank" style="color:#25D366;text-decoration:none"><i class="fab fa-whatsapp"></i> WhatsApp</a>
         </div>
 
         <div class="interest">

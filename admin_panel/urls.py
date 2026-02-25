@@ -23,6 +23,8 @@ urlpatterns = [
     path('travel-packages/edit/<int:package_id>/', views.travel_package_edit, name='travel_package_edit'),
     path('travel-packages/delete/<int:package_id>/', views.travel_package_delete, name='travel_package_delete'),
     path('customer-inquiries/', views.customer_inquiries, name='customer_inquiries'),
+    path('customer-inquiries/<int:inquiry_id>/', views.view_inquiry, name='view_inquiry'),
+    path('customer-inquiries/<int:inquiry_id>/update-status/', views.update_inquiry_status, name='update_inquiry_status'),
 ]
 #employee---------------
 employee_patterns = [

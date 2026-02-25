@@ -248,16 +248,37 @@ def travel_package_delete(request, package_id):
 
 # CUSTOMER INQUIRIES
 def customer_inquiries(request):
-    inquiries = Inquiry.objects.all().order_by('-created_at')
+    status_filter = request.GET.get('status')
+    
+    if status_filter:
+        inquiries = Inquiry.objects.filter(status=status_filter).order_by('-created_at')
+    else:
+        inquiries = Inquiry.objects.all().order_by('-created_at')
+    
     context = {
         'inquiries': inquiries,
-        'total_count': inquiries.count(),
-        'new_count': inquiries.filter(status='New').count(),
-        'contacted_count': inquiries.filter(status='Contacted').count(),
-        'converted_count': inquiries.filter(status='Converted').count(),
-        'junk_count': inquiries.filter(status='Junk').count(),
+        'total_count': Inquiry.objects.count(),
+        'new_count': Inquiry.objects.filter(status='New').count(),
+        'contacted_count': Inquiry.objects.filter(status='Contacted').count(),
+        'converted_count': Inquiry.objects.filter(status='Converted').count(),
+        'junk_count': Inquiry.objects.filter(status='Junk').count(),
     }
     return render(request, 'admin/enquiry/customer_inquiries', context)
+
+def view_inquiry(request, inquiry_id):
+    inquiry = get_object_or_404(Inquiry, id=inquiry_id)
+    return render(request, 'admin/enquiry/customer_inquiry_view.html', {'inquiry': inquiry})
+
+def update_inquiry_status(request, inquiry_id):
+    if request.method == 'POST':
+        inquiry = get_object_or_404(Inquiry, id=inquiry_id)
+        new_status = request.POST.get('status')
+        if new_status in ['New', 'Contacted', 'Converted', 'Junk']:
+            inquiry.status = new_status
+            inquiry.save()
+            messages.success(request, f'Inquiry status updated to {new_status}')
+        return redirect('admin_panel:customer_inquiries')
+    return redirect('admin_panel:customer_inquiries')
 
 def blog_list(request):
     return render(request, 'admin/blog/blog_list.html')
