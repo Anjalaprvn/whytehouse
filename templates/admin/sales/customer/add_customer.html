@@ -87,11 +87,12 @@
 
     /* hide the real checkbox, keep it in DOM (important for CSS sibling selector) */
     .css-toggle{
-      position:absolute;
-      width:1px;height:1px;
-      opacity:0;
-      pointer-events:none;
-    }
+  position:absolute;
+  left:-9999px;
+  width:1px;
+  height:1px;
+  opacity:0;
+}
 
     .switch{
       position:relative;
@@ -121,13 +122,15 @@
     }
 
     /* when checkbox checked -> slider ON */
-    #sameAsWhatsapp:checked + .toggle-ui .slider{
-      background:rgba(212,164,47,.95);
-      border-color:rgba(212,164,47,.95);
-    }
-    #sameAsWhatsapp:checked + .toggle-ui .slider:before{
-      transform:translate(24px,-50%);
-    }
+   /* when checkbox checked -> slider ON (works even with wrapper div) */
+#sameAsWhatsapp:checked ~ .field .toggle-ui .slider{
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+#sameAsWhatsapp:checked ~ .field .toggle-ui .slider:before{
+  transform: translate(24px,-50%);
+}
 
     .toggle-text{
       font-weight:600;color:#111;font-size:15px;
@@ -296,7 +299,7 @@
           <!-- Toggle UI -->
           <div class="field span-3">
             <div class="toggle-row">
-              <label class="switch toggle-ui" for="sameAsWhatsapp" aria-label="Same as WhatsApp number">
+             <label class="switch toggle-ui" for="sameAsWhatsapp" tabindex="-1">
                 <span class="slider"></span>
               </label>
               <label class="toggle-text" for="sameAsWhatsapp">Same as WhatsApp number</label>
