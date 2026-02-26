@@ -1,14 +1,12 @@
+{% extends 'user/navbar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Whyte House Holidays | Escape the City</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <style>
+
+{% block title %}Whyte House Holidays | Escape the City{% endblock %}
+
+{% block nav_home %}class="active"{% endblock %}
+
+{% block extra_css %}
+<style>
         :root {
             --primary: #D39C52;
             --accent-green: #7ED957;
@@ -20,6 +18,13 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
 
         body { background-color: #0c0c0c; color: var(--white); overflow-x: hidden; }
+
+        nav {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            background: transparent;
+        }
 
         /* --- HERO SECTION --- */
         .hero {
@@ -41,6 +46,7 @@
             position: absolute;
             width: 100%;
             z-index: 100;
+            background: transparent;
         }
 
         .nav-links {
@@ -958,27 +964,11 @@
     text-decoration: none;
 }
     </style>
-</head>
-<body>
+{% endblock %}
 
+{% block content %}
     <section class="hero">
-        <nav class="navbar">
-            <div class="logo">
-                <img src="{% static 'images/logo.png' %}" height="55" alt="Whyte House">
-            </div>
-            <div class="nav-links">
-                <a href="/" class="active">Home</a>
-                <a href="/about">About</a>
-                <a href="/blog">Blog</a>
-                <a href="/packages">Packages</a>
-                <a href="/contact">Contact Us</a>
-            </div>
-            <div class="nav-right">
-                <span style="color: var(--primary)">Domestic</span> | <span style="opacity: 0.4">International</span>
-            </div>
-        </nav>
-
-        <div class="location-tag">
+<div class="location-tag">
             <i class="fa-solid fa-square"></i>
             <span>Munnar, Kerala</span>
         </div>
@@ -1313,48 +1303,5 @@
     <span>WHYTE HOUSE HOLIDAYS +</span><span>WHYTE HOUSE HOLIDAYS +</span><span>WHYTE HOUSE HOLIDAYS +</span><span>WHYTE HOUSE HOLIDAYS +</span><span>WHYTE HOUSE HOLIDAYS +</span>
   </div>
 </div>
-<footer class="footer-dark">
-    <div class="content-wrapper">
-        <div class="footer-top-row">
-            <div>
-                <h2 style="font-size: 32px;">Book Your Tour Today</h2>
-                <p style="color: #888;">Join us for an unforgettable getaway and adventures</p>
-            </div>
-            <div class="subscribe-box">
-                <input type="text" placeholder="Enter your email">
-                <button class="btn-subscribe">Subscribe</button>
-            </div>
-        </div>
 
-        <div class="footer-grid">
-            <div>
-                <img src="logo-white.png" height="50" style="margin-bottom: 20px;">
-                <p style="color: #888; font-size: 13px;">Whether you're booking a holiday or managing a property, our promise remains the same.</p>
-                <div style="margin-top: 20px;">
-                    <a href="#" class="social-circle"><i class="fa-brands fa-facebook-f"></i></a>
-                    <a href="#" class="social-circle"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="#" class="social-circle"><i class="fa-brands fa-youtube"></i></a>
-                </div>
-            </div>
-            <div>
-                <h5 style="margin-bottom: 20px;">Location</h5>
-                <p style="color: #888; font-size: 13px;">Kozhikode, Kerala<br>Kakkanchery 673321<br>Since 2015</p>
-            </div>
-            <div>
-                <h5 style="margin-bottom: 20px;">Contact Us</h5>
-                <p style="color: #888; font-size: 13px;">+91 78 523 521 45<br>hello@whytehouseholidays.com</p>
-            </div>
-            <div>
-                <h5 style="margin-bottom: 20px;">Company & Legals</h5>
-                <ul style="list-style: none; color: #888; font-size: 13px; line-height: 2;">
-                    <li>About Us</li>
-                    <li>Frequently ask question</li>
-                    <li>Terms of Service</li>
-                </ul>
-            </div>
-        </div>
-        <p style="text-align: center; color: #444; margin-top: 60px; font-size: 12px;">© 2026 Whyte House Holidays All Rights Reserved</p>
-    </div>
-</footer>
-</body>
-</html>
+{% endblock %}

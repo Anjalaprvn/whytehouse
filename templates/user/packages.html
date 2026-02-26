@@ -1,267 +1,173 @@
+{% extends 'user/navbar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Packages | Whyte House Holidays</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --brand-gold: #D4A373;
-            --brand-black: #000000;
-            --text-gray: #777777;
-            --bg-light: #F8F9FA;
-            --white: #ffffff;
-        }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: #F3F4F6; color: var(--brand-black); overflow-x: hidden; }
+{% block title %}Packages | Whyte House Holidays{% endblock %}
 
-        /* --- NAVIGATION --- */
-        .navbar {
-            position: absolute;
-            top: 0; width: 100%;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 30px 80px; z-index: 100;
-        }
-        .nav-links {
-            display: flex; gap: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            padding: 12px 40px; border-radius: 50px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .nav-links a { text-decoration: none; color: white; font-size: 14px; font-weight: 500; transition: 0.3s; }
-        .nav-links a.active, .nav-links a:hover { color: var(--brand-gold); }
+{% block nav_packages %}class="active"{% endblock %}
 
-        /* --- HERO SECTION --- */
-        .packages-hero {
-            height: 70vh;
-            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.2)), 
-                        url("{% static 'images/aboutbg.png' %}");
-            background-size: cover;
-            background-position: center;
-            display: flex; align-items: center;
-            padding: 0 80px; color: white;
-        }
-        .hero-text h1 { font-size: 64px; line-height: 1.1; margin-bottom: 15px; }
-        .hero-text h1 span { color: var(--brand-gold); }
-        .hero-text p { font-size: 18px; opacity: 0.8; max-width: 600px; }
+{% block extra_css %}
+<style>
+    body {
+        background: #fff;
+    }
 
-        /* --- SEARCH & CATEGORIES --- */
-        .search-container {
-            max-width: 1100px; margin: -45px auto 40px;
-            padding: 0 20px; position: relative; z-index: 10;
-        }
-        .search-wrapper {
-            background: white; padding: 10px 25px; border-radius: 60px;
-            display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        }
-        .search-wrapper input { flex: 1; border: none; outline: none; padding: 12px; font-size: 16px; }
-        .filter-btn {
-            background: #000; color: white; width: 45px; height: 45px;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-        }
-        .categories-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 50px; flex-wrap: wrap; }
-        .cat-pill {
-            padding: 10px 25px; border-radius: 50px; background: #000;
-            color: white; text-decoration: none; font-size: 14px; transition: 0.3s;
-        }
-        .cat-pill.active, .cat-pill:hover { background: var(--brand-gold); }
+    nav {
+        position: absolute;
+        top: 20px;
+        width: 100%;
+        background: transparent;
+    }
 
-        /* --- PACKAGE GRID --- */
-        .packages-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-            gap: 30px; max-width: 1300px; margin: 0 auto 80px; padding: 0 40px;
-        }
-        .package-card { 
-            background: white; 
-            border-radius: 30px; 
-            overflow: hidden; 
-            transition: 0.4s; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
-        }
-        .package-card:hover { transform: translateY(-10px); }
-        
-        /* Ensures the whole card acts as a link */
-        .package-card a {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
+    /* --- HERO SECTION --- */
+    .packages-hero {
+        height: 70vh;
+        background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.2)), 
+                    url("{% static 'images/aboutbg.png' %}");
+        background-size: cover;
+        background-position: center;
+        display: flex; align-items: center;
+        padding: 0 80px; color: white;
+    }
+    .hero-text h1 { font-size: 64px; line-height: 1.1; margin-bottom: 15px; }
+    .hero-text h1 span { color: var(--brand-gold); }
+    .hero-text p { font-size: 18px; opacity: 0.8; max-width: 600px; }
 
-        .card-img-box { height: 280px; position: relative; }
-        .card-img-box img { width: 100%; height: 100%; object-fit: cover; }
-        .badge-wrap { position: absolute; top: 20px; left: 20px; display: flex; gap: 8px; }
-        .badge { font-size: 10px; font-weight: 700; padding: 6px 15px; border-radius: 8px; color: white; }
-        .badge-dom { background: #FF9F00; }
-        .badge-feat { background: var(--brand-gold); }
-        .card-body { padding: 25px; }
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        .price { font-size: 22px; font-weight: 700; color: var(--brand-gold); }
-        .unit { font-size: 12px; color: var(--text-gray); display: block; }
-        .card-meta { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; font-size: 13px; color: #666; }
-        .card-meta i { color: var(--brand-gold); margin-right: 5px; }
+    /* --- SEARCH & CATEGORIES --- */
+    .search-container {
+        max-width: 1100px; margin: -45px auto 40px;
+        padding: 0 20px; position: relative; z-index: 10;
+    }
+    .search-wrapper {
+        background: white; padding: 10px 25px; border-radius: 60px;
+        display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+    .search-wrapper input { flex: 1; border: none; outline: none; padding: 12px; font-size: 16px; }
+    .filter-btn {
+        background: #000; color: white; width: 45px; height: 45px;
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+    }
+    .categories-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 50px; flex-wrap: wrap; }
+    .cat-pill {
+        padding: 10px 25px; border-radius: 50px; background: #000;
+        color: white; text-decoration: none; font-size: 14px; transition: 0.3s;
+    }
+    .cat-pill.active, .cat-pill:hover { background: var(--brand-gold); }
 
-        /* --- HELP SECTION --- */
-        .help-section {
-            position: relative;
-            background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), 
-                        url("{% static 'images/help-bg.png' %}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            padding: 120px 20px;
-            text-align: center;
-            color: white;
-            margin-top: 50px;
-        }
-        .help-section h2 { font-size: 42px; font-weight: 700; margin-bottom: 15px; }
-        .help-section p { font-size: 18px; opacity: 0.9; max-width: 600px; margin: 0 auto 35px; }
-        .help-btn {
-            background: var(--brand-gold);
-            color: white;
-            padding: 16px 45px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: 0.3s;
-            border: 2px solid var(--brand-gold);
-            display: inline-block;
-        }
-        .help-btn:hover { background: transparent; transform: translateY(-3px); }
+    /* --- PACKAGE GRID --- */
+    .packages-grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 30px; max-width: 1300px; margin: 0 auto 80px; padding: 0 40px;
+    }
+    .package-card { 
+        background: white; 
+        border-radius: 30px; 
+        overflow: hidden; 
+        transition: 0.4s; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+    }
+    .package-card:hover { transform: translateY(-10px); }
+    
+    .package-card a {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
 
-        /* --- FOOTER --- */
-        .footer { background: #000; color: white; padding: 80px 80px 30px; }
-        .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 60px; margin-top: 40px; padding-bottom: 60px; }
-        .footer h4 { margin-bottom: 25px; font-size: 18px; }
-        .footer p, .footer li { color: #999; font-size: 14px; line-height: 1.8; list-style: none; }
-        .footer-bottom { border-top: 1px solid #222; padding-top: 30px; display: flex; justify-content: space-between; align-items: center; }
-        .social-icons { display: flex; gap: 20px; }
-        .social-icons i { font-size: 18px; cursor: pointer; transition: 0.3s; }
-        .social-icons i:hover { color: var(--brand-gold); }
-    </style>
-</head>
-<body>
+    .card-img-box { height: 280px; position: relative; }
+    .card-img-box img { width: 100%; height: 100%; object-fit: cover; }
+    .badge-wrap { position: absolute; top: 20px; left: 20px; display: flex; gap: 8px; }
+    .badge { font-size: 10px; font-weight: 700; padding: 6px 15px; border-radius: 8px; color: white; }
+    .badge-dom { background: #FF9F00; }
+    .badge-feat { background: var(--brand-gold); }
+    .card-body { padding: 25px; }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .price { font-size: 22px; font-weight: 700; color: var(--brand-gold); }
+    .unit { font-size: 12px; color: var(--text-gray); display: block; }
+    .card-meta { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; font-size: 13px; color: #666; }
+    .card-meta i { color: var(--brand-gold); margin-right: 5px; }
 
-    <nav class="navbar">
-        <div class="logo"><img src="{% static 'images/logo.png' %}" alt="Logo" height="45"></div>
-        <div class="nav-links">
-            <a href="{% url 'index' %}" class="hover:text-[#D39C52]">Home</a>
-            <a href="/about">About</a>
-            <a href="/blog">Blog</a>
-            <a href="/packages" class="active">Packages</a>
-            <a href="/contact">Contact Us</a>
-        </div>
-        <div class="glass-pill">
-            <a href="{%url 'domestic'%}">Domestic</a>
-            <span style="color:rgba(255,255,255,0.3)">|</span>
-            <a href="{% url 'index' %}" class="hover:text-[#D39C52]">International</a>
-        </div> 
-    </nav>
+    /* --- HELP SECTION --- */
+    .help-section {
+        position: relative;
+        background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), 
+                    url("{% static 'images/help-bg.png' %}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        padding: 120px 20px;
+        text-align: center;
+        color: white;
+        margin-top: 50px;
+    }
+    .help-section h2 { font-size: 42px; font-weight: 700; margin-bottom: 15px; }
+    .help-section p { font-size: 18px; opacity: 0.9; max-width: 600px; margin: 0 auto 35px; }
+</style>
+{% endblock %}
 
-    <header class="packages-hero">
-        <div class="hero-text">
-            <h1>Discover Your<br>Next <span>Adventure</span></h1>
-            <p>Explore our handpicked collection of domestic and international tour packages designed for the modern traveler.</p>
-        </div>
-    </header>
-
-    <div class="search-container">
-        <div class="search-wrapper">
-            <i class="fas fa-search" style="color: #bbb; margin-left: 10px;"></i>
-            <input type="text" placeholder="Search destinations or country...">
-            <div class="filter-btn"><i class="fas fa-sliders-h"></i></div>
-        </div>
+{% block content %}
+<header class="packages-hero">
+    <div class="hero-text">
+        <h1>Discover Your<br>Next <span>Adventure</span></h1>
+        <p>Explore our handpicked collection of domestic and international tour packages designed for the modern traveler.</p>
     </div>
+</header>
 
-    <div class="categories-container">
-        <a href="?country=all" class="cat-pill {% if selected_country == 'all' %}active{% endif %}">All</a>
-        <a href="?country=thailand" class="cat-pill {% if selected_country == 'thailand' %}active{% endif %}">Thailand</a>
-        <a href="?country=vietnam" class="cat-pill {% if selected_country == 'vietnam' %}active{% endif %}">Vietnam</a>
-        <a href="?country=malaysia" class="cat-pill {% if selected_country == 'malaysia' %}active{% endif %}">Malaysia</a>
-        <a href="?country=paris" class="cat-pill {% if selected_country == 'paris' %}active{% endif %}">Paris</a>
-        <a href="?country=london" class="cat-pill {% if selected_country == 'london' %}active{% endif %}">London</a>
+<div class="search-container">
+    <div class="search-wrapper">
+        <i class="fas fa-search" style="color: #bbb; margin-left: 10px;"></i>
+        <input type="text" placeholder="Search destinations or country...">
+        <div class="filter-btn"><i class="fas fa-sliders-h"></i></div>
     </div>
+</div>
 
-    <main class="packages-grid">
-        {% for package in packages %}
-        <div class="package-card">
-            <a href="{% url 'package_detail' package.id %}">                
-                <div class="card-img-box">
-                    <img src="{{ package.image.url }}" alt="{{ package.name }}">
-                    <div class="badge-wrap">
-                        <span class="badge {% if package.category == 'Domestic' %}badge-dom{% else %}badge-feat{% endif %}">{{ package.category }}</span>
+<div class="categories-container">
+    <a href="?country=all" class="cat-pill {% if selected_country == 'all' %}active{% endif %}">All</a>
+    <a href="?country=thailand" class="cat-pill {% if selected_country == 'thailand' %}active{% endif %}">Thailand</a>
+    <a href="?country=vietnam" class="cat-pill {% if selected_country == 'vietnam' %}active{% endif %}">Vietnam</a>
+    <a href="?country=malaysia" class="cat-pill {% if selected_country == 'malaysia' %}active{% endif %}">Malaysia</a>
+    <a href="?country=paris" class="cat-pill {% if selected_country == 'paris' %}active{% endif %}">Paris</a>
+    <a href="?country=london" class="cat-pill {% if selected_country == 'london' %}active{% endif %}">London</a>
+</div>
+
+<main class="packages-grid">
+    {% for package in packages %}
+    <div class="package-card">
+        <a href="{% url 'package_detail' package.id %}">                
+            <div class="card-img-box">
+                <img src="{{ package.image.url }}" alt="{{ package.name }}">
+                <div class="badge-wrap">
+                    <span class="badge {% if package.category == 'Domestic' %}badge-dom{% else %}badge-feat{% endif %}">{{ package.category }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card-header">
+                    <h3>{{ package.name }}</h3>
+                    <div class="price-box">
+                        <span class="price">₹ {{ package.price }}</span>
+                        <span class="unit">Per person</span>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="card-header">
-                        <h3>{{ package.name }}</h3>
-                        <div class="price-box">
-                            <span class="price">₹ {{ package.price }}</span>
-                            <span class="unit">Per person</span>
-                        </div>
-                    </div>
-                    <p class="card-desc">{{ package.description|truncatewords:15 }}</p>
-                    <div class="card-meta">
-                        <span><i class="fas fa-map-marker-alt"></i> {{ package.location }}, {{ package.country }}</span>
-                        <span><i class="fas fa-calendar"></i> {{ package.duration|default:"Contact us" }}</span>
-                    </div>
+                <p class="card-desc">{{ package.description|truncatewords:15 }}</p>
+                <div class="card-meta">
+                    <span><i class="fas fa-map-marker-alt"></i> {{ package.location }}, {{ package.country }}</span>
+                    <span><i class="fas fa-calendar"></i> {{ package.duration|default:"Contact us" }}</span>
                 </div>
-            </a>
-        </div>
-        {% empty %}
-        <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #999;">
-            <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 20px; display: block;"></i>
-            <h3 style="margin-bottom: 10px;">No Packages Available</h3>
-            <p>Check back soon for exciting travel packages!</p>
-        </div>
-        {% endfor %}
-    </main>
+            </div>
+        </a>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #999;">
+        <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 20px; display: block;"></i>
+        <h3 style="margin-bottom: 10px;">No Packages Available</h3>
+        <p>Check back soon for exciting travel packages!</p>
+    </div>
+    {% endfor %}
+</main>
 
-    <section class="help-section">
-        <h2>Need Help For Choosing?</h2>
-        <p>Our Travel Experts Are Here To Help You Find The Perfect Package For Your Needs</p>
-        <a href="/contact" class="help-btn">Contact Us</a>
-    </section>
-
-    <footer class="footer">
-        <div class="footer-grid">
-            <div>
-                <img src="{% static 'images/logo.png' %}" alt="Logo" height="40" style="margin-bottom: 25px;">
-                <p>Whether you're booking a holiday or managing a property, our promise remains the same.</p>
-                <a href="#" class="help-btn" style="margin-top: 20px; padding: 10px 30px;">Enquire Now</a>
-            </div>
-            <div>
-                <h4>Location</h4>
-                <p>Kozhikode, Kerala<br>Kakkanchery 673321<br>Since 2015</p>
-            </div>
-            <div>
-                <h4>Contact Us</h4>
-                <p>+91 78 523 521 45<br>info@whytehouse.com</p>
-            </div>
-            <div>
-                <h4>Company & Legals</h4>
-                <ul style="padding:0">
-                    <li>About Us</li>
-                    <li>FAQ</li>
-                    <li>Terms of Service</li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div class="social-icons">
-                <i class="fab fa-facebook-f"></i>
-                <i class="fab fa-instagram"></i>
-                <i class="fab fa-youtube"></i>
-                <i class="fab fa-whatsapp"></i>
-            </div>
-            <p style="font-size: 12px; color: #555;">© 2025 Whyte House Holidays All Rights Reserved</p>
-        </div>
-    </footer>
-
-</body>
-</html>
+<section class="help-section">
+    <h2>Need Help For Choosing?</h2>
+    <p>Our Travel Experts Are Here To Help You Find The Perfect Package For Your Needs</p>
+    <a href="/contact" class="help-btn">Contact Us</a>
+</section>
+{% endblock %}

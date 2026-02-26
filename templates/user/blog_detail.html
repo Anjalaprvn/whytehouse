@@ -1,13 +1,12 @@
+{% extends 'user/navbar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog Detail | Whyte House</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
+
+{% block title %}Blog Detail | Whyte House{% endblock %}
+
+{% block nav_blog %}class="active"{% endblock %}
+
+{% block extra_css %}
+<style>
         :root {
             --brand-gold: #D4A373;
             --brand-black: #000000;
@@ -77,135 +76,16 @@
         }
         .author-card-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; }
         .author-info h4 { font-size: 20px; margin-bottom: 8px; }
-        .author-info p { font-size: 15px; color: #666; line-height: 1.5; }
+        .author-info p { font-size: 15px; color: #666; line-height: 1.5; }    nav {
+        position: absolute;
+        top: 20px;
+        width: 100%;
+        background: transparent;
+    }
+</style>
+{% endblock %}
 
-        /* Footer - Reusing your existing style */
-        .site-footer { background: var(--brand-black); color: white; padding: 80px 80px 40px; }
-        .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 40px; border-top: 1px solid #222; padding-top: 40px; }
-/* --- FOOTER & CTA SECTION --- */
-.footer-section {
-    background-color: #000;
-    color: #ffffff;
-    padding: 60px 80px 30px;
-}
-
-/* CTA Banner */
-.cta-banner {
-    text-align: center;
-    padding-bottom: 60px;
-    border-bottom: 1px solid #333;
-    margin-bottom: 60px;
-}
-
-.cta-banner h2 {
-    font-size: 36px;
-    margin-bottom: 10px;
-}
-
-.cta-banner p {
-    color: #999;
-    margin-bottom: 30px;
-}
-
-.subscribe-form {
-    display: flex;
-    justify-content: center;
-    gap: 0;
-    max-width: 500px;
-    margin: 0 auto;
-}
-
-.subscribe-form input {
-    background: #1a1a1a;
-    border: 1px solid #333;
-    padding: 15px 25px;
-    border-radius: 50px 0 0 50px;
-    color: white;
-    width: 100%;
-    outline: none;
-}
-
-.subscribe-form button {
-    background: var(--brand-gold);
-    border: none;
-    padding: 0 30px;
-    border-radius: 0 50px 50px 0;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-/* Main Footer Grid */
-.footer-grid {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr 1fr;
-    gap: 40px;
-}
-
-.footer-col h4 {
-    font-size: 18px;
-    margin-bottom: 25px;
-    font-weight: 600;
-}
-
-.footer-col p, .footer-col a {
-    color: #999;
-    text-decoration: none;
-    font-size: 14px;
-    line-height: 1.8;
-    display: block;
-    margin-bottom: 10px;
-}
-
-.enquire-btn {
-    display: inline-block;
-    background: var(--brand-gold);
-    color: white !important;
-    padding: 10px 25px;
-    border-radius: 50px;
-    margin-top: 15px;
-    font-weight: 600;
-}
-
-/* Social & Copyright */
-.footer-bottom {
-    margin-top: 60px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid #222;
-    padding-top: 30px;
-}
-
-.social-links { display: flex; gap: 15px; }
-.social-links a {
-    width: 35px;
-    height: 35px;
-    background: #1a1a1a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    color: white;
-    transition: 0.3s;
-}
-
-.social-links a:hover { background: var(--brand-gold); }
-.copyright { color: #666; font-size: 12px; }    </style>
-</head>
-<body>
-
-    <nav class="navbar">
-        <div class="logo"><img src="{% static 'images/logo.png' %}" alt="Logo" height="40"></div>
-        <div class="nav-links">
-            <a href="{% url 'index' %}" class="hover:text-[#D39C52]">Home</a>
-            <a href="{% url 'about' %}" class="hover:text-[#D39C52]">About</a>
-            <a href="/blog">Blog</a>
-            <a href="{%url 'packages'}" class="hover:text-[#D39C52]">Packages</a>
-            <a href="{% url 'contact%' %}" class="hover:text-[#D39C52]">Contact Us</a>
-        </div>
-        <div style="color: white; font-size: 14px; border: 1px solid #555; padding: 8px 20px; border-radius: 50px;">Domestic | International</div>
-    </nav>
+{% block content %}
 
     <header class="detail-hero">
         <div class="hero-content">
@@ -248,56 +128,4 @@
             </div>
         </div>
     </main>
-
-    <footer class="footer-section">
-    <div class="cta-banner">
-        <h2>Book Your Tour Today</h2>
-        <p>Join us for an unforgettable getaway and adventures</p>
-        <form class="subscribe-form">
-            <input type="email" placeholder="Enter your email">
-            <button type="submit">Subscribe</button>
-        </form>
-    </div>
-
-    <div class="footer-grid">
-        <div class="footer-col">
-            <img src="{% static 'images/logo.png' %}" alt="Logo" height="40" style="margin-bottom: 20px;">
-            <p>Whether you're booking a holiday or managing a property, our promise remains the same.</p>
-            <a href="#" class="enquire-btn">Enquire Now</a>
-        </div>
-
-        <div class="footer-col">
-            <h4>Location</h4>
-            <p>Kozhikode, Kerala<br>Kakkanchery 673321<br>Since 2015</p>
-        </div>
-
-        <div class="footer-col">
-            <h4>Contact Us</h4>
-            <p>+91 78 523 521 45</p>
-            <p>info@whytehouse.com</p>
-        </div>
-
-        <div class="footer-col">
-            <h4>Company & Legals</h4>
-            <a href="#">About Us</a>
-            <a href="#">Frequently ask question</a>
-            <a href="#">Terms of Service</a>
-            <a href="#">License</a>
-        </div>
-    </div>
-
-    <div class="footer-bottom">
-        <div class="social-links">
-            <a href="#"><i class="fab fa-facebook-f"></i></a>
-            <a href="#"><i class="fab fa-instagram"></i></a>
-            <a href="#"><i class="fab fa-youtube"></i></a>
-            <a href="#"><i class="fab fa-whatsapp"></i></a>
-        </div>
-        <div class="copyright">
-            © 2025 Whyte House Holidays All Rights Reserved
-        </div>
-    </div>
-</footer>
-
-</body>
-</html>
+{% endblock %}

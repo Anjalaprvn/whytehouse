@@ -1,13 +1,12 @@
+{% extends 'user/navbar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ package.name }} | Whyte House Holidays</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
+
+{% block title %}{{ package.name }} | Whyte House Holidays{% endblock %}
+
+{% block nav_packages %}class="active"{% endblock %}
+
+{% block extra_css %}
+<style>
         :root {
             --brand-gold: #D4A373;
             --brand-black: #000000;
@@ -226,25 +225,16 @@
         .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 60px; }
         .footer-bottom { margin-top: 60px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #222; padding-top: 30px; }
         .social-circle { width: 40px; height: 40px; border-radius: 50%; background: white; color: black; display: inline-flex; align-items: center; justify-content: center; margin-right: 10px; text-decoration: none; }
+        nav {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            background: transparent;
+        }
     </style>
-</head>
-<body>
+{% endblock %}
 
-    <nav class="navbar">
-        <div class="logo"><img src="{% static 'images/logo.png' %}" alt="Logo" height="40"></div>
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/about">About</a>
-            <a href="/blog">Blog</a>
-            <a href="{% url 'packages' %}">Packages</a>
-            <a href="/contact">Contact Us</a>
-        </div>
-        <div class="glass-pill">
-            <a href="{%url 'domestic'%}">Domestic</a>
-            <span style="color:rgba(255,255,255,0.3)">|</span>
-            <a href="{% url 'index' %}" class="hover:text-[#D39C52]">International</a>
-        </div> 
-    </nav>
+{% block content %}
 
     <header class="detail-hero">
         <a href="{% url 'packages' %}" class="back-btn">
@@ -379,50 +369,4 @@
         </div>
     </section>
 
-    <footer class="footer">
-        <div class="footer-cta">
-            <h2>Book Your Tour Today</h2>
-            <p>Join us for an unforgettable getaway and adventures</p>
-            <div class="subscribe-box">
-                <input type="email" placeholder="Enter your email">
-                <button class="sub-btn">Subscribe</button>
-            </div>
-        </div>
-
-        <div class="footer-grid">
-            <div>
-                <img src="{% static 'images/logo.png' %}" alt="Logo" height="35" style="margin-bottom: 20px;">
-                <p style="color: #888; font-size: 14px;">Whether you're booking a holiday or managing a property, our promise remains the same.</p>
-                <button style="background: var(--brand-gold); border: none; padding: 10px 25px; border-radius: 5px; margin-top: 20px; cursor: pointer; font-weight: 600;">Enquire Now</button>
-            </div>
-            <div>
-                <h4>Location</h4>
-                <p style="color: #888; font-size: 14px; margin-top: 15px;">Kozhikode, Kerala<br>Kakkanchery 673321</p>
-            </div>
-            <div>
-                <h4>Contact Us</h4>
-                <p style="color: #888; font-size: 14px; margin-top: 15px;">+98 78 523 521 45<br>@whytehouseholidays.com</p>
-            </div>
-            <div>
-                <h4>Company & Legals</h4>
-                <ul style="list-style: none; color: #888; font-size: 14px; margin-top: 15px;">
-                    <li>About Us</li>
-                    <li>Frequently ask question</li>
-                    <li>Terms of Service</li>
-                    <li>License</li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div class="social-links">
-                <a href="#" class="social-circle"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="social-circle"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="social-circle"><i class="fab fa-youtube"></i></a>
-                <a href="#" class="social-circle"><i class="fab fa-whatsapp"></i></a>
-            </div>
-            <p style="color: #555; font-size: 12px;">© 2025 Whyte House Holidays All Rights Reserved</p>
-        </div>
-    </footer>
-
-</body>
-</html>
+{% endblock %}

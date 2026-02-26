@@ -1,13 +1,10 @@
+{% extends 'user/navbar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Whyte House | Hospitality Management</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
-    
-    <style>
+
+{% block title %}Whyte House | Hospitality Management{% endblock %}
+
+{% block extra_css %}
+<style>
         /* --- BASE STYLES --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -1006,29 +1003,17 @@
             border-color: var(--brand-gold);
             box-shadow: 0 15px 30px rgba(0,0,0,0.1);
         }
+        nav {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            background: transparent;
+        }
     </style>
-</head>
-<body>
+{% endblock %}
 
+{% block content %}
     <section class="hero">
-        <header>
-            <div class="logo">
-                <img src="{% static 'dashboard/images/logo.png' %}" alt="Logo">
-            </div>
-            <nav>
-                <ul>
-                    <li><a href="{%url 'index'%}">Home</a></li>
-                    <li><a href="{%url 'about'%}">About</a></li>
-                    <li><a href="{%url 'blog'%}">Blog</a></li>
-                    <li><a href="{%url 'packages'%}">Packages</a></li>
-                    <li><a href="{%url 'contact'%}">Contact Us</a></li>
-                </ul>
-            </nav>
-            <div class="nav-meta">
-                <a href="#">Domestic</a> <span>|</span> <a href="#" style="opacity:0.5">International</a>
-            </div>
-        </header>
-
         <div class="content-wrapper">
             <div class="hero-text">
                 <h1>Grow Your Property with <br> <span>Expert Management</span></h1>
@@ -1433,62 +1418,4 @@
         </div>
     </div>
 </section>
-<footer class="site-footer">
-    <div class="footer-cta-section">
-        <h2>Book Your Tour Today</h2>
-        <p>Join us for an unforgettable getaway and adventures</p>
-        <form class="subscribe-form">
-            <input type="email" placeholder="Enter your email">
-            <button type="submit">Subscribe</button>
-        </form>
-    </div>
-
-    <div class="footer-grid">
-        <div class="footer-col">
-            <img src="{% static 'images/logo.png' %}" alt="Whyte House" class="footer-logo">
-            <p>Whether you're booking a holiday or managing a property, our promise remains the same.</p>
-            <a href="#" class="enquire-btn">Enquire Now</a>
-        </div>
-
-        <div class="footer-col">
-            <h4>Location</h4>
-            <p>Kozhikode, Kerala<br>Kakkanchery 673321<br>Since 2015</p>
-        </div>
-
-        <div class="footer-col">
-            <h4>Contact Us</h4>
-            <p>+98 78 523 521 45</p>
-            <p>@whytehouseholidays.com</p>
-        </div>
-
-        <div class="footer-col">
-            <h4>Company & Legals</h4>
-            <a href="#">About Us</a>
-            <a href="#">Frequently ask question</a>
-            <a href="#">Terms of Service</a>
-            <a href="#">License</a>
-        </div>
-    </div>
-
-    <div class="footer-bottom-container" style="margin-top: 40px;">
-        <div class="footer-nav-bottom">
-            <a href="#">Home</a>
-            <a href="#">Packages</a>
-            <a href="#">Grow Property</a>
-        </div>
-        
-        <div class="footer-bottom">
-            <div class="social-links">
-                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-youtube"></i></a>
-                <a href="#"><i class="fab fa-whatsapp"></i></a>
-            </div>
-            <p class="copyright-text">© 2025 Whyte House Holidays All Rights Reserved</p>
-        </div>
-    </div>
-</footer>
-
-
-</body>
-</html>
+{% endblock %}
