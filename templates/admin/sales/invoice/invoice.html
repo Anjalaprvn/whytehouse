@@ -310,7 +310,7 @@
           <tr>
             <td>{{ forloop.counter }}</td>
 
-            <td>{{ inv.invoice_date|date:"m/d/Y" }}</td>
+            <td>{{ inv.invoice_date|date:"d/m/Y" }}</td>
 
             <td>
               <div class="inv-no">{{ inv.invoice_no }}</div>
@@ -333,7 +333,7 @@
             <td>{{ inv.bank_account.account_name|default:"N/A" }}</td>
 
             <td>
-              <div>{{ inv.checkin_date|date:"m/d/Y"|default:"N/A" }}</div>
+              <div>{{ inv.checkin_date|date:"d/m/Y"|default:"N/A" }}</div>
               <div class="muted">{{ inv.checkin_time|default:"" }}</div>
             </td>
 
