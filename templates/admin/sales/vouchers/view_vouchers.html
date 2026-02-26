@@ -217,16 +217,9 @@ body{background:#f5f7fb;color:#111}
   .gold-btn{min-width:220px;width:100%}
 }
 </style>
-</head>
+{% endblock %}
 
-<body>
-
-  <!-- Header -->
-  {% include "admin/header.html" %}
-
-  <!-- Sidebar -->
-  {% include "admin/sidebar.html" %}
-
+{% block content %}
 <div class="main">
 
   <!-- Header -->
@@ -432,6 +425,4 @@ body{background:#f5f7fb;color:#111}
   </div>
 
 </div>
-
-</body>
-</html>
+{% endblock %}

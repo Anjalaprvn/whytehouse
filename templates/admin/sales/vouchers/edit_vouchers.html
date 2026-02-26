@@ -1,6 +1,6 @@
-{% include "admin/header.html" %}
-{% include "admin/sidebar.html" %}
+{% extends 'admin/sidebar.html' %}
 
+{% block content %}
 <div class="main">
   <div class="content-section">
     <h2>Edit Voucher</h2>
@@ -57,3 +57,4 @@
     </form>
   </div>
 </div>
+{% endblock %}

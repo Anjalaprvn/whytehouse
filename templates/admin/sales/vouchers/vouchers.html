@@ -88,27 +88,27 @@ tbody tr:last-child td{border-bottom:none}
               <td><span class="status {% if v.pending > 0 %}pending{% else %}paid{% endif %}">{% if v.pending > 0 %}Pending{% else %}Paid{% endif %}</span></td>
               <td>
                 <div class="actions">
-                  <a href="{% url 'sales:view_voucher' v.id %}" class="icon eye" title="View" aria-label="View">
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <path d="M1 12C1 12 5 5 12 5C19 5 23 12 23 12C23 12 19 19 12 19C5 19 1 12 1 12Z" stroke-width="2"/>
-                      <circle cx="12" cy="12" r="3" stroke-width="2"/>
+                  <a href="{% url 'sales:view_voucher' v.id %}" class="icon-btn" title="View" aria-label="View">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2">
+                      <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/>
+                      <circle cx="12" cy="12" r="3"/>
                     </svg>
                   </a>
-                  <a href="{% url 'sales:edit_voucher' v.id %}" class="icon edit" title="Edit" aria-label="Edit">
+                  <a href="{% url 'sales:edit_voucher' v.id %}" class="icon-btn" title="Edit" aria-label="Edit">
                     <svg viewBox="0 0 24 24" fill="none">
-                      <path d="M12 20H21" stroke-width="2.2" stroke-linecap="round"/>
-                      <path d="M16.5 3.5C17.328 2.672 18.672 2.672 19.5 3.5C20.328 4.328 20.328 5.672 19.5 6.5L8 18L3 19L4 14L16.5 3.5Z" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M12 20H21" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
+                      <path d="M16.5 3.5C17.328 2.672 18.672 2.672 19.5 3.5C20.328 4.328 20.328 5.672 19.5 6.5L8 18L3 19L4 14L16.5 3.5Z" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                   </a>
-                  <form method="POST" action="{% url 'sales:delete_voucher' v.id %}" style="display:inline;" onsubmit="return confirm('Delete voucher {{ v.voucher_code }}?');">
+                  <form method="POST" action="{% url 'sales:delete_voucher' v.id %}" style="display:inline;" onsubmit="return confirm('Delete voucher {{ v.voucher_no }}?');">
                     {% csrf_token %}
-                    <button type="submit" class="icon" style="border-color:#ffd1da;" title="Delete" aria-label="Delete">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2">
-                        <path d="M3 6H21" stroke-linecap="round"/>
-                        <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" stroke-linecap="round"/>
-                        <path d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6" stroke-linecap="round"/>
-                        <path d="M10 11v6" stroke-linecap="round"/>
-                        <path d="M14 11v6" stroke-linecap="round"/>
+                    <button type="submit" class="icon-btn delete" title="Delete" aria-label="Delete">
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M3 6H21" stroke-width="2.2" stroke-linecap="round"/>
+                        <path d="M8 6V4C8 3.448 8.448 3 9 3H15C15.552 3 16 3.448 16 4V6" stroke-width="2.2" stroke-linecap="round"/>
+                        <path d="M19 6L18.2 20C18.137 20.552 17.668 21 17.113 21H6.887C6.332 21 5.863 20.552 5.8 20L5 6" stroke-width="2.2" stroke-linecap="round"/>
+                        <path d="M10 11V17" stroke-width="2.2" stroke-linecap="round"/>
+                        <path d="M14 11V17" stroke-width="2.2" stroke-linecap="round"/>
                       </svg>
                     </button>
                   </form>
