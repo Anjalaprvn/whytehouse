@@ -1139,75 +1139,6 @@ def delete_invoice(request, invoice_id):
         messages.error(request, f"Error deleting invoice: {str(e)}")
     return redirect("sales:invoice_list")
 
-# REPORT GENERATION VIEWS-----------------------------------------------------------
-def invoice_report(request):
-    from django.http import HttpResponse
-    import openpyxl
-    from openpyxl.styles import Font, Alignment
-    
-    employees = Employee.objects.filter(status='Active')
-    resorts = Resort.objects.all()
-    invoices = []
-    employee_view = False
-    
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        from_date = request.POST.get('from_date')
-        to_date = request.POST.get('to_date')
-        resort_id = request.POST.get('resort')
-        employee_view = request.POST.get('employee_view') == 'on'
-        employee_id = request.POST.get('employee')
-        
-        invoices = Invoice.objects.filter(invoice_date__range=[from_date, to_date])
-        if resort_id:
-            invoices = invoices.filter(resort_id=resort_id)
-        if employee_view and employee_id:
-            invoices = invoices.filter(sales_person_id=employee_id)
-        
-        if action == 'excel':
-            wb = openpyxl.Workbook()
-            ws = wb.active
-            ws.title = 'Invoice Report'
-            
-            headers = ['Invoice No', 'Date', 'Customer', 'Resort', 'Total', 'Received', 'Pending', 'Profit']
-            if employee_view:
-                headers.insert(3, 'Sales Person')
-            
-            for col, header in enumerate(headers, 1):
-                cell = ws.cell(1, col, header)
-                cell.font = Font(bold=True)
-                cell.alignment = Alignment(horizontal='center')
-            
-            for row, inv in enumerate(invoices, 2):
-                ws.cell(row, 1, inv.invoice_no)
-                ws.cell(row, 2, str(inv.invoice_date))
-                ws.cell(row, 3, inv.customer.display_name if inv.customer else '')
-                col = 4
-                if employee_view:
-                    ws.cell(row, col, inv.sales_person.name if inv.sales_person else '')
-                    col += 1
-                ws.cell(row, col, inv.resort.resort_name if inv.resort else '')
-                ws.cell(row, col+1, float(inv.total))
-                ws.cell(row, col+2, float(inv.received))
-                ws.cell(row, col+3, float(inv.pending))
-                ws.cell(row, col+4, float(inv.profit))
-            
-            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = 'attachment; filename=invoice_report.xlsx'
-            wb.save(response)
-            return response
-    
-    return render(request, 'admin/report/invoice_report.html', {'employees': employees, 'resorts': resorts, 'invoices': invoices, 'employee_view': employee_view})
-
-def voucher_report(request):
-    return render(request, "admin/report/voucher_report.html")
-
-def leads_report(request):
-    return render(request, "admin/report/leads_report.html")
-
-def profit_report(request):
-    return render(request, "admin/report/profit_report.html")
-
 def blog_list(request):
     blogs = Blog.objects.all()
 
@@ -1326,7 +1257,7 @@ def delete_blog(request, blog_id):
     blog.delete()
     messages.success(request, f"Blog '{title}' deleted successfully!")
     return redirect("blog:blog_list")
-
+# REPORT GENERATION VIEWS-----------------------------------------------------------
 
 def customer_report(request):
     customers = Customer.objects.all().order_by("-created_at")
@@ -1369,3 +1300,129 @@ def customer_report(request):
         return response
 
     return render(request, "admin/report/customer_report.html", {"customers": customers})
+
+def invoice_report(request):
+    # Get only employees who have been assigned as sales person in at least one invoice
+    employees = Employee.objects.filter(
+        invoice__isnull=False
+    ).distinct().order_by("name")
+    resorts = Resort.objects.all().order_by("resort_name")
+
+    invoices = Invoice.objects.none()
+    employee_view = False
+
+    # keep values in form after submit
+    selected = {"from_date": "", "to_date": "", "resort": "", "employee": ""}
+
+    if request.method == "POST":
+        action = request.POST.get("action")  # fetch / excel
+        from_date = request.POST.get("from_date")
+        to_date = request.POST.get("to_date")
+        resort_id = request.POST.get("resort")
+        employee_view = request.POST.get("employee_view") == "on"
+        employee_id = request.POST.get("employee")
+
+        selected = {
+            "from_date": from_date or "",
+            "to_date": to_date or "",
+            "resort": resort_id or "",
+            "employee": employee_id or "",
+        }
+
+        # validations (resort required because your template is required)
+        if not from_date or not to_date or not resort_id:
+            messages.error(request, "From Date, To Date and Resort are required.")
+            return render(request, "admin/report/invoice_report.html", {
+                "employees": employees,
+                "resorts": resorts,
+                "invoices": invoices,
+                "employee_view": employee_view,
+                "selected": selected,
+            })
+
+        if employee_view and not employee_id:
+            messages.error(request, "Please select employee.")
+            return render(request, "admin/report/invoice_report.html", {
+                "employees": employees,
+                "resorts": resorts,
+                "invoices": invoices,
+                "employee_view": employee_view,
+                "selected": selected,
+            })
+
+        invoices = (
+            Invoice.objects.select_related("customer", "resort", "sales_person")
+            .filter(invoice_date__range=[from_date, to_date], resort_id=resort_id)
+            .order_by("-invoice_date", "-id")
+        )
+
+        if employee_view:
+            invoices = invoices.filter(sales_person_id=employee_id)
+
+        # Export excel
+        if action == "excel":
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Invoice Report"
+
+            headers = ["Invoice No", "Date", "Customer"]
+            if employee_view:
+                headers.append("Sales Person")
+            headers += ["Resort", "Total", "Received", "Pending", "Profit"]
+
+            for col, header in enumerate(headers, 1):
+                cell = ws.cell(row=1, column=col, value=header)
+                cell.font = Font(bold=True)
+                cell.alignment = Alignment(horizontal="center")
+
+            for row, inv in enumerate(invoices, start=2):
+                row_data = [
+                    inv.invoice_no,
+                    inv.invoice_date.strftime("%Y-%m-%d") if inv.invoice_date else "",
+                    inv.customer.display_name if inv.customer else "",
+                ]
+                if employee_view:
+                    row_data.append(inv.sales_person.name if inv.sales_person else "")
+                row_data += [
+                    inv.resort.resort_name if inv.resort else "",
+                    float(inv.total or 0),
+                    float(inv.received or 0),
+                    float(inv.pending or 0),
+                    float(inv.profit or 0),
+                ]
+
+                for col, value in enumerate(row_data, 1):
+                    ws.cell(row=row, column=col, value=value)
+
+            for col in range(1, len(headers) + 1):
+                letter = get_column_letter(col)
+                max_len = 0
+                for cell in ws[letter]:
+                    if cell.value is not None:
+                        max_len = max(max_len, len(str(cell.value)))
+                ws.column_dimensions[letter].width = min(max_len + 3, 45)
+
+            response = HttpResponse(
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+            filename = f"invoice_report_{timezone.now().strftime('%Y-%m-%d')}.xlsx"
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
+            wb.save(response)
+            return response
+
+    return render(request, "admin/report/invoice_report.html", {
+        "employees": employees,
+        "resorts": resorts,
+        "invoices": invoices,
+        "employee_view": employee_view,
+        "selected": selected,
+    })
+
+def voucher_report(request):
+    return render(request,"admin/report/voucher_report.html")
+
+def leads_report(request):
+    return render(request,"admin/report/leads_report.html")
+
+def profit_report(request):
+    return render(request,"admin/report/profit_report.html")
