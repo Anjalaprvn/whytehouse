@@ -1,131 +1,272 @@
 {% extends 'user/navbar.html' %}
 {% load static %}
 
-{% block title %}Blog Detail | Whyte House{% endblock %}
-
+{% block title %}{{ blog.title }} | Whyte House{% endblock %}
 {% block nav_blog %}class="active"{% endblock %}
 
 {% block extra_css %}
 <style>
-        :root {
-            --brand-gold: #D4A373;
-            --brand-black: #000000;
-            --text-gray: #444444;
-            --light-gray: #F8F9FA;
-            --white: #ffffff;
-        }
+:root {
+    --brand-gold: #D4A373;
+    --brand-black: #000000;
+    --text-gray: #444444;
+    --light-gray: #F8F9FA;
+    --white: #ffffff;
+}
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+/* ✅ FIX: remove top gap */
+body > nav{
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: transparent;
+    z-index: 9999;
+}
 
-        /* Navigation */
-        .navbar {
-            position: absolute;
-            top: 0; width: 100%;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 30px 80px; z-index: 100;
-        }
-        .nav-links {
-            display: flex; gap: 30px;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(15px);
-            padding: 10px 30px; border-radius: 50px;
-        }
-        .nav-links a { text-decoration: none; color: white; font-size: 14px; }
+/* ===== HERO ===== */
+.detail-hero{
+    height: 70vh;
+    background:
+        linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.55)),
+        url("{% if blog.featured_image %}{{ blog.featured_image.url }}{% elif blog.featured_image_url %}{{ blog.featured_image_url }}{% else %}{% static 'images/blogdetail.png' %}{% endif %}");
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: flex-end;
+    padding: 0 80px 60px;
+    color: white;
+}
 
-        /* Hero Section */
-        .detail-hero {
-            height: 70vh;
-            background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url("{% static 'images/blogdetail.png' %}");
-            background-size: cover;
-            background-position: center;
-            display: flex; align-items: flex-end;
-            padding: 0 80px 60px;
-            color: white;
-        }
-        .hero-content { max-width: 800px; }
-        .featured-tag { background: var(--brand-gold); padding: 5px 15px; border-radius: 5px; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 15px; display: inline-block; }
-        .hero-content h1 { font-size: 48px; font-weight: 700; margin-bottom: 20px; line-height: 1.2; }
-        .author-meta { display: flex; align-items: center; gap: 15px; font-size: 14px; opacity: 0.9; }
-        .author-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid white; }
+.hero-content{
+    max-width: 900px;
+}
 
-        /* Article Content */
-        .main-container { max-width: 900px; margin: 0 auto; padding: 60px 20px; }
-        .back-btn {
-            display: inline-flex; align-items: center; gap: 10px;
-            background: var(--brand-gold); color: white;
-            padding: 12px 25px; border-radius: 50px;
-            text-decoration: none; font-weight: 600; margin-bottom: 40px;
-            transition: 0.3s;
-        }
-        .back-btn:hover { opacity: 0.9; transform: translateX(-5px); }
+/* badge */
+.featured-tag{
+    background: var(--brand-gold);
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: inline-block;
+}
 
-        .article-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .article-header h2 { font-size: 28px; color: var(--brand-black); flex: 1; }
-        .content-tags { display: flex; gap: 10px; }
-        .content-tag { background: #F2E9E1; color: var(--brand-gold); padding: 5px 15px; border-radius: 5px; font-size: 12px; font-weight: 600; }
+/* title */
+.hero-content h1{
+    font-size: 48px;
+    font-weight: 800;
+    margin-bottom: 18px;
+    line-height: 1.2;
+}
 
-        .article-body { font-size: 18px; line-height: 1.8; color: var(--text-gray); margin-bottom: 50px; }
-        .article-body p { margin-bottom: 25px; }
+/* author meta */
+.author-meta{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    opacity: 0.95;
+    flex-wrap: wrap;
+}
 
-        /* Author Box */
-        .author-card {
-            background: var(--light-gray);
-            padding: 30px; border-radius: 20px;
-            display: flex; gap: 25px; align-items: center;
-            margin-top: 60px; border: 1px solid #eee;
-        }
-        .author-card-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; }
-        .author-info h4 { font-size: 20px; margin-bottom: 8px; }
-        .author-info p { font-size: 15px; color: #666; line-height: 1.5; }    nav {
-        position: absolute;
-        top: 20px;
-        width: 100%;
-        background: transparent;
+.author-img{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+}
+
+/* ===== CONTENT ===== */
+.main-container{
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 20px;
+}
+
+/* back button */
+.back-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--brand-gold);
+    color: white;
+    padding: 12px 25px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 700;
+    margin-bottom: 40px;
+    transition: .25s;
+}
+.back-btn:hover{
+    opacity: .92;
+    transform: translateX(-5px);
+}
+
+/* header */
+.article-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 26px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.article-header h2{
+    font-size: 28px;
+    color: var(--brand-black);
+    flex: 1;
+    min-width: 250px;
+}
+
+/* tags */
+.content-tags{
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.content-tag{
+    background: #F2E9E1;
+    color: var(--brand-gold);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* article */
+.article-body{
+    font-size: 18px;
+    line-height: 1.85;
+    color: var(--text-gray);
+    margin-bottom: 50px;
+}
+.article-body p{
+    margin-bottom: 22px;
+}
+
+/* ===== AUTHOR CARD ===== */
+.author-card{
+    background: var(--light-gray);
+    padding: 30px;
+    border-radius: 20px;
+    display: flex;
+    gap: 25px;
+    align-items: center;
+    margin-top: 60px;
+    border: 1px solid #eee;
+    flex-wrap: wrap;
+}
+
+.author-card-img{
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.author-info h4{
+    font-size: 20px;
+    margin-bottom: 8px;
+    color: var(--brand-black);
+}
+
+.author-info p{
+    font-size: 15px;
+    color: #666;
+    line-height: 1.5;
+}
+
+/* responsive */
+@media (max-width: 992px){
+    .detail-hero{
+        padding: 0 24px 42px;
+        height: 60vh;
     }
+    .hero-content h1{
+        font-size: 36px;
+    }
+}
 </style>
 {% endblock %}
 
 {% block content %}
 
-    <header class="detail-hero">
-        <div class="hero-content">
+<header class="detail-hero">
+    <div class="hero-content">
+
+        {% if blog.is_featured %}
             <span class="featured-tag">Featured</span>
-            <h1>Top 10 Hidden Gems in Vietnam</h1>
-            <div class="author-meta">
-                <img src="{% static 'images/person.png'%}" alt="Author" class="author-img">
-                <span>Evan Thomas • Dec 25, 2025 • 8 min read</span>
-            </div>
-        </div>
-    </header>
+        {% else %}
+            <span class="featured-tag">Story</span>
+        {% endif %}
 
-    <main class="main-container">
-        <a href="{% url 'blog' %}" class="back-btn">
-            <i class="fas fa-arrow-left"></i> Back to Blog
-        </a>
+        <h1>{{ blog.title }}</h1>
 
-        <div class="article-header">
-            <h2>Exploring the Spectrum: Vietnam's 10 Best-Kept Secrets</h2>
-            <div class="content-tags">
-                <span class="content-tag">Vietnam</span>
-                <span class="content-tag">Hidden Gem</span>
-                <span class="content-tag">Heritage</span>
-            </div>
+        <div class="author-meta">
+            <img src="{% static 'images/person.png' %}" class="author-img">
+
+            <span>
+                {% if blog.author %}{{ blog.author }} • {% endif %}
+                {{ blog.publish_date|date:"M d, Y" }}
+                {% if blog.reading_time %} • {{ blog.reading_time }} min read{% endif %}
+            </span>
         </div>
 
-        <article class="article-body">
-            <p>Beyond the well-trodden paths of Ha Long Bay and the bustling streets of the capital lies a Vietnam shaped by quiet grandeur and centuries of untold history. At Whyte House, we leverage our strategic vision to curate experiences that transcend traditional tourism, guiding our guests toward the country’s true heritage gems.</p>
-            
-            <p>From the mist-shrouded limestone peaks of Ha Giang to the untouched, emerald lagoons of Bai Tu Long Bay, we have identified ten destinations where the unique history of the land remains remarkably preserved. These locations offer more than just a view; they provide a profound connection to a past that is being thoughtfully transformed into the future of luxury travel.</p>
+    </div>
+</header>
 
-            <p>Our commitment to "Life's Spectrum" means finding beauty in the contrast between ancient traditions and modern refinement. Imagine waking up in a boutique retreat in Pu Luong, where centuries-old bamboo waterwheels still turn amidst golden rice terraces, or exploring the forgotten Cham towers of Quy Nhon that stand as silent witnesses to a lost kingdom.</p>
-        </article>
+<main class="main-container">
 
-        <div class="author-card">
-            <img src="{% static 'images/person.png'%}" alt="Evan" class="author-card-img">
-            <div class="author-info">
-                <h4>About <b>Evan Thomas</b></h4>
-                <p>Travel enthusiast and writer passionate about sharing authentic experiences and insider tips from across Southeast Asia.</p>
-            </div>
+    <a href="{% url 'blog' %}" class="back-btn">
+        <i class="fas fa-arrow-left"></i> Back to Blog
+    </a>
+
+    <div class="article-header">
+        <h2>{{ blog.title }}</h2>
+
+        {% if tags %}
+        <div class="content-tags">
+            {% for t in tags %}
+                <span class="content-tag">{{ t }}</span>
+            {% endfor %}
         </div>
-    </main>
+        {% endif %}
+    </div>
+
+    <article class="article-body">
+        {% if blog.content %}
+            {{ blog.content|safe }}
+        {% elif blog.excerpt %}
+            <p>{{ blog.excerpt }}</p>
+        {% else %}
+            <p>No content available.</p>
+        {% endif %}
+    </article>
+
+    <div class="author-card">
+        <img src="{% static 'images/person.png' %}" class="author-card-img">
+
+        <div class="author-info">
+            <h4>
+                About <b>{% if blog.author %}{{ blog.author }}{% else %}Whyte House{% endif %}</b>
+            </h4>
+            <p>
+                {% if blog.author_bio %}
+                    {{ blog.author_bio }}
+                {% else %}
+                    Travel stories and curated insights from Whyte House.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+</main>
+
 {% endblock %}

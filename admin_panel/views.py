@@ -1181,6 +1181,8 @@ def blog_list(request):
 def add_blog(request):
     if request.method == "POST":
         try:
+            hashtags_value = (request.POST.get("hashtags") or "").strip()
+            
             blog = Blog.objects.create(
                 title=(request.POST.get("title") or "").strip(),
                 slug=(request.POST.get("slug") or "").strip(),
@@ -1195,7 +1197,8 @@ def add_blog(request):
                 publish_date=request.POST.get("publish_date"),
 
                 featured_image_url=(request.POST.get("featured_image_url") or "").strip() or None,
-                hashtags=(request.POST.get("hashtags") or "").strip(),
+                hashtags=hashtags_value,
+                tags=hashtags_value,  # Save to both fields for compatibility
             )
 
             if request.FILES.get("featured_image"):
@@ -1216,6 +1219,8 @@ def edit_blog(request, blog_id):
 
     if request.method == "POST":
         try:
+            hashtags_value = (request.POST.get("hashtags") or "").strip()
+            
             blog.title = (request.POST.get("title") or "").strip()
             blog.slug = (request.POST.get("slug") or "").strip()
             blog.excerpt = (request.POST.get("excerpt") or "").strip()
@@ -1229,7 +1234,8 @@ def edit_blog(request, blog_id):
             blog.publish_date = request.POST.get("publish_date")
 
             blog.featured_image_url = (request.POST.get("featured_image_url") or "").strip() or None
-            blog.hashtags = (request.POST.get("hashtags") or "").strip()
+            blog.hashtags = hashtags_value
+            blog.tags = hashtags_value  # Save to both fields for compatibility
 
             if request.FILES.get("featured_image"):
                 blog.featured_image = request.FILES["featured_image"]

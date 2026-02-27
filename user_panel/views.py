@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from admin_panel.models import TravelPackage, Property, Inquiry, Lead
+from admin_panel.models import Blog
+
 
 def index(request):
     packages = TravelPackage.objects.filter(active=True, category='International')[:6]
@@ -13,12 +15,32 @@ def domestic(request):
 def about(request):
     return render(request, 'user/about.html')
 
-def blog(request):
-    return render(request, 'user/blog.html')
+
+
+
+from django.shortcuts import render, get_object_or_404
+from admin_panel.models import Blog
+
+def blog_list(request):
+    q = request.GET.get("q", "").strip()
+    blogs = Blog.objects.filter(status="published").order_by("-publish_date")
+
+    if q:
+        blogs = blogs.filter(title__icontains=q)
+
+    for b in blogs:
+        raw = getattr(b, "tags", "") or getattr(b, "hashtags", "") or getattr(b, "hashtag", "") or ""
+        b.tag_list = [t.strip() for t in str(raw).split(",") if t.strip()]
+
+    return render(request, "user/blog.html", {"blogs": blogs, "q": q})
+
 
 def blog_detail(request, slug):
-    return render(request, 'user/blog_detail.html')
+    blog = get_object_or_404(Blog, slug=slug, status="published")
+    raw = getattr(blog, "tags", "") or getattr(blog, "hashtags", "") or getattr(blog, "hashtag", "") or ""
+    tags = [t.strip() for t in str(raw).split(",") if t.strip()]
 
+    return render(request, "user/blog_detail.html", {"blog": blog, "tags": tags})
 def contact(request):
     if request.method == 'POST':
         name = (request.POST.get('name') or '').strip()

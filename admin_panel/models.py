@@ -374,6 +374,7 @@ class Blog(models.Model):
     
     # Hashtags - matches your JS
     hashtags = models.CharField(max_length=500, blank=True)
+    tags = models.CharField(max_length=255, blank=True, null=True, help_text="Comma separated tags")
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
