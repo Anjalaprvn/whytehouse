@@ -47,7 +47,7 @@ th{color:#777;font-weight:500}
         <span>Total Bookings</span>
         <div class="icon blue"><i class="fa-regular fa-bookmark"></i></div>
       </div>
-      <div class="value">247 <span class="growth">↗ +12.5%</span></div>
+      <div class="value">{{ total_vouchers }}</div>
     </div>
 
     <div class="card">
@@ -55,7 +55,7 @@ th{color:#777;font-weight:500}
         <span>Total Vouchers</span>
         <div class="icon green"><i class="fa-regular fa-file-lines"></i></div>
       </div>
-      <div class="value">198 <span class="growth">↗ +8.2%</span></div>
+      <div class="value">{{ total_vouchers }}</div>
     </div>
 
     <div class="card">
@@ -63,7 +63,7 @@ th{color:#777;font-weight:500}
         <span>Total Invoices</span>
         <div class="icon purple"><i class="fa-solid fa-receipt"></i></div>
       </div>
-      <div class="value">234 <span class="growth">↗ +15.3%</span></div>
+      <div class="value">{{ total_invoices }}</div>
     </div>
 
     <div class="card">
@@ -71,7 +71,7 @@ th{color:#777;font-weight:500}
         <span>Profit</span>
         <div class="icon yellow"><i class="fa-solid fa-chart-line"></i></div>
       </div>
-      <div class="value">₹45.2L <span class="growth">↗ +18.7%</span></div>
+      <div class="value">₹{{ total_profit|floatformat:0 }}</div>
     </div>
 
     <div class="card">
@@ -79,7 +79,7 @@ th{color:#777;font-weight:500}
         <span>New Leads Added</span>
         <div class="icon orange"><i class="fa-solid fa-user-plus"></i></div>
       </div>
-      <div class="value">89 <span class="growth">↗ +24.1%</span></div>
+      <div class="value">{{ new_leads }}</div>
     </div>
 
     <div class="card">
@@ -87,7 +87,7 @@ th{color:#777;font-weight:500}
         <span>Customers</span>
         <div class="icon pink"><i class="fa-solid fa-users"></i></div>
       </div>
-      <div class="value">1,234 <span class="growth">↗ +5.8%</span></div>
+      <div class="value">{{ total_customers }}</div>
     </div>
   </div>
 
@@ -98,48 +98,32 @@ th{color:#777;font-weight:500}
         <h2>Upcoming Bookings</h2>
         <p>Next check-ins scheduled</p>
       </div>
-      <button class="view-btn">View All</button>
+      <a href="{% url 'sales:voucher_list' %}" class="view-btn" style="text-decoration:none;color:inherit;">View All</a>
     </div>
 
+    {% for booking in upcoming_bookings %}
     <div class="row">
       <div>
-        <strong>Rajesh Kumar</strong><br>
-        <small>Beach Paradise Resort</small>
+        <strong>{{ booking.customer.display_name }}</strong><br>
+        <small>{{ booking.resort.resort_name|default:"N/A" }}</small>
       </div>
       <div>
-        <strong>1/20/2026</strong><br>
-        <small>4 Pax</small>
+        <strong>{{ booking.checkin_date|date:"m/d/Y" }}</strong><br>
+        <small>{{ booking.adults|add:booking.children }} Pax</small>
       </div>
     </div>
-
+    {% empty %}
     <div class="row">
-      <div>
-        <strong>Priya Sharma</strong><br>
-        <small>Mountain View Lodge</small>
-      </div>
-      <div>
-        <strong>1/22/2026</strong><br>
-        <small>2 Pax</small>
-      </div>
+      <div style="text-align:center;width:100%;color:#999;">No upcoming bookings</div>
     </div>
-
-    <div class="row">
-      <div>
-        <strong>Amit Patel</strong><br>
-        <small>Lake Side Villa</small>
-      </div>
-      <div>
-        <strong>1/25/2026</strong><br>
-        <small>6 Pax</small>
-      </div>
-    </div>
+    {% endfor %}
   </div>
 
   <!-- Recent Invoices -->
   <div class="section">
     <div class="section-head">
       <h2>Recent Invoices</h2>
-      <button class="view-btn">View All</button>
+      <a href="{% url 'sales:invoice_list' %}" class="view-btn" style="text-decoration:none;color:inherit;">View All</a>
     </div>
 
     <table>
@@ -152,33 +136,21 @@ th{color:#777;font-weight:500}
         <th>Paid Amount</th>
         <th>Due Amount</th>
       </tr>
+      {% for invoice in recent_invoices %}
       <tr>
-        <td><strong>INV-001</strong></td>
-        <td>Rajesh Kumar</td>
-        <td>1/15/2026</td>
-        <td>Mr. Rajesh Kumar</td>
-        <td>₹50,000</td>
-        <td class="green-text">₹30,000</td>
-        <td class="red-text">₹20,000</td>
+        <td><strong>{{ invoice.invoice_no }}</strong></td>
+        <td>{{ invoice.customer.display_name }}</td>
+        <td>{{ invoice.created_at|date:"m/d/Y" }}</td>
+        <td>{{ invoice.customer.display_name }}</td>
+        <td>₹{{ invoice.total|floatformat:0 }}</td>
+        <td class="green-text">₹{{ invoice.received|floatformat:0 }}</td>
+        <td class="red-text">₹{{ invoice.pending|floatformat:0 }}</td>
       </tr>
+      {% empty %}
       <tr>
-        <td><strong>INV-002</strong></td>
-        <td>Priya Sharma</td>
-        <td>1/14/2026</td>
-        <td>Ms. Priya Sharma</td>
-        <td>₹35,000</td>
-        <td class="green-text">₹35,000</td>
-        <td class="red-text">₹0</td>
+        <td colspan="7" style="text-align:center;color:#999;">No invoices found</td>
       </tr>
-      <tr>
-        <td><strong>INV-003</strong></td>
-        <td>Amit Patel</td>
-        <td>1/13/2026</td>
-        <td>Mr. Amit Patel</td>
-        <td>₹75,000</td>
-        <td class="green-text">₹40,000</td>
-        <td class="red-text">₹35,000</td>
-      </tr>
+      {% endfor %}
     </table>
   </div>
 
@@ -186,32 +158,22 @@ th{color:#777;font-weight:500}
   <div class="section">
     <div class="section-head">
       <h2>Recent Leads</h2>
-      <button class="view-btn">View All</button>
+      <a href="{% url 'admin_panel:leads' %}" class="view-btn" style="text-decoration:none;color:inherit;">View All</a>
     </div>
 
+    {% for lead in recent_leads %}
     <div class="row">
       <div>
-        <strong>Suresh Reddy</strong><br>
-        <small>+91 9876543210</small>
+        <strong>{{ lead.full_name }}</strong><br>
+        <small>{{ lead.mobile_number }}</small>
       </div>
-      <small>1/15/2026</small>
+      <small>{{ lead.created_at|date:"m/d/Y" }}</small>
     </div>
-
+    {% empty %}
     <div class="row">
-      <div>
-        <strong>Kavita Singh</strong><br>
-        <small>+91 9876543211</small>
-      </div>
-      <small>1/15/2026</small>
+      <div style="text-align:center;width:100%;color:#999;">No recent leads</div>
     </div>
-
-    <div class="row">
-      <div>
-        <strong>Ramesh Gupta</strong><br>
-        <small>+91 9876543212</small>
-      </div>
-      <small>1/14/2026</small>
-    </div>
+    {% endfor %}
   </div>
 
 </div>

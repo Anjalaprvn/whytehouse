@@ -62,9 +62,12 @@
             <a href="{% url 'admin_panel:edit_lead' lead.id %}" class="btn-edit">
                 <i class="fas fa-edit"></i> Edit Lead
             </a>
-            <a href="{% url 'admin_panel:delete_lead' lead.id %}" class="btn-delete" onclick="return confirm('Are you sure you want to delete this lead?')">
-                <i class="fas fa-trash"></i> Delete Lead
-            </a>
+            <form method="POST" action="{% url 'admin_panel:delete_lead' lead.id %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this lead?')">
+                {% csrf_token %}
+                <button type="submit" class="btn-delete" style="border:none;cursor:pointer;">
+                    <i class="fas fa-trash"></i> Delete Lead
+                </button>
+            </form>
         </div>
     </div>
 </div>

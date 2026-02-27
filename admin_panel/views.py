@@ -90,7 +90,36 @@ def forgot_password(request):
     return render(request, 'admin/forgotpassword.html')
 
 def dashboard(request):
-    return render(request, 'admin/index.html')
+    from django.db.models import Sum, Count
+    from datetime import datetime, timedelta
+    
+    # Stats
+    total_vouchers = Voucher.objects.count()
+    total_invoices = Invoice.objects.count()
+    total_profit = Invoice.objects.aggregate(Sum('profit'))['profit__sum'] or 0
+    new_leads = Lead.objects.filter(created_at__gte=datetime.now() - timedelta(days=30)).count()
+    total_customers = Customer.objects.count()
+    
+    # Upcoming bookings (vouchers with future check-in dates)
+    upcoming_bookings = Voucher.objects.filter(checkin_date__gte=datetime.now()).order_by('checkin_date')[:3]
+    
+    # Recent invoices
+    recent_invoices = Invoice.objects.select_related('customer').order_by('-created_at')[:5]
+    
+    # Recent leads
+    recent_leads = Lead.objects.order_by('-created_at')[:5]
+    
+    context = {
+        'total_vouchers': total_vouchers,
+        'total_invoices': total_invoices,
+        'total_profit': total_profit,
+        'new_leads': new_leads,
+        'total_customers': total_customers,
+        'upcoming_bookings': upcoming_bookings,
+        'recent_invoices': recent_invoices,
+        'recent_leads': recent_leads,
+    }
+    return render(request, 'admin/index.html', context)
 
 # LEADS
 def lead_management(request):
@@ -124,6 +153,9 @@ def edit_lead(request, id):
     return render(request, 'admin/lead/lead_edit.html', {'lead': lead})
 
 def delete_lead(request, lead_id):
+    if request.method != 'POST':
+        return redirect('admin_panel:leads')
+    
     lead = get_object_or_404(Lead, id=lead_id)
     lead.delete()
     messages.success(request, 'Lead deleted successfully!')
