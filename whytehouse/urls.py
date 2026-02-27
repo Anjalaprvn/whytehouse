@@ -31,8 +31,15 @@ urlpatterns = [
     path('employee/', include((employee_patterns, 'employee'))),
     # Blog URLs (Admin)
     path('admin-blog/', include((blog_patterns, 'blog'))),
+
+    #API URLS
+    path("api/", include("admin_panel.api_urls")),
+     
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+    
+   
