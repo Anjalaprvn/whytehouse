@@ -1,14 +1,8 @@
+{% extends 'admin/sidebar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create New Blog Post | Whyte House</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-
-  <style>
+{% block extra_css %}
+<style>
     :root{
       --bg:#f5f7fb;
       --card:#ffffff;
@@ -243,13 +237,9 @@
       .title-wrap h1{font-size:28px}
     }
   </style>
-</head>
+{% endblock %}
 
-<body>
-  {% include "admin/sidebar.html" %}
-  
-  <div class="main">
-  <div class="page">
+{% block content %}
 
     <div class="top">
       <!-- Change href to your blog list URL -->
@@ -515,5 +505,4 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-</body>
-</html>
+{% endblock %}
