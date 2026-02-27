@@ -37,11 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
     'admin_panel',
     'user_panel',
     'rest_framework',
-    
 ]
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
