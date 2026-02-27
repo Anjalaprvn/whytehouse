@@ -6,11 +6,12 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.utils.text import slugify
 from django.db import transaction
+from django.urls import reverse
 import random
 from django.core.mail import send_mail
 from django.contrib import messages
 from datetime import datetime
-from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry
+from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry, Destination
 from .models import Employee,Blog
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
@@ -290,25 +291,72 @@ def delete_property(request, property_id):
 # TRAVEL PACKAGES
 def travel_packages(request):
     category = request.GET.get('cat', 'Domestic')
-    packages = TravelPackage.objects.filter(category=category).order_by('-created_at')
+    destination_id = request.GET.get('dest')
+    
+    # Get destinations for the selected category
+    destinations = Destination.objects.filter(category=category).order_by('name')
+    
+    # Get packages based on category and destination
+    packages = TravelPackage.objects.filter(category=category)
+    if destination_id:
+        packages = packages.filter(destination_id=destination_id)
+    packages = packages.order_by('-created_at')
+    
+    # Count packages by destination
+    destination_counts = {}
+    for dest in destinations:
+        destination_counts[dest.id] = TravelPackage.objects.filter(category=category, destination=dest).count()
+    
     domestic_count = TravelPackage.objects.filter(category='Domestic').count()
     international_count = TravelPackage.objects.filter(category='International').count()
+    
+    # Get selected destination object
+    selected_destination_obj = None
+    if destination_id:
+        try:
+            selected_destination_obj = Destination.objects.get(id=destination_id)
+        except Destination.DoesNotExist:
+            pass
+    
     context = {
         'packages': packages,
+        'destinations': destinations,
+        'destination_counts': destination_counts,
         'selected_category': category,
+        'selected_destination': int(destination_id) if destination_id else None,
+        'selected_destination_obj': selected_destination_obj,
         'domestic_count': domestic_count,
         'international_count': international_count,
     }
     return render(request, 'admin/packages/travel_packages.html', context)
 
 def travel_package_add(request):
-    # Get category from URL parameter
+    # Get category and destination from URL parameters
     default_category = request.GET.get('category', 'Domestic')
+    destination_id = request.GET.get('destination')
+    
+    # Get the selected destination object
+    selected_destination_obj = None
+    if destination_id:
+        try:
+            selected_destination_obj = Destination.objects.get(id=destination_id)
+        except Destination.DoesNotExist:
+            pass
     
     if request.method == "POST":
+        destination_id = request.POST.get('destination')
+        destination = None
+        if destination_id:
+            try:
+                destination = Destination.objects.get(id=destination_id)
+            except Destination.DoesNotExist:
+                pass
+        
+        category = request.POST.get('category')
         TravelPackage.objects.create(
             name=request.POST.get('name'),
-            category=request.POST.get('category'),
+            category=category,
+            destination=destination,
             price=request.POST.get('price'),
             duration=request.POST.get('duration'),
             location=request.POST.get('location'),
@@ -323,16 +371,42 @@ def travel_package_add(request):
             image=request.FILES.get('image')
         )
         messages.success(request, "Package added successfully!")
-        return redirect('admin_panel:travel_packages')
+        
+        # Redirect back to the same category and destination
+        url = reverse('admin_panel:travel_packages')
+        if destination:
+            return redirect(f'{url}?cat={category}&dest={destination.id}')
+        else:
+            return redirect(f'{url}?cat={category}')
     
-    context = {'default_category': default_category}
+    context = {
+        'default_category': default_category,
+        'selected_destination_id': int(destination_id) if destination_id else None,
+        'selected_destination_obj': selected_destination_obj,
+    }
     return render(request, 'admin/packages/travel_package_add.html', context)
 
 def travel_package_edit(request, package_id):
     package = get_object_or_404(TravelPackage, id=package_id)
+    
+    # Get all destinations
+    destinations = Destination.objects.all().order_by('category', 'name')
+    
     if request.method == "POST":
+        destination_id = request.POST.get('destination')
+        destination = None
+        if destination_id:
+            try:
+                destination = Destination.objects.get(id=destination_id)
+            except Destination.DoesNotExist:
+                pass
+        
+        # Get the category from POST
+        new_category = request.POST.get('category')
+        
         package.name = request.POST.get('name')
-        package.category = request.POST.get('category')
+        package.category = new_category
+        package.destination = destination
         package.price = request.POST.get('price')
         package.duration = request.POST.get('duration')
         package.location = request.POST.get('location')
@@ -354,14 +428,33 @@ def travel_package_edit(request, package_id):
             package.story_side_image2 = request.FILES.get('story_side_image2')
         package.save()
         messages.success(request, "Package updated successfully!")
-        return redirect('admin_panel:travel_packages')
-    return render(request, 'admin/packages/travel_package_edit.html', {'package': package})
+        
+        # Redirect back to the same category and destination using the NEW category
+        url = reverse('admin_panel:travel_packages')
+        if destination:
+            return redirect(f'{url}?cat={new_category}&dest={destination.id}')
+        else:
+            return redirect(f'{url}?cat={new_category}')
+    
+    context = {
+        'package': package,
+        'destinations': destinations,
+    }
+    return render(request, 'admin/packages/travel_package_edit.html', context)
 
 def travel_package_delete(request, package_id):
     package = get_object_or_404(TravelPackage, id=package_id)
+    category = package.category
+    destination_id = package.destination_id if package.destination else None
     package.delete()
     messages.success(request, "Package deleted successfully!")
-    return redirect('admin_panel:travel_packages')
+    
+    # Redirect back to the same category and destination
+    url = reverse('admin_panel:travel_packages')
+    if destination_id:
+        return redirect(f'{url}?cat={category}&dest={destination_id}')
+    else:
+        return redirect(f'{url}?cat={category}')
 
 # CUSTOMER INQUIRIES
 def customer_inquiries(request):
@@ -1636,3 +1729,52 @@ def leads_report(request):
 
 def profit_report(request):
     return render(request,"admin/report/profit_report.html")
+
+# DESTINATION VIEWS
+def destination_list(request):
+    category = request.GET.get('cat', 'Domestic')
+    destinations = Destination.objects.filter(category=category).order_by('-created_at')
+    domestic_count = Destination.objects.filter(category='Domestic').count()
+    international_count = Destination.objects.filter(category='International').count()
+    context = {
+        'destinations': destinations,
+        'selected_category': category,
+        'domestic_count': domestic_count,
+        'international_count': international_count,
+    }
+    return render(request, 'admin/destination/destination.html', context)
+
+def add_destination(request):
+    if request.method == "POST":
+        Destination.objects.create(
+            name=request.POST.get('name'),
+            country=request.POST.get('country'),
+            category=request.POST.get('category'),
+            description=request.POST.get('description'),
+            is_popular=request.POST.get('is_popular') == 'on',
+            image=request.FILES.get('image')
+        )
+        messages.success(request, "Destination added successfully!")
+        return redirect('admin_panel:destinations')
+    return render(request, 'admin/destination/add_destination.html')
+
+def edit_destination(request, destination_id):
+    destination = get_object_or_404(Destination, id=destination_id)
+    if request.method == "POST":
+        destination.name = request.POST.get('name')
+        destination.country = request.POST.get('country')
+        destination.category = request.POST.get('category')
+        destination.description = request.POST.get('description')
+        destination.is_popular = request.POST.get('is_popular') == 'on'
+        if request.FILES.get('image'):
+            destination.image = request.FILES.get('image')
+        destination.save()
+        messages.success(request, "Destination updated successfully!")
+        return redirect('admin_panel:destinations')
+    return render(request, 'admin/destination/edit_destination.html', {'destination': destination})
+
+def delete_destination(request, destination_id):
+    destination = get_object_or_404(Destination, id=destination_id)
+    destination.delete()
+    messages.success(request, "Destination deleted successfully!")
+    return redirect('admin_panel:destinations')
