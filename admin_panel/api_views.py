@@ -2,8 +2,9 @@ from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Blog
-from .serializers import BlogSerializer
+from .models import Blog,Lead
+from .serializers import BlogSerializer, LeadSerializer
+
 
 class BlogViewSet(viewsets.ModelViewSet):
   
@@ -50,4 +51,47 @@ class BlogViewSet(viewsets.ModelViewSet):
             "draft_count": qs.filter(status="draft").count(),
            
             "total": qs.count(),
+        })
+
+class LeadViewSet(viewsets.ModelViewSet):
+   
+    serializer_class = LeadSerializer
+    queryset = Lead.objects.all().order_by("-created_at")
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        enquiry_type = (self.request.query_params.get("type") or "").strip()
+        source_filter = (self.request.query_params.get("source") or "").strip()
+        new_leads = (self.request.query_params.get("new") or "").strip().lower()
+        search_query = (self.request.query_params.get("search") or "").strip()
+
+        if enquiry_type:
+            qs = qs.filter(enquiry_type=enquiry_type)
+
+        if source_filter:
+            qs = qs.filter(source=source_filter)
+
+        if new_leads == "true":
+            qs = qs.filter(source="Enquire Now")
+
+        if search_query:
+            qs = qs.filter(
+                Q(full_name__icontains=search_query) |
+                Q(mobile_number__icontains=search_query) |
+                Q(place__icontains=search_query) |
+                Q(remarks__icontains=search_query)
+            )
+
+        return qs
+
+    @action(detail=False, methods=["get"])
+    def summary(self, request):
+        # Same counts you calculated in the HTML view
+        return Response({
+            "general_count": Lead.objects.filter(enquiry_type="General").count(),
+            "international_count": Lead.objects.filter(enquiry_type="International").count(),
+            "domestic_count": Lead.objects.filter(enquiry_type="Domestic").count(),
+            "new_leads_count": Lead.objects.filter(source="Enquire Now").count(),
+            "total": Lead.objects.count(),
         })
