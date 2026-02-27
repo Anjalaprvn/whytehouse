@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.http import JsonResponse
-from admin_panel.models import TravelPackage, Property, Inquiry, Lead, Blog
+from admin_panel.models import TravelPackage, Property, Inquiry, Lead, Blog, Destination
 
 
 def enquire_now(request):
@@ -127,6 +127,64 @@ def packages(request):
         all_packages = TravelPackage.objects.filter(active=True, country__iexact=country)
     
     return render(request, 'user/packages.html', {'packages': all_packages, 'selected_country': country})
+
+def domestic_packages(request):
+    destination_id = request.GET.get('dest')
+    
+    # Get all domestic destinations
+    destinations = Destination.objects.filter(category='Domestic').order_by('name')
+    
+    # Filter packages
+    packages = TravelPackage.objects.filter(active=True, category='Domestic')
+    if destination_id:
+        packages = packages.filter(destination_id=destination_id)
+    packages = packages.order_by('-created_at')
+    
+    # Get selected destination object
+    selected_destination = None
+    if destination_id:
+        try:
+            selected_destination = Destination.objects.get(id=destination_id)
+        except Destination.DoesNotExist:
+            pass
+    
+    context = {
+        'packages': packages,
+        'destinations': destinations,
+        'selected_destination': int(destination_id) if destination_id else None,
+        'selected_destination_obj': selected_destination,
+        'category': 'Domestic'
+    }
+    return render(request, 'user/packages.html', context)
+
+def international_packages(request):
+    destination_id = request.GET.get('dest')
+    
+    # Get all international destinations
+    destinations = Destination.objects.filter(category='International').order_by('name')
+    
+    # Filter packages
+    packages = TravelPackage.objects.filter(active=True, category='International')
+    if destination_id:
+        packages = packages.filter(destination_id=destination_id)
+    packages = packages.order_by('-created_at')
+    
+    # Get selected destination object
+    selected_destination = None
+    if destination_id:
+        try:
+            selected_destination = Destination.objects.get(id=destination_id)
+        except Destination.DoesNotExist:
+            pass
+    
+    context = {
+        'packages': packages,
+        'destinations': destinations,
+        'selected_destination': int(destination_id) if destination_id else None,
+        'selected_destination_obj': selected_destination,
+        'category': 'International'
+    }
+    return render(request, 'user/packages.html', context)
 
 def package_detail(request, slug):
     package = get_object_or_404(TravelPackage, id=slug, active=True)
