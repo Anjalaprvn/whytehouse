@@ -204,7 +204,7 @@
             <h2>Send Us a Message</h2>
             {% if messages %}
                 {% for message in messages %}
-                <div style="padding: 15px; border-radius: 12px; margin-bottom: 20px; {% if message.tags == 'success' %}background: #eefbf1; border: 1px solid #bbf0c5; color: #16a34a;{% elif message.tags == 'error' %}background: #fff1f2; border: 1px solid #fda0a6; color: #dc2626;{% endif %}">
+                <div class="alert-msg" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; {% if message.tags == 'success' %}background: #eefbf1; border: 1px solid #bbf0c5; color: #16a34a;{% elif message.tags == 'error' %}background: #fff1f2; border: 1px solid #fda0a6; color: #dc2626;{% endif %}">
                     {{ message }}
                 </div>
                 {% endfor %}
@@ -287,4 +287,14 @@
         </div>
     </div>
 </main>
+
+<script>
+setTimeout(() => {
+    document.querySelectorAll('.alert-msg').forEach(el => {
+        el.style.transition = 'opacity 0.5s';
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 500);
+    });
+}, 3000);
+</script>
 {% endblock %}
