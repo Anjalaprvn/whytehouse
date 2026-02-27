@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Blog
+from .models import Blog,Lead
 
 class BlogSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField(read_only=True)
@@ -30,3 +30,19 @@ class BlogSerializer(serializers.ModelSerializer):
 
     def get_image_url(self, obj):
         return obj.image_url
+
+class LeadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lead
+        fields = [
+            "id",
+            "full_name",
+            "mobile_number",
+            "place",
+            "source",
+            "enquiry_type",
+            "remarks",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
