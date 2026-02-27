@@ -240,13 +240,9 @@ def hospitality_management(request):
     return render(request, 'admin/hospitality/hospitality_management.html', {'properties': properties})
 
 def add_property(request):
-    amenities = Amenity.objects.all()
     if request.method == "POST":
-        selected_amenities = request.POST.getlist('amenities')
-        new_amenity = request.POST.get('new_amenity', '').strip()
-        if new_amenity:
-            amenity_obj, created = Amenity.objects.get_or_create(name=new_amenity)
-            selected_amenities.append(str(amenity_obj.id))
+        new_amenities = request.POST.getlist('new_amenities[]')
+        
         property = Property.objects.create(
             name=request.POST.get("name"),
             property_type=request.POST.get("property_type"),
@@ -258,14 +254,21 @@ def add_property(request):
             owner_contact=request.POST.get("owner_contact"),
             image=request.FILES.get("image")
         )
-        property.amenities.set(selected_amenities)
+        
+        # Create amenities and add to property
+        amenity_ids = []
+        for amenity_name in new_amenities:
+            if amenity_name.strip():
+                amenity_obj, created = Amenity.objects.get_or_create(name=amenity_name.strip())
+                amenity_ids.append(amenity_obj.id)
+        
+        property.amenities.set(amenity_ids)
         messages.success(request, "Property added successfully!")
         return redirect("admin_panel:admin_hospitality")
-    return render(request, "admin/hospitality/hospitality_add.html", {'amenities': amenities})
+    return render(request, "admin/hospitality/hospitality_add.html")
 
 def edit_property(request, property_id):
     property = get_object_or_404(Property, id=property_id)
-    amenities = Amenity.objects.all()
     if request.method == "POST":
         property.name = request.POST.get("name")
         property.property_type = request.POST.get("property_type")
@@ -275,18 +278,23 @@ def edit_property(request, property_id):
         property.summary = request.POST.get("summary")
         property.owner_name = request.POST.get("owner_name")
         property.owner_contact = request.POST.get("owner_contact")
-        selected_amenities = request.POST.getlist('amenities')
-        new_amenity = request.POST.get('new_amenity', '').strip()
-        if new_amenity:
-            amenity_obj, created = Amenity.objects.get_or_create(name=new_amenity)
-            selected_amenities.append(str(amenity_obj.id))
+        
+        new_amenities = request.POST.getlist('new_amenities[]')
+        
+        # Create amenities and add to property
+        amenity_ids = []
+        for amenity_name in new_amenities:
+            if amenity_name.strip():
+                amenity_obj, created = Amenity.objects.get_or_create(name=amenity_name.strip())
+                amenity_ids.append(amenity_obj.id)
+        
         if request.FILES.get("image"):
             property.image = request.FILES.get("image")
         property.save()
-        property.amenities.set(selected_amenities)
+        property.amenities.set(amenity_ids)
         messages.success(request, "Property updated successfully!")
         return redirect("admin_panel:admin_hospitality")
-    return render(request, "admin/hospitality/hospitality_edit.html", {"property": property, "amenities": amenities})
+    return render(request, "admin/hospitality/hospitality_edit.html", {"property": property})
 
 def delete_property(request, property_id):
     property = get_object_or_404(Property, id=property_id)
@@ -308,6 +316,9 @@ def travel_packages(request):
     return render(request, 'admin/packages/travel_packages.html', context)
 
 def travel_package_add(request):
+    # Get category from URL parameter
+    default_category = request.GET.get('category', 'Domestic')
+    
     if request.method == "POST":
         TravelPackage.objects.create(
             name=request.POST.get('name'),
@@ -327,7 +338,9 @@ def travel_package_add(request):
         )
         messages.success(request, "Package added successfully!")
         return redirect('admin_panel:travel_packages')
-    return render(request, 'admin/packages/travel_package_add.html')
+    
+    context = {'default_category': default_category}
+    return render(request, 'admin/packages/travel_package_add.html', context)
 
 def travel_package_edit(request, package_id):
     package = get_object_or_404(TravelPackage, id=package_id)

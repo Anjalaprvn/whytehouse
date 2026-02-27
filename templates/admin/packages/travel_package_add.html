@@ -66,8 +66,8 @@
                 <div>
                     <label>Category <span class="required-star">*</span></label>
                     <select name="category" required class="form-control">
-                        <option value="Domestic" {% if package.category == 'Domestic' %}selected{% endif %}>Domestic</option>
-                        <option value="International" {% if package.category == 'International' %}selected{% endif %}>International</option>
+                        <option value="Domestic" {% if default_category == 'Domestic' or package.category == 'Domestic' %}selected{% endif %}>Domestic</option>
+                        <option value="International" {% if default_category == 'International' or package.category == 'International' %}selected{% endif %}>International</option>
                     </select>
                 </div>
 

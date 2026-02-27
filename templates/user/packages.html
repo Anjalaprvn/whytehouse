@@ -7,101 +7,159 @@
 
 {% block extra_css %}
 <style>
-    body {
-        background: #fff;
+    :root {
+        --brand-gold: #c5a059;
+        --text-gray: #777;
     }
 
-    nav {
+    body {
+        background: #fff;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* --- NAVBAR FIX --- */
+    nav, .navbar {
+        z-index: 1000 !important;
         position: absolute;
-        top: 20px;
         width: 100%;
-        background: transparent;
     }
 
     /* --- HERO SECTION --- */
     .packages-hero {
-        height: 70vh;
-        background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.2)), 
+        position: relative;
+        height: 75vh;
+        background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.1)), 
                     url("{% static 'images/aboutbg.png' %}");
         background-size: cover;
         background-position: center;
-        display: flex; align-items: center;
-        padding: 0 80px; color: white;
+        display: flex; 
+        align-items: center;
+        padding: 0 80px; 
+        color: white;
     }
-    .hero-text h1 { font-size: 64px; line-height: 1.1; margin-bottom: 15px; }
+    
+    .hero-text {
+        position: relative;
+        z-index: 2;
+        margin-top: 60px;
+    }
+    
+    .hero-text h1 { font-size: 64px; line-height: 1.1; margin-bottom: 15px; font-weight: 800; }
     .hero-text h1 span { color: var(--brand-gold); }
-    .hero-text p { font-size: 18px; opacity: 0.8; max-width: 600px; }
+    .hero-text p { font-size: 18px; opacity: 0.9; max-width: 600px; }
 
     /* --- SEARCH & CATEGORIES --- */
     .search-container {
-        max-width: 1100px; margin: -45px auto 40px;
-        padding: 0 20px; position: relative; z-index: 10;
+        max-width: 1100px; 
+        margin: -55px auto 40px; 
+        padding: 0 20px; 
+        position: relative; 
+        z-index: 20;
     }
     .search-wrapper {
-        background: white; padding: 10px 25px; border-radius: 60px;
-        display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        background: white; 
+        padding: 12px 30px; 
+        border-radius: 60px;
+        display: flex; 
+        align-items: center; 
+        box-shadow: 0 15px 45px rgba(0,0,0,0.15);
     }
     .search-wrapper input { flex: 1; border: none; outline: none; padding: 12px; font-size: 16px; }
-    .filter-btn {
-        background: #000; color: white; width: 45px; height: 45px;
-        border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        cursor: pointer;
-    }
-    .categories-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 50px; flex-wrap: wrap; }
+    
+    .categories-container { display: flex; justify-content: center; gap: 12px; margin-bottom: 50px; flex-wrap: wrap; }
     .cat-pill {
-        padding: 10px 25px; border-radius: 50px; background: #000;
-        color: white; text-decoration: none; font-size: 14px; transition: 0.3s;
+        padding: 10px 28px; border-radius: 50px; background: #000;
+        color: white; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s;
     }
     .cat-pill.active, .cat-pill:hover { background: var(--brand-gold); }
 
     /* --- PACKAGE GRID --- */
     .packages-grid {
-        display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-        gap: 30px; max-width: 1300px; margin: 0 auto 80px; padding: 0 40px;
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 35px; 
+        max-width: 1350px; 
+        margin: 0 auto 80px; 
+        padding: 0 40px;
     }
+
     .package-card { 
         background: white; 
         border-radius: 30px; 
         overflow: hidden; 
-        transition: 0.4s; 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+        transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        border: 1px solid #f2f2f2;
     }
-    .package-card:hover { transform: translateY(-10px); }
+    .package-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
     
-    .package-card a {
-        text-decoration: none;
-        color: inherit;
-        display: block;
-    }
+    .package-card a { text-decoration: none; color: inherit; display: block; }
 
     .card-img-box { height: 280px; position: relative; }
     .card-img-box img { width: 100%; height: 100%; object-fit: cover; }
+    
     .badge-wrap { position: absolute; top: 20px; left: 20px; display: flex; gap: 8px; }
-    .badge { font-size: 10px; font-weight: 700; padding: 6px 15px; border-radius: 8px; color: white; }
+    .badge { font-size: 10px; font-weight: 700; padding: 6px 14px; border-radius: 8px; color: white; text-transform: uppercase; }
     .badge-dom { background: #FF9F00; }
-    .badge-feat { background: var(--brand-gold); }
+    .badge-feat { background: #000; }
+
     .card-body { padding: 25px; }
-    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-    .price { font-size: 22px; font-weight: 700; color: var(--brand-gold); }
-    .unit { font-size: 12px; color: var(--text-gray); display: block; }
-    .card-meta { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; font-size: 13px; color: #666; }
-    .card-meta i { color: var(--brand-gold); margin-right: 5px; }
+    
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .card-header h3 { font-size: 22px; font-weight: 700; margin: 0; line-height: 1.2; color: #000; }
+    
+    .price-box { text-align: right; min-width: 100px; }
+    .price { font-size: 24px; font-weight: 800; color: #FF9F00; display: block; }
+    .unit { font-size: 12px; color: #888; }
+
+    .card-desc { font-size: 14px; color: #666; margin-bottom: 15px; min-height: 42px; line-height: 1.4; }
+
+    /* --- FIGMA ACCURATE META SECTION --- */
+    .card-meta { 
+        display: flex; 
+        flex-direction: column; /* Stacked like Figma */
+        gap: 8px;
+        padding-top: 15px; 
+        border-top: 1px solid #f0f0f0; 
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #888; /* Lighter color for sub-text */
+    }
+
+    .meta-item i { 
+        font-size: 12px;
+        color: #333;
+        width: 14px;
+        text-align: center;
+    }
+
+    .duration-box {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .duration-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 600;
+        color: #333;
+    }
 
     /* --- HELP SECTION --- */
     .help-section {
-        position: relative;
-        background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), 
+        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
                     url("{% static 'images/help-bg.png' %}");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        padding: 120px 20px;
-        text-align: center;
-        color: white;
-        margin-top: 50px;
+        background-size: cover; background-position: center;
+        padding: 120px 20px; text-align: center; color: white; margin-top: 50px;
     }
     .help-section h2 { font-size: 42px; font-weight: 700; margin-bottom: 15px; }
-    .help-section p { font-size: 18px; opacity: 0.9; max-width: 600px; margin: 0 auto 35px; }
 </style>
 {% endblock %}
 
@@ -115,9 +173,8 @@
 
 <div class="search-container">
     <div class="search-wrapper">
-        <i class="fas fa-search" style="color: #bbb; margin-left: 10px;"></i>
         <input type="text" placeholder="Search destinations or country...">
-        <div class="filter-btn"><i class="fas fa-sliders-h"></i></div>
+        <div class="filter-icon"><i class="fas fa-search" style="color: #666;"></i></div>
     </div>
 </div>
 
@@ -133,41 +190,55 @@
 <main class="packages-grid">
     {% for package in packages %}
     <div class="package-card">
-        <a href="{% url 'package_detail' package.id %}">                
+        <a href="{% url 'user_panel:package_detail' package.id %}">                
             <div class="card-img-box">
                 <img src="{{ package.image.url }}" alt="{{ package.name }}">
                 <div class="badge-wrap">
-                    <span class="badge {% if package.category == 'Domestic' %}badge-dom{% else %}badge-feat{% endif %}">{{ package.category }}</span>
+                    <span class="badge badge-dom">{{ package.category }}</span>
+                    <span class="badge badge-feat">Featured</span>
                 </div>
             </div>
+            
             <div class="card-body">
                 <div class="card-header">
                     <h3>{{ package.name }}</h3>
                     <div class="price-box">
-                        <span class="price">₹ {{ package.price }}</span>
+                        <span class="price">₹{{ package.price }}</span>
                         <span class="unit">Per person</span>
                     </div>
                 </div>
-                <p class="card-desc">{{ package.description|truncatewords:15 }}</p>
+
+                <p class="card-desc">{{ package.description|truncatewords:10 }}</p>
+
                 <div class="card-meta">
-                    <span><i class="fas fa-map-marker-alt"></i> {{ package.location }}, {{ package.country }}</span>
-                    <span><i class="fas fa-calendar"></i> {{ package.duration|default:"Contact us" }}</span>
+                    <div class="meta-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ package.location }}, {{ package.country }}</span>
+                    </div>
+                    
+                    <div class="duration-box">
+                        <div class="duration-item">
+                            <i class="fas fa-sun"></i> <span>5</span>
+                        </div>
+                        <div class="duration-item">
+                            <i class="fas fa-moon"></i> <span>4</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </a>
     </div>
     {% empty %}
-    <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #999;">
-        <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 20px; display: block;"></i>
-        <h3 style="margin-bottom: 10px;">No Packages Available</h3>
-        <p>Check back soon for exciting travel packages!</p>
+    <div style="grid-column: 1/-1; text-align: center; padding: 100px; color: #999;">
+        <i class="fas fa-suitcase-rolling" style="font-size: 50px; margin-bottom: 20px;"></i>
+        <p>No packages found matching your criteria.</p>
     </div>
     {% endfor %}
 </main>
 
 <section class="help-section">
-    <h2>Need Help For Choosing?</h2>
-    <p>Our Travel Experts Are Here To Help You Find The Perfect Package For Your Needs</p>
-    <a href="/contact" class="help-btn">Contact Us</a>
+    <h2>Need Help Choosing?</h2>
+    <p>Our Travel Experts are here to help you find the perfect package for your needs.</p>
+    <a href="/contact" class="cat-pill" style="background: var(--brand-gold); display: inline-block; margin-top: 20px; color: white; text-decoration: none;">Contact Us</a>
 </section>
 {% endblock %}

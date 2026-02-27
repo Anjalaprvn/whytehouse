@@ -56,9 +56,6 @@
         <h1>Travel Packages Management</h1>
         <p>Manage your domestic and international travel packages</p>
     </div>
-    <a href="{% url 'admin_panel:travel_package_add' %}" style="background:#c89b2d; color:white; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; align-self:flex-end;">
-        + Add New Package
-    </a>
 </div>
 
 <div class="category-tabs">
@@ -73,6 +70,20 @@
         International ({{ international_count }})
     </a>
 </div>
+
+{% if selected_category == 'Domestic' %}
+<div style="margin-bottom: 20px;">
+    <a href="{% url 'admin_panel:travel_package_add' %}?category=Domestic" style="background:#c89b2d; color:white; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">
+        + Add Package
+    </a>
+</div>
+{% elif selected_category == 'International' %}
+<div style="margin-bottom: 20px;">
+    <a href="{% url 'admin_panel:travel_package_add' %}?category=International" style="background:#c89b2d; color:white; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">
+        + Add Package
+    </a>
+</div>
+{% endif %}
 
 <div class="package-grid">
     {% for package in packages %}

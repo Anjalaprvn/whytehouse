@@ -242,18 +242,19 @@
 
             <!-- Amenities -->
             <div class="form-group">
-                <label>Amenities</label>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px;">
-                    {% for amenity in amenities %}
-                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 400; cursor: pointer;">
-                        <input type="checkbox" name="amenities" value="{{ amenity.id }}" style="width: auto;">
-                        <span>{{ amenity.name }}</span>
-                    </label>
-                    {% endfor %}
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <label style="margin:0;">Amenities</label>
+                    <button type="button" onclick="addNewAmenity()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer; font-size: 12px;">+ Add Amenity</button>
                 </div>
-                <div style="margin-top: 15px;">
-                    <label style="font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">Add New Amenity</label>
-                    <input type="text" name="new_amenity" class="form-control" placeholder="Enter new amenity name">
+                
+                <div id="new-amenities-container">
+                    {% if property.amenities.all %}
+                        {% for amenity in property.amenities.all %}
+                        <input type="text" name="new_amenities[]" class="form-control" value="{{ amenity.name }}" style="margin-bottom: 10px;">
+                        {% endfor %}
+                    {% else %}
+                        <input type="text" name="new_amenities[]" class="form-control" placeholder="Enter amenity name" style="margin-bottom: 10px;">
+                    {% endif %}
                 </div>
             </div>
 
@@ -288,5 +289,20 @@
     </form>
 
 </div>
+
+<script>
+function addNewAmenity() {
+    const container = document.getElementById('new-amenities-container');
+    
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.name = 'new_amenities[]';
+    input.className = 'form-control';
+    input.placeholder = 'Enter new amenity name';
+    input.style.marginBottom = '10px';
+    
+    container.appendChild(input);
+}
+</script>
 
 {% endblock %}
