@@ -1,0 +1,6 @@
+After pulling from git, run these commands:
+
+1. python manage.py migrate
+2. python manage.py runserver
+
+This will apply the database changes needed for the dashboard to work.

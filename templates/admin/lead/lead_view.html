@@ -42,6 +42,19 @@
         </div>
 
         <div class="info-row">
+            <div class="info-label">Enquiry Type</div>
+            <div class="info-value">
+                <span class="source-badge" style="
+                    {% if lead.enquiry_type == 'General' %}background: #eef2ff; color: #4f46e5;
+                    {% elif lead.enquiry_type == 'International' %}background: #fef3c7; color: #d97706;
+                    {% elif lead.enquiry_type == 'Domestic' %}background: #dcfce7; color: #16a34a;
+                    {% endif %}">
+                    {{ lead.get_enquiry_type_display }}
+                </span>
+            </div>
+        </div>
+
+        <div class="info-row">
             <div class="info-label">Source</div>
             <div class="info-value">
                 <span class="source-badge">{{ lead.get_source_display }}</span>

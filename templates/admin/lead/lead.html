@@ -148,6 +148,35 @@
         <p>Track and manage customer leads</p>
     </div>
 
+    <!-- Enquiry Type Filter Buttons -->
+    <div style="margin-bottom: 25px; display: flex; gap: 15px; flex-wrap: wrap;">
+        <a href="{% url 'admin_panel:leads' %}" 
+           class="filter-btn {% if not selected_type and not selected_source and not selected_new %}active{% endif %}" 
+           style="padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 500; transition: 0.3s; {% if not selected_type and not selected_source and not selected_new %}background: #d4a017; color: white;{% else %}background: white; color: #333; border: 1px solid #e0e0e0;{% endif %}">
+            <i class="fas fa-list"></i> All Leads ({{ leads.count }})
+        </a>
+        <a href="{% url 'admin_panel:leads' %}?type=General" 
+           class="filter-btn {% if selected_type == 'General' %}active{% endif %}" 
+           style="padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 500; transition: 0.3s; {% if selected_type == 'General' %}background: #d4a017; color: white;{% else %}background: white; color: #333; border: 1px solid #e0e0e0;{% endif %}">
+            <i class="fas fa-question-circle"></i> General Enquiry ({{ general_count }})
+        </a>
+        <a href="{% url 'admin_panel:leads' %}?type=International" 
+           class="filter-btn {% if selected_type == 'International' %}active{% endif %}" 
+           style="padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 500; transition: 0.3s; {% if selected_type == 'International' %}background: #d4a017; color: white;{% else %}background: white; color: #333; border: 1px solid #e0e0e0;{% endif %}">
+            <i class="fas fa-globe"></i> International ({{ international_count }})
+        </a>
+        <a href="{% url 'admin_panel:leads' %}?type=Domestic" 
+           class="filter-btn {% if selected_type == 'Domestic' %}active{% endif %}" 
+           style="padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 500; transition: 0.3s; {% if selected_type == 'Domestic' %}background: #d4a017; color: white;{% else %}background: white; color: #333; border: 1px solid #e0e0e0;{% endif %}">
+            <i class="fas fa-home"></i> Domestic ({{ domestic_count }})
+        </a>
+        <a href="{% url 'admin_panel:leads' %}?new=true" 
+           class="filter-btn {% if selected_new == 'true' %}active{% endif %}" 
+           style="padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 500; transition: 0.3s; {% if selected_new == 'true' %}background: #d4a017; color: white;{% else %}background: white; color: #333; border: 1px solid #e0e0e0;{% endif %}">
+            <i class="fas fa-plus-circle"></i> New Leads ({{ new_leads_count }})
+        </a>
+    </div>
+
     <div class="table-card">
         <div class="table-controls">
             <h3>Lead History</h3>
@@ -170,6 +199,7 @@
                     <th>Sl No</th>
                     <th>Name</th>
                     <th>Mobile No</th>
+                    <th>Enquiry Type</th>
                     <th>Source</th>
                     <th style="text-align:center;">Actions</th>
                 </tr>
@@ -181,6 +211,15 @@
                     <td>{{ forloop.counter }}</td>
                     <td>{{ lead.full_name }}</td>
                     <td>{{ lead.mobile_number }}</td>
+                    <td>
+                        <span class="source-badge" style="
+                            {% if lead.enquiry_type == 'General' %}background: #eef2ff; color: #4f46e5;
+                            {% elif lead.enquiry_type == 'International' %}background: #fef3c7; color: #d97706;
+                            {% elif lead.enquiry_type == 'Domestic' %}background: #dcfce7; color: #16a34a;
+                            {% endif %}">
+                            {{ lead.get_enquiry_type_display }}
+                        </span>
+                    </td>
                     <td>
                         <span class="source-badge">
                             {{ lead.get_source_display }}
@@ -201,7 +240,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" style="text-align:center; padding:40px; color:#999;">
+                    <td colspan="6" style="text-align:center; padding:40px; color:#999;">
                         No leads found.
                     </td>
                 </tr>

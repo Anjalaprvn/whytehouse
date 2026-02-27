@@ -178,10 +178,21 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Enquiry Type *</label>
+                    <select name="enquiry_type" required>
+                        <option value="General" {% if lead.enquiry_type == "General" %}selected{% endif %}>General Enquiry</option>
+                        <option value="International" {% if lead.enquiry_type == "International" %}selected{% endif %}>International</option>
+                        <option value="Domestic" {% if lead.enquiry_type == "Domestic" %}selected{% endif %}>Domestic</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label>Source *</label>
                     <select name="source" required>
-                        <option value="Direct Contact" {% if lead.source == "Direct Contact" %}selected{% endif %}>Direct Contact</option>
-                        <option value="Manual Entry" {% if lead.source == "Manual Entry" %}selected{% endif %}>Manual Entry</option>
+                        <option value="Direct" {% if lead.source == "Direct" %}selected{% endif %}>Direct Contact</option>
+                        <option value="Manual" {% if lead.source == "Manual" %}selected{% endif %}>Manual Entry</option>
+                        <option value="Website" {% if lead.source == "Website" %}selected{% endif %}>Website</option>
+                        <option value="Referral" {% if lead.source == "Referral" %}selected{% endif %}>Referral</option>
                     </select>
                 </div>
 

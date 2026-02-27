@@ -10,11 +10,18 @@ class Lead(models.Model):
         ('Website', 'Website'),
         ('Manual', 'Manual Entry'),
         ('Referral', 'Referral'),
+        ('Enquire Now', 'Enquire Now'),
+    )
+    ENQUIRY_TYPE_CHOICES = (
+        ('General', 'General Enquiry'),
+        ('International', 'International'),
+        ('Domestic', 'Domestic'),
     )
     full_name = models.CharField(max_length=100)
     mobile_number = models.CharField(max_length=15)
     place = models.CharField(max_length=100, blank=True, null=True)
     source = models.CharField(max_length=50, choices=SOURCE_CHOICES, default='Manual')
+    enquiry_type = models.CharField(max_length=50, choices=ENQUIRY_TYPE_CHOICES, default='General')
     remarks = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

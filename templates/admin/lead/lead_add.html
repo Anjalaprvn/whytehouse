@@ -228,15 +228,25 @@
                     <input type="text" name="place" placeholder="Bangalore">
                 </div>
 
+                <!-- ✅ ENQUIRY TYPE FIELD -->
+                <div class="form-group">
+                    <label>Enquiry Type <span>*</span></label>
+                    <select name="enquiry_type" required>
+                        <option value="General">General Enquiry</option>
+                        <option value="International">International</option>
+                        <option value="Domestic">Domestic</option>
+                    </select>
+                </div>
+
                 <!-- ✅ SOURCE FIELD ADDED -->
                 <div class="form-group">
                     <label>Source <span>*</span></label>
                     <select name="source" required>
                         <option value="">Select Source</option>
-                        <option value="Direct Contact">Direct Contact</option>
-                        <option value="Manual Entry">Manual Entry</option>
-                        <option value="Website Inquiry">Website Inquiry</option>
-                        <option value="Social Media">Social Media</option>
+                        <option value="Direct">Direct Contact</option>
+                        <option value="Manual">Manual Entry</option>
+                        <option value="Website">Website</option>
+                        <option value="Referral">Referral</option>
                     </select>
                 </div>
 

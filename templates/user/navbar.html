@@ -54,14 +54,14 @@
     <nav>
         <img src="{% static 'images/logo.png' %}" class="logo-img">
         <div class="nav-center">
-            <a href="{% url 'index' %}" {% block nav_home %}{% endblock %}>Home</a>
-            <a href="{% url 'about' %}" {% block nav_about %}{% endblock %}>About</a>
-            <a href="{% url 'blog' %}" {% block nav_blog %}{% endblock %}>Blog</a>
-            <a href="{% url 'packages'%}" {% block nav_packages %}{% endblock %}>Packages</a>
-            <a href="{% url 'contact'%}" {% block nav_contact %}{% endblock %}>Contact Us</a>
+            <a href="{% url 'user_panel:index' %}" {% block nav_home %}{% endblock %}>Home</a>
+            <a href="{% url 'user_panel:about' %}" {% block nav_about %}{% endblock %}>About</a>
+            <a href="{% url 'user_panel:blog_list' %}" {% block nav_blog %}{% endblock %}>Blog</a>
+            <a href="{% url 'user_panel:packages'%}" {% block nav_packages %}{% endblock %}>Packages</a>
+            <a href="{% url 'user_panel:contact'%}" {% block nav_contact %}{% endblock %}>Contact Us</a>
         </div>
         <div class="nav-right">
-            <a href="{% url 'domestic' %}" style="text-decoration: none; color: white; {% if request.resolver_match.url_name == 'domestic' %}opacity: 1; font-weight: 600;{% endif %}">Domestic</a> | <a href="{% url 'index' %}" style="text-decoration: none; color: white; {% if request.resolver_match.url_name == 'index' %}opacity: 1; font-weight: 600;{% endif %}">International</a>
+            <a href="{% url 'user_panel:domestic' %}" style="text-decoration: none; color: white; {% if request.resolver_match.url_name == 'domestic' %}opacity: 1; font-weight: 600;{% endif %}">Domestic</a> | <a href="{% url 'user_panel:index' %}" style="text-decoration: none; color: white; {% if request.resolver_match.url_name == 'index' %}opacity: 1; font-weight: 600;{% endif %}">International</a>
         </div>
     </nav>
 
