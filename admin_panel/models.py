@@ -84,7 +84,6 @@ class TravelPackage(models.Model):
     def __str__(self):
         return self.name
 
-# INQUIRY MODEL
 class Inquiry(models.Model):
     STATUS_CHOICES = (
         ('New', 'New'),
@@ -92,6 +91,16 @@ class Inquiry(models.Model):
         ('Converted', 'Converted'),
         ('Junk', 'Junk'),
     )
+
+    # ✅ LINK TO LEAD (NEW)
+    lead = models.ForeignKey(
+        Lead,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="inquiries"
+    )
+
     name = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
@@ -99,6 +108,7 @@ class Inquiry(models.Model):
     message = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='New')
     created_at = models.DateTimeField(default=timezone.now)
+
     def __str__(self):
         return self.name
 

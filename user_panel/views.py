@@ -21,33 +21,50 @@ def blog_detail(request, slug):
 
 def contact(request):
     if request.method == 'POST':
-        name = request.POST.get('name', '').strip()
-        email = request.POST.get('email', '').strip()
-        phone = request.POST.get('phone', '').strip()
-        package = request.POST.get('package', '').strip()
-        message = request.POST.get('message', '').strip()
-        
-        if name and email and phone and message:
-            Inquiry.objects.create(
-                name=name,
-                email=email,
-                phone=phone,
-                package=package or 'General Inquiry',
-                message=message
-            )
-            
-            Lead.objects.create(
+        name = (request.POST.get('name') or '').strip()
+        email = (request.POST.get('email') or '').strip()
+        phone = (request.POST.get('phone') or '').strip()
+        package = (request.POST.get('package') or '').strip()
+        message = (request.POST.get('message') or '').strip()
+
+        if not (name and email and phone and message):
+            messages.error(request, 'Please fill all required fields.')
+            return redirect('contact')
+
+        # ✅ 1) Find existing lead by phone (or create new)
+        lead = Lead.objects.filter(mobile_number=phone).first()
+
+        if lead:
+            # Update basic info if needed (optional)
+            if lead.full_name != name:
+                lead.full_name = name
+            # Keep latest message in remarks (optional)
+            lead.remarks = (lead.remarks or "") + f"\n\n[{package or 'General Inquiry'}] {email}: {message}"
+            lead.source = 'Website'
+            lead.save()
+        else:
+            lead = Lead.objects.create(
                 full_name=name,
                 mobile_number=phone,
+                place=None,
                 source='Website',
-                remarks=f'Package: {package or "General Inquiry"} | Email: {email} | Message: {message}'
+                remarks=f"Email: {email}\nPackage: {package or 'General Inquiry'}\nMessage: {message}"
             )
-            
-            messages.success(request, 'Thank you! Your inquiry has been submitted successfully.')
-            return redirect('/contact/')
-        else:
-            messages.error(request, 'Please fill all required fields.')
-    
+
+        # ✅ 2) Create inquiry AND link it to lead
+        Inquiry.objects.create(
+            lead=lead,
+            name=name,
+            email=email,
+            phone=phone,
+            package=package or 'General Inquiry',
+            message=message,
+            status='New'
+        )
+
+        messages.success(request, 'Thank you! Your inquiry has been submitted successfully.')
+        return redirect('contact')
+
     return render(request, 'user/contact.html')
 
 def packages(request):

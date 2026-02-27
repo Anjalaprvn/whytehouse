@@ -202,6 +202,13 @@
     <div class="container">
         <div class="card form-card">
             <h2>Send Us a Message</h2>
+            {% if messages %}
+                {% for message in messages %}
+                <div style="padding: 15px; border-radius: 12px; margin-bottom: 20px; {% if message.tags == 'success' %}background: #eefbf1; border: 1px solid #bbf0c5; color: #16a34a;{% elif message.tags == 'error' %}background: #fff1f2; border: 1px solid #fda0a6; color: #dc2626;{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
             <form action="" method="POST">
                 {% csrf_token %}
                 <div class="form-grid">
