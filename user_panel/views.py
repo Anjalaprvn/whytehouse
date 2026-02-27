@@ -44,7 +44,7 @@ def contact(request):
             )
             
             messages.success(request, 'Thank you! Your inquiry has been submitted successfully.')
-            return redirect('contact')
+            return redirect('/contact/')
         else:
             messages.error(request, 'Please fill all required fields.')
     
@@ -62,6 +62,43 @@ def packages(request):
 
 def package_detail(request, slug):
     package = get_object_or_404(TravelPackage, id=slug, active=True)
+    
+    if request.method == 'POST':
+        from admin_panel.models import Customer
+        
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        guests = request.POST.get('guests', '1')
+        start_date = request.POST.get('start_date', '').strip()
+        
+        if name and phone:
+            # Split name into first and last
+            name_parts = name.split(' ', 1)
+            first_name = name_parts[0]
+            last_name = name_parts[1] if len(name_parts) > 1 else ''
+            
+            Customer.objects.create(
+                first_name=first_name,
+                last_name=last_name,
+                display_name=name,
+                contact_number=phone,
+                whatsapp_number=phone,
+                same_as_whatsapp=True,
+                customer_type='Individual',
+                place=f'Booking: {package.name}'
+            )
+            
+            Lead.objects.create(
+                full_name=name,
+                mobile_number=phone,
+                source='Website',
+                remarks=f'Package: {package.name} | Email: {email} | Guests: {guests} | Start Date: {start_date}'
+            )
+            
+            messages.success(request, 'Booking request submitted! Our team will contact you soon.')
+            return redirect('package_detail', slug=slug)
+    
     return render(request, 'user/package_detail.html', {'package': package})
 
 def hospitality(request):
