@@ -127,9 +127,41 @@ def lead_management(request):
     source_filter = request.GET.get('source', '')
     new_leads = request.GET.get('new', '')
     
-    # If General enquiry type is selected, redirect to customer inquiries
+    # If General enquiry type is selected, use customer inquiries template
     if enquiry_type == 'General':
-        return redirect('admin_panel:customer_inquiries')
+        general_leads = Lead.objects.filter(enquiry_type='General').order_by('-created_at')
+        
+        # Convert leads to inquiry-like format for template compatibility
+        inquiries = []
+        for lead in general_leads:
+            # Extract email from remarks if available
+            email = ''
+            if lead.remarks and 'Email:' in lead.remarks:
+                email_part = lead.remarks.split('Email:')[1].split('\n')[0].strip()
+                email = email_part
+            
+            # Create inquiry-like object
+            inquiry_obj = type('obj', (object,), {
+                'id': lead.id,
+                'name': lead.full_name,
+                'email': email,
+                'phone': lead.mobile_number,
+                'package': 'General Inquiry',
+                'message': lead.remarks or '',
+                'status': 'New',
+                'created_at': lead.created_at,
+            })
+            inquiries.append(inquiry_obj)
+        
+        context = {
+            'inquiries': inquiries,
+            'total_count': len(inquiries),
+            'new_count': len(inquiries),
+            'contacted_count': 0,
+            'converted_count': 0,
+            'junk_count': 0,
+        }
+        return render(request, 'admin/enquiry/customer_inquiries.html', context)
     
     leads = Lead.objects.all()
     
