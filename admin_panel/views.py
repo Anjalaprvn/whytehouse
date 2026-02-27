@@ -10,7 +10,7 @@ import random
 from django.core.mail import send_mail
 from django.contrib import messages
 from datetime import datetime
-from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, Amenity, TravelPackage, Inquiry
+from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry
 from .models import Employee,Blog
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
@@ -242,8 +242,9 @@ def hospitality_management(request):
 def add_property(request):
     if request.method == "POST":
         new_amenities = request.POST.getlist('new_amenities[]')
+        amenities_text = '\n'.join([amenity.strip() for amenity in new_amenities if amenity.strip()])
         
-        property = Property.objects.create(
+        Property.objects.create(
             name=request.POST.get("name"),
             property_type=request.POST.get("property_type"),
             location=request.POST.get("location"),
@@ -252,17 +253,9 @@ def add_property(request):
             summary=request.POST.get("summary"),
             owner_name=request.POST.get("owner_name"),
             owner_contact=request.POST.get("owner_contact"),
+            amenities=amenities_text,
             image=request.FILES.get("image")
         )
-        
-        # Create amenities and add to property
-        amenity_ids = []
-        for amenity_name in new_amenities:
-            if amenity_name.strip():
-                amenity_obj, created = Amenity.objects.get_or_create(name=amenity_name.strip())
-                amenity_ids.append(amenity_obj.id)
-        
-        property.amenities.set(amenity_ids)
         messages.success(request, "Property added successfully!")
         return redirect("admin_panel:admin_hospitality")
     return render(request, "admin/hospitality/hospitality_add.html")
@@ -280,18 +273,11 @@ def edit_property(request, property_id):
         property.owner_contact = request.POST.get("owner_contact")
         
         new_amenities = request.POST.getlist('new_amenities[]')
-        
-        # Create amenities and add to property
-        amenity_ids = []
-        for amenity_name in new_amenities:
-            if amenity_name.strip():
-                amenity_obj, created = Amenity.objects.get_or_create(name=amenity_name.strip())
-                amenity_ids.append(amenity_obj.id)
+        property.amenities = '\n'.join([amenity.strip() for amenity in new_amenities if amenity.strip()])
         
         if request.FILES.get("image"):
             property.image = request.FILES.get("image")
         property.save()
-        property.amenities.set(amenity_ids)
         messages.success(request, "Property updated successfully!")
         return redirect("admin_panel:admin_hospitality")
     return render(request, "admin/hospitality/hospitality_edit.html", {"property": property})

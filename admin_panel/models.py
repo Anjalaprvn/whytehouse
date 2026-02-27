@@ -28,16 +28,6 @@ class Lead(models.Model):
     def __str__(self):
         return self.full_name
 
-# AMENITY MODEL
-class Amenity(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    created_at = models.DateTimeField(default=timezone.now)
-    class Meta:
-        verbose_name_plural = "Amenities"
-        ordering = ['name']
-    def __str__(self):
-        return self.name
-
 # PROPERTY MODEL
 class Property(models.Model):
     PROPERTY_TYPES = [
@@ -55,7 +45,7 @@ class Property(models.Model):
     summary = models.TextField()
     owner_name = models.CharField(max_length=150, blank=True, null=True)
     owner_contact = models.CharField(max_length=20, blank=True, null=True)
-    amenities = models.ManyToManyField(Amenity, blank=True)
+    amenities = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to='properties/', blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
     def __str__(self):

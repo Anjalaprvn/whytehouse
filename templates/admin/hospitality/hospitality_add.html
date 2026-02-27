@@ -248,9 +248,9 @@
                 </div>
                 
                 <div id="new-amenities-container">
-                    {% if property.amenities.all %}
-                        {% for amenity in property.amenities.all %}
-                        <input type="text" name="new_amenities[]" class="form-control" value="{{ amenity.name }}" style="margin-bottom: 10px;">
+                    {% if property.amenities %}
+                        {% for amenity in property.amenities.splitlines %}
+                        <input type="text" name="new_amenities[]" class="form-control" value="{{ amenity }}" style="margin-bottom: 10px;">
                         {% endfor %}
                     {% else %}
                         <input type="text" name="new_amenities[]" class="form-control" placeholder="Enter amenity name" style="margin-bottom: 10px;">
