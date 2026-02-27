@@ -123,8 +123,39 @@ def dashboard(request):
 
 # LEADS
 def lead_management(request):
-    leads = Lead.objects.all().order_by('-created_at')
-    return render(request, 'admin/lead/lead.html', {'leads': leads})
+    enquiry_type = request.GET.get('type', '')
+    source_filter = request.GET.get('source', '')
+    new_leads = request.GET.get('new', '')
+    
+    leads = Lead.objects.all()
+    
+    if enquiry_type:
+        leads = leads.filter(enquiry_type=enquiry_type)
+    
+    if source_filter:
+        leads = leads.filter(source=source_filter)
+    
+    if new_leads == 'true':
+        leads = leads.filter(source='Enquire Now')
+    
+    leads = leads.order_by('-created_at')
+    
+    general_count = Lead.objects.filter(enquiry_type='General').count()
+    international_count = Lead.objects.filter(enquiry_type='International').count()
+    domestic_count = Lead.objects.filter(enquiry_type='Domestic').count()
+    new_leads_count = Lead.objects.filter(source='Enquire Now').count()
+    
+    context = {
+        'leads': leads,
+        'selected_type': enquiry_type,
+        'selected_source': source_filter,
+        'selected_new': new_leads,
+        'general_count': general_count,
+        'international_count': international_count,
+        'domestic_count': domestic_count,
+        'new_leads_count': new_leads_count,
+    }
+    return render(request, 'admin/lead/lead.html', context)
 
 def add_lead(request):
     if request.method == "POST":
@@ -133,6 +164,7 @@ def add_lead(request):
             mobile_number=request.POST.get('mobile_number'),
             place=request.POST.get('place'),
             source=request.POST.get('source'),
+            enquiry_type=request.POST.get('enquiry_type', 'General'),
             remarks=request.POST.get('remarks')
         )
         messages.success(request, "Lead added successfully!")
@@ -146,6 +178,7 @@ def edit_lead(request, id):
         lead.mobile_number = request.POST.get('mobile_number')
         lead.place = request.POST.get('place')
         lead.source = request.POST.get('source')
+        lead.enquiry_type = request.POST.get('enquiry_type', 'General')
         lead.remarks = request.POST.get('remarks')
         lead.save()
         messages.success(request, "Lead updated successfully!")

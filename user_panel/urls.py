@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 
+app_name = 'user_panel'
+
 urlpatterns = [
     path('', views.index, name='index'),
     path('domestic/', views.domestic, name='domestic'), 
@@ -13,6 +15,7 @@ urlpatterns = [
     path("blog/", views.blog_list, name="blog_list"),
     path("blog/", views.blog_list, name="blog"),  # ✅ alias for old templates
     path("blog/<slug:slug>/", views.blog_detail, name="blog_detail"),
+    path('enquire-now/', views.enquire_now, name='enquire_now'),
 
 
 ]

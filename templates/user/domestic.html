@@ -1061,7 +1061,7 @@
                 </div>
                 <div class="resort-cta">
                     <h3 class="resort-name">Le Montigo Resorts</h3>
-                    <a href="#" class="btn-enquire">Enquire Now <i class="fa-solid fa-arrow-right"></i></a>
+                    <a href="#" class="btn-enquire" onclick="openEnquirePopup('Domestic')">Enquire Now <i class="fa-solid fa-arrow-right"></i></a>
                 </div>
             </div>
         </div>
@@ -1071,7 +1071,7 @@
         <div class="jungle-content">
             <div class="jungle-text-box">
                 <h2>Zero Degree Jungle Resort</h2>
-                <a href="#" class="btn-enquire-round">
+                <a href="#" class="btn-enquire-round" onclick="openEnquirePopup('Domestic')">
                     Enquire Now 
                     <span class="arrow-circle"><i class="fa-solid fa-arrow-up-right"></i></span>
                 </a>
@@ -1303,5 +1303,7 @@
     <span>WHYTE HOUSE HOLIDAYS +</span><span>WHYTE HOUSE HOLIDAYS +</span><span>WHYTE HOUSE HOLIDAYS +</span><span>WHYTE HOUSE HOLIDAYS +</span><span>WHYTE HOUSE HOLIDAYS +</span>
   </div>
 </div>
+
+{% include 'user/enquire_popup.html' %}
 
 {% endblock %}

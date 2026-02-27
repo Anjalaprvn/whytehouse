@@ -1,13 +1,42 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from admin_panel.models import TravelPackage, Property, Inquiry, Lead
-from admin_panel.models import Blog
+from django.http import JsonResponse
+from admin_panel.models import TravelPackage, Property, Inquiry, Lead, Blog
 
+
+def enquire_now(request):
+    if request.method == 'POST':
+        try:
+            full_name = request.POST.get('full_name', '').strip()
+            mobile_number = request.POST.get('mobile_number', '').strip()
+            email = request.POST.get('email', '').strip()
+            place = request.POST.get('place', '').strip()
+            message = request.POST.get('message', '').strip()
+            enquiry_type = request.POST.get('enquiry_type', 'General')
+            
+            if not full_name or not mobile_number:
+                return JsonResponse({'success': False, 'error': 'Name and mobile number are required'})
+            
+            # Create lead with enquiry type based on page
+            Lead.objects.create(
+                full_name=full_name,
+                mobile_number=mobile_number,
+                place=place,
+                source='Enquire Now',
+                enquiry_type=enquiry_type,
+                remarks=f'Email: {email}\nMessage: {message}'
+            )
+            
+            return JsonResponse({'success': True})
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 def index(request):
     packages = TravelPackage.objects.filter(active=True, category='International')[:6]
     return render(request, 'user/international.html', {'packages': packages})
-
 def domestic(request):
     packages = TravelPackage.objects.filter(active=True, category='Domestic')[:6]
     return render(request, 'user/domestic.html', {'packages': packages})
