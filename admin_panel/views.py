@@ -238,18 +238,24 @@ def travel_package_edit(request, package_id):
         package.location = request.POST.get('location')
         package.country = request.POST.get('country')
         package.description = request.POST.get('description')
-        package.itinerary = '\n'.join(request.POST.getlist('itinerary[]'))
-        package.inclusions = '\n'.join(request.POST.getlist('inclusions[]'))
-        package.exclusions = '\n'.join(request.POST.getlist('exclusions[]'))
+        package.itinerary = request.POST.get('itinerary')
+        package.inclusions = request.POST.get('inclusions')
+        package.exclusions = request.POST.get('exclusions')
         package.meta_title = request.POST.get('meta_title')
         package.meta_description = request.POST.get('meta_description')
         package.active = request.POST.get('active') == 'on'
         if request.FILES.get('image'):
             package.image = request.FILES.get('image')
+        if request.FILES.get('story_main_image'):
+            package.story_main_image = request.FILES.get('story_main_image')
+        if request.FILES.get('story_side_image1'):
+            package.story_side_image1 = request.FILES.get('story_side_image1')
+        if request.FILES.get('story_side_image2'):
+            package.story_side_image2 = request.FILES.get('story_side_image2')
         package.save()
         messages.success(request, "Package updated successfully!")
         return redirect('admin_panel:travel_packages')
-    return render(request, 'admin/packages/travel_package_add.html', {'package': package})
+    return render(request, 'admin/packages/travel_package_edit.html', {'package': package})
 
 def travel_package_delete(request, package_id):
     package = get_object_or_404(TravelPackage, id=package_id)

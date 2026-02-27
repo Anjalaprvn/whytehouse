@@ -74,6 +74,12 @@ class TravelPackage(models.Model):
     exclusions = models.TextField(blank=True, null=True)
     meta_title = models.CharField(max_length=255, blank=True, null=True)
     meta_description = models.TextField(blank=True, null=True)
+    
+    # Real Stories Images
+    story_main_image = models.ImageField(upload_to='package_stories/', blank=True, null=True)
+    story_side_image1 = models.ImageField(upload_to='package_stories/', blank=True, null=True)
+    story_side_image2 = models.ImageField(upload_to='package_stories/', blank=True, null=True)
+    
     created_at = models.DateTimeField(default=timezone.now)
     def __str__(self):
         return self.name

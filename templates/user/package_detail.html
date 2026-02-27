@@ -379,7 +379,7 @@
         </div>
         <div class="stories-grid">
             <div class="main-story">
-                <img src="{% static 'images/v2.png' %}">
+                <img src="{% if package.story_main_image %}{{ package.story_main_image.url }}{% else %}{% static 'images/v2.png' %}{% endif %}">
                 <div class="story-overlay">
                     <p>"Whyte House leveraged our property's unique history, implementing a strategic vision..."</p>
                     
@@ -395,8 +395,8 @@
 </div>                </div>
             </div>
             <div class="side-imgs">
-                <img src="{% static 'images/a2.png' %}">
-                <img src="{% static 'images/a1.png' %}">
+                <img src="{% if package.story_side_image1 %}{{ package.story_side_image1.url }}{% else %}{% static 'images/a2.png' %}{% endif %}">
+                <img src="{% if package.story_side_image2 %}{{ package.story_side_image2.url }}{% else %}{% static 'images/a1.png' %}{% endif %}">
             </div>
         </div>
     </section>
