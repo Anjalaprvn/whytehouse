@@ -166,8 +166,8 @@
 {% block content %}
 <header class="packages-hero">
     <div class="hero-text">
-        <h1>Discover Your<br>Next <span>Adventure</span></h1>
-        <p>Explore our handpicked collection of domestic and international tour packages designed for the modern traveler.</p>
+        <h1>{% if category %}{{ category }}{% else %}Discover Your{% endif %}<br>{% if category %}Packages{% else %}Next <span>Adventure</span>{% endif %}</h1>
+        <p>Explore our handpicked collection of {% if category %}{{ category|lower }}{% else %}domestic and international{% endif %} tour packages designed for the modern traveler.</p>
     </div>
 </header>
 
@@ -179,12 +179,27 @@
 </div>
 
 <div class="categories-container">
-    <a href="?country=all" class="cat-pill {% if selected_country == 'all' %}active{% endif %}">All</a>
-    <a href="?country=thailand" class="cat-pill {% if selected_country == 'thailand' %}active{% endif %}">Thailand</a>
-    <a href="?country=vietnam" class="cat-pill {% if selected_country == 'vietnam' %}active{% endif %}">Vietnam</a>
-    <a href="?country=malaysia" class="cat-pill {% if selected_country == 'malaysia' %}active{% endif %}">Malaysia</a>
-    <a href="?country=paris" class="cat-pill {% if selected_country == 'paris' %}active{% endif %}">Paris</a>
-    <a href="?country=london" class="cat-pill {% if selected_country == 'london' %}active{% endif %}">London</a>
+    {% if category %}
+        <!-- Show destination filters when on domestic or international packages page -->
+        <a href="{% if category == 'Domestic' %}{% url 'user_panel:domestic_packages' %}{% else %}{% url 'user_panel:international_packages' %}{% endif %}" 
+           class="cat-pill {% if not selected_destination %}active{% endif %}">
+            All {{ category }}
+        </a>
+        {% for dest in destinations %}
+        <a href="{% if category == 'Domestic' %}{% url 'user_panel:domestic_packages' %}?dest={{ dest.id }}{% else %}{% url 'user_panel:international_packages' %}?dest={{ dest.id }}{% endif %}" 
+           class="cat-pill {% if selected_destination == dest.id %}active{% endif %}">
+            {{ dest.name }}
+        </a>
+        {% endfor %}
+    {% else %}
+        <!-- Legacy country filters (if still needed) -->
+        <a href="?country=all" class="cat-pill {% if selected_country == 'all' %}active{% endif %}">All</a>
+        <a href="?country=thailand" class="cat-pill {% if selected_country == 'thailand' %}active{% endif %}">Thailand</a>
+        <a href="?country=vietnam" class="cat-pill {% if selected_country == 'vietnam' %}active{% endif %}">Vietnam</a>
+        <a href="?country=malaysia" class="cat-pill {% if selected_country == 'malaysia' %}active{% endif %}">Malaysia</a>
+        <a href="?country=paris" class="cat-pill {% if selected_country == 'paris' %}active{% endif %}">Paris</a>
+        <a href="?country=london" class="cat-pill {% if selected_country == 'london' %}active{% endif %}">London</a>
+    {% endif %}
 </div>
 
 <main class="packages-grid">
@@ -219,7 +234,7 @@
                     <div class="duration-box">
                         <div class="duration-item">
                             <i class="fas fa-sun"></i> <span>5</span>
-                        </div>
+                        </div>/
                         <div class="duration-item">
                             <i class="fas fa-moon"></i> <span>4</span>
                         </div>

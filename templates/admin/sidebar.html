@@ -320,6 +320,11 @@ body{
       <span>Travel Packages</span>
     </a>
 
+    <a href="{% url 'admin_panel:destinations' %}" {% if request.resolver_match.url_name == 'destinations' %}class="active"{% endif %}>
+      <svg fill="none" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      <span>Destinations</span>
+    </a>
+
     <a href="{% url 'blog:blog_list' %}" {% if request.resolver_match.namespace == 'blog' %}class="active"{% endif %}>
       <svg fill="none" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h6"/></svg>
       <span>Blog Management</span>

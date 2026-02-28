@@ -111,7 +111,7 @@
 <section class="container">
     <div class="filter-section">
 
-        <form method="GET" action="{% url 'blog_list' %}">
+        <form method="GET" action="{% url 'user_panel:blog_list' %}">
             <div class="search-container">
                 <input type="text" name="q" class="search-input" placeholder="Search articles..." value="{{ q }}">
                 <button type="submit" class="filter-btn">
@@ -132,7 +132,7 @@
     <div class="blog-grid">
         {% if blogs %}
             {% for blog in blogs %}
-                <a href="{% url 'blog_detail' slug=blog.slug %}" class="card-link">
+                <a href="{% url 'user_panel:blog_detail' slug=blog.slug %}" class="card-link">
                     <article class="card">
                         <div class="card-img-wrapper">
 

@@ -65,32 +65,51 @@
             <div class="grid-row">
                 <div>
                     <label>Category <span class="required-star">*</span></label>
-                    <select name="category" required class="form-control">
+                    <select name="category" id="category" required class="form-control">
                         <option value="Domestic" {% if default_category == 'Domestic' or package.category == 'Domestic' %}selected{% endif %}>Domestic</option>
                         <option value="International" {% if default_category == 'International' or package.category == 'International' %}selected{% endif %}>International</option>
                     </select>
                 </div>
 
                 <div>
-                    <label>Price <span class="required-star">*</span></label>
-                    <input type="number" name="price" value="{{ package.price|default:'' }}" required class="form-control">
+                    {% if selected_destination_obj %}
+                    <label>Destination</label>
+                    <div style="padding: 12px 16px; border-radius: 8px; background-color: #f3f4f6; margin-bottom: 20px; font-weight: 500; color: #333;">
+                        {{ selected_destination_obj.name }}, {{ selected_destination_obj.country }}
+                    </div>
+                    <input type="hidden" name="destination" value="{{ selected_destination_id }}">
+                    {% else %}
+                    <label>Destination</label>
+                    <div style="padding: 12px 16px; border-radius: 8px; background-color: #f9f9f9; margin-bottom: 20px; color: #999; font-style: italic;">
+                        No destination selected
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 
             <div class="grid-row">
                 <div>
-                    <label>Duration</label>
-                    <input type="text" name="duration" value="{{ package.duration|default:'' }}" class="form-control" placeholder="e.g. 3 Days / 2 Nights">
+                    <label>Price <span class="required-star">*</span></label>
+                    <input type="number" name="price" value="{{ package.price|default:'' }}" required class="form-control">
                 </div>
 
                 <div>
-                    <label>Location <span class="required-star">*</span></label>
-                    <input type="text" name="location" value="{{ package.location|default:'' }}" required class="form-control">
+                    <label>Duration</label>
+                    <input type="text" name="duration" value="{{ package.duration|default:'' }}" class="form-control" placeholder="e.g. 3 Days / 2 Nights">
                 </div>
             </div>
 
-            <label>Country <span class="required-star">*</span></label>
-            <input type="text" name="country" value="{{ package.country|default:'' }}" required class="form-control">
+            <div class="grid-row">
+                <div>
+                    <label>Location <span class="required-star">*</span></label>
+                    <input type="text" name="location" value="{{ package.location|default:'' }}" required class="form-control" placeholder="e.g. Wayanad, Kerala">
+                </div>
+
+                <div>
+                    <label>Country <span class="required-star">*</span></label>
+                    <input type="text" name="country" value="{{ package.country|default:'' }}" required class="form-control" placeholder="e.g. India">
+                </div>
+            </div>
 
             <label>Description</label>
             <textarea name="description" class="form-control">{{ package.description|default:'' }}</textarea>

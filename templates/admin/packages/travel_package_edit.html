@@ -65,32 +65,37 @@
             <div class="grid-row">
                 <div>
                     <label>Category <span class="required-star">*</span></label>
-                    <select name="category" required class="form-control">
+                    <select name="category" id="category" required class="form-control" onchange="filterDestinations()">
                         <option value="Domestic" {% if package.category == 'Domestic' %}selected{% endif %}>Domestic</option>
                         <option value="International" {% if package.category == 'International' %}selected{% endif %}>International</option>
                     </select>
                 </div>
 
                 <div>
-                    <label>Price <span class="required-star">*</span></label>
-                    <input type="number" name="price" value="{{ package.price }}" required class="form-control">
+                    <label>Destination</label>
+                    <select name="destination" id="destination" class="form-control">
+                        <option value="">Select Destination</option>
+                        {% for dest in destinations %}
+                            <option value="{{ dest.id }}" data-category="{{ dest.category }}" 
+                                {% if package.destination_id == dest.id %}selected{% endif %}>
+                                {{ dest.name }}, {{ dest.country }}
+                            </option>
+                        {% endfor %}
+                    </select>
                 </div>
             </div>
 
             <div class="grid-row">
                 <div>
-                    <label>Duration</label>
-                    <input type="text" name="duration" value="{{ package.duration|default:'' }}" class="form-control" placeholder="e.g. 3 Days / 2 Nights">
+                    <label>Price <span class="required-star">*</span></label>
+                    <input type="number" name="price" value="{{ package.price }}" required class="form-control">
                 </div>
 
                 <div>
-                    <label>Location <span class="required-star">*</span></label>
-                    <input type="text" name="location" value="{{ package.location }}" required class="form-control">
+                    <label>Duration</label>
+                    <input type="text" name="duration" value="{{ package.duration|default:'' }}" class="form-control" placeholder="e.g. 3 Days / 2 Nights">
                 </div>
             </div>
-
-            <label>Country <span class="required-star">*</span></label>
-            <input type="text" name="country" value="{{ package.country|default:'' }}" required class="form-control">
 
             <label>Description</label>
             <textarea name="description" class="form-control">{{ package.description|default:'' }}</textarea>
@@ -171,5 +176,38 @@
 
     </form>
 </div>
+
+<script>
+function filterDestinations() {
+    const category = document.getElementById('category').value;
+    const destinationSelect = document.getElementById('destination');
+    const options = destinationSelect.querySelectorAll('option');
+    
+    options.forEach(option => {
+        if (option.value === '') {
+            option.style.display = 'block';
+            return;
+        }
+        
+        const optionCategory = option.getAttribute('data-category');
+        if (optionCategory === category) {
+            option.style.display = 'block';
+        } else {
+            option.style.display = 'none';
+        }
+    });
+    
+    // Reset selection if current selection doesn't match category
+    const selectedOption = destinationSelect.options[destinationSelect.selectedIndex];
+    if (selectedOption && selectedOption.getAttribute('data-category') !== category && selectedOption.value !== '') {
+        destinationSelect.value = '';
+    }
+}
+
+// Run on page load to filter destinations based on current category
+document.addEventListener('DOMContentLoaded', function() {
+    filterDestinations();
+});
+</script>
 
 {% endblock %}
