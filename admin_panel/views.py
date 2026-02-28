@@ -10,8 +10,7 @@ import random
 from django.core.mail import send_mail
 from django.contrib import messages
 from datetime import datetime
-from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, Amenity, TravelPackage, Inquiry
-from .models import Employee,Blog
+from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from django.http import HttpResponse
@@ -131,7 +130,7 @@ def lead_management(request):
     if enquiry_type == 'General':
         general_leads = Lead.objects.filter(enquiry_type='General').order_by('-created_at')
         
-        # Convert leads to inquiry-like format for template compatibility
+       
         inquiries = []
         for lead in general_leads:
             # Extract email from remarks if available
@@ -236,14 +235,15 @@ def view_lead(request, lead_id):
 
 # HOSPITALITY
 def hospitality_management(request):
-    properties = Property.objects.all().order_by('-created_at')
-    return render(request, 'admin/hospitality/hospitality_management.html', {'properties': properties})
+    properties = Property.objects.all().order_by("-created_at")
+    return render(request, "admin/hospitality/hospitality_management.html", {"properties": properties})
 
 def add_property(request):
     if request.method == "POST":
-        new_amenities = request.POST.getlist('new_amenities[]')
-        
-        property = Property.objects.create(
+        new_amenities = request.POST.getlist("new_amenities[]")
+        amenities_text = ", ".join([a.strip() for a in new_amenities if a.strip()])
+
+        prop = Property.objects.create(
             name=request.POST.get("name"),
             property_type=request.POST.get("property_type"),
             location=request.POST.get("location"),
@@ -252,54 +252,45 @@ def add_property(request):
             summary=request.POST.get("summary"),
             owner_name=request.POST.get("owner_name"),
             owner_contact=request.POST.get("owner_contact"),
-            image=request.FILES.get("image")
+            amenities=amenities_text,
+            image=request.FILES.get("image"),
         )
-        
-        # Create amenities and add to property
-        amenity_ids = []
-        for amenity_name in new_amenities:
-            if amenity_name.strip():
-                amenity_obj, created = Amenity.objects.get_or_create(name=amenity_name.strip())
-                amenity_ids.append(amenity_obj.id)
-        
-        property.amenities.set(amenity_ids)
+
         messages.success(request, "Property added successfully!")
         return redirect("admin_panel:admin_hospitality")
+
     return render(request, "admin/hospitality/hospitality_add.html")
 
 def edit_property(request, property_id):
-    property = get_object_or_404(Property, id=property_id)
+    prop = get_object_or_404(Property, id=property_id)
+
     if request.method == "POST":
-        property.name = request.POST.get("name")
-        property.property_type = request.POST.get("property_type")
-        property.location = request.POST.get("location")
-        property.website = request.POST.get("website")
-        property.address = request.POST.get("address")
-        property.summary = request.POST.get("summary")
-        property.owner_name = request.POST.get("owner_name")
-        property.owner_contact = request.POST.get("owner_contact")
-        
-        new_amenities = request.POST.getlist('new_amenities[]')
-        
-        # Create amenities and add to property
-        amenity_ids = []
-        for amenity_name in new_amenities:
-            if amenity_name.strip():
-                amenity_obj, created = Amenity.objects.get_or_create(name=amenity_name.strip())
-                amenity_ids.append(amenity_obj.id)
-        
+        prop.name = request.POST.get("name")
+        prop.property_type = request.POST.get("property_type")
+        prop.location = request.POST.get("location")
+        prop.website = request.POST.get("website")
+        prop.address = request.POST.get("address")
+        prop.summary = request.POST.get("summary")
+        prop.owner_name = request.POST.get("owner_name")
+        prop.owner_contact = request.POST.get("owner_contact")
+
+        new_amenities = request.POST.getlist("new_amenities[]")
+        prop.amenities = ", ".join([a.strip() for a in new_amenities if a.strip()])
+
         if request.FILES.get("image"):
-            property.image = request.FILES.get("image")
-        property.save()
-        property.amenities.set(amenity_ids)
+            prop.image = request.FILES.get("image")
+
+        prop.save()
         messages.success(request, "Property updated successfully!")
         return redirect("admin_panel:admin_hospitality")
-    return render(request, "admin/hospitality/hospitality_edit.html", {"property": property})
+
+    return render(request, "admin/hospitality/hospitality_edit.html", {"property": prop})
 
 def delete_property(request, property_id):
-    property = get_object_or_404(Property, id=property_id)
-    property.delete()
-    return redirect('admin_panel:admin_hospitality')
+    prop = get_object_or_404(Property, id=property_id)
+    prop.delete()
+    messages.success(request, "Property deleted successfully!")
+    return redirect("admin_panel:admin_hospitality")
 
 # TRAVEL PACKAGES
 def travel_packages(request):

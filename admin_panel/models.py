@@ -28,17 +28,7 @@ class Lead(models.Model):
     def __str__(self):
         return self.full_name
 
-# AMENITY MODEL
-class Amenity(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    created_at = models.DateTimeField(default=timezone.now)
-    class Meta:
-        verbose_name_plural = "Amenities"
-        ordering = ['name']
-    def __str__(self):
-        return self.name
 
-# PROPERTY MODEL
 class Property(models.Model):
     PROPERTY_TYPES = [
         ('hotel', 'Luxury Hotel'),
@@ -47,6 +37,7 @@ class Property(models.Model):
         ('villa', 'Villa'),
         ('apartment', 'Apartment'),
     ]
+
     name = models.CharField(max_length=200)
     property_type = models.CharField(max_length=50, choices=PROPERTY_TYPES)
     location = models.CharField(max_length=200)
@@ -55,12 +46,22 @@ class Property(models.Model):
     summary = models.TextField()
     owner_name = models.CharField(max_length=150, blank=True, null=True)
     owner_contact = models.CharField(max_length=20, blank=True, null=True)
-    amenities = models.ManyToManyField(Amenity, blank=True)
+
+    # comma separated amenities
+    amenities = models.TextField(blank=True, null=True)
+
     image = models.ImageField(upload_to='properties/', blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
-    def __str__(self):
+
+    def __str__(self):  # ✅ FIXED
         return self.name
 
+    @property
+    def amenity_list(self):
+        """Return amenities as list"""
+        if self.amenities:
+            return [a.strip() for a in self.amenities.split(",") if a.strip()]
+        return []
 # TRAVEL PACKAGE MODEL
 class TravelPackage(models.Model):
     CATEGORY_CHOICES = (

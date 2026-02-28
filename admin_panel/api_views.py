@@ -1,9 +1,10 @@
 from django.db.models import Q
 from rest_framework import viewsets
+from rest_framework.permissions import AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Blog,Lead
-from .serializers import BlogSerializer, LeadSerializer
+from .models import Blog,Lead, Property
+from .serializers import BlogSerializer, LeadSerializer, PropertySerializer
 
 
 class BlogViewSet(viewsets.ModelViewSet):
@@ -95,3 +96,40 @@ class LeadViewSet(viewsets.ModelViewSet):
             "new_leads_count": Lead.objects.filter(source="Enquire Now").count(),
             "total": Lead.objects.count(),
         })
+
+
+class PropertyViewSet(viewsets.ModelViewSet):
+    queryset = Property.objects.all().order_by("-created_at")
+    serializer_class = PropertySerializer
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx["request"] = self.request
+        return ctx
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        # optional filters
+        ptype = (self.request.query_params.get("property_type") or "").strip()
+        location = (self.request.query_params.get("location") or "").strip()
+        search = (self.request.query_params.get("search") or "").strip()
+
+        if ptype:
+            qs = qs.filter(property_type=ptype)
+
+        if location:
+            qs = qs.filter(location__icontains=location)
+
+        if search:
+            qs = qs.filter(
+                Q(name__icontains=search)
+                | Q(location__icontains=search)
+                | Q(address__icontains=search)
+                | Q(summary__icontains=search)
+                | Q(owner_name__icontains=search)
+                | Q(owner_contact__icontains=search)
+                | Q(amenities__icontains=search)
+            )
+
+        return qs
