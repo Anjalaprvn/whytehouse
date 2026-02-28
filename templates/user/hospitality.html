@@ -1135,7 +1135,11 @@
    <div class="property-grid">
     {% for property in properties %}
     <div class="property-card">
-    <img src="{{ property.image.url }}" alt="{{ property.name }}">
+    {% if property.image %}
+        <img src="{{ property.image.url }}" alt="{{ property.name }}">
+    {% else %}
+        <img src="{% static 'images/about.png' %}" alt="{{ property.name }}">
+    {% endif %}
     <div class="property-overlay">
         <div class="property-top-row">
             <div class="property-info">

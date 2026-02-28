@@ -19,7 +19,5 @@ class Migration(migrations.Migration):
             name='amenities',
             field=models.TextField(blank=True, null=True),
         ),
-        migrations.DeleteModel(
-            name='Amenity',
-        ),
+       
     ]

@@ -87,9 +87,18 @@ class TravelPackage(models.Model):
         ('Domestic', 'Domestic'),
         ('International', 'International'),
     )
+
     name = models.CharField(max_length=200)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
-    destination = models.ForeignKey(Destination, on_delete=models.SET_NULL, null=True, blank=True)
+
+    destination = models.ForeignKey(
+        Destination,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="packages"
+    )
+
     location = models.CharField(max_length=200)
     country = models.CharField(max_length=100, blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -102,36 +111,15 @@ class TravelPackage(models.Model):
     exclusions = models.TextField(blank=True, null=True)
     meta_title = models.CharField(max_length=255, blank=True, null=True)
     meta_description = models.TextField(blank=True, null=True)
-    
-    # Real Stories Images
+
     story_main_image = models.ImageField(upload_to='package_stories/', blank=True, null=True)
     story_side_image1 = models.ImageField(upload_to='package_stories/', blank=True, null=True)
     story_side_image2 = models.ImageField(upload_to='package_stories/', blank=True, null=True)
-    
+
     created_at = models.DateTimeField(default=timezone.now)
+
     def __str__(self):
         return self.name
-
-
-# DESTINATION MODEL
-class Destination(models.Model):
-    CATEGORY_CHOICES = (
-        ('Domestic', 'Domestic'),
-        ('International', 'International'),
-    )
-    name = models.CharField(max_length=200)
-    country = models.CharField(max_length=100)
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='Domestic')
-    description = models.TextField(blank=True, null=True)
-    image = models.ImageField(upload_to='destinations/', blank=True, null=True)
-    is_popular = models.BooleanField(default=False)
-    created_at = models.DateTimeField(default=timezone.now)
-    
-    def __str__(self):
-        return f"{self.name}, {self.country}"
-    
-    class Meta:
-        ordering = ['-created_at']
 
 class Inquiry(models.Model):
     STATUS_CHOICES = (
