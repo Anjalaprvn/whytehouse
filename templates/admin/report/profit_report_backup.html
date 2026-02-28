@@ -48,15 +48,15 @@ tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
     <!-- Tabs (form-based UI) -->
     <div class="tabs">
       <a href="{% url 'sales:invoice_report' %}" class="tab">Invoice</a>
-      <a href="{% url 'sales:voucher_report' %}" class="tab">Voucher</a>
-      <a href="{% url 'sales:leads_report' %}" class="tab active">Leads</a>
+      <a href="{% url 'sales:voucher_report' %}" class="tab active">Voucher</a>
+      <a href="{% url 'sales:leads_report' %}" class="tab">Leads</a>
       <a href="{% url 'sales:profit_report' %}" class="tab">Profit</a>
       <a href="{% url 'sales:customer_report' %}" class="tab">Customer</a>
     </div>
 
-    <!-- Leads Report Card -->
+    <!-- Voucher Report Card -->
     <section class="card">
-      <h3>Leads Report</h3>
+      <h3>Voucher Report</h3>
 
       <form method="post">
         {% csrf_token %}
@@ -89,19 +89,50 @@ tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
           </div>
 
           <div class="field span-2">
-            <label>Enquiry Type</label>
+            <label>Select Resort <span class="req">*</span></label>
             <div class="select-wrap">
-              <select name="enquiry_type">
-                <option value="">All Types</option>
-                <option value="General" {% if selected.enquiry_type == "General" %}selected{% endif %}>General Enquiry</option>
-                <option value="International" {% if selected.enquiry_type == "International" %}selected{% endif %}>International</option>
-                <option value="Domestic" {% if selected.enquiry_type == "Domestic" %}selected{% endif %}>Domestic</option>
+              <select name="resort" required>
+                <option value="" disabled {% if not selected.resort %}selected{% endif %}>Select resort</option>
+                {% for resort in resorts %}
+                  <option value="{{ resort.id }}" {% if selected.resort == resort.id|stringformat:"s" %}selected{% endif %}>
+                    {{ resort.resort_name }}
+                  </option>
+                {% endfor %}
               </select>
               <svg class="caret" viewBox="0 0 24 24" fill="none">
                 <path d="M7 10L12 15L17 10" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
           </div>
+
+          <div class="field span-2">
+            <div class="toggle-row">
+              <label class="switch" aria-label="Employee View Report">
+                <input type="checkbox" id="employeeToggle" name="employee_view" onchange="this.form.submit()" {% if employee_view %}checked{% endif %}>
+                <span class="slider"></span>
+              </label>
+              <span>Employee View Report</span>
+            </div>
+          </div>
+
+          {% if employee_view %}
+          <div class="field span-2" id="employeeField">
+            <label>Select Employee <span class="req">*</span></label>
+            <div class="select-wrap">
+              <select name="employee" id="employeeSelect" required>
+                <option value="" disabled {% if not selected.employee %}selected{% endif %}>Select employee</option>
+                {% for emp in employees %}
+                  <option value="{{ emp.id }}" {% if selected.employee == emp.id|stringformat:"s" %}selected{% endif %}>
+                    {{ emp.name }}{% if emp.role %} - {{ emp.role }}{% endif %}
+                  </option>
+                {% endfor %}
+              </select>
+              <svg class="caret" viewBox="0 0 24 24" fill="none">
+                <path d="M7 10L12 15L17 10" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+          {% endif %}
         </div>
 
         <div class="btn-row">
@@ -124,36 +155,7 @@ tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
         </div>
       </form>
     </section>
+{% endblock %}
 
-{% if leads %}
-<section class="card" style="margin-top:20px;">
-  <h3>Leads Details</h3>
-  <div style="overflow-x:auto;">
-    <table>
-      <thead>
-        <tr>
-          <th>Full Name</th>
-          <th>Mobile</th>
-          <th>Place</th>
-          <th>Source</th>
-          <th>Enquiry Type</th>
-          <th>Created Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for lead in leads %}
-        <tr>
-          <td>{{ lead.full_name }}</td>
-          <td>{{ lead.mobile_number }}</td>
-          <td>{{ lead.place|default:"-" }}</td>
-          <td>{{ lead.get_source_display }}</td>
-          <td>{{ lead.get_enquiry_type_display }}</td>
-          <td>{{ lead.created_at|date:"d M Y H:i" }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</section>
-{% endif %}
+{% block extra_js %}
 {% endblock %}

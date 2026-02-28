@@ -1239,7 +1239,7 @@ def delete_voucher(request, voucher_id):
 
 # INVOICE VIEWS
 def invoice_list(request):
-    invoices = Invoice.objects.all().order_by('-created_at', '-id')
+    invoices = Invoice.objects.all().order_by('-invoice_date', '-id')
     return render(request, "admin/sales/invoice/invoice.html", {"invoices": invoices})
 
 def add_invoice(request):
@@ -1389,9 +1389,9 @@ def delete_invoice(request, invoice_id):
     
     try:
         invoice = Invoice.objects.get(id=invoice_id)
-        invoice_number = invoice.invoice_number
+        invoice_no = invoice.invoice_no
         invoice.delete()
-        messages.success(request, f"Invoice '{invoice_number}' deleted successfully!")
+        messages.success(request, f"Invoice '{invoice_no}' deleted successfully!")
     except Invoice.DoesNotExist:
         messages.error(request, "Invoice not found.")
     except Exception as e:
@@ -1566,11 +1566,10 @@ def customer_report(request):
     return render(request, "admin/report/customer_report.html", {"customers": customers})
 
 def invoice_report(request):
-    employees = Employee.objects.filter(status="Active").order_by("name")
     resorts = Resort.objects.all().order_by("resort_name")
-
     invoices = Invoice.objects.none()
     employee_view = False
+    employees = Employee.objects.none()
 
     selected = {"from_date": "", "to_date": "", "resort": "", "employee": ""}
 
@@ -1579,7 +1578,6 @@ def invoice_report(request):
         from_date = request.POST.get("from_date")
         to_date = request.POST.get("to_date")
         resort_id = request.POST.get("resort")
-
         employee_view = request.POST.get("employee_view") == "on"
         employee_id = request.POST.get("employee")
 
@@ -1590,144 +1588,119 @@ def invoice_report(request):
             "employee": employee_id or "",
         }
 
-        # Validations
-        if not from_date or not to_date or not resort_id:
-            messages.error(request, "From Date, To Date and Resort are required.")
-            return render(request, "admin/report/invoice_report.html", {
-                "employees": employees,
-                "resorts": resorts,
-                "invoices": invoices,
-                "employee_view": employee_view,
-                "selected": selected,
-            })
+        if from_date and to_date and resort_id:
+            try:
+                fd = datetime.strptime(from_date, "%Y-%m-%d").date()
+                td = datetime.strptime(to_date, "%Y-%m-%d").date()
+                
+                # Filter employees who have invoices in the selected date range and resort
+                if employee_view:
+                    employee_ids = Invoice.objects.filter(
+                        resort_id=resort_id,
+                        invoice_date__range=(fd, td),
+                        sales_person__isnull=False
+                    ).values_list('sales_person_id', flat=True).distinct()
+                    
+                    employees = Employee.objects.filter(
+                        id__in=employee_ids,
+                        status="Active"
+                    ).order_by("name")
 
-        if employee_view and not employee_id:
-            messages.error(request, "Please select employee.")
-            return render(request, "admin/report/invoice_report.html", {
-                "employees": employees,
-                "resorts": resorts,
-                "invoices": invoices,
-                "employee_view": employee_view,
-                "selected": selected,
-            })
+                # Base queryset
+                qs = Invoice.objects.select_related(
+                    "customer", "resort", "sales_person", "bank_account"
+                ).filter(resort_id=resort_id, invoice_date__range=(fd, td))
 
-        # Convert dates
-        try:
-            fd = datetime.strptime(from_date, "%Y-%m-%d").date()
-            td = datetime.strptime(to_date, "%Y-%m-%d").date()
-        except ValueError:
-            messages.error(request, "Invalid date format.")
-            return render(request, "admin/report/invoice_report.html", {
-                "employees": employees,
-                "resorts": resorts,
-                "invoices": invoices,
-                "employee_view": employee_view,
-                "selected": selected,
-            })
+                # Employee filter
+                if employee_view and employee_id:
+                    qs = qs.filter(sales_person_id=employee_id)
 
-        # Base queryset
-        qs = Invoice.objects.select_related(
-            "customer", "resort", "sales_person", "bank_account"
-        ).filter(resort_id=resort_id)
+                invoices = qs.order_by("-invoice_date", "-id")
 
-        # DateField vs DateTimeField safe filter
-        try:
-            field_type = Invoice._meta.get_field("invoice_date").get_internal_type()
-        except Exception:
-            field_type = "DateField"
+                # Excel export
+                if action == "excel":
+                    wb = Workbook()
+                    ws = wb.active
+                    ws.title = "Invoice Report"
 
-        if field_type == "DateTimeField":
-            qs = qs.filter(invoice_date__date__range=(fd, td))
-        else:
-            qs = qs.filter(invoice_date__range=(fd, td))
+                    headers = [
+                        "Invoice No", "Invoice Date",
+                        "Customer", "Mobile",
+                        "Sales Person",
+                        "Resort",
+                        "Check-in Date", "Check-out Date",
+                        "Check-in Time", "Check-out Time",
+                        "Adults", "Children", "Pax Total", "Pax Notes",
+                        "Nights", "Room Type", "Rooms", "Meals Plan",
+                        "Bank Account",
+                        "Package Price", "Tax", "Resort Price",
+                        "Total", "Received", "Pending", "Profit",
+                        "Notes",
+                    ]
 
-        # Employee filter
-        if employee_view and employee_id:
-            qs = qs.filter(sales_person_id=employee_id)
+                    for col, header in enumerate(headers, 1):
+                        cell = ws.cell(row=1, column=col, value=header)
+                        cell.font = Font(bold=True)
+                        cell.alignment = Alignment(horizontal="center", vertical="center")
 
-        invoices = qs.order_by("-invoice_date", "-id")
+                    for row, inv in enumerate(invoices, start=2):
+                        ws.cell(row=row, column=1, value=inv.invoice_no)
+                        ws.cell(row=row, column=2, value=inv.invoice_date.strftime("%d/%m/%Y") if inv.invoice_date else "")
 
-        # ================== EXCEL EXPORT ==================
-        if action == "excel":
-            wb = Workbook()
-            ws = wb.active
-            ws.title = "Invoice Report"
+                        ws.cell(row=row, column=3, value=inv.customer.display_name if inv.customer else "")
+                        ws.cell(row=row, column=4, value=getattr(inv.customer, "contact_number", "") if inv.customer else "")
 
-            headers = [
-                "Invoice No", "Invoice Date",
-                "Customer", "Mobile",
-                "Sales Person",
-                "Resort",
-                "Check-in Date", "Check-out Date",
-                "Check-in Time", "Check-out Time",
-                "Adults", "Children", "Pax Total", "Pax Notes",
-                "Nights", "Room Type", "Rooms", "Meals Plan",
-                "Bank Account",
-                "Package Price", "Tax", "Resort Price",
-                "Total", "Received", "Pending", "Profit",
-                "Notes",
-            ]
+                        ws.cell(row=row, column=5, value=inv.sales_person.name if inv.sales_person else "")
+                        ws.cell(row=row, column=6, value=inv.resort.resort_name if inv.resort else "")
 
-            for col, header in enumerate(headers, 1):
-                cell = ws.cell(row=1, column=col, value=header)
-                cell.font = Font(bold=True)
-                cell.alignment = Alignment(horizontal="center", vertical="center")
+                        ws.cell(row=row, column=7, value=inv.checkin_date.strftime("%d/%m/%Y") if inv.checkin_date else "")
+                        ws.cell(row=row, column=8, value=inv.checkout_date.strftime("%d/%m/%Y") if inv.checkout_date else "")
 
-            for row, inv in enumerate(invoices, start=2):
-                ws.cell(row=row, column=1, value=inv.invoice_no)
-                ws.cell(row=row, column=2, value=inv.invoice_date.strftime("%Y-%m-%d") if inv.invoice_date else "")
+                        ws.cell(row=row, column=9, value=str(inv.checkin_time) if inv.checkin_time else "")
+                        ws.cell(row=row, column=10, value=str(inv.checkout_time) if inv.checkout_time else "")
 
-                ws.cell(row=row, column=3, value=inv.customer.display_name if inv.customer else "")
-                ws.cell(row=row, column=4, value=getattr(inv.customer, "contact_number", "") if inv.customer else "")
+                        ws.cell(row=row, column=11, value=int(inv.adults or 0))
+                        ws.cell(row=row, column=12, value=int(inv.children or 0))
+                        ws.cell(row=row, column=13, value=int(inv.pax_total or 0))
+                        ws.cell(row=row, column=14, value=inv.pax_notes or "")
 
-                ws.cell(row=row, column=5, value=inv.sales_person.name if inv.sales_person else "")
-                ws.cell(row=row, column=6, value=inv.resort.resort_name if inv.resort else "")
+                        ws.cell(row=row, column=15, value=int(inv.nights or 0))
+                        ws.cell(row=row, column=16, value=inv.room_type or "")
+                        ws.cell(row=row, column=17, value=int(inv.rooms or 0))
+                        ws.cell(row=row, column=18, value=inv.meals_plan or "")
 
-                ws.cell(row=row, column=7, value=inv.checkin_date.strftime("%Y-%m-%d") if inv.checkin_date else "")
-                ws.cell(row=row, column=8, value=inv.checkout_date.strftime("%Y-%m-%d") if inv.checkout_date else "")
+                        ws.cell(row=row, column=19, value=inv.bank_account.account_name if inv.bank_account else "")
 
-                ws.cell(row=row, column=9, value=str(inv.checkin_time) if inv.checkin_time else "")
-                ws.cell(row=row, column=10, value=str(inv.checkout_time) if inv.checkout_time else "")
+                        ws.cell(row=row, column=20, value=float(inv.package_price or 0))
+                        ws.cell(row=row, column=21, value=float(inv.tax or 0))
+                        ws.cell(row=row, column=22, value=float(inv.resort_price or 0))
 
-                ws.cell(row=row, column=11, value=int(inv.adults or 0))
-                ws.cell(row=row, column=12, value=int(inv.children or 0))
-                ws.cell(row=row, column=13, value=int(inv.pax_total or 0))
-                ws.cell(row=row, column=14, value=inv.pax_notes or "")
+                        ws.cell(row=row, column=23, value=float(inv.total or 0))
+                        ws.cell(row=row, column=24, value=float(inv.received or 0))
+                        ws.cell(row=row, column=25, value=float(inv.pending or 0))
+                        ws.cell(row=row, column=26, value=float(inv.profit or 0))
 
-                ws.cell(row=row, column=15, value=int(inv.nights or 0))
-                ws.cell(row=row, column=16, value=inv.room_type or "")
-                ws.cell(row=row, column=17, value=int(inv.rooms or 0))
-                ws.cell(row=row, column=18, value=inv.meals_plan or "")
+                        ws.cell(row=row, column=27, value=inv.notes or "")
 
-                ws.cell(row=row, column=19, value=inv.bank_account.account_name if inv.bank_account else "")
+                    # Auto width
+                    for col in range(1, len(headers) + 1):
+                        letter = get_column_letter(col)
+                        max_len = 0
+                        for c in ws[letter]:
+                            if c.value:
+                                max_len = max(max_len, len(str(c.value)))
+                        ws.column_dimensions[letter].width = min(max_len + 3, 45)
 
-                ws.cell(row=row, column=20, value=float(inv.package_price or 0))
-                ws.cell(row=row, column=21, value=float(inv.tax or 0))
-                ws.cell(row=row, column=22, value=float(inv.resort_price or 0))
+                    response = HttpResponse(
+                        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
+                    filename = f"invoice_report_{fd.strftime('%d%m%Y')}_{td.strftime('%d%m%Y')}.xlsx"
+                    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+                    wb.save(response)
+                    return response
 
-                ws.cell(row=row, column=23, value=float(inv.total or 0))
-                ws.cell(row=row, column=24, value=float(inv.received or 0))
-                ws.cell(row=row, column=25, value=float(inv.pending or 0))
-                ws.cell(row=row, column=26, value=float(inv.profit or 0))
-
-                ws.cell(row=row, column=27, value=inv.notes or "")
-
-            # Auto width
-            for col in range(1, len(headers) + 1):
-                letter = get_column_letter(col)
-                max_len = 0
-                for c in ws[letter]:
-                    if c.value:
-                        max_len = max(max_len, len(str(c.value)))
-                ws.column_dimensions[letter].width = min(max_len + 3, 45)
-
-            response = HttpResponse(
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-            filename = f"invoice_report_{timezone.now().strftime('%Y-%m-%d')}.xlsx"
-            response["Content-Disposition"] = f'attachment; filename="{filename}"'
-            wb.save(response)
-            return response
+            except ValueError:
+                messages.error(request, "Invalid date format.")
 
     return render(request, "admin/report/invoice_report.html", {
         "employees": employees,
@@ -1737,15 +1710,334 @@ def invoice_report(request):
         "selected": selected,
     })
 
-    
+
+
 def voucher_report(request):
-    return render(request,"admin/report/voucher_report.html")
+    resorts = Resort.objects.all().order_by("resort_name")
+    vouchers = Voucher.objects.none()
+    employee_view = False
+    employees = Employee.objects.none()
+    
+    selected = {"from_date": "", "to_date": "", "resort": "", "employee": ""}
+    
+    if request.method == "POST":
+        from_date = request.POST.get("from_date")
+        to_date = request.POST.get("to_date")
+        resort_id = request.POST.get("resort")
+        employee_view = request.POST.get("employee_view") == "on"
+        employee_id = request.POST.get("employee")
+        action = request.POST.get("action")
+        
+        selected = {
+            "from_date": from_date or "",
+            "to_date": to_date or "",
+            "resort": resort_id or "",
+            "employee": employee_id or "",
+        }
+        
+        if from_date and to_date and resort_id:
+            try:
+                fd = datetime.strptime(from_date, "%Y-%m-%d").date()
+                td = datetime.strptime(to_date, "%Y-%m-%d").date()
+                
+                # Filter employees who have vouchers in the selected date range and resort
+                if employee_view:
+                    employee_ids = Voucher.objects.filter(
+                        resort_id=resort_id,
+                        voucher_date__range=(fd, td),
+                        sales_person__isnull=False
+                    ).values_list('sales_person_id', flat=True).distinct()
+                    
+                    employees = Employee.objects.filter(
+                        id__in=employee_ids,
+                        status="Active"
+                    ).order_by("name")
+                
+                # Base queryset
+                qs = Voucher.objects.select_related(
+                    "customer", "resort", "sales_person", "bank_account", "meals_plan"
+                ).filter(resort_id=resort_id, voucher_date__range=(fd, td))
+                
+                # Employee filter
+                if employee_view and employee_id:
+                    qs = qs.filter(sales_person_id=employee_id)
+                
+                vouchers = qs.order_by("-voucher_date", "-id")
+                
+                # Excel export
+                if action == "excel":
+                    wb = Workbook()
+                    ws = wb.active
+                    ws.title = "Voucher Report"
+                    
+                    # Header styling
+                    header_fill = PatternFill(start_color="D4A017", end_color="D4A017", fill_type="solid")
+                    header_font = Font(bold=True, color="FFFFFF")
+                    
+                    # Headers
+                    headers = ["Voucher No", "Date", "Customer", "Resort", "Total Amount"]
+                    if employee_view:
+                        headers.insert(3, "Sales Person")
+                    
+                    for col_num, header in enumerate(headers, 1):
+                        cell = ws.cell(row=1, column=col_num, value=header)
+                        cell.fill = header_fill
+                        cell.font = header_font
+                        cell.alignment = Alignment(horizontal="center", vertical="center")
+                    
+                    # Data rows
+                    for row_num, voucher in enumerate(vouchers, 2):
+                        ws.cell(row=row_num, column=1, value=voucher.voucher_no)
+                        ws.cell(row=row_num, column=2, value=voucher.voucher_date.strftime("%d/%m/%Y"))
+                        ws.cell(row=row_num, column=3, value=voucher.customer.display_name if voucher.customer else "-")
+                        
+                        if employee_view:
+                            ws.cell(row=row_num, column=4, value=voucher.sales_person.name if voucher.sales_person else "-")
+                            ws.cell(row=row_num, column=5, value=voucher.resort.resort_name if voucher.resort else "-")
+                            ws.cell(row=row_num, column=6, value=float(voucher.total))
+                        else:
+                            ws.cell(row=row_num, column=4, value=voucher.resort.resort_name if voucher.resort else "-")
+                            ws.cell(row=row_num, column=5, value=float(voucher.total))
+                    
+                    # Auto-adjust column widths
+                    for col in ws.columns:
+                        max_length = 0
+                        column = col[0].column_letter
+                        for cell in col:
+                            try:
+                                if len(str(cell.value)) > max_length:
+                                    max_length = len(str(cell.value))
+                            except:
+                                pass
+                        adjusted_width = min(max_length + 2, 50)
+                        ws.column_dimensions[column].width = adjusted_width
+                    
+                    response = HttpResponse(
+                        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
+                    response["Content-Disposition"] = f'attachment; filename="voucher_report_{fd.strftime("%d%m%Y")}_{td.strftime("%d%m%Y")}.xlsx"'
+                    wb.save(response)
+                    return response
+                
+            except ValueError:
+                messages.error(request, "Invalid date format.")
+    
+    return render(request, "admin/report/voucher_report.html", {
+        "resorts": resorts,
+        "vouchers": vouchers,
+        "employees": employees,
+        "employee_view": employee_view,
+        "selected": selected,
+    })
 
 def leads_report(request):
-    return render(request,"admin/report/leads_report.html")
+    leads = Lead.objects.none()
+    selected = {"from_date": "", "to_date": "", "enquiry_type": ""}
+    
+    if request.method == "POST":
+        from_date = request.POST.get("from_date")
+        to_date = request.POST.get("to_date")
+        enquiry_type = request.POST.get("enquiry_type")
+        action = request.POST.get("action")
+        
+        selected = {
+            "from_date": from_date or "",
+            "to_date": to_date or "",
+            "enquiry_type": enquiry_type or "",
+        }
+        
+        if from_date and to_date:
+            try:
+                fd = datetime.strptime(from_date, "%Y-%m-%d").date()
+                td = datetime.strptime(to_date, "%Y-%m-%d").date()
+                
+                # Base queryset
+                qs = Lead.objects.filter(created_at__date__range=(fd, td))
+                
+                # Enquiry type filter
+                if enquiry_type:
+                    qs = qs.filter(enquiry_type=enquiry_type)
+                
+                leads = qs.order_by("-created_at")
+                
+                # Excel export
+                if action == "excel":
+                    wb = Workbook()
+                    ws = wb.active
+                    ws.title = "Leads Report"
+                    
+                    # Header styling
+                    header_fill = PatternFill(start_color="D4A017", end_color="D4A017", fill_type="solid")
+                    header_font = Font(bold=True, color="FFFFFF")
+                    
+                    # Headers
+                    headers = ["Full Name", "Mobile Number", "Place", "Source", "Enquiry Type", "Remarks", "Created Date"]
+                    
+                    for col_num, header in enumerate(headers, 1):
+                        cell = ws.cell(row=1, column=col_num, value=header)
+                        cell.fill = header_fill
+                        cell.font = header_font
+                        cell.alignment = Alignment(horizontal="center", vertical="center")
+                    
+                    # Data rows
+                    for row_num, lead in enumerate(leads, 2):
+                        ws.cell(row=row_num, column=1, value=lead.full_name)
+                        ws.cell(row=row_num, column=2, value=lead.mobile_number)
+                        ws.cell(row=row_num, column=3, value=lead.place or "-")
+                        ws.cell(row=row_num, column=4, value=lead.get_source_display())
+                        ws.cell(row=row_num, column=5, value=lead.get_enquiry_type_display())
+                        ws.cell(row=row_num, column=6, value=lead.remarks or "-")
+                        ws.cell(row=row_num, column=7, value=lead.created_at.strftime("%d/%m/%Y %H:%M"))
+                    
+                    # Auto-adjust column widths
+                    for col in ws.columns:
+                        max_length = 0
+                        column = col[0].column_letter
+                        for cell in col:
+                            try:
+                                if len(str(cell.value)) > max_length:
+                                    max_length = len(str(cell.value))
+                            except:
+                                pass
+                        adjusted_width = min(max_length + 2, 50)
+                        ws.column_dimensions[column].width = adjusted_width
+                    
+                    response = HttpResponse(
+                        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
+                    response["Content-Disposition"] = f'attachment; filename="leads_report_{fd.strftime("%d%m%Y")}_{td.strftime("%d%m%Y")}.xlsx"'
+                    wb.save(response)
+                    return response
+                
+            except ValueError:
+                messages.error(request, "Invalid date format.")
+    
+    return render(request, "admin/report/leads_report.html", {
+        "leads": leads,
+        "selected": selected,
+    })
 
 def profit_report(request):
-    return render(request,"admin/report/profit_report.html")
+    resorts = Resort.objects.all().order_by("resort_name")
+    invoices = Invoice.objects.none()
+    employee_view = False
+    employees = Employee.objects.none()
+    
+    selected = {"from_date": "", "to_date": "", "resort": "", "employee": ""}
+    
+    if request.method == "POST":
+        from_date = request.POST.get("from_date")
+        to_date = request.POST.get("to_date")
+        resort_id = request.POST.get("resort")
+        employee_view = request.POST.get("employee_view") == "on"
+        employee_id = request.POST.get("employee")
+        action = request.POST.get("action")
+        
+        selected = {
+            "from_date": from_date or "",
+            "to_date": to_date or "",
+            "resort": resort_id or "",
+            "employee": employee_id or "",
+        }
+        
+        if from_date and to_date and resort_id:
+            try:
+                fd = datetime.strptime(from_date, "%Y-%m-%d").date()
+                td = datetime.strptime(to_date, "%Y-%m-%d").date()
+                
+                # Filter employees who have invoices in the selected date range and resort
+                if employee_view:
+                    employee_ids = Invoice.objects.filter(
+                        resort_id=resort_id,
+                        invoice_date__range=(fd, td),
+                        sales_person__isnull=False
+                    ).values_list('sales_person_id', flat=True).distinct()
+                    
+                    employees = Employee.objects.filter(
+                        id__in=employee_ids,
+                        status="Active"
+                    ).order_by("name")
+                
+                # Base queryset
+                qs = Invoice.objects.select_related(
+                    "customer", "resort", "sales_person"
+                ).filter(resort_id=resort_id, invoice_date__range=(fd, td))
+                
+                # Employee filter
+                if employee_view and employee_id:
+                    qs = qs.filter(sales_person_id=employee_id)
+                
+                invoices = qs.order_by("-invoice_date", "-id")
+                
+                # Excel export
+                if action == "excel":
+                    wb = Workbook()
+                    ws = wb.active
+                    ws.title = "Profit Report"
+                    
+                    # Header styling
+                    header_fill = PatternFill(start_color="D4A017", end_color="D4A017", fill_type="solid")
+                    header_font = Font(bold=True, color="FFFFFF")
+                    
+                    # Headers
+                    headers = ["Invoice No", "Date", "Customer", "Resort", "Total", "Resort Cost", "Profit"]
+                    if employee_view:
+                        headers.insert(3, "Sales Person")
+                    
+                    for col_num, header in enumerate(headers, 1):
+                        cell = ws.cell(row=1, column=col_num, value=header)
+                        cell.fill = header_fill
+                        cell.font = header_font
+                        cell.alignment = Alignment(horizontal="center", vertical="center")
+                    
+                    # Data rows
+                    for row_num, invoice in enumerate(invoices, 2):
+                        ws.cell(row=row_num, column=1, value=invoice.invoice_no)
+                        ws.cell(row=row_num, column=2, value=invoice.invoice_date.strftime("%d/%m/%Y"))
+                        ws.cell(row=row_num, column=3, value=invoice.customer.display_name if invoice.customer else "-")
+                        
+                        if employee_view:
+                            ws.cell(row=row_num, column=4, value=invoice.sales_person.name if invoice.sales_person else "-")
+                            ws.cell(row=row_num, column=5, value=invoice.resort.resort_name if invoice.resort else "-")
+                            ws.cell(row=row_num, column=6, value=float(invoice.total))
+                            ws.cell(row=row_num, column=7, value=float(invoice.resort_price))
+                            ws.cell(row=row_num, column=8, value=float(invoice.profit))
+                        else:
+                            ws.cell(row=row_num, column=4, value=invoice.resort.resort_name if invoice.resort else "-")
+                            ws.cell(row=row_num, column=5, value=float(invoice.total))
+                            ws.cell(row=row_num, column=6, value=float(invoice.resort_price))
+                            ws.cell(row=row_num, column=7, value=float(invoice.profit))
+                    
+                    # Auto-adjust column widths
+                    for col in ws.columns:
+                        max_length = 0
+                        column = col[0].column_letter
+                        for cell in col:
+                            try:
+                                if len(str(cell.value)) > max_length:
+                                    max_length = len(str(cell.value))
+                            except:
+                                pass
+                        adjusted_width = min(max_length + 2, 50)
+                        ws.column_dimensions[column].width = adjusted_width
+                    
+                    response = HttpResponse(
+                        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
+                    response["Content-Disposition"] = f'attachment; filename="profit_report_{fd.strftime("%d%m%Y")}_{td.strftime("%d%m%Y")}.xlsx"'
+                    wb.save(response)
+                    return response
+                
+            except ValueError:
+                messages.error(request, "Invalid date format.")
+    
+    return render(request, "admin/report/profit_report.html", {
+        "resorts": resorts,
+        "invoices": invoices,
+        "employees": employees,
+        "employee_view": employee_view,
+        "selected": selected,
+    })
 
 # DESTINATION VIEWS
 def destination_list(request):

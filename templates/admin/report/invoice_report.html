@@ -121,22 +121,18 @@ tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
       <div class="field span-2">
         <div class="toggle-row">
           <label class="switch" aria-label="Employee View Report">
-            <input type="checkbox"
-                   id="employeeToggle"
-                   name="employee_view"
-                   onchange="toggleEmployeeSelect()"
-                   {% if employee_view %}checked{% endif %}>
+            <input type="checkbox" id="employeeToggle" name="employee_view" onchange="this.form.submit()" {% if employee_view %}checked{% endif %}>
             <span class="slider"></span>
           </label>
           <span>Employee View Report</span>
         </div>
       </div>
 
-      {# ✅ Employee dropdown (same style as resort dropdown) #}
-      <div class="field span-2" id="employeeField" style="display:none;">
+      {% if employee_view %}
+      <div class="field span-2" id="employeeField">
         <label>Select Employee <span class="req">*</span></label>
         <div class="select-wrap">
-          <select name="employee" id="employeeSelect">
+          <select name="employee" id="employeeSelect" required>
             <option value="" disabled {% if not selected.employee %}selected{% endif %}>Select employee</option>
             {% for emp in employees %}
               <option value="{{ emp.id }}" {% if selected.employee == emp.id|stringformat:"s" %}selected{% endif %}>
@@ -149,6 +145,7 @@ tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
           </svg>
         </div>
       </div>
+      {% endif %}
 
     </div> {# ✅ CLOSE .grid properly #}
 
@@ -213,24 +210,4 @@ tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
 {% endblock %}
 
 {% block extra_js %}
-<script>
-function toggleEmployeeSelect() {
-  const toggle = document.getElementById('employeeToggle');
-  const field = document.getElementById('employeeField');
-  const select = document.getElementById('employeeSelect');
-
-  if (!toggle || !field || !select) return;
-
-  if (toggle.checked) {
-    field.style.display = 'block';
-    select.required = true;
-  } else {
-    field.style.display = 'none';
-    select.required = false;
-    select.value = "";
-  }
-}
-
-document.addEventListener("DOMContentLoaded", toggleEmployeeSelect);
-</script>
 {% endblock %}

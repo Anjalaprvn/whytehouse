@@ -65,7 +65,7 @@ tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
           <div class="field">
             <label>From Date <span class="req">*</span></label>
             <div class="input-wrap">
-              <input type="date" name="from_date" required>
+              <input type="date" name="from_date" value="{{ selected.from_date }}" required>
               <svg class="cal-ic" viewBox="0 0 24 24" fill="none">
                 <path d="M8 3V5" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
                 <path d="M16 3V5" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
@@ -78,7 +78,7 @@ tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
           <div class="field">
             <label>To Date <span class="req">*</span></label>
             <div class="input-wrap">
-              <input type="date" name="to_date" required>
+              <input type="date" name="to_date" value="{{ selected.to_date }}" required>
               <svg class="cal-ic" viewBox="0 0 24 24" fill="none">
                 <path d="M8 3V5" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
                 <path d="M16 3V5" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
@@ -92,10 +92,12 @@ tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
             <label>Select Resort <span class="req">*</span></label>
             <div class="select-wrap">
               <select name="resort" required>
-                <option value="" disabled selected>Select resort</option>
-                <option>Whyte House Resort - Calicut</option>
-                <option>Whyte House Resort - Wayanad</option>
-                <option>Whyte House Resort - Munnar</option>
+                <option value="" disabled {% if not selected.resort %}selected{% endif %}>Select resort</option>
+                {% for resort in resorts %}
+                  <option value="{{ resort.id }}" {% if selected.resort == resort.id|stringformat:"s" %}selected{% endif %}>
+                    {{ resort.resort_name }}
+                  </option>
+                {% endfor %}
               </select>
               <svg class="caret" viewBox="0 0 24 24" fill="none">
                 <path d="M7 10L12 15L17 10" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -106,26 +108,31 @@ tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
           <div class="field span-2">
             <div class="toggle-row">
               <label class="switch" aria-label="Employee View Report">
-                <input type="checkbox" id="employeeToggle" name="employee_view" onchange="toggleEmployeeSelect()">
+                <input type="checkbox" id="employeeToggle" name="employee_view" onchange="this.form.submit()" {% if employee_view %}checked{% endif %}>
                 <span class="slider"></span>
               </label>
               <span>Employee View Report</span>
             </div>
           </div>
 
-          <div class="field span-2" id="employeeField" style="display:none;">
+          {% if employee_view %}
+          <div class="field span-2" id="employeeField">
             <label>Select Employee <span class="req">*</span></label>
             <div class="select-wrap">
-              <select name="employee" id="employeeSelect">
-                <option value="" disabled selected>Select employee</option>
-                <option>John Doe</option>
-                <option>Jane Smith</option>
+              <select name="employee" id="employeeSelect" required>
+                <option value="" disabled {% if not selected.employee %}selected{% endif %}>Select employee</option>
+                {% for emp in employees %}
+                  <option value="{{ emp.id }}" {% if selected.employee == emp.id|stringformat:"s" %}selected{% endif %}>
+                    {{ emp.name }}{% if emp.role %} - {{ emp.role }}{% endif %}
+                  </option>
+                {% endfor %}
               </select>
               <svg class="caret" viewBox="0 0 24 24" fill="none">
                 <path d="M7 10L12 15L17 10" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
           </div>
+          {% endif %}
         </div>
 
         <div class="btn-row">
@@ -148,21 +155,39 @@ tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
         </div>
       </form>
     </section>
+
+{% if vouchers %}
+<section class="card" style="margin-top:20px;">
+  <h3>Voucher Details</h3>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Voucher No</th>
+          <th>Date</th>
+          <th>Customer</th>
+          {% if employee_view %}<th>Sales Person</th>{% endif %}
+          <th>Resort</th>
+          <th style="text-align:right;">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for voucher in vouchers %}
+        <tr>
+          <td>{{ voucher.voucher_no }}</td>
+          <td>{{ voucher.voucher_date|date:"d M Y" }}</td>
+          <td>{{ voucher.customer.display_name }}</td>
+          {% if employee_view %}<td>{{ voucher.sales_person.name|default:"-" }}</td>{% endif %}
+          <td>{{ voucher.resort.resort_name|default:"-" }}</td>
+          <td style="text-align:right;">₹{{ voucher.total }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    function toggleEmployeeSelect() {
-      const toggle = document.getElementById('employeeToggle');
-      const field = document.getElementById('employeeField');
-      const select = document.getElementById('employeeSelect');
-      if (toggle.checked) {
-        field.style.display = 'block';
-        select.required = true;
-      } else {
-        field.style.display = 'none';
-        select.required = false;
-      }
-    }
-  </script>
 {% endblock %}
