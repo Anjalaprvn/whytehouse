@@ -97,6 +97,18 @@
                 </div>
             </div>
 
+            <div class="grid-row">
+                <div>
+                    <label>Location <span class="required-star">*</span></label>
+                    <input type="text" name="location" value="{{ package.location }}" required class="form-control" placeholder="e.g. Wayanad, Kerala">
+                </div>
+
+                <div>
+                    <label>Country <span class="required-star">*</span></label>
+                    <input type="text" name="country" value="{{ package.country|default:'' }}" required class="form-control" placeholder="e.g. India">
+                </div>
+            </div>
+
             <label>Description</label>
             <textarea name="description" class="form-control">{{ package.description|default:'' }}</textarea>
 

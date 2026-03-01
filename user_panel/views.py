@@ -36,10 +36,48 @@ def enquire_now(request):
 
 def index(request):
     packages = TravelPackage.objects.filter(active=True, category='International')[:6]
-    return render(request, 'user/international.html', {'packages': packages})
+    
+    # Get featured package for each destination (Vietnam=2, Malaysia=14, Thailand=8, Maldives=12)
+    vietnam_package = TravelPackage.objects.filter(active=True, destination_id=2).first()
+    malaysia_package = TravelPackage.objects.filter(active=True, destination_id=14).first()
+    thailand_package = TravelPackage.objects.filter(active=True, destination_id=8).first()
+    maldives_package = TravelPackage.objects.filter(active=True, destination_id=12).first()
+    
+    # Get destinations
+    vietnam_dest = Destination.objects.filter(id=2).first()
+    malaysia_dest = Destination.objects.filter(id=14).first()
+    thailand_dest = Destination.objects.filter(id=8).first()
+    maldives_dest = Destination.objects.filter(id=12).first()
+    
+    context = {
+        'packages': packages,
+        'vietnam_package': vietnam_package,
+        'malaysia_package': malaysia_package,
+        'thailand_package': thailand_package,
+        'maldives_package': maldives_package,
+        'vietnam_dest': vietnam_dest,
+        'malaysia_dest': malaysia_dest,
+        'thailand_dest': thailand_dest,
+        'maldives_dest': maldives_dest,
+    }
+    
+    return render(request, 'user/international.html', context)
 def domestic(request):
     packages = TravelPackage.objects.filter(active=True, category='Domestic')[:6]
-    return render(request, 'user/domestic.html', {'packages': packages})
+    
+    # Get domestic destinations for the explorer section
+    domestic_destinations = Destination.objects.filter(category='Domestic').order_by('name')[:4]
+    
+    # Get first 3 domestic destinations for gallery
+    gallery_destinations = Destination.objects.filter(category='Domestic').order_by('name')[:3]
+    
+    context = {
+        'packages': packages,
+        'domestic_destinations': domestic_destinations,
+        'gallery_destinations': gallery_destinations,
+    }
+    
+    return render(request, 'user/domestic.html', context)
 
 def about(request):
     return render(request, 'user/about.html')

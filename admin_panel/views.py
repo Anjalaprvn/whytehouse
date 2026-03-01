@@ -2054,18 +2054,27 @@ def destination_list(request):
     return render(request, 'admin/destination/destination.html', context)
 
 def add_destination(request):
+    # Get category from URL parameter (from travel packages page)
+    default_category = request.GET.get('category', 'Domestic')
+    
     if request.method == "POST":
+        category = request.POST.get('category')
         Destination.objects.create(
             name=request.POST.get('name'),
             country=request.POST.get('country'),
-            category=request.POST.get('category'),
+            category=category,
             description=request.POST.get('description'),
             is_popular=request.POST.get('is_popular') == 'on',
             image=request.FILES.get('image')
         )
         messages.success(request, "Destination added successfully!")
-        return redirect('admin_panel:destinations')
-    return render(request, 'admin/destination/add_destination.html')
+        
+        # Redirect back to travel packages with the category
+        url = reverse('admin_panel:travel_packages')
+        return redirect(f'{url}?cat={category}')
+    
+    context = {'default_category': default_category}
+    return render(request, 'admin/destination/add_destination.html', context)
 
 def edit_destination(request, destination_id):
     destination = get_object_or_404(Destination, id=destination_id)
