@@ -211,6 +211,8 @@
             {% endif %}
             <form action="" method="POST">
                 {% csrf_token %}
+                <!-- Hidden field to track which section user came from -->
+                <input type="hidden" name="source_page" value="{% if request.META.HTTP_REFERER and 'domestic' in request.META.HTTP_REFERER %}Domestic{% else %}International{% endif %}">
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="field-label">Full Name</label>
@@ -289,6 +291,113 @@
 </main>
 
 <script>
+// Form validation
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const nameInput = document.querySelector('input[name="name"]');
+    const emailInput = document.querySelector('input[name="email"]');
+    const phoneInput = document.querySelector('input[name="phone"]');
+    const messageInput = document.querySelector('textarea[name="message"]');
+    
+    // Phone validation pattern (international format with optional country code)
+    const phonePattern = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/;
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    function showError(input, message) {
+        // Remove existing error
+        const existingError = input.parentElement.querySelector('.error-msg');
+        if (existingError) existingError.remove();
+        
+        // Add error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-msg';
+        errorDiv.style.color = '#dc2626';
+        errorDiv.style.fontSize = '12px';
+        errorDiv.style.marginTop = '5px';
+        errorDiv.textContent = message;
+        input.parentElement.appendChild(errorDiv);
+        input.style.borderColor = '#dc2626';
+    }
+    
+    function clearError(input) {
+        const existingError = input.parentElement.querySelector('.error-msg');
+        if (existingError) existingError.remove();
+        input.style.borderColor = '#F0F0F0';
+    }
+    
+    // Real-time validation
+    nameInput.addEventListener('input', function() {
+        if (this.value.trim().length < 2) {
+            showError(this, 'Name must be at least 2 characters');
+        } else {
+            clearError(this);
+        }
+    });
+    
+    emailInput.addEventListener('input', function() {
+        if (!emailPattern.test(this.value)) {
+            showError(this, 'Please enter a valid email address');
+        } else {
+            clearError(this);
+        }
+    });
+    
+    phoneInput.addEventListener('input', function() {
+        // Allow digits, +, -, spaces, parentheses
+        this.value = this.value.replace(/[^\d\+\-\s\(\)]/g, '');
+        
+        if (this.value && this.value.length < 10) {
+            showError(this, 'Phone number must be at least 10 digits');
+        } else if (this.value && !phonePattern.test(this.value)) {
+            showError(this, 'Please enter a valid phone number');
+        } else {
+            clearError(this);
+        }
+    });
+    
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Validate name
+        if (nameInput.value.trim().length < 2) {
+            showError(nameInput, 'Name is required (minimum 2 characters)');
+            isValid = false;
+        }
+        
+        // Validate email
+        if (!emailPattern.test(emailInput.value)) {
+            showError(emailInput, 'Please enter a valid email address');
+            isValid = false;
+        }
+        
+        // Validate phone
+        if (phoneInput.value && phoneInput.value.length < 10) {
+            showError(phoneInput, 'Phone number must be at least 10 digits');
+            isValid = false;
+        } else if (phoneInput.value && !phonePattern.test(phoneInput.value)) {
+            showError(phoneInput, 'Please enter a valid phone number');
+            isValid = false;
+        }
+        
+        // Validate message
+        if (messageInput.value.trim().length < 10) {
+            showError(messageInput, 'Message must be at least 10 characters');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            // Scroll to first error
+            const firstError = document.querySelector('.error-msg');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+});
+
+// Auto-hide success messages
 setTimeout(() => {
     document.querySelectorAll('.alert-msg').forEach(el => {
         el.style.transition = 'opacity 0.5s';

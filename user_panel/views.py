@@ -110,15 +110,46 @@ def blog_detail(request, slug):
     return render(request, "user/blog_detail.html", {"blog": blog, "tags": tags})
 def contact(request):
     if request.method == 'POST':
+        import re
+        
         name = (request.POST.get('name') or '').strip()
         email = (request.POST.get('email') or '').strip()
         phone = (request.POST.get('phone') or '').strip()
         package = (request.POST.get('package') or '').strip()
         message = (request.POST.get('message') or '').strip()
+        source_page = (request.POST.get('source_page') or 'General').strip()
 
-        if not (name and email and phone and message):
-            messages.error(request, 'Please fill all required fields.')
-            return redirect('contact')
+        # Validation
+        errors = []
+        
+        # Name validation
+        if not name or len(name) < 2:
+            errors.append('Name is required and must be at least 2 characters.')
+        
+        # Email validation
+        email_pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+        if not email or not re.match(email_pattern, email):
+            errors.append('Please enter a valid email address.')
+        
+        # Phone validation (international format: 10-15 digits with optional +, -, spaces, parentheses)
+        phone_pattern = r'^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$'
+        phone_digits = re.sub(r'\D', '', phone)  # Extract only digits
+        
+        if not phone:
+            errors.append('Phone number is required.')
+        elif len(phone_digits) < 10:
+            errors.append('Phone number must be at least 10 digits.')
+        elif not re.match(phone_pattern, phone):
+            errors.append('Please enter a valid phone number.')
+        
+        # Message validation
+        if not message or len(message) < 10:
+            errors.append('Message is required and must be at least 10 characters.')
+        
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return redirect('user_panel:contact')
 
         # ✅ 1) Find existing lead by phone (or create new)
         lead = Lead.objects.filter(mobile_number=phone).first()
@@ -130,6 +161,7 @@ def contact(request):
             # Keep latest message in remarks (optional)
             lead.remarks = (lead.remarks or "") + f"\n\n[{package or 'General Inquiry'}] {email}: {message}"
             lead.source = 'Website'
+            lead.enquiry_type = source_page  # Set enquiry type based on source page
             lead.save()
         else:
             lead = Lead.objects.create(
@@ -137,6 +169,7 @@ def contact(request):
                 mobile_number=phone,
                 place=None,
                 source='Website',
+                enquiry_type=source_page,  # Set enquiry type based on source page
                 remarks=f"Email: {email}\nPackage: {package or 'General Inquiry'}\nMessage: {message}"
             )
 
@@ -152,7 +185,7 @@ def contact(request):
         )
 
         messages.success(request, 'Thank you! Your inquiry has been submitted successfully.')
-        return redirect('contact')
+        return redirect('user_panel:contact')
 
     return render(request, 'user/contact.html')
 

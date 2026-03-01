@@ -133,9 +133,15 @@ def lead_management(request):
     
     # If General enquiry type is selected, use customer inquiries template
     if enquiry_type == 'General':
-        general_leads = Lead.objects.filter(enquiry_type='General').order_by('-created_at')
+        status_filter = request.GET.get('status', '')
+        general_leads = Lead.objects.filter(enquiry_type='General')
         
-       
+        # Apply status filter if provided
+        if status_filter:
+            general_leads = general_leads.filter(status=status_filter)
+        
+        general_leads = general_leads.order_by('-created_at')
+        
         inquiries = []
         for lead in general_leads:
             # Extract email from remarks if available
@@ -152,18 +158,25 @@ def lead_management(request):
                 'phone': lead.mobile_number,
                 'package': 'General Inquiry',
                 'message': lead.remarks or '',
-                'status': 'New',
+                'status': lead.status,  # Use actual status from Lead model
                 'created_at': lead.created_at,
             })
             inquiries.append(inquiry_obj)
         
+        # Count by status (from all General leads, not just filtered)
+        all_general_leads = Lead.objects.filter(enquiry_type='General')
+        new_count = all_general_leads.filter(status='New').count()
+        contacted_count = all_general_leads.filter(status='Contacted').count()
+        converted_count = all_general_leads.filter(status='Converted').count()
+        junk_count = all_general_leads.filter(status='Junk').count()
+        
         context = {
             'inquiries': inquiries,
-            'total_count': len(inquiries),
-            'new_count': len(inquiries),
-            'contacted_count': 0,
-            'converted_count': 0,
-            'junk_count': 0,
+            'total_count': all_general_leads.count(),
+            'new_count': new_count,
+            'contacted_count': contacted_count,
+            'converted_count': converted_count,
+            'junk_count': junk_count,
         }
         return render(request, 'admin/enquiry/customer_inquiries.html', context)
     
@@ -219,6 +232,7 @@ def edit_lead(request, id):
         lead.place = request.POST.get('place')
         lead.source = request.POST.get('source')
         lead.enquiry_type = request.POST.get('enquiry_type', 'General')
+        lead.status = request.POST.get('status', 'New')
         lead.remarks = request.POST.get('remarks')
         lead.save()
         messages.success(request, "Lead updated successfully!")
@@ -477,76 +491,52 @@ def travel_package_delete(request, package_id):
 def customer_inquiries(request):
     status_filter = request.GET.get('status')
     
-    # Get general enquiry leads and convert them to inquiry-like objects
-    general_leads = Lead.objects.filter(enquiry_type='General').order_by('-created_at')
+    # Get all inquiries
+    inquiries = Inquiry.objects.all()
     
-    # Convert leads to inquiry-like format for template compatibility
-    inquiries = []
-    for lead in general_leads:
-        # Extract email from remarks if available
-        email = ''
-        if lead.remarks and 'Email:' in lead.remarks:
-            email_part = lead.remarks.split('Email:')[1].split('\n')[0].strip()
-            email = email_part
-        
-        # Create inquiry-like object
-        inquiry_obj = type('obj', (object,), {
-            'id': lead.id,
-            'name': lead.full_name,
-            'email': email,
-            'phone': lead.mobile_number,
-            'package': 'General Inquiry',
-            'message': lead.remarks or '',
-            'status': 'New',
-            'created_at': lead.created_at,
-        })
-        inquiries.append(inquiry_obj)
+    # Apply status filter if provided
+    if status_filter:
+        inquiries = inquiries.filter(status=status_filter)
+    
+    inquiries = inquiries.order_by('-created_at')
+    
+    # Count by status (from all inquiries, not just filtered)
+    all_inquiries = Inquiry.objects.all()
+    new_count = all_inquiries.filter(status='New').count()
+    contacted_count = all_inquiries.filter(status='Contacted').count()
+    converted_count = all_inquiries.filter(status='Converted').count()
+    junk_count = all_inquiries.filter(status='Junk').count()
+    
+    print(f"DEBUG customer_inquiries: Total={all_inquiries.count()}, New={new_count}, Contacted={contacted_count}, Converted={converted_count}, Junk={junk_count}")
     
     context = {
         'inquiries': inquiries,
-        'total_count': len(inquiries),
-        'new_count': len(inquiries),
-        'contacted_count': 0,
-        'converted_count': 0,
-        'junk_count': 0,
+        'total_count': all_inquiries.count(),
+        'new_count': new_count,
+        'contacted_count': contacted_count,
+        'converted_count': converted_count,
+        'junk_count': junk_count,
     }
     return render(request, 'admin/enquiry/customer_inquiries.html', context)
 
 def view_inquiry(request, inquiry_id):
-    # Try to get from Inquiry first, then from Lead
-    try:
-        inquiry = Inquiry.objects.get(id=inquiry_id)
-    except Inquiry.DoesNotExist:
-        # If not found in Inquiry, try Lead (for general enquiries)
-        lead = get_object_or_404(Lead, id=inquiry_id)
-        # Convert lead to inquiry-like object
-        email = ''
-        if lead.remarks and 'Email:' in lead.remarks:
-            email_part = lead.remarks.split('Email:')[1].split('\n')[0].strip()
-            email = email_part
-        
-        inquiry = type('obj', (object,), {
-            'id': lead.id,
-            'name': lead.full_name,
-            'email': email,
-            'phone': lead.mobile_number,
-            'package': 'General Inquiry',
-            'message': lead.remarks or '',
-            'status': 'New',
-            'created_at': lead.created_at,
-        })
-    
+    inquiry = get_object_or_404(Inquiry, id=inquiry_id)
     return render(request, 'admin/enquiry/customer_inquiry_view.html', {'inquiry': inquiry})
 
 def update_inquiry_status(request, inquiry_id):
     if request.method == 'POST':
-        inquiry = get_object_or_404(Inquiry, id=inquiry_id)
         new_status = request.POST.get('status')
+        print(f"DEBUG: Updating inquiry_id={inquiry_id} to status={new_status}")
+        
         if new_status in ['New', 'Contacted', 'Converted', 'Junk']:
+            inquiry = get_object_or_404(Inquiry, id=inquiry_id)
+            print(f"DEBUG: Found Inquiry (ID={inquiry.id}, Name={inquiry.name}), updating status from {inquiry.status} to {new_status}")
             inquiry.status = new_status
             inquiry.save()
+            print(f"DEBUG: Inquiry saved, new status is {inquiry.status}")
             messages.success(request, f'Inquiry status updated to {new_status}')
-        return redirect('admin_panel:view_inquiry', inquiry_id=inquiry_id)
+            return redirect('admin_panel:view_inquiry', inquiry_id=inquiry_id)
+    
     return redirect('admin_panel:customer_inquiries')
 
 def blog_list(request):
