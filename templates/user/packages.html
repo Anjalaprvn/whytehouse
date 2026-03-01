@@ -1,5 +1,6 @@
 {% extends 'user/navbar.html' %}
 {% load static %}
+{% load custom_filters %}
 
 {% block title %}Packages | Whyte House Holidays{% endblock %}
 
@@ -233,10 +234,10 @@
                     
                     <div class="duration-box">
                         <div class="duration-item">
-                            <i class="fas fa-sun"></i> <span>5</span>
+                            <i class="fas fa-sun"></i> <span>{{ package.duration|get_days }}</span>
                         </div>/
                         <div class="duration-item">
-                            <i class="fas fa-moon"></i> <span>4</span>
+                            <i class="fas fa-moon"></i> <span>{{ package.duration|get_nights }}</span>
                         </div>
                     </div>
                 </div>

@@ -37,3 +37,33 @@ def format_duration(duration):
     
     # Default fallback
     return "☀️ 5 / 🌙 4"
+
+@register.filter
+def get_days(duration):
+    """Extract days from duration string"""
+    import re
+    if not duration:
+        return "5"
+    duration_str = str(duration).lower()
+    match = re.search(r'(\d+)\s*(?:days?|d)', duration_str)
+    if match:
+        return match.group(1)
+    return "5"
+
+@register.filter
+def get_nights(duration):
+    """Extract nights from duration string"""
+    import re
+    if not duration:
+        return "4"
+    duration_str = str(duration).lower()
+    # Look for explicit nights
+    match = re.search(r'(\d+)\s*(?:nights?|n)', duration_str)
+    if match:
+        return match.group(1)
+    # If only days found, calculate nights as days-1
+    match = re.search(r'(\d+)\s*(?:days?|d)', duration_str)
+    if match:
+        days = int(match.group(1))
+        return str(days - 1 if days > 0 else 0)
+    return "4"
