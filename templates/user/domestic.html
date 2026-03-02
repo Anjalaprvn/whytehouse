@@ -1013,7 +1013,7 @@
             <h1>Escape the city<br>Find your <span>peace</span></h1>
             <div class="cta-group">
                 <a href="{% url 'user_panel:domestic_packages' %}" class="cta-link">Explore Destinations</a>
-                <a href="/hospitality" class="cta-link">Hospitality Services</a>
+                <a href="{% url 'user_panel:hospitality' %}" class="cta-link">Hospitality Services</a>
             </div>
         </div>
 
@@ -1191,7 +1191,7 @@
                     <p class="hosp-desc">
                         Transform Your Property Into a Thriving Business. With over a decade of hospitality expertise, we've helped 200+ property owners maximize their revenue and deliver exceptional guest experiences.
                     </p>
-                    <a href="#" class="btn-grow">
+                    <a href="{% url 'user_panel:hospitality' %}" class="btn-grow">
                         Grow your Property
                         <span class="arrow-circle"><i class="fa-solid fa-arrow-up-right"></i></span>
                     </a>
