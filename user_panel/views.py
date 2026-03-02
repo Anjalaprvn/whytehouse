@@ -78,10 +78,14 @@ def domestic(request):
     # Get first 3 domestic destinations for gallery
     gallery_destinations = Destination.objects.filter(category='Domestic').order_by('name')[:3]
     
+    # Get all properties for hospitality section (show 3 at a time)
+    properties = Property.objects.all()
+    
     context = {
         'packages': packages,
         'domestic_destinations': domestic_destinations,
         'gallery_destinations': gallery_destinations,
+        'properties': properties,
     }
     
     return render(request, 'user/domestic.html', context)

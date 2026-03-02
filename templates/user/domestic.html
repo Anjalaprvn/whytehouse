@@ -236,8 +236,20 @@
     border-radius: 20px;
 }
 
+.card-left {
+    transform: rotate(-8deg);
+}
+
+.card-center {
+    transform: rotate(8deg);
+}
+
+.card-right {
+    transform: rotate(0deg);
+}
+
 .info-card:hover { 
-    transform: translateY(-10px) scale(1.05); 
+    transform: translateY(-10px) scale(1.05) !important; 
     z-index: 10; 
 }
 
@@ -616,6 +628,14 @@
     color:#1A1A1A;
 }
 
+.vlog-section .section-title{
+    color:#000000;
+}
+
+.vlog-section .section-title i{
+    color:#000000;
+}
+
 .section-title{
     font-size:48px;
     font-weight:400;
@@ -757,7 +777,23 @@
 .faq-icon.black { background: #000; color: #fff; }
 
 .faq-text h4 { margin: 0; font-size: 16px; font-weight: 500; color: #000; }
-.faq-text p { margin: 6px 0 0 0; font-size: 14px; color: #000; display: none; }
+.faq-text p { 
+  margin: 6px 0 0 0; 
+  font-size: 14px; 
+  color: #000; 
+  display: none;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, margin 0.3s ease;
+}
+.faq-text p.active { 
+  display: block; 
+  max-height: 200px;
+  margin-top: 12px;
+}
+.faq-item.active .faq-icon { 
+  transform: rotate(90deg); 
+}
 
 /*FAQ-RIBBON */
 
@@ -1095,35 +1131,49 @@
             </div>
 
             <div class="gallery-grid">
-                <div class="gallery-card">
-                    <img src="{% static 'images/tropical.png' %}" alt="Black Waters">
-                    <div class="gallery-overlay">
-                        <h3>Black Waters</h3>
-                        <a href="#" class="btn-explore-link">
-                            Explore <i class="fa-solid fa-arrow-right"></i>
-                        </a>
+                {% if gallery_destinations %}
+                    {% for destination in gallery_destinations %}
+                        <div class="gallery-card">
+                            <img src="{% if destination.image %}{{ destination.image.url }}{% else %}{% static 'images/tropical.png' %}{% endif %}" alt="{{ destination.name }}">
+                            <div class="gallery-overlay">
+                                <h3>{{ destination.name }}</h3>
+                                <a href="{% url 'user_panel:domestic_packages' %}?dest={{ destination.id }}" class="btn-explore-link">
+                                    Explore <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="gallery-card">
+                        <img src="{% static 'images/tropical.png' %}" alt="Black Waters">
+                        <div class="gallery-overlay">
+                            <h3>Black Waters</h3>
+                            <a href="{% url 'user_panel:domestic_packages' %}" class="btn-explore-link">
+                                Explore <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
                     </div>
-                </div>
 
-                <div class="gallery-card">
-                    <img src="{% static 'images/munnar.png' %}" alt="Munnar">
-                    <div class="gallery-overlay">
-                        <h3>Munnar</h3>
-                        <a href="#" class="btn-explore-link">
-                            Explore <i class="fa-solid fa-arrow-right"></i>
-                        </a>
+                    <div class="gallery-card">
+                        <img src="{% static 'images/munnar.png' %}" alt="Munnar">
+                        <div class="gallery-overlay">
+                            <h3>Munnar</h3>
+                            <a href="{% url 'user_panel:domestic_packages' %}" class="btn-explore-link">
+                                Explore <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
                     </div>
-                </div>
 
-                <div class="gallery-card">
-                    <img src="{% static 'images/wayanad.png' %}" alt="Wayanad">
-                    <div class="gallery-overlay">
-                        <h3>Wayanad</h3>
-                        <a href="#" class="btn-explore-link">
-                            Explore <i class="fa-solid fa-arrow-right"></i>
-                        </a>
+                    <div class="gallery-card">
+                        <img src="{% static 'images/wayanad.png' %}" alt="Wayanad">
+                        <div class="gallery-overlay">
+                            <h3>Wayanad</h3>
+                            <a href="{% url 'user_panel:domestic_packages' %}" class="btn-explore-link">
+                                Explore <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
                     </div>
-                </div>
+                {% endif %}
             </div>
 
             <div class="gallery-footer">
@@ -1153,39 +1203,132 @@
             </div>
 
             <div class="hosp-sub-nav">
-                <div class="hosp-counter"><span>1</span>/200</div>
+                <div class="hosp-counter"><span id="hosp-current">1</span>/<span id="hosp-total">1</span></div>
                 <div class="gallery-footer" style="margin-top: 0;">
-                    <button class="arrow-btn dark-arrow"><i class="fa-solid fa-arrow-left"></i></button>
-                    <button class="arrow-btn dark-arrow"><i class="fa-solid fa-arrow-right"></i></button>
+                    <button class="arrow-btn dark-arrow" id="hosp-prev"><i class="fa-solid fa-arrow-left"></i></button>
+                    <button class="arrow-btn dark-arrow" id="hosp-next"><i class="fa-solid fa-arrow-right"></i></button>
                 </div>
             </div>
 
-            <div class="property-grid">
-                <div class="prop-card">
-                    <div class="prop-img">
-                        <img src="{% static 'images/zenith.png' %}" alt="Zenith Pavilion">
+            <div class="property-grid" id="property-grid">
+                {% if properties %}
+                    {% for property in properties %}
+                        <div class="prop-card" data-page="{{ forloop.counter0|divisibleby:3|yesno:'0,1,2' }}" style="display:block;">
+                            <div class="prop-img">
+                                <img src="{% if property.image %}{{ property.image.url }}{% else %}{% static 'images/zenith.png' %}{% endif %}" alt="{{ property.name }}">
+                            </div>
+                            <h4>{{ property.name }}</h4>
+                            <p class="prop-loc"><i class="fa-solid fa-location-dot"></i> {{ property.location }}</p>
+                            {% if property.website %}
+                                <a href="{{ property.website }}" target="_blank" class="visit-link">Visit Now <i class="fa-solid fa-arrow-up-right" style="font-size: 10px;"></i></a>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="prop-card" data-page="0">
+                        <div class="prop-img">
+                            <img src="{% static 'images/zenith.png' %}" alt="Zenith Pavilion">
+                        </div>
+                        <h4>The Zenith Pavilion Holidays</h4>
+                        <p class="prop-loc"><i class="fa-solid fa-location-dot"></i> Kozhikode, India</p>
                     </div>
-                    <h4>The Zenith Pavilion Holidays</h4>
-                    <p class="prop-loc"><i class="fa-solid fa-location-dot"></i> Kozhikode, India</p>
-                </div>
 
-                <div class="prop-card">
-                    <div class="prop-img">
-                        <img src="{% static 'images/nilaya.png' %}" alt="Nilaya Shoreline">
+                    <div class="prop-card" data-page="0">
+                        <div class="prop-img">
+                            <img src="{% static 'images/nilaya.png' %}" alt="Nilaya Shoreline">
+                        </div>
+                        <h4>Nilaya Shoreline Villas</h4>
+                        <p class="prop-loc"><i class="fa-solid fa-location-dot"></i> Goa, India</p>
+                        <a href="#" class="visit-link">Visit Now <i class="fa-solid fa-arrow-up-right" style="font-size: 10px;"></i></a>
                     </div>
-                    <h4>Nilaya Shoreline Villas</h4>
-                    <p class="prop-loc"><i class="fa-solid fa-location-dot"></i> Goa, India</p>
-                    <a href="#" class="visit-link">Visit Now <i class="fa-solid fa-arrow-up-right" style="font-size: 10px;"></i></a>
-                </div>
 
-                <div class="prop-card">
-                    <div class="prop-img">
-                        <img src="{% static 'images/amber.png' %}" alt="Amber Vault">
+                    <div class="prop-card" data-page="0">
+                        <div class="prop-img">
+                            <img src="{% static 'images/amber.png' %}" alt="Amber Vault">
+                        </div>
+                        <h4>The Amber Vault Cuisine</h4>
+                        <p class="prop-loc"><i class="fa-solid fa-location-dot"></i> Bengaluru, India</p>
                     </div>
-                    <h4>The Amber Vault Cuisine</h4>
-                    <p class="prop-loc"><i class="fa-solid fa-location-dot"></i> Bengaluru, India</p>
-                </div>
+                {% endif %}
             </div>
+
+            <script>
+            // Property carousel navigation - show 3 at a time
+            document.addEventListener('DOMContentLoaded', function() {
+                const propCards = document.querySelectorAll('#property-grid .prop-card');
+                const prevBtn = document.getElementById('hosp-prev');
+                const nextBtn = document.getElementById('hosp-next');
+                const currentSpan = document.getElementById('hosp-current');
+                const totalSpan = document.getElementById('hosp-total');
+                
+                const cardsPerPage = 3;
+                const totalCards = propCards.length;
+                const totalPages = Math.ceil(totalCards / cardsPerPage);
+                let currentPage = 0;
+                
+                // Assign page numbers to cards
+                propCards.forEach((card, index) => {
+                    card.setAttribute('data-page', Math.floor(index / cardsPerPage));
+                });
+                
+                if (totalSpan) totalSpan.textContent = totalPages;
+                
+                function showPage(pageIndex) {
+                    propCards.forEach((card, index) => {
+                        const cardPage = parseInt(card.getAttribute('data-page'));
+                        card.style.display = (cardPage === pageIndex) ? 'block' : 'none';
+                    });
+                    if (currentSpan) currentSpan.textContent = pageIndex + 1;
+                    currentPage = pageIndex;
+                }
+                
+                // Initialize - show first page
+                showPage(0);
+                
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', function() {
+                        currentPage = (currentPage - 1 + totalPages) % totalPages;
+                        showPage(currentPage);
+                    });
+                }
+                
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', function() {
+                        currentPage = (currentPage + 1) % totalPages;
+                        showPage(currentPage);
+                    });
+                }
+                
+                // FAQ Accordion functionality
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const answer = this.querySelector('.faq-text p');
+                        const icon = this.querySelector('.faq-icon');
+                        const isActive = answer.classList.contains('active');
+                        
+                        // Close all other FAQs and reset to black
+                        document.querySelectorAll('.faq-text p').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        document.querySelectorAll('.faq-item').forEach(faq => {
+                            faq.classList.remove('active');
+                        });
+                        document.querySelectorAll('.faq-icon').forEach(ic => {
+                            ic.classList.remove('orange');
+                            ic.classList.add('black');
+                        });
+                        
+                        // Toggle current FAQ
+                        if (!isActive) {
+                            answer.classList.add('active');
+                            this.classList.add('active');
+                            icon.classList.remove('black');
+                            icon.classList.add('orange');
+                        }
+                    });
+                });
+            });
+            </script>
 
         </div>
     </section>
@@ -1200,10 +1343,10 @@
         <!-- ===== LEFT CARD ===== -->
         <div class="vlog-item">
 
-            <div class="video-container">
+            <a href="https://www.instagram.com/reel/C3PmlL2rzwk/?igsh=b2R4bzl1Mmtwazdi" target="_blank" class="video-container" style="text-decoration:none; cursor:pointer;">
                 <img src="{% static 'images/avatar.png' %}" alt="Vlog 1">
                 <div class="play-btn">▶</div>
-            </div>
+            </a>
 
             <div class="vlog-content">
                 <p class="quote">
@@ -1212,9 +1355,7 @@
                     from the chaos of everyday life.”
                 </p>
 
-                <button class="read-btn">
-                    Preview the vlog
-                </button>
+                <a href="https://www.instagram.com/reel/C3PmlL2rzwk/?igsh=b2R4bzl1Mmtwazdi" target="_blank" class="read-btn" style="text-decoration:none; display:inline-block; color:inherit;">Preview the vlog</a>
             </div>
 
         </div>
@@ -1222,10 +1363,10 @@
         <!-- ===== RIGHT CARD ===== -->
         <div class="vlog-item">
 
-            <div class="video-container">
+            <a href="https://www.instagram.com/reel/C3PmlL2rzwk/?igsh=b2R4bzl1Mmtwazdi" target="_blank" class="video-container" style="text-decoration:none; cursor:pointer;">
                 <img src="{% static 'images/avatar2.png' %}" alt="Vlog 2">
                 <div class="play-btn">▶</div>
-            </div>
+            </a>
 
             <div class="vlog-content">
                 <p class="quote">
@@ -1234,9 +1375,7 @@
                     from the chaos of everyday life.”
                 </p>
 
-                <button class="read-btn">
-                    Preview the vlog
-                </button>
+                <a href="https://www.instagram.com/reel/C3PmlL2rzwk/?igsh=b2R4bzl1Mmtwazdi" target="_blank" class="read-btn" style="text-decoration:none; display:inline-block; color:inherit;">Preview the vlog</a>
             </div>
 
         </div>
@@ -1253,7 +1392,7 @@
   </div>
 
   <div class="faq-item">
-    <div class="faq-icon orange">→</div>
+    <div class="faq-icon black">→</div>
     <div class="faq-text">
       <h4>Can I change or cancel my booking, and what are the charges?</h4>
       <p>You can change or cancel your booking, but charges depend on how soon you made the request.</p>
