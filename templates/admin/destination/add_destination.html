@@ -197,9 +197,10 @@
 
             <div class="form-group">
                 <label>Destination Image</label>
-                <div class="upload-box" onclick="document.getElementById('file-upload').click();">
+                <div class="upload-box" id="upload-box" onclick="document.getElementById('file-upload').click();">
                     <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
                     <div class="upload-text">Click to upload destination image</div>
+                    <img id="preview-img" src="" alt="Preview" style="display:none; max-width:100%; max-height:200px; margin-top:10px; border-radius:8px;" />
                     <input type="file" id="file-upload" name="image" style="display:none;" accept="image/*">
                 </div>
             </div>
@@ -211,4 +212,32 @@
         </div>
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('file-upload');
+        const previewImg = document.getElementById('preview-img');
+        const uploadBox = document.getElementById('upload-box');
+
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    // hide upload icon/text when preview shown
+                    uploadBox.querySelector('.upload-icon').style.display = 'none';
+                    uploadBox.querySelector('.upload-text').style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                previewImg.src = '';
+                previewImg.style.display = 'none';
+                uploadBox.querySelector('.upload-icon').style.display = '';
+                uploadBox.querySelector('.upload-text').style.display = '';
+            }
+        });
+    });
+</script>
 {% endblock %}

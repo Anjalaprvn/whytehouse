@@ -383,7 +383,7 @@ class MealViewSet(viewsets.ModelViewSet):
         search = (self.request.query_params.get("search") or "").strip()
         if search:
             qs = qs.filter(
-                Q(meal_plan__icontains=search)
+                Q(name__icontains=search)
                 | Q(description__icontains=search)
             )
 
@@ -403,7 +403,7 @@ class MealViewSet(viewsets.ModelViewSet):
 class AccountViewSet(viewsets.ModelViewSet):
     """
     API endpoint for Accounts
-    Filters: account_type, status, search
+    Filters: account_type, search
     """
     queryset = Account.objects.all().order_by("-created_at")
     serializer_class = AccountSerializer
@@ -414,10 +414,6 @@ class AccountViewSet(viewsets.ModelViewSet):
         account_type = (self.request.query_params.get("account_type") or "").strip()
         if account_type:
             qs = qs.filter(account_type=account_type)
-
-        status_filter = (self.request.query_params.get("status") or "").strip()
-        if status_filter:
-            qs = qs.filter(status=status_filter)
 
         search = (self.request.query_params.get("search") or "").strip()
         if search:
@@ -432,12 +428,8 @@ class AccountViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"])
     def summary(self, request):
         qs = self.get_queryset()
-        total_balance = qs.aggregate(total=Sum('balance'))['total'] or 0
         return Response({
             "total": qs.count(),
-            "active_count": qs.filter(status="Active").count(),
-            "inactive_count": qs.filter(status="Inactive").count(),
-            "total_balance": float(total_balance),
         })
 
 
@@ -476,7 +468,7 @@ class InquiryViewSet(viewsets.ModelViewSet):
             "new_count": qs.filter(status="New").count(),
             "contacted_count": qs.filter(status="Contacted").count(),
             "converted_count": qs.filter(status="Converted").count(),
-            "closed_count": qs.filter(status="Closed").count(),
+            "junk_count": qs.filter(status="Junk").count(),
         })
 
 
@@ -586,13 +578,13 @@ class VoucherViewSet(viewsets.ModelViewSet):
         if resort_id:
             qs = qs.filter(resort_id=resort_id)
 
-        check_in = (self.request.query_params.get("check_in_date") or "").strip()
+        check_in = (self.request.query_params.get("checkin_date") or "").strip()
         if check_in:
-            qs = qs.filter(check_in_date__gte=check_in)
+            qs = qs.filter(checkin_date__gte=check_in)
 
-        check_out = (self.request.query_params.get("check_out_date") or "").strip()
+        check_out = (self.request.query_params.get("checkout_date") or "").strip()
         if check_out:
-            qs = qs.filter(check_out_date__lte=check_out)
+            qs = qs.filter(checkout_date__lte=check_out)
 
         search = (self.request.query_params.get("search") or "").strip()
         if search:
@@ -638,10 +630,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         if sales_person_id:
             qs = qs.filter(sales_person_id=sales_person_id)
 
-        payment_mode = (self.request.query_params.get("payment_mode") or "").strip()
-        if payment_mode:
-            qs = qs.filter(payment_mode=payment_mode)
-
+        # invoice model has no payment_mode field
         date_from = (self.request.query_params.get("date_from") or "").strip()
         if date_from:
             qs = qs.filter(created_at__gte=date_from)
@@ -663,20 +652,20 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"])
     def summary(self, request):
         qs = self.get_queryset()
-        total_amount = qs.aggregate(total=Sum('total_amount'))['total'] or 0
-        paid_amount = qs.aggregate(total=Sum('paid_amount'))['total'] or 0
-        pending_amount = qs.aggregate(total=Sum('pending_amount'))['total'] or 0
+        total_val = qs.aggregate(total=Sum('total'))['total'] or 0
+        paid_val = qs.aggregate(total=Sum('received'))['total'] or 0
+        pending_val = qs.aggregate(total=Sum('pending'))['total'] or 0
         
         return Response({
             "total": qs.count(),
-            "total_amount": float(total_amount),
-            "paid_amount": float(paid_amount),
-            "pending_amount": float(pending_amount),
+            "total_amount": float(total_val),
+            "received_amount": float(paid_val),
+            "pending_amount": float(pending_val),
         })
 
     @action(detail=False, methods=["get"])
     def pending(self, request):
         """Get invoices with pending amount"""
-        invoices = self.get_queryset().filter(pending_amount__gt=0)
+        invoices = self.get_queryset().filter(pending__gt=0)
         serializer = self.get_serializer(invoices, many=True)
         return Response(serializer.data)

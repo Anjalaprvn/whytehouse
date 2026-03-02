@@ -167,7 +167,14 @@
 
           <div class="field">
             <label>Featured Image</label>
-            <input type="file" name="featured_image" accept="image/*">
+            <input type="file" id="featured-image-input" name="featured_image" accept="image/*">
+            {% if blog.featured_image %}
+            <div style="margin-top:8px;">
+              <img id="featured-image-preview" src="{{ blog.featured_image.url }}" alt="Featured image" style="max-width:200px; border-radius:8px;" />
+            </div>
+            {% else %}
+            <img id="featured-image-preview" src="" alt="Featured image preview" style="display:none; max-width:200px; border-radius:8px; margin-top:8px;" />
+            {% endif %}
           </div>
         </div>
 
@@ -327,5 +334,21 @@ function copyToClipboard(text) {
     });
 }
 {% endverbatim %}
+  
+    // featured image preview
+    const featuredInput = document.getElementById('featured-image-input');
+    const featuredPreview = document.getElementById('featured-image-preview');
+    featuredInput.addEventListener('change', function(e) {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          featuredPreview.src = ev.target.result;
+          featuredPreview.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+  {% endverbatim %}
 </script>
 {% endblock %}
