@@ -1,4 +1,5 @@
 {% load static %}
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -55,6 +56,7 @@
             border-radius: 50px; width: 240px; display: flex; align-items: center; justify-content: space-between;
             border: 1px solid var(--glass-border); cursor: pointer; transition: 0.3s;
         }
+        .tab:hover { background: rgba(0, 0, 0, 0.6); transform: translateX(5px); }
         .tab.active { background: var(--accent-orange); border-color: transparent; }
         .tab-left { display: flex; align-items: center; gap: 12px; }
         .tab img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
@@ -156,13 +158,16 @@
         }
 
         .nav-tab {
+            display: inline-block;
             font-size: 18px;
             color: #999;
             cursor: pointer;
             padding-bottom: 10px;
             position: relative;
+            transition: color 0.3s;
         }
 
+        .nav-tab:hover { color: #000; }
         .nav-tab.active { color: #000; }
         .nav-tab.active::after {
             content: '';
@@ -196,21 +201,27 @@
 
         .layer-2 { bottom: -28px; width: 1150px; opacity: 0.5; background: rgba(30, 30, 30, 0.2); }
         .layer-1 { bottom: -14px; width: 1230px; opacity: 0.8; background: rgba(35, 35, 35, 0.18); }
-
+        
         .destination-card {
             position: relative;
             z-index: 5;
-            background: 
-                linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)), 
-                url("{% static 'images/bg.png' %}") center/cover;
             border-radius: 40px;
             min-height: 700px;
-            display: flex;
+            display: none;
             flex-direction: column;
             justify-content: flex-end;
             padding: 60px;
             overflow: hidden;
             color: #FFFFFF;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .destination-card.active {
+            display: flex;
+            opacity: 1;
         }
 
         .flight-path-container {
@@ -609,15 +620,21 @@
     </div>
 
     <div class="side-tabs">
-        <div class="tab active">
+        <a href="{% url 'user_panel:international_packages' %}?dest=2" class="tab active" style="text-decoration: none; color: inherit;">
             <div class="tab-left">
                 <img src="{% static 'images/vietnam.png' %}" alt="Vietnam">
                 <span>Vietnam</span>
             </div>
             <svg class="flight-icon" viewBox="0 0 24 24"><path d="M21,16L21,14L13,9L13,3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z"/></svg>
-        </div>
-        <div class="tab"><div class="tab-left"><img src="{% static 'images/thailand.png' %}" alt="Thailand"><span>Thailand</span></div><svg class="flight-icon" viewBox="0 0 24 24"><path d="M21,16L21,14L13,9L13,3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z"/></svg></div>
-        <div class="tab"><div class="tab-left"><img src="{% static 'images/malaysia.png' %}" alt="Malaysia"><span>Malaysia</span></div><svg class="flight-icon" viewBox="0 0 24 24"><path d="M21,16L21,14L13,9L13,3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z"/></svg></div>
+        </a>
+        <a href="{% url 'user_panel:international_packages' %}?dest=8" class="tab" style="text-decoration: none; color: inherit;">
+            <div class="tab-left"><img src="{% static 'images/thailand.png' %}" alt="Thailand"><span>Thailand</span></div>
+            <svg class="flight-icon" viewBox="0 0 24 24"><path d="M21,16L21,14L13,9L13,3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z"/></svg>
+        </a>
+        <a href="{% url 'user_panel:international_packages' %}?dest=14" class="tab" style="text-decoration: none; color: inherit;">
+            <div class="tab-left"><img src="{% static 'images/malaysia.png' %}" alt="Malaysia"><span>Malaysia</span></div>
+            <svg class="flight-icon" viewBox="0 0 24 24"><path d="M21,16L21,14L13,9L13,3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z"/></svg>
+        </a>
     </div>
 
     <div class="bottom-container">
@@ -727,15 +744,17 @@
 <section class="packages-section">
     <h2 class="section-title-main">Choose <i>where</i> are we looking for?</h2>
     <div class="package-nav">
-        <div class="nav-tab active">Vietnam</div>
-        <div class="nav-tab">Malaysia</div>
-        <div class="nav-tab">Thailand</div>
-        <div class="nav-tab">Maldives</div>
+        <div class="nav-tab active" data-dest="vietnam" style="cursor: pointer;">Vietnam</div>
+        <div class="nav-tab" data-dest="malaysia" style="cursor: pointer;">Malaysia</div>
+        <div class="nav-tab" data-dest="thailand" style="cursor: pointer;">Thailand</div>
+        <div class="nav-tab" data-dest="maldives" style="cursor: pointer;">Maldives</div>
     </div>
     <div class="destination-container">
         <div class="stack-layer layer-2"></div>
         <div class="stack-layer layer-1"></div>
-        <div class="destination-card">
+        
+        <!-- Vietnam Card -->
+        <div class="destination-card dest-vietnam active" style="background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)), url('{% if vietnam_dest.image %}{{ vietnam_dest.image.url }}{% else %}{% static "images/bg.png" %}{% endif %}') center/cover;">
             <div class="flight-path-container">
                 <svg width="100%" height="100%" viewBox="0 0 1000 600" preserveAspectRatio="none" fill="none">
                     <path d="M40 540 Q 250 540, 380 500 T 550 540 T 750 520 T 920 220" stroke="white" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="6 6"/>
@@ -748,27 +767,195 @@
             </div>
             <img src="{% static 'images/outline.png' %}" class="map-silhouette">
             <div class="top-right-info">
-                Vietnam is a perfect blend of stunning landscapes, rich culture, delicious food, and affordable luxury. From emerald bays to lantern-lit ancient towns, it offers experiences for everyone.
+                {% if vietnam_dest %}{{ vietnam_dest.description }}{% endif %}
             </div>
             <div class="bottom-layout">
                 <div class="dest-info-box">
-                    <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">☀️ 5 / 🌙 4</span>
-                    <h2 class="dest-title">Vietnam</h2>
-                    <p class="dest-price">
-                        <span style="text-decoration: line-through; opacity: 0.5;">₹ 50,000</span> From <span class="new">₹ 42,200</span>
-                    </p>
-                    <a href="#" class="btn-learn">Book Now <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
+                    {% if vietnam_package %}
+                        <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">{{ vietnam_package.duration|format_duration }}</span>
+                        <h2 class="dest-title">{{ vietnam_package.name }}</h2>
+                        <p class="dest-price">From <span class="new">₹ {{ vietnam_package.price|floatformat:0 }}</span></p>
+                        <a href="{% url 'user_panel:package_detail' vietnam_package.id %}" class="btn-learn">Book Now <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
+                    {% else %}
+                        <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">☀️ 5 / 🌙 4</span>
+                        <h2 class="dest-title">Vietnam</h2>
+                        <p class="dest-price">From <span class="new">₹ 42,200</span></p>
+                        <a href="{% url 'user_panel:international_packages' %}?dest=2" class="btn-learn">View Packages <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
+                    {% endif %}
                 </div>
                 <div class="gallery-wrapper">
                     <div class="nav-arrows">
-                        <div class="arrow">←</div>
-                        <div class="arrow">→</div>
+                        <div class="arrow arrow-prev">←</div>
+                        <div class="arrow arrow-next">→</div>
                     </div>
                     <div class="mini-gallery">
-                        <div class="gallery-item active"><img src="{% static 'images/i1.png' %}"></div>
-                        <div class="gallery-item"><img src="{% static 'images/i7.png' %}"></div>
-                        <div class="gallery-item"><img src="{% static 'images/i3.png' %}"></div>
-                        <div class="gallery-item"><img src="{% static 'images/i6.png' %}"></div>
+                        {% if vietnam_package %}
+                            <div class="gallery-item active"><img src="{% if vietnam_package.image %}{{ vietnam_package.image.url }}{% else %}{% static 'images/i1.png' %}{% endif %}"></div>
+                            <div class="gallery-item"><img src="{% if vietnam_package.story_main_image %}{{ vietnam_package.story_main_image.url }}{% else %}{% static 'images/i7.png' %}{% endif %}"></div>
+                            <div class="gallery-item"><img src="{% if vietnam_package.story_side_image1 %}{{ vietnam_package.story_side_image1.url }}{% else %}{% static 'images/i3.png' %}{% endif %}"></div>
+                            <div class="gallery-item"><img src="{% if vietnam_package.story_side_image2 %}{{ vietnam_package.story_side_image2.url }}{% else %}{% static 'images/i6.png' %}{% endif %}"></div>
+                        {% else %}
+                            <div class="gallery-item active"><img src="{% static 'images/i1.png' %}"></div>
+                            <div class="gallery-item"><img src="{% static 'images/i7.png' %}"></div>
+                            <div class="gallery-item"><img src="{% static 'images/i3.png' %}"></div>
+                            <div class="gallery-item"><img src="{% static 'images/i6.png' %}"></div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Malaysia Card -->
+        <div class="destination-card dest-malaysia" style="background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)), url('{% if malaysia_dest.image %}{{ malaysia_dest.image.url }}{% else %}{% static "images/bg.png" %}{% endif %}') center/cover;">
+            <div class="flight-path-container">
+                <svg width="100%" height="100%" viewBox="0 0 1000 600" preserveAspectRatio="none" fill="none">
+                    <path d="M40 540 Q 250 540, 380 500 T 550 540 T 750 520 T 920 220" stroke="white" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="6 6"/>
+                </svg>
+                <div class="airplane-icon">
+                    <svg width="35" height="35" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M21,16L21,14L13,9L13,3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5L10,9L2,14L2,16L10,13.5L10,19L8,20.5L8,22L11.5,21L15,22L15,20.5L13,19L13,13.5L21,16Z" />
+                    </svg>
+                </div>
+            </div>
+            <img src="{% static 'images/outline.png' %}" class="map-silhouette">
+            <div class="top-right-info">
+                {% if malaysia_dest %}{{ malaysia_dest.description }}{% endif %}
+            </div>
+            <div class="bottom-layout">
+                <div class="dest-info-box">
+                    {% if malaysia_package %}
+                        <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">{{ malaysia_package.duration|format_duration }}</span>
+                        <h2 class="dest-title">{{ malaysia_package.name }}</h2>
+                        <p class="dest-price">From <span class="new">₹ {{ malaysia_package.price|floatformat:0 }}</span></p>
+                        <a href="{% url 'user_panel:package_detail' malaysia_package.id %}" class="btn-learn">Book Now <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
+                    {% else %}
+                        <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">☀️ 6 / 🌙 5</span>
+                        <h2 class="dest-title">Malaysia</h2>
+                        <p class="dest-price">From <span class="new">₹ 38,500</span></p>
+                        <a href="{% url 'user_panel:international_packages' %}?dest=14" class="btn-learn">View Packages <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
+                    {% endif %}
+                </div>
+                <div class="gallery-wrapper">
+                    <div class="nav-arrows">
+                        <div class="arrow arrow-prev">←</div>
+                        <div class="arrow arrow-next">→</div>
+                    </div>
+                    <div class="mini-gallery">
+                        {% if malaysia_package %}
+                            <div class="gallery-item active"><img src="{% if malaysia_package.image %}{{ malaysia_package.image.url }}{% else %}{% static 'images/i1.png' %}{% endif %}"></div>
+                            <div class="gallery-item"><img src="{% if malaysia_package.story_main_image %}{{ malaysia_package.story_main_image.url }}{% else %}{% static 'images/i7.png' %}{% endif %}"></div>
+                            <div class="gallery-item"><img src="{% if malaysia_package.story_side_image1 %}{{ malaysia_package.story_side_image1.url }}{% else %}{% static 'images/i3.png' %}{% endif %}"></div>
+                            <div class="gallery-item"><img src="{% if malaysia_package.story_side_image2 %}{{ malaysia_package.story_side_image2.url }}{% else %}{% static 'images/i6.png' %}{% endif %}"></div>
+                        {% else %}
+                            <div class="gallery-item active"><img src="{% static 'images/i1.png' %}"></div>
+                            <div class="gallery-item"><img src="{% static 'images/i7.png' %}"></div>
+                            <div class="gallery-item"><img src="{% static 'images/i3.png' %}"></div>
+                            <div class="gallery-item"><img src="{% static 'images/i6.png' %}"></div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Thailand Card -->
+        <div class="destination-card dest-thailand" style="background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)), url('{% if thailand_dest.image %}{{ thailand_dest.image.url }}{% else %}{% static "images/bg.png" %}{% endif %}') center/cover;">
+            <div class="flight-path-container">
+                <svg width="100%" height="100%" viewBox="0 0 1000 600" preserveAspectRatio="none" fill="none">
+                    <path d="M40 540 Q 250 540, 380 500 T 550 540 T 750 520 T 920 220" stroke="white" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="6 6"/>
+                </svg>
+                <div class="airplane-icon">
+                    <svg width="35" height="35" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M21,16L21,14L13,9L13,3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5L10,9L2,14L2,16L10,13.5L10,19L8,20.5L8,22L11.5,21L15,22L15,20.5L13,19L13,13.5L21,16Z" />
+                    </svg>
+                </div>
+            </div>
+            <img src="{% static 'images/outline.png' %}" class="map-silhouette">
+            <div class="top-right-info">
+                {% if thailand_dest %}{{ thailand_dest.description }}{% endif %}
+            </div>
+            <div class="bottom-layout">
+                <div class="dest-info-box">
+                    {% if thailand_package %}
+                        <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">{{ thailand_package.duration|format_duration }}</span>
+                        <h2 class="dest-title">{{ thailand_package.name }}</h2>
+                        <p class="dest-price">From <span class="new">₹ {{ thailand_package.price|floatformat:0 }}</span></p>
+                        <a href="{% url 'user_panel:package_detail' thailand_package.id %}" class="btn-learn">Book Now <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
+                    {% else %}
+                        <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">☀️ 5 / 🌙 4</span>
+                        <h2 class="dest-title">Thailand</h2>
+                        <p class="dest-price">From <span class="new">₹ 35,800</span></p>
+                        <a href="{% url 'user_panel:international_packages' %}?dest=8" class="btn-learn">View Packages <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
+                    {% endif %}
+                </div>
+                <div class="gallery-wrapper">
+                    <div class="nav-arrows">
+                        <div class="arrow arrow-prev">←</div>
+                        <div class="arrow arrow-next">→</div>
+                    </div>
+                    <div class="mini-gallery">
+                        {% if thailand_package %}
+                            <div class="gallery-item active"><img src="{% if thailand_package.image %}{{ thailand_package.image.url }}{% else %}{% static 'images/i1.png' %}{% endif %}"></div>
+                            <div class="gallery-item"><img src="{% if thailand_package.story_main_image %}{{ thailand_package.story_main_image.url }}{% else %}{% static 'images/i7.png' %}{% endif %}"></div>
+                            <div class="gallery-item"><img src="{% if thailand_package.story_side_image1 %}{{ thailand_package.story_side_image1.url }}{% else %}{% static 'images/i3.png' %}{% endif %}"></div>
+                            <div class="gallery-item"><img src="{% if thailand_package.story_side_image2 %}{{ thailand_package.story_side_image2.url }}{% else %}{% static 'images/i6.png' %}{% endif %}"></div>
+                        {% else %}
+                            <div class="gallery-item active"><img src="{% static 'images/i1.png' %}"></div>
+                            <div class="gallery-item"><img src="{% static 'images/i7.png' %}"></div>
+                            <div class="gallery-item"><img src="{% static 'images/i3.png' %}"></div>
+                            <div class="gallery-item"><img src="{% static 'images/i6.png' %}"></div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Maldives Card -->
+        <div class="destination-card dest-maldives" style="background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)), url('{% if maldives_dest.image %}{{ maldives_dest.image.url }}{% else %}{% static "images/bg.png" %}{% endif %}') center/cover;">
+            <div class="flight-path-container">
+                <svg width="100%" height="100%" viewBox="0 0 1000 600" preserveAspectRatio="none" fill="none">
+                    <path d="M40 540 Q 250 540, 380 500 T 550 540 T 750 520 T 920 220" stroke="white" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="6 6"/>
+                </svg>
+                <div class="airplane-icon">
+                    <svg width="35" height="35" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M21,16L21,14L13,9L13,3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5L10,9L2,14L2,16L10,13.5L10,19L8,20.5L8,22L11.5,21L15,22L15,20.5L13,19L13,13.5L21,16Z" />
+                    </svg>
+                </div>
+            </div>
+            <img src="{% static 'images/outline.png' %}" class="map-silhouette">
+            <div class="top-right-info">
+                {% if maldives_dest %}{{ maldives_dest.description }}{% endif %}
+            </div>
+            <div class="bottom-layout">
+                <div class="dest-info-box">
+                    {% if maldives_package %}
+                        <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">{{ maldives_package.duration|format_duration }}</span>
+                        <h2 class="dest-title">{{ maldives_package.name }}</h2>
+                        <p class="dest-price">From <span class="new">₹ {{ maldives_package.price|floatformat:0 }}</span></p>
+                        <a href="{% url 'user_panel:package_detail' maldives_package.id %}" class="btn-learn">Book Now <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
+                    {% else %}
+                        <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">☀️ 4 / 🌙 3</span>
+                        <h2 class="dest-title">Maldives</h2>
+                        <p class="dest-price">From <span class="new">₹ 65,000</span></p>
+                        <a href="{% url 'user_panel:international_packages' %}?dest=12" class="btn-learn">View Packages <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
+                    {% endif %}
+                </div>
+                <div class="gallery-wrapper">
+                    <div class="nav-arrows">
+                        <div class="arrow arrow-prev">←</div>
+                        <div class="arrow arrow-next">→</div>
+                    </div>
+                    <div class="mini-gallery">
+                        {% if maldives_package %}
+                            <div class="gallery-item active"><img src="{% if maldives_package.image %}{{ maldives_package.image.url }}{% else %}{% static 'images/i1.png' %}{% endif %}"></div>
+                            <div class="gallery-item"><img src="{% if maldives_package.story_main_image %}{{ maldives_package.story_main_image.url }}{% else %}{% static 'images/i7.png' %}{% endif %}"></div>
+                            <div class="gallery-item"><img src="{% if maldives_package.story_side_image1 %}{{ maldives_package.story_side_image1.url }}{% else %}{% static 'images/i3.png' %}{% endif %}"></div>
+                            <div class="gallery-item"><img src="{% if maldives_package.story_side_image2 %}{{ maldives_package.story_side_image2.url }}{% else %}{% static 'images/i6.png' %}{% endif %}"></div>
+                        {% else %}
+                            <div class="gallery-item active"><img src="{% static 'images/i1.png' %}"></div>
+                            <div class="gallery-item"><img src="{% static 'images/i7.png' %}"></div>
+                            <div class="gallery-item"><img src="{% static 'images/i3.png' %}"></div>
+                            <div class="gallery-item"><img src="{% static 'images/i6.png' %}"></div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -865,6 +1052,64 @@
 </footer>
 
 {% include 'user/enquire_popup.html' %}
+
+<script>
+// Destination Tab Switcher
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.package-nav .nav-tab');
+    const cards = document.querySelectorAll('.destination-card');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const destination = this.getAttribute('data-dest');
+            
+            // Update active tab
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Update active card
+            cards.forEach(card => {
+                card.classList.remove('active');
+                if (card.classList.contains('dest-' + destination)) {
+                    card.classList.add('active');
+                }
+            });
+        });
+    });
+    
+    // Mini Gallery Navigation
+    cards.forEach(card => {
+        const prevArrow = card.querySelector('.arrow-prev');
+        const nextArrow = card.querySelector('.arrow-next');
+        const galleryItems = card.querySelectorAll('.gallery-item');
+        
+        if (!prevArrow || !nextArrow || galleryItems.length === 0) return;
+        
+        let currentIndex = 0;
+        
+        function updateGallery() {
+            galleryItems.forEach((item, index) => {
+                item.classList.remove('active');
+                if (index === currentIndex) {
+                    item.classList.add('active');
+                }
+            });
+        }
+        
+        prevArrow.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentIndex = (currentIndex - 1 + galleryItems.length) % galleryItems.length;
+            updateGallery();
+        });
+        
+        nextArrow.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentIndex = (currentIndex + 1) % galleryItems.length;
+            updateGallery();
+        });
+    });
+});
+</script>
 
 </body>
 </html>
