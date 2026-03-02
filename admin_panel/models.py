@@ -388,7 +388,18 @@ class Blog(models.Model):
     STATUS_CHOICES = [
         ('draft', 'Draft'),
         ('published', 'Published'),
-        ('scheduled', 'Scheduled'),
+    ]
+    
+    CATEGORY_CHOICES = [
+        ('destinations', 'Destinations'),
+        ('travel_tips', 'Travel Tips'),
+        ('food_culture', 'Food & Culture'),
+        ('packages', 'Packages & Deals'),
+        ('honeymoon', 'Honeymoon'),
+        ('family_travel', 'Family Travel'),
+        ('adventure', 'Adventure'),
+        ('travel_stories', 'Travel Stories'),
+        ('other', 'Other'),
     ]
     
     # Matches your add_blog.html form EXACTLY
@@ -397,6 +408,7 @@ class Blog(models.Model):
     excerpt = models.TextField(max_length=500)
     content = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='other')
     package_id = models.CharField(max_length=50, blank=True, null=True)
     
     # Author fields
@@ -430,3 +442,23 @@ class Blog(models.Model):
     @property
     def image_url(self):
         return self.featured_image.url if self.featured_image else self.featured_image_url
+
+
+
+class BlogImage(models.Model):
+    """Model to store multiple content images for a blog post"""
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='content_images')
+    image = models.ImageField(upload_to='blog_images/content/')
+    order = models.PositiveIntegerField(default=0)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['order']
+    
+    def __str__(self):
+        return f"Image {self.order + 1} for {self.blog.title}"
+    
+    @property
+    def tag(self):
+        """Returns the tag to use in content, e.g., {{image1}}"""
+        return f"{{{{image{self.order + 1}}}}}"

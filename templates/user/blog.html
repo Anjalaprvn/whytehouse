@@ -58,8 +58,8 @@
     .search-input { flex: 1; padding: 18px 25px; border-radius: 50px; border: 1px solid #E5E5E5; outline: none; }
     .filter-btn { background: var(--brand-gold); border: none; width: 55px; border-radius: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-    .category-tabs { display: flex; gap: 12px; flex-wrap: wrap; }
-    .tab { padding: 10px 24px; border-radius: 50px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; }
+    .category-tabs { display: flex; gap: 12px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 5px; }
+    .tab { padding: 10px 24px; border-radius: 50px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; white-space: nowrap; flex-shrink: 0; }
     .tab.active { background: var(--brand-gold); color: white; }
     .tab.inactive { background: var(--brand-black); color: white; }
 
@@ -123,9 +123,10 @@
         </form>
 
         <div class="category-tabs">
-            <button type="button" class="tab active">All</button>
-            <button type="button" class="tab inactive">Travel Tips</button>
-            <button type="button" class="tab inactive">Food & Culture</button>
+            <button type="button" class="tab active" data-category="">All</button>
+            {% for cat_code, cat_name in categories %}
+                <button type="button" class="tab inactive" data-category="{{ cat_code }}">{{ cat_name }}</button>
+            {% endfor %}
         </div>
     </div>
 
@@ -181,4 +182,77 @@
         {% endif %}
     </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.category-tabs .tab');
+    const searchForm = document.querySelector('form');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs
+            tabs.forEach(t => {
+                t.classList.remove('active');
+                if (!t.classList.contains('inactive')) {
+                    t.classList.add('inactive');
+                }
+            });
+            
+            // Add active class to clicked tab (and remove inactive if present)
+            this.classList.remove('inactive');
+            this.classList.add('active');
+            
+            // Get the category from data attribute
+            const category = this.getAttribute('data-category');
+            
+            // Update URL and reload with category parameter
+            const url = new URL(window.location);
+            if (category) {
+                url.searchParams.set('category', category);
+            } else {
+                url.searchParams.delete('category');
+            }
+            
+            // Also preserve search query if it exists
+            const searchInput = document.querySelector('input[name="q"]');
+            if (searchInput && searchInput.value) {
+                url.searchParams.set('q', searchInput.value);
+            }
+            
+            window.location.href = url.toString();
+        });
+    });
+    
+    // Set active tab based on current category in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentCategory = urlParams.get('category');
+    
+    if (currentCategory) {
+        tabs.forEach(tab => {
+            if (tab.getAttribute('data-category') === currentCategory) {
+                tab.classList.remove('inactive');
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+                if (!tab.classList.contains('inactive')) {
+                    tab.classList.add('inactive');
+                }
+            }
+        });
+    } else {
+        // If no category in URL, make "All" tab active
+        tabs.forEach(tab => {
+            if (tab.getAttribute('data-category') === '') {
+                tab.classList.remove('inactive');
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+                if (!tab.classList.contains('inactive')) {
+                    tab.classList.add('inactive');
+                }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

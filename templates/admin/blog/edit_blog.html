@@ -38,6 +38,76 @@
   @media (max-width: 900px){
     .grid{grid-template-columns:1fr}
   }
+
+  /* Content Image Preview Cards */
+  .upload-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    border:1px solid var(--line);
+    background:#fff;
+    padding:10px 14px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:600;
+    font-size:14px;
+  }
+  .image-preview-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+    gap:12px;
+    margin-top:14px;
+  }
+  .image-card {
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+    background:#fff;
+  }
+  .image-card img {
+    width:100%;
+    height:120px;
+    object-fit:cover;
+    display:block;
+  }
+  .image-card-footer {
+    padding:8px 10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:6px;
+  }
+  .image-tag {
+    background:#f1f5f9;
+    padding:4px 8px;
+    border-radius:6px;
+    font-size:11px;
+    font-weight:600;
+    color:#475569;
+    font-family:monospace;
+    cursor:pointer;
+    user-select:all;
+  }
+  .image-tag:hover {
+    background:#e2e8f0;
+  }
+  .remove-image-btn {
+    background:#fee2e2;
+    border:none;
+    color:#dc2626;
+    width:24px;
+    height:24px;
+    border-radius:6px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:14px;
+    padding:0;
+  }
+  .remove-image-btn:hover {
+    background:#fecaca;
+  }
 </style>
 {% endblock %}
 
@@ -62,7 +132,21 @@
             <select name="status">
               <option value="draft" {% if blog.status == "draft" %}selected{% endif %}>Draft</option>
               <option value="published" {% if blog.status == "published" %}selected{% endif %}>Published</option>
-              <option value="scheduled" {% if blog.status == "scheduled" %}selected{% endif %}>Scheduled</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Category</label>
+            <select name="category">
+              <option value="destinations" {% if blog.category == "destinations" %}selected{% endif %}>Destinations</option>
+              <option value="travel_tips" {% if blog.category == "travel_tips" %}selected{% endif %}>Travel Tips</option>
+              <option value="food_culture" {% if blog.category == "food_culture" %}selected{% endif %}>Food & Culture</option>
+              <option value="packages" {% if blog.category == "packages" %}selected{% endif %}>Packages & Deals</option>
+              <option value="honeymoon" {% if blog.category == "honeymoon" %}selected{% endif %}>Honeymoon</option>
+              <option value="family_travel" {% if blog.category == "family_travel" %}selected{% endif %}>Family Travel</option>
+              <option value="adventure" {% if blog.category == "adventure" %}selected{% endif %}>Adventure</option>
+              <option value="travel_stories" {% if blog.category == "travel_stories" %}selected{% endif %}>Travel Stories</option>
+              <option value="other" {% if blog.category == "other" %}selected{% endif %}>Other</option>
             </select>
           </div>
 
@@ -97,6 +181,41 @@
           <textarea name="author_summary">{{ blog.author_summary }}</textarea>
         </div>
 
+        <!-- Content Images Section -->
+        <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--line)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div>
+              <div style="font-size:16px;font-weight:600;color:var(--text)">Content Images</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px">Upload images to use in your blog content. Reference them using <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px">{{image1}}</code>, <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px">{{image2}}</code>, etc.</div>
+            </div>
+            <label class="upload-btn">
+              + Add Images
+              <input type="file" id="content-images-input" name="content_images" accept="image/*" multiple hidden>
+            </label>
+          </div>
+
+          <!-- Existing Images -->
+          {% if blog.content_images.all %}
+          <div class="image-preview-grid" id="existing-images">
+            {% for img in blog.content_images.all %}
+            <div class="image-card" data-image-id="{{ img.id }}">
+              <img src="{{ img.image.url }}" alt="Content image {{ forloop.counter }}">
+              <div class="image-card-footer">
+                <span class="image-tag" onclick="copyToClipboard('{{ img.tag }}')" title="Click to copy">{{ img.tag }}</span>
+                <button type="button" class="remove-image-btn" onclick="removeExistingImage({{ img.id }})" title="Remove image">✕</button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- New Images Preview -->
+          <div class="image-preview-grid" id="new-images-preview" style="display:none;margin-top:12px"></div>
+          
+          <!-- Hidden field to track deleted images -->
+          <input type="hidden" id="deleted-images" name="deleted_images" value="">
+        </div>
+
         <div class="field" style="margin-top:14px">
           <label>Content</label>
           <textarea name="content" required>{{ blog.content }}</textarea>
@@ -110,4 +229,103 @@
     </div>
   </div>
 </div>
+
+<script>
+{% verbatim %}
+// Content Images functionality
+let newImagesArray = [];
+let deletedImageIds = [];
+let existingImagesCount = document.querySelectorAll('#existing-images .image-card').length;
+
+document.getElementById('content-images-input').addEventListener('change', function(e) {
+    const files = Array.from(e.target.files);
+    
+    files.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            newImagesArray.push({
+                file: file,
+                dataUrl: e.target.result,
+                name: file.name
+            });
+            updateNewImagesPreview();
+        }
+        reader.readAsDataURL(file);
+    });
+});
+
+function updateNewImagesPreview() {
+    const previewContainer = document.getElementById('new-images-preview');
+    
+    if (newImagesArray.length === 0) {
+        previewContainer.style.display = 'none';
+        return;
+    }
+    
+    previewContainer.style.display = 'grid';
+    previewContainer.innerHTML = '';
+    
+    newImagesArray.forEach((img, index) => {
+        const imageNumber = existingImagesCount + index + 1;
+        const card = document.createElement('div');
+        card.className = 'image-card';
+        const imageTag = '{{image' + imageNumber + '}}';
+        card.innerHTML = `
+            <img src="${img.dataUrl}" alt="${img.name}">
+            <div class="image-card-footer">
+                <span class="image-tag" onclick="copyToClipboard('${imageTag}')" title="Click to copy">${imageTag}</span>
+                <button type="button" class="remove-image-btn" onclick="removeNewImage(${index})" title="Remove image">✕</button>
+            </div>
+        `;
+        previewContainer.appendChild(card);
+    });
+}
+
+function removeNewImage(index) {
+    newImagesArray.splice(index, 1);
+    updateNewImagesPreview();
+    
+    // Update the file input
+    const input = document.getElementById('content-images-input');
+    const dt = new DataTransfer();
+    newImagesArray.forEach(img => dt.items.add(img.file));
+    input.files = dt.files;
+}
+
+function removeExistingImage(imageId) {
+    if (confirm('Are you sure you want to remove this image?')) {
+        // Add to deleted list
+        deletedImageIds.push(imageId);
+        document.getElementById('deleted-images').value = deletedImageIds.join(',');
+        
+        // Remove from UI
+        const card = document.querySelector(`[data-image-id="${imageId}"]`);
+        if (card) {
+            card.remove();
+        }
+        
+        // Update existing count
+        existingImagesCount = document.querySelectorAll('#existing-images .image-card').length;
+        
+        // Update new images preview to reflect new numbering
+        updateNewImagesPreview();
+    }
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.style.background = '#dcfce7';
+        btn.style.color = '#166534';
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.background = '';
+            btn.style.color = '';
+        }, 1500);
+    });
+}
+{% endverbatim %}
+</script>
 {% endblock %}

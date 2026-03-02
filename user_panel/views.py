@@ -39,7 +39,11 @@ def index(request):
     return render(request, 'user/international.html', {'packages': packages})
 def domestic(request):
     packages = TravelPackage.objects.filter(active=True, category='Domestic')[:6]
-    return render(request, 'user/domestic.html', {'packages': packages})
+    destinations = Destination.objects.filter(category='Domestic')[:6]  # Get domestic destinations
+    return render(request, 'user/domestic.html', {
+        'packages': packages,
+        'destinations': destinations
+    })
 
 def about(request):
     return render(request, 'user/about.html')
@@ -52,16 +56,35 @@ from admin_panel.models import Blog
 
 def blog_list(request):
     q = request.GET.get("q", "").strip()
+    category = request.GET.get("category", "").strip()
+    
     blogs = Blog.objects.filter(status="published").order_by("-publish_date")
 
     if q:
         blogs = blogs.filter(title__icontains=q)
+    
+    if category:
+        blogs = blogs.filter(category=category)
 
     for b in blogs:
         raw = getattr(b, "tags", "") or getattr(b, "hashtags", "") or getattr(b, "hashtag", "") or ""
         b.tag_list = [t.strip() for t in str(raw).split(",") if t.strip()]
+    
+    # Get category counts
+    from django.db.models import Count
+    all_count = Blog.objects.filter(status="published").count()
+    category_counts = {}
+    for cat_code, cat_name in Blog.CATEGORY_CHOICES:
+        category_counts[cat_code] = Blog.objects.filter(status="published", category=cat_code).count()
 
-    return render(request, "user/blog.html", {"blogs": blogs, "q": q})
+    return render(request, "user/blog.html", {
+        "blogs": blogs, 
+        "q": q,
+        "selected_category": category,
+        "all_count": all_count,
+        "category_counts": category_counts,
+        "categories": Blog.CATEGORY_CHOICES
+    })
 
 
 def blog_detail(request, slug):
@@ -69,7 +92,120 @@ def blog_detail(request, slug):
     raw = getattr(blog, "tags", "") or getattr(blog, "hashtags", "") or getattr(blog, "hashtag", "") or ""
     tags = [t.strip() for t in str(raw).split(",") if t.strip()]
 
-    return render(request, "user/blog_detail.html", {"blog": blog, "tags": tags})
+    # Replace {{image1}}, {{image2}}, etc. with actual image HTML
+    content = blog.content
+    content_images = blog.content_images.all()
+    
+    # Normalize line endings and split content
+    content = content.replace('\r\n', '\n').replace('\r', '\n')
+    
+    # Split by lines and process
+    lines = content.split('\n')
+    processed_lines = []
+    i = 0
+    
+    while i < len(lines):
+        line = lines[i].strip()
+        
+        if not line:
+            i += 1
+            continue
+        
+        # Check if this line contains an image tag
+        has_image = False
+        
+        for idx, img in enumerate(content_images):
+            image_num = idx + 1
+            
+            # Check for left positioned image
+            placeholder_left = f"{{{{image{image_num}-left}}}}"
+            if placeholder_left in line:
+                # Get the text before the image tag (could be on same line or previous lines)
+                text_content = line.replace(placeholder_left, '').strip()
+                
+                # If no text on this line, look at previous non-empty lines
+                if not text_content and processed_lines:
+                    # Get previous paragraph
+                    prev_content = []
+                    while processed_lines and not processed_lines[-1].startswith('<'):
+                        prev_content.insert(0, processed_lines.pop())
+                    text_content = ' '.join(prev_content)
+                
+                # Create side-by-side layout with image on left
+                processed_lines.append(f'''
+                    <div class="content-row">
+                        <figure class="content-image-left">
+                            <img src="{img.image.url}" alt="Content image {image_num}">
+                        </figure>
+                        <div class="content-text"><p>{text_content}</p></div>
+                    </div>
+                ''')
+                has_image = True
+                break
+            
+            # Check for right positioned image
+            placeholder_right = f"{{{{image{image_num}-right}}}}"
+            if placeholder_right in line:
+                # Get the text before the image tag
+                text_content = line.replace(placeholder_right, '').strip()
+                
+                # If no text on this line, look at previous non-empty lines
+                if not text_content and processed_lines:
+                    # Get previous paragraph
+                    prev_content = []
+                    while processed_lines and not processed_lines[-1].startswith('<'):
+                        prev_content.insert(0, processed_lines.pop())
+                    text_content = ' '.join(prev_content)
+                
+                # Create side-by-side layout with image on right
+                processed_lines.append(f'''
+                    <div class="content-row">
+                        <div class="content-text"><p>{text_content}</p></div>
+                        <figure class="content-image-right">
+                            <img src="{img.image.url}" alt="Content image {image_num}">
+                        </figure>
+                    </div>
+                ''')
+                has_image = True
+                break
+            
+            # Check for center positioned image
+            placeholder_center = f"{{{{image{image_num}-center}}}}"
+            if placeholder_center in line:
+                text_content = line.replace(placeholder_center, '').strip()
+                if text_content:
+                    processed_lines.append(f'<p>{text_content}</p>')
+                processed_lines.append(f'''
+                    <figure class="content-image-center">
+                        <img src="{img.image.url}" alt="Content image {image_num}">
+                    </figure>
+                ''')
+                has_image = True
+                break
+            
+            # Check for default (center) positioned image
+            placeholder_default = f"{{{{image{image_num}}}}}"
+            if placeholder_default in line:
+                text_content = line.replace(placeholder_default, '').strip()
+                if text_content:
+                    processed_lines.append(f'<p>{text_content}</p>')
+                processed_lines.append(f'''
+                    <figure class="content-image-center">
+                        <img src="{img.image.url}" alt="Content image {image_num}">
+                    </figure>
+                ''')
+                has_image = True
+                break
+        
+        # If no image found in this line, add it as regular text
+        if not has_image and line:
+            processed_lines.append(line)
+        
+        i += 1
+    
+    content = '\n'.join(processed_lines)
+
+    return render(request, "user/blog_detail.html", {"blog": blog, "tags": tags, "processed_content": content})
 def contact(request):
     if request.method == 'POST':
         name = (request.POST.get('name') or '').strip()

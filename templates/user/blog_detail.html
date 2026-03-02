@@ -14,6 +14,11 @@
     --white: #ffffff;
 }
 
+/* White background for entire page */
+body {
+    background: white !important;
+}
+
 /* ✅ FIX: remove top gap */
 body > nav{
     position: absolute !important;
@@ -83,9 +88,23 @@ body > nav{
 
 /* ===== CONTENT ===== */
 .main-container{
-    max-width: 900px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 60px 20px;
+    padding: 60px 80px;
+    background: white;
+    min-height: 100vh;
+}
+
+@media (max-width: 1200px){
+    .main-container{
+        padding: 60px 40px;
+    }
+}
+
+@media (max-width: 768px){
+    .main-container{
+        padding: 40px 20px;
+    }
 }
 
 /* back button */
@@ -142,13 +161,100 @@ body > nav{
 
 /* article */
 .article-body{
-    font-size: 18px;
-    line-height: 1.85;
+    font-size: 16px;
+    line-height: 1.6;
     color: var(--text-gray);
     margin-bottom: 50px;
+    max-width: 100%;
 }
 .article-body p{
-    margin-bottom: 22px;
+    margin-bottom: 18px;
+    line-height: 1.6;
+    max-width: 100%;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+/* Content Row - Side by side layout */
+.content-row {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    margin-bottom: 40px;
+}
+
+.content-text {
+    flex: 1;
+    font-size: 18px;
+    line-height: 1.9;
+    color: var(--text-gray);
+}
+
+.content-text p {
+    margin: 0;
+    text-align: justify;
+}
+
+/* Content Images Styling */
+.article-body figure {
+    margin: 0;
+    padding: 0;
+}
+
+.article-body figure img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.article-body figure img:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Center aligned images - moderate size */
+.content-image-center {
+    margin: 40px auto;
+    max-width: 700px;
+    display: block;
+}
+
+/* Left aligned images - side by side with text */
+.content-row .content-image-left {
+    width: 420px;
+    min-width: 420px;
+    flex-shrink: 0;
+}
+
+/* Right aligned images - side by side with text */
+.content-row .content-image-right {
+    width: 420px;
+    min-width: 420px;
+    flex-shrink: 0;
+}
+
+/* Responsive images on mobile */
+@media (max-width: 968px){
+    .content-row {
+        flex-direction: column;
+        gap: 25px;
+    }
+    
+    .content-row .content-image-left,
+    .content-row .content-image-right {
+        width: 100%;
+        min-width: 100%;
+    }
+    
+    .content-image-center {
+        max-width: 100%;
+    }
+    
+    .content-text p {
+        text-align: left;
+    }
 }
 
 /* ===== AUTHOR CARD ===== */
@@ -224,7 +330,7 @@ body > nav{
 
 <main class="main-container">
 
-    <a href="{% url 'blog' %}" class="back-btn">
+    <a href="{% url 'user_panel:blog_list' %}" class="back-btn">
         <i class="fas fa-arrow-left"></i> Back to Blog
     </a>
 
@@ -241,7 +347,9 @@ body > nav{
     </div>
 
     <article class="article-body">
-        {% if blog.content %}
+        {% if processed_content %}
+            {{ processed_content|safe }}
+        {% elif blog.content %}
             {{ blog.content|safe }}
         {% elif blog.excerpt %}
             <p>{{ blog.excerpt }}</p>
