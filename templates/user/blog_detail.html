@@ -199,14 +199,17 @@ body > nav{
 .article-body figure {
     margin: 0;
     padding: 0;
+    text-align: center;
 }
 
 .article-body figure img {
+    max-width: 600px;
     width: 100%;
     height: auto;
     border-radius: 8px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: inline-block;
 }
 
 .article-body figure img:hover {
@@ -217,21 +220,21 @@ body > nav{
 /* Center aligned images - moderate size */
 .content-image-center {
     margin: 40px auto;
-    max-width: 700px;
+    max-width: 500px;
     display: block;
 }
 
 /* Left aligned images - side by side with text */
 .content-row .content-image-left {
-    width: 420px;
-    min-width: 420px;
+    width: 350px;
+    min-width: 350px;
     flex-shrink: 0;
 }
 
 /* Right aligned images - side by side with text */
 .content-row .content-image-right {
-    width: 420px;
-    min-width: 420px;
+    width: 350px;
+    min-width: 350px;
     flex-shrink: 0;
 }
 
