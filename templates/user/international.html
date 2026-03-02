@@ -205,9 +205,6 @@
         .destination-card {
             position: relative;
             z-index: 5;
-            background: 
-                linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)), 
-                url("{% static 'images/bg.png' %}") center/cover;
             border-radius: 40px;
             min-height: 700px;
             display: none;
@@ -218,6 +215,8 @@
             color: #FFFFFF;
             opacity: 0;
             transition: opacity 0.5s ease;
+            background-size: cover;
+            background-position: center;
         }
         
         .destination-card.active {
@@ -755,7 +754,7 @@
         <div class="stack-layer layer-1"></div>
         
         <!-- Vietnam Card -->
-        <div class="destination-card dest-vietnam active">
+        <div class="destination-card dest-vietnam active" style="background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)), url('{% if vietnam_dest.image %}{{ vietnam_dest.image.url }}{% else %}{% static "images/bg.png" %}{% endif %}') center/cover;">
             <div class="flight-path-container">
                 <svg width="100%" height="100%" viewBox="0 0 1000 600" preserveAspectRatio="none" fill="none">
                     <path d="M40 540 Q 250 540, 380 500 T 550 540 T 750 520 T 920 220" stroke="white" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="6 6"/>
@@ -807,7 +806,7 @@
         </div>
         
         <!-- Malaysia Card -->
-        <div class="destination-card dest-malaysia">
+        <div class="destination-card dest-malaysia" style="background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)), url('{% if malaysia_dest.image %}{{ malaysia_dest.image.url }}{% else %}{% static "images/bg.png" %}{% endif %}') center/cover;">
             <div class="flight-path-container">
                 <svg width="100%" height="100%" viewBox="0 0 1000 600" preserveAspectRatio="none" fill="none">
                     <path d="M40 540 Q 250 540, 380 500 T 550 540 T 750 520 T 920 220" stroke="white" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="6 6"/>
@@ -859,7 +858,7 @@
         </div>
         
         <!-- Thailand Card -->
-        <div class="destination-card dest-thailand">
+        <div class="destination-card dest-thailand" style="background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)), url('{% if thailand_dest.image %}{{ thailand_dest.image.url }}{% else %}{% static "images/bg.png" %}{% endif %}') center/cover;">
             <div class="flight-path-container">
                 <svg width="100%" height="100%" viewBox="0 0 1000 600" preserveAspectRatio="none" fill="none">
                     <path d="M40 540 Q 250 540, 380 500 T 550 540 T 750 520 T 920 220" stroke="white" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="6 6"/>
@@ -911,7 +910,7 @@
         </div>
         
         <!-- Maldives Card -->
-        <div class="destination-card dest-maldives">
+        <div class="destination-card dest-maldives" style="background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)), url('{% if maldives_dest.image %}{{ maldives_dest.image.url }}{% else %}{% static "images/bg.png" %}{% endif %}') center/cover;">
             <div class="flight-path-container">
                 <svg width="100%" height="100%" viewBox="0 0 1000 600" preserveAspectRatio="none" fill="none">
                     <path d="M40 540 Q 250 540, 380 500 T 550 540 T 750 520 T 920 220" stroke="white" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="6 6"/>
