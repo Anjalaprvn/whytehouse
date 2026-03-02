@@ -589,165 +589,218 @@
             font-size: 16px;
         }
         /* TESTIMONIAL SECTION */
-        .testimonial-section {
-            padding: 120px 0;
-            background: linear-gradient(rgba(255,255,255,0.95), rgba(255,255,255,0.95)),
-                        url('https://images.unsplash.com/photo-1604079628040-94301bb21b91?auto=format&fit=crop&w=1400&q=80');
-            background-size: cover;
-            background-position: center;
-            text-align: center;
-        }
 
-        .container {
-            width: 1100px;
-            margin: auto;
-        }
+/* =========================
+   TESTIMONIAL SECTION (Figma-like)
+========================= */
 
-        /* HEADING */
-        .heading .tag {
-            display: inline-block;
-            padding: 6px 18px;
-            border-radius: 30px;
-            background: #f3e5d3;
-            color: #d28b2e;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
+.testimonial-section{
+  padding:120px 0;
+  background: #faf7f2;   /* lighter like figma */
+  text-align:center;
+}
 
-        .heading h1 {
-            font-size: 40px;
-            font-weight: 600;
-            margin-bottom: 60px;
-        }
+.testimonial-section .container{
+  width:1100px;
+  margin:auto;
+}
 
-        .heading h1 span {
-            font-weight: 800;
-        }
+/* Heading */
+.testimonial-section .heading .tag{
+  display:inline-block;
+  padding:7px 18px;
+  border-radius:999px;
+  border:1px solid #e7ded2;
+  background:#fff;
+  color:#c98b2e;
+  font-size:13px;
+  margin-bottom:18px;
+}
 
-        /* WRAPPER */
-        .testimonial-wrapper {
-            position: relative;
-            display: flex;
-            justify-content: center;
-        }
+.testimonial-section .heading h1{
+  font-size:44px;
+  font-weight:600;
+  margin-bottom:60px;
+  color:#111;
+}
+.testimonial-section .heading h1 span{ font-weight:800; }
 
-        /* MAIN CARD */
-        .testimonial-card {
-            background: #fff;
-            border-radius: 30px;
-            display: flex;
-            gap: 50px;
-            padding: 60px;
-            align-items: center;
-            width: 950px;
-            position: relative;
-            z-index: 3;
-            box-shadow: 0 40px 80px rgba(0,0,0,0.08);
-        }
+/* Wrapper */
+.testimonial-wrapper{
+  position:relative;
+  display:flex;
+  justify-content:center;
+}
 
-        /* LAYER 1 */
-        .testimonial-card::before {
-            content: "";
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: #f6f3ef;
-            border-radius: 30px;
-            top: 25px;
-            left: 0;
-            z-index: -1;
-            opacity: 0.8;
-        }
+/* viewport */
+.testimonial-viewport{
+  width: 980px;
+  overflow:hidden;
+  position:relative;
+}
 
-        /* LAYER 2 */
-        .testimonial-card::after {
-            content: "";
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: #ece7df;
-            border-radius: 30px;
-            top: 50px;
-            left: 0;
-            z-index: -2;
-            opacity: 0.6;
-        }
+/* Track */
+.testimonial-track{
+  display:flex;
+  transition: transform .45s ease;
+}
 
-        /* IMAGE */
-        .testimonial-image img {
-            width: 360px;
-            height: 360px;
-            border-radius: 25px;
-            object-fit: cover;
-        }
+/* Slide */
+.testimonial-slide{
+  min-width: 980px;
+  display:flex;
+  justify-content:center;
+}
 
-        /* CONTENT */
-        .testimonial-content {
-            text-align: left;
-            flex: 1;
-        }
+/* ===== Main Card ===== */
+.testimonial-card{
+  position:relative;
+  width: 980px;
+  background:#fff;                 /* Figma is clean white */
+  border-radius:32px;
+  display:flex;
+  gap:48px;
+  padding:58px;
+  align-items:center;
+  box-shadow: 0 30px 70px rgba(0,0,0,.08);
+  z-index:5;
+  overflow:visible;
+}
 
-        .quote-icon {
-            font-size: 70px;
-            color: #d28b2e;
-            margin-bottom: 20px;
-        }
+/* ===== Stacked Layers (more visible) ===== */
+.testimonial-card::before,
+.testimonial-card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:32px;
+  z-index:-1;
+}
 
-        .testimonial-content p {
-            color: #666;
-            line-height: 1.8;
-            font-size: 16px;
-            margin-bottom: 40px;
-        }
+.testimonial-card::before{
+  background:#f4efe8;
+  transform: translateY(-22px);
+  box-shadow: 0 25px 60px rgba(0,0,0,.05);
+  opacity:1;
+}
 
-        /* CLIENT */
-        .client-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+.testimonial-card::after{
+  background:#e9e2d9;
+  transform: translateY(-44px);
+  box-shadow: 0 25px 60px rgba(0,0,0,.03);
+  opacity:1;
+}
 
-        .client-info img {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
+/* Image */
+.testimonial-image img{
+  width:360px;
+  height:360px;
+  border-radius:26px;
+  object-fit:cover;
+}
 
-        .client-info h4 {
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
+/* Content */
+.testimonial-content{
+  text-align:left;
+  flex:1;
+  padding-right:10px;
+}
 
-        .stars {
-            color: #d28b2e;
-            font-size: 18px;
-        }
+.quote-icon{
+  font-size:78px;
+  line-height:1;
+  color:#d28b2e;
+  margin-bottom:18px;
+  transform: translateY(-8px); /* push up like Figma */
+}
 
-        /* NAV BUTTONS */
-        .testimonial-nav {
-            margin-top: 80px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
+.testimonial-content p{
+  color:#6b7280;
+  line-height:1.9;
+  font-size:16px;
+  margin-bottom:38px;
+}
 
-        .testimonial-nav button {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            border: none;
-            background: #f3e5d3;
-            color: #d28b2e;
-            font-size: 18px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+/* Client */
+.client-info{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.client-info img{
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  object-fit:cover;
+}
+.client-info h4{
+  font-size:16px;
+  color:#111;
+  margin-bottom:4px;
+}
+.stars{
+  color:#d28b2e;
+  font-size:18px;
+  letter-spacing:2px;
+}
 
-        .testimonial-nav button:hover {
-            background: #d28b2e;
-            color: #fff;
-        }
+/* Nav */
+.testimonial-nav{
+  margin-top:65px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:18px;
+}
+.testimonial-nav button{
+  width:58px;
+  height:58px;
+  border-radius:50%;
+  border:none;
+  background:#f3e5d3;
+  color:#d28b2e;
+  font-size:20px;
+  cursor:pointer;
+  transition:.25s;
+}
+.testimonial-nav button:hover{
+  background:#d28b2e;
+  color:#fff;
+}
+
+/* Dots */
+.dots{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.dot{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:#d8d2ca;
+  cursor:pointer;
+  transition:.25s;
+}
+.dot.active{
+  width:26px;
+  background:#d28b2e;
+}
+
+/* Responsive */
+@media(max-width:1100px){
+  .testimonial-section .container{ width:92%; }
+  .testimonial-viewport, .testimonial-slide, .testimonial-card{ width:100%; min-width:100%; }
+  .testimonial-slide{ min-width:100%; }
+}
+@media(max-width:900px){
+  .testimonial-card{
+    flex-direction:column;
+    gap:22px;
+    padding:28px;
+  }
+  .testimonial-image img{ width:100%; height:260px; }
+}
         /* SECTION BACKGROUND */
         /* RESET */
         * {
@@ -1306,52 +1359,164 @@
 </section>
 <!-- TESTIMONIAL SECTION -->
 <section class="testimonial-section">
+  <div class="container">
+    
 
-    <div class="container">
+    <div class="heading">
+      <span class="tag">Testimonials</span>
+      <h1>Proven <span>Success</span></h1>
+    </div>
 
-        <div class="heading">
-            <span class="tag">Testimonials</span>
-            <h1>Proven <span>Success</span></h1>
-        </div>
+    <div class="testimonial-wrapper">
 
-        <div class="testimonial-wrapper">
+      <div class="testimonial-viewport">
+        <div class="testimonial-track" id="testimonialTrack">
 
+          <!-- Slide 1 -->
+          <div class="testimonial-slide">
             <div class="testimonial-card">
+              <div class="testimonial-image">
+                <img src="{% static 'images/amber.png' %}" alt="Property">
+              </div>
 
-                <div class="testimonial-image">
-                    <img src="{%static 'images/amber.png' %}" alt="Hotel">
+              <div class="testimonial-content">
+                <div class="quote-icon">“</div>
+                <p>
+                  Whyte House leveraged our property’s unique history, implementing a strategic vision
+                  that transformed our heritage asset into a prestigious landmark with record-breaking occupancy.
+                </p>
+
+                <div class="client-info">
+                  <img src="{% static 'images/person.png' %}" alt="Client">
+                  <div>
+                    <h4>Evan Thomas</h4>
+                    <div class="stars">★ ★ ★ ★ ★</div>
+                  </div>
                 </div>
-
-                <div class="testimonial-content">
-                    <div class="quote-icon">“</div>
-
-                    <p>
-                        Whyte House leveraged our property’s unique history, implementing a strategic vision 
-                        that successfully transformed our heritage asset into a prestigious, market-leading 
-                        landmark with record-breaking occupancy.
-                    </p>
-
-                    <div class="client-info">
-                        <img src="{%static 'images/person.png' %}" alt="Client">
-                        <div>
-                            <h4>Evan Thomas</h4>
-                            <div class="stars">★ ★ ★ ★ ★</div>
-                        </div>
-                    </div>
-
-                </div>
-
+              </div>
             </div>
+          </div>
+
+          <!-- Slide 2 -->
+          <div class="testimonial-slide">
+            <div class="testimonial-card">
+              <div class="testimonial-image">
+                <img src="{% static 'images/zenith.png' %}" alt="Property">
+              </div>
+
+              <div class="testimonial-content">
+                <div class="quote-icon">“</div>
+                <p>
+                  Our bookings improved within weeks. Their team upgraded our listing quality, guest handling,
+                  and pricing strategy—results were visible immediately.
+                </p>
+
+                <div class="client-info">
+                  <img src="{% static 'images/person.png' %}" alt="Client">
+                  <div>
+                    <h4>Meera Nair</h4>
+                    <div class="stars">★ ★ ★ ★ ★</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 3 -->
+          <div class="testimonial-slide">
+            <div class="testimonial-card">
+              <div class="testimonial-image">
+                <img src="{% static 'images/blog.png' %}" alt="Property">
+              </div>
+
+              <div class="testimonial-content">
+                <div class="quote-icon">“</div>
+                <p>
+                  The operations became smooth—staff training, check-in workflows, and guest communication
+                  are now consistent and professional.
+                </p>
+
+                <div class="client-info">
+                  <img src="{% static 'images/person.png' %}" alt="Client">
+                  <div>
+                    <h4>Arjun Menon</h4>
+                    <div class="stars">★ ★ ★ ★ ★</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 4 -->
+          <div class="testimonial-slide">
+            <div class="testimonial-card">
+              <div class="testimonial-image">
+                <img src="{% static 'images/h1.png' %}" alt="Property">
+              </div>
+
+              <div class="testimonial-content">
+                <div class="quote-icon">“</div>
+                <p>
+                  Their marketing & distribution is strong. We started receiving higher quality guests and better reviews,
+                  which increased repeat bookings.
+                </p>
+
+                <div class="client-info">
+                  <img src="{% static 'images/person.png' %}" alt="Client">
+                  <div>
+                    <h4>Sarah Williams</h4>
+                    <div class="stars">★ ★ ★ ★ ★</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 5 -->
+          <div class="testimonial-slide">
+            <div class="testimonial-card">
+              <div class="testimonial-image">
+                <img src="{% static 'images/h2.png' %}" alt="Property">
+              </div>
+
+              <div class="testimonial-content">
+                <div class="quote-icon">“</div>
+                <p>
+                  What I love most is transparency. Monthly reporting, revenue insights, and clear plans—
+                  it feels like my property is managed like a premium brand.
+                </p>
+
+                <div class="client-info">
+                  <img src="{% static 'images/person.png' %}" alt="Client">
+                  <div>
+                    <h4>Rohit Sharma</h4>
+                    <div class="stars">★ ★ ★ ★ ★</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
         </div>
-
-        <div class="testimonial-nav">
-            <button>←</button>
-            <button>→</button>
-        </div>
+      </div>
 
     </div>
 
+    <div class="testimonial-nav">
+      <button type="button" id="testimonialPrev">←</button>
+
+      <div class="testimonial-dots" id="testimonialDots">
+        <div class="testimonial-dot active" data-index="0"></div>
+        <div class="testimonial-dot" data-index="1"></div>
+        <div class="testimonial-dot" data-index="2"></div>
+        <div class="testimonial-dot" data-index="3"></div>
+        <div class="testimonial-dot" data-index="4"></div>
+      </div>
+
+      <button type="button" id="testimonialNext">→</button>
+    </div>
+
+  </div>
 </section>
 <section class="faq-section">
     <div class="faq-container">
@@ -1369,10 +1534,10 @@
             </p>
 
             <!-- FAQ ITEM -->
-            <div class="faq-item active">
+            <div class="faq-item">
                 <div class="faq-question">
                     What is your standard management fee structure?
-                    <span>-</span>
+                    <span>+</span>
                 </div>
                 <div class="faq-answer">
                     We offer performance-based fees aligned with your property's monthly revenue.
@@ -1422,4 +1587,86 @@
         </div>
     </div>
 </section>
+<script>
+(function(){
+  const track = document.getElementById("testimonialTrack");
+  const prevBtn = document.getElementById("testimonialPrev");
+  const nextBtn = document.getElementById("testimonialNext");
+  const dotsWrap = document.getElementById("testimonialDots");
+  const dots = dotsWrap ? dotsWrap.querySelectorAll(".testimonial-dot") : [];
+  const total = 5;
+
+  let index = 0;
+
+  function getSlideWidth(){
+    // viewport width used for responsive, else fixed 950
+    const viewport = document.querySelector(".testimonial-viewport");
+    if (!viewport) return 950;
+    return viewport.clientWidth;
+  }
+
+  function update(){
+    const slideW = getSlideWidth();
+    track.style.transform = `translateX(-${index * slideW}px)`;
+
+    dots.forEach(d => d.classList.remove("active"));
+    if (dots[index]) dots[index].classList.add("active");
+  }
+
+  function next(){
+    index = (index + 1) % total;
+    update();
+  }
+
+  function prev(){
+    index = (index - 1 + total) % total;
+    update();
+  }
+
+  if (nextBtn) nextBtn.addEventListener("click", next);
+  if (prevBtn) prevBtn.addEventListener("click", prev);
+
+  dots.forEach(dot => {
+    dot.addEventListener("click", function(){
+      index = parseInt(this.dataset.index, 10) || 0;
+      update();
+    });
+  });
+
+  // keep correct position on resize
+  window.addEventListener("resize", update);
+
+  // optional autoplay (uncomment if you want)
+  // setInterval(next, 6000);
+
+  update();
+})();
+
+// FAQ Accordion functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        
+        question.addEventListener('click', function() {
+            const isActive = item.classList.contains('active');
+            
+            // Close all FAQ items
+            faqItems.forEach(faq => {
+                faq.classList.remove('active');
+                const span = faq.querySelector('.faq-question span');
+                if (span) span.textContent = '+';
+            });
+            
+            // Toggle current item
+            if (!isActive) {
+                item.classList.add('active');
+                const span = question.querySelector('span');
+                if (span) span.textContent = '-';
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

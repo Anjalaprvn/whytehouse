@@ -360,18 +360,53 @@
                     <div class="form-group">
                         <label>Guests</label>
                         <div class="input-wrapper">
-                            <select name="guests"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5+</option></select>
+                            <select name="guests" id="guests-select">
+                                <option value="1">1</option>
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10+</option>
+                            </select>
                         </div>
                     </div>
                     <div class="total-price-box">
-                        <span>Total Cost / Pax</span>
-                        <h4>₹ {{ package.price }}</h4>
+                        <span>Total Cost</span>
+                        <h4 id="total-price">₹ {{ package.price|floatformat:0 }}</h4>
+                    </div>
+                    <div style="font-size: 12px; color: #666; margin-top: 10px; text-align: center;">
+                        Price per person: ₹ <span id="price-per-person">{{ package.price|floatformat:0 }}</span>
                     </div>
                     <button type="submit" class="book-now-btn">Book Now</button>
                 </form>
             </div>
         </aside>
     </div>
+
+    <script>
+        // Dynamic price calculation based on guests
+        const pricePerPerson = {{ package.price }};
+        const guestsSelect = document.getElementById('guests-select');
+        const totalPriceElement = document.getElementById('total-price');
+        const pricePerPersonElement = document.getElementById('price-per-person');
+
+        guestsSelect.addEventListener('change', function() {
+            let guests = parseInt(this.value);
+            if (isNaN(guests)) guests = 10; // For "10+" option
+            
+            const totalPrice = pricePerPerson * guests;
+            totalPriceElement.textContent = '₹ ' + totalPrice.toLocaleString('en-IN');
+            pricePerPersonElement.textContent = pricePerPerson.toLocaleString('en-IN');
+        });
+
+        // Initialize with default value (2 guests)
+        guestsSelect.dispatchEvent(new Event('change'));
+    </script>
+
     <section class="stories-section">
         <div class="stories-header">
             <h2>Real Stories From Travelers</h2>
