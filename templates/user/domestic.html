@@ -160,7 +160,7 @@
 
 .why-choose {
     position: relative;
-    padding: 120px 8% 180px;
+    padding: 100px 8% 150px;
     background: url("{% static 'images/tropical.png' %}") center center / cover no-repeat;
     display: flex;
     align-items: center;
@@ -184,7 +184,7 @@
     font-size: 42px; 
     font-weight: 700; 
     line-height: 1.2; 
-    color: #FFFFFF !important;
+    color: #FFFFFF;
     flex: 1;
 }
 
@@ -234,35 +234,10 @@
     transition: all 0.4s ease;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     border-radius: 20px;
-    position: relative;
-}
-
-.info-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.15);
-    border-radius: 20px;
-    z-index: -1;
-}
-
-.card-left {
-    transform: rotate(-8deg);
-}
-
-.card-center {
-    transform: rotate(8deg);
-}
-
-.card-right {
-    transform: rotate(0deg);
 }
 
 .info-card:hover { 
-    transform: translateY(-10px) scale(1.05) rotate(0deg) !important; 
+    transform: translateY(-10px) scale(1.05); 
     z-index: 10; 
 }
 
@@ -286,10 +261,9 @@
         .destination-explorer {
             position: relative;
             min-height: 100vh;
-            height: auto;
             background: linear-gradient(to bottom, #004d4d 0%, rgba(0, 77, 77, 0.2) 40%, transparent 100%),
                         url("{% static 'images/resort.png' %}") center center / cover no-repeat;
-            padding: 120px 8% 100px;
+            padding: 120px 8% 60px;
             z-index: 1;
             display: flex;
             flex-direction: column;
@@ -1073,14 +1047,10 @@
             <div class="dest-header">
                 <h2 class="dest-title">Choose <span>where</span> are we<br>looking for?</h2>
                 <div class="dest-nav">
-                    {% for destination in domestic_destinations %}
-                        <a href="{% url 'user_panel:domestic_packages' %}?dest={{ destination.id }}" class="dest-link {% if forloop.first %}active{% endif %}">{{ destination.name }}</a>
-                    {% empty %}
-                        <a href="#" class="dest-link active">Kozhikode</a>
-                        <a href="#" class="dest-link">Munnar</a>
-                        <a href="#" class="dest-link">Wayanad</a>
-                        <a href="#" class="dest-link">Ooty</a>
-                    {% endfor %}
+                    <a href="#" class="dest-link active">Kozhikode</a>
+                    <a href="#" class="dest-link">Munnar</a>
+                    <a href="#" class="dest-link">Wayanad</a>
+                    <a href="#" class="dest-link">Ooty</a>
                 </div>
             </div>
 
@@ -1125,49 +1095,35 @@
             </div>
 
             <div class="gallery-grid">
-                {% if gallery_destinations %}
-                    {% for destination in gallery_destinations %}
-                        <div class="gallery-card">
-                            <img src="{% if destination.image %}{{ destination.image.url }}{% else %}{% static 'images/tropical.png' %}{% endif %}" alt="{{ destination.name }}">
-                            <div class="gallery-overlay">
-                                <h3>{{ destination.name }}</h3>
-                                <a href="{% url 'user_panel:domestic_packages' %}?dest={{ destination.id }}" class="btn-explore-link">
-                                    Explore <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="gallery-card">
-                        <img src="{% static 'images/tropical.png' %}" alt="Black Waters">
-                        <div class="gallery-overlay">
-                            <h3>Black Waters</h3>
-                            <a href="{% url 'user_panel:domestic_packages' %}" class="btn-explore-link">
-                                Explore <i class="fa-solid fa-arrow-right"></i>
-                            </a>
-                        </div>
+                <div class="gallery-card">
+                    <img src="{% static 'images/tropical.png' %}" alt="Black Waters">
+                    <div class="gallery-overlay">
+                        <h3>Black Waters</h3>
+                        <a href="#" class="btn-explore-link">
+                            Explore <i class="fa-solid fa-arrow-right"></i>
+                        </a>
                     </div>
+                </div>
 
-                    <div class="gallery-card">
-                        <img src="{% static 'images/munnar.png' %}" alt="Munnar">
-                        <div class="gallery-overlay">
-                            <h3>Munnar</h3>
-                            <a href="{% url 'user_panel:domestic_packages' %}" class="btn-explore-link">
-                                Explore <i class="fa-solid fa-arrow-right"></i>
-                            </a>
-                        </div>
+                <div class="gallery-card">
+                    <img src="{% static 'images/munnar.png' %}" alt="Munnar">
+                    <div class="gallery-overlay">
+                        <h3>Munnar</h3>
+                        <a href="#" class="btn-explore-link">
+                            Explore <i class="fa-solid fa-arrow-right"></i>
+                        </a>
                     </div>
+                </div>
 
-                    <div class="gallery-card">
-                        <img src="{% static 'images/wayanad.png' %}" alt="Wayanad">
-                        <div class="gallery-overlay">
-                            <h3>Wayanad</h3>
-                            <a href="{% url 'user_panel:domestic_packages' %}" class="btn-explore-link">
-                                Explore <i class="fa-solid fa-arrow-right"></i>
-                            </a>
-                        </div>
+                <div class="gallery-card">
+                    <img src="{% static 'images/wayanad.png' %}" alt="Wayanad">
+                    <div class="gallery-overlay">
+                        <h3>Wayanad</h3>
+                        <a href="#" class="btn-explore-link">
+                            Explore <i class="fa-solid fa-arrow-right"></i>
+                        </a>
                     </div>
-                {% endif %}
+                </div>
             </div>
 
             <div class="gallery-footer">

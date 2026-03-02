@@ -80,7 +80,7 @@ tbody tr:last-child td{border-bottom:none}
                   <span style="display:inline-block;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;
                     {% if blog.status == 'published' %}background:#d1fae5;color:#065f46;
                     {% elif blog.status == 'draft' %}background:#fef3c7;color:#92400e;
-                    {% else %}background:#dbeafe;color:#1e40af;{% endif %}">
+                    {% endif %}">
                     {{ blog.get_status_display }}
                   </span>
                 </td>

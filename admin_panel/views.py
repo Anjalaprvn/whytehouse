@@ -14,7 +14,7 @@ from datetime import datetime
 
 
 from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry, Destination
-from .models import Employee,Blog
+from .models import Employee,Blog,BlogImage
 
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
@@ -45,7 +45,7 @@ def login(request):
                 from_email="whytehousee@gmail.com",
                 recipient_list=[user.email],
             )
-            return redirect('verify_otp')
+            return redirect('admin_panel:verify_otp')
         else:
             context = {'error': 'Invalid credentials or email not configured'}
             return render(request, "admin/login.html", context)
@@ -1362,7 +1362,6 @@ def blog_list(request):
 
     published_count = blogs.filter(status="published").count()
     draft_count = blogs.filter(status="draft").count()
-    scheduled_count = blogs.filter(status="scheduled").count()
 
     context = {
         "blogs": blogs,
@@ -1370,7 +1369,6 @@ def blog_list(request):
         "status_filter": status_filter,
         "published_count": published_count,
         "draft_count": draft_count,
-        "scheduled_count": scheduled_count,
         "now": datetime.now().strftime("%B %d, %Y"),
     }
     return render(request, "admin/blog/blog.html", context)
@@ -1387,6 +1385,7 @@ def add_blog(request):
                 excerpt=(request.POST.get("excerpt") or "").strip(),
                 content=(request.POST.get("content") or "").strip(),
                 status=request.POST.get("status", "draft"),
+                category=request.POST.get("category", "other"),
                 package_id=(request.POST.get("package_id") or "").strip() or None,
 
                 author_name=(request.POST.get("author_name") or "").strip(),
@@ -1402,6 +1401,15 @@ def add_blog(request):
             if request.FILES.get("featured_image"):
                 blog.featured_image = request.FILES["featured_image"]
                 blog.save()
+
+            # Handle content images
+            content_images = request.FILES.getlist("content_images")
+            for idx, image_file in enumerate(content_images):
+                BlogImage.objects.create(
+                    blog=blog,
+                    image=image_file,
+                    order=idx
+                )
 
             messages.success(request, "Blog created successfully!")
             return redirect("blog:blog_list")
@@ -1424,6 +1432,7 @@ def edit_blog(request, blog_id):
             blog.excerpt = (request.POST.get("excerpt") or "").strip()
             blog.content = (request.POST.get("content") or "").strip()
             blog.status = request.POST.get("status", "draft")
+            blog.category = request.POST.get("category", "other")
             blog.package_id = (request.POST.get("package_id") or "").strip() or None
 
             blog.author_name = (request.POST.get("author_name") or "").strip()
@@ -1439,6 +1448,30 @@ def edit_blog(request, blog_id):
                 blog.featured_image = request.FILES["featured_image"]
 
             blog.save()
+
+            # Handle deleted content images
+            deleted_images = request.POST.get("deleted_images", "")
+            if deleted_images:
+                deleted_ids = [int(id) for id in deleted_images.split(",") if id.strip()]
+                BlogImage.objects.filter(id__in=deleted_ids, blog=blog).delete()
+                
+                # Reorder remaining images
+                remaining_images = blog.content_images.all().order_by('order')
+                for idx, img in enumerate(remaining_images):
+                    img.order = idx
+                    img.save()
+
+            # Handle new content images
+            content_images = request.FILES.getlist("content_images")
+            if content_images:
+                # Get current max order
+                current_max = blog.content_images.count()
+                for idx, image_file in enumerate(content_images):
+                    BlogImage.objects.create(
+                        blog=blog,
+                        image=image_file,
+                        order=current_max + idx
+                    )
 
             messages.success(request, "Blog updated successfully!")
             return redirect("blog:blog_list")
@@ -1456,7 +1489,120 @@ def view_blog(request, slug):
     if blog.hashtags:
         tags = [t.strip() for t in blog.hashtags.split(",") if t.strip()]
 
-    return render(request, "admin/blog/view_blog.html", {"blog": blog, "tags": tags})
+    # Replace {{image1}}, {{image2}}, etc. with actual image HTML
+    content = blog.content
+    content_images = blog.content_images.all()
+    
+    # Normalize line endings and split content
+    content = content.replace('\r\n', '\n').replace('\r', '\n')
+    
+    # Split by lines and process
+    lines = content.split('\n')
+    processed_lines = []
+    i = 0
+    
+    while i < len(lines):
+        line = lines[i].strip()
+        
+        if not line:
+            i += 1
+            continue
+        
+        # Check if this line contains an image tag
+        has_image = False
+        
+        for idx, img in enumerate(content_images):
+            image_num = idx + 1
+            
+            # Check for left positioned image
+            placeholder_left = f"{{{{image{image_num}-left}}}}"
+            if placeholder_left in line:
+                # Get the text before the image tag (could be on same line or previous lines)
+                text_content = line.replace(placeholder_left, '').strip()
+                
+                # If no text on this line, look at previous non-empty lines
+                if not text_content and processed_lines:
+                    # Get previous paragraph
+                    prev_content = []
+                    while processed_lines and not processed_lines[-1].startswith('<'):
+                        prev_content.insert(0, processed_lines.pop())
+                    text_content = ' '.join(prev_content)
+                
+                # Create side-by-side layout with image on left
+                processed_lines.append(f'''
+                    <div class="content-row">
+                        <figure class="content-image-left">
+                            <img src="{img.image.url}" alt="Content image {image_num}">
+                        </figure>
+                        <div class="content-text"><p>{text_content}</p></div>
+                    </div>
+                ''')
+                has_image = True
+                break
+            
+            # Check for right positioned image
+            placeholder_right = f"{{{{image{image_num}-right}}}}"
+            if placeholder_right in line:
+                # Get the text before the image tag
+                text_content = line.replace(placeholder_right, '').strip()
+                
+                # If no text on this line, look at previous non-empty lines
+                if not text_content and processed_lines:
+                    # Get previous paragraph
+                    prev_content = []
+                    while processed_lines and not processed_lines[-1].startswith('<'):
+                        prev_content.insert(0, processed_lines.pop())
+                    text_content = ' '.join(prev_content)
+                
+                # Create side-by-side layout with image on right
+                processed_lines.append(f'''
+                    <div class="content-row">
+                        <div class="content-text"><p>{text_content}</p></div>
+                        <figure class="content-image-right">
+                            <img src="{img.image.url}" alt="Content image {image_num}">
+                        </figure>
+                    </div>
+                ''')
+                has_image = True
+                break
+            
+            # Check for center positioned image
+            placeholder_center = f"{{{{image{image_num}-center}}}}"
+            if placeholder_center in line:
+                text_content = line.replace(placeholder_center, '').strip()
+                if text_content:
+                    processed_lines.append(f'<p>{text_content}</p>')
+                processed_lines.append(f'''
+                    <figure class="content-image-center">
+                        <img src="{img.image.url}" alt="Content image {image_num}">
+                    </figure>
+                ''')
+                has_image = True
+                break
+            
+            # Check for default (center) positioned image
+            placeholder_default = f"{{{{image{image_num}}}}}"
+            if placeholder_default in line:
+                text_content = line.replace(placeholder_default, '').strip()
+                if text_content:
+                    processed_lines.append(f'<p>{text_content}</p>')
+                processed_lines.append(f'''
+                    <figure class="content-image-center">
+                        <img src="{img.image.url}" alt="Content image {image_num}">
+                    </figure>
+                ''')
+                has_image = True
+                break
+        
+        # If no image found in this line, add it as regular text
+        if not has_image and line:
+            processed_lines.append(line)
+        
+        i += 1
+    
+    content = '\n'.join(processed_lines)
+
+    return render(request, "admin/blog/view_blog.html", {"blog": blog, "tags": tags, "processed_content": content})
 
 
 def delete_blog(request, blog_id):

@@ -236,6 +236,59 @@
       .row-2{grid-template-columns:1fr}
       .title-wrap h1{font-size:28px}
     }
+
+    /* Content Image Preview Cards */
+    .image-card {
+      border:1px solid var(--line);
+      border-radius:12px;
+      overflow:hidden;
+      background:#fff;
+      box-shadow:0 4px 12px rgba(15,23,42,.04);
+    }
+    .image-card img {
+      width:100%;
+      height:140px;
+      object-fit:cover;
+      display:block;
+    }
+    .image-card-footer {
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .image-tag {
+      background:#f1f5f9;
+      padding:4px 10px;
+      border-radius:6px;
+      font-size:12px;
+      font-weight:600;
+      color:#475569;
+      font-family:monospace;
+      cursor:pointer;
+      user-select:all;
+    }
+    .image-tag:hover {
+      background:#e2e8f0;
+    }
+    .remove-image-btn {
+      background:#fee2e2;
+      border:none;
+      color:#dc2626;
+      width:28px;
+      height:28px;
+      border-radius:6px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:16px;
+      padding:0;
+    }
+    .remove-image-btn:hover {
+      background:#fecaca;
+    }
   </style>
 {% endblock %}
 
@@ -286,10 +339,27 @@
             <select name="status">
               <option value="draft" {% if blog and blog.status == 'draft' %}selected{% endif %}>Draft</option>
               <option value="published" {% if blog and blog.status == 'published' %}selected{% endif %}>Published</option>
-              <option value="scheduled" {% if blog and blog.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
+              
             </select>
           </div>
 
+          <div class="field">
+            <div class="label">Category</div>
+            <select name="category">
+              <option value="destinations" {% if blog and blog.category == 'destinations' %}selected{% endif %}>Destinations</option>
+              <option value="travel_tips" {% if blog and blog.category == 'travel_tips' %}selected{% endif %}>Travel Tips</option>
+              <option value="food_culture" {% if blog and blog.category == 'food_culture' %}selected{% endif %}>Food & Culture</option>
+              <option value="packages" {% if blog and blog.category == 'packages' %}selected{% endif %}>Packages & Deals</option>
+              <option value="honeymoon" {% if blog and blog.category == 'honeymoon' %}selected{% endif %}>Honeymoon</option>
+              <option value="family_travel" {% if blog and blog.category == 'family_travel' %}selected{% endif %}>Family Travel</option>
+              <option value="adventure" {% if blog and blog.category == 'adventure' %}selected{% endif %}>Adventure</option>
+              <option value="travel_stories" {% if blog and blog.category == 'travel_stories' %}selected{% endif %}>Travel Stories</option>
+              <option value="other" {% if blog and blog.category == 'other' %}selected{% endif %}>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row-2">
           <div class="field">
             <div class="label">Link to Package (Optional)</div>
             <input type="text" name="package_id" placeholder="Package ID" value="{% if blog %}{{ blog.package_id }}{% endif %}">
@@ -369,22 +439,26 @@
         <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
           <h2 style="margin:0">Content Images</h2>
 
-          <label class="upload-btn">
+          <label class="upload-btn" id="content-images-btn">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M12 16V4" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
               <path d="M7 9l5-5 5 5" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
             </svg>
-            Upload Images
-            <input type="file" name="content_images" accept="image/*" multiple hidden>
+            Add Images
+            <input type="file" id="content-images-input" name="content_images" accept="image/*" multiple hidden>
           </label>
         </div>
 
         <p class="upload-hint" style="margin-top:10px">
-          Upload images to use in your blog content. Copy the reference and paste it in your content where you want the image to appear.
+          Upload images to use in your blog content. Reference them using <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image1}}</code>, <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image2}}</code>, etc. in your content.
         </p>
 
-        <div class="dropzone" aria-hidden="true">
+        <div id="content-images-preview" style="margin-top:16px;display:none;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;">
+          <!-- Image previews will be added here -->
+        </div>
+
+        <div id="content-images-empty" class="dropzone" style="margin-top:14px">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
             <path d="M7 10l5-5 5 5" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -392,7 +466,7 @@
           </svg>
           <div>
             <div style="font-weight:600;color:#475569;margin-bottom:4px">No images uploaded</div>
-            <div style="font-size:13px">Use [Image 1], [Image 2] ... inside the content box.</div>
+            <div style="font-size:13px">Click "Add Images" to upload content images</div>
           </div>
         </div>
       </div>
@@ -434,6 +508,7 @@
 </form>
 
 <script>
+{% verbatim %}
 // Image preview functionality
 document.getElementById('featured_image_input').addEventListener('change', function(e) {
     const file = e.target.files[0];
@@ -454,6 +529,82 @@ document.getElementById('featured_image_input').addEventListener('change', funct
         imageName.textContent = '';
     }
 });
+
+// Content Images functionality
+let contentImagesArray = [];
+
+document.getElementById('content-images-input').addEventListener('change', function(e) {
+    const files = Array.from(e.target.files);
+    
+    files.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            contentImagesArray.push({
+                file: file,
+                dataUrl: e.target.result,
+                name: file.name
+            });
+            updateContentImagesPreview();
+        }
+        reader.readAsDataURL(file);
+    });
+});
+
+function updateContentImagesPreview() {
+    const previewContainer = document.getElementById('content-images-preview');
+    const emptyState = document.getElementById('content-images-empty');
+    
+    if (contentImagesArray.length === 0) {
+        previewContainer.style.display = 'none';
+        emptyState.style.display = 'flex';
+        return;
+    }
+    
+    previewContainer.style.display = 'grid';
+    emptyState.style.display = 'none';
+    previewContainer.innerHTML = '';
+    
+    contentImagesArray.forEach((img, index) => {
+        const card = document.createElement('div');
+        card.className = 'image-card';
+        const imageTag = '{{image' + (index + 1) + '}}';
+        card.innerHTML = `
+            <img src="${img.dataUrl}" alt="${img.name}">
+            <div class="image-card-footer">
+                <span class="image-tag" onclick="copyToClipboard('${imageTag}')" title="Click to copy">${imageTag}</span>
+                <button type="button" class="remove-image-btn" onclick="removeContentImage(${index})" title="Remove image">✕</button>
+            </div>
+        `;
+        previewContainer.appendChild(card);
+    });
+}
+
+function removeContentImage(index) {
+    contentImagesArray.splice(index, 1);
+    updateContentImagesPreview();
+    
+    // Update the file input
+    const input = document.getElementById('content-images-input');
+    const dt = new DataTransfer();
+    contentImagesArray.forEach(img => dt.items.add(img.file));
+    input.files = dt.files;
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        // Show a brief success message
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.style.background = '#dcfce7';
+        btn.style.color = '#166534';
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.background = '';
+            btn.style.color = '';
+        }, 1500);
+    });
+}
 
 // Hashtag functionality
 let hashtags = [];
@@ -504,5 +655,6 @@ window.addEventListener('DOMContentLoaded', function() {
         updateHashtagsDisplay();
     }
 });
+{% endverbatim %}
 </script>
 {% endblock %}
