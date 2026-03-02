@@ -91,15 +91,15 @@ if DEBUG:
     }
 else:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'postgres',
-            'USER': 'postgres',
-            'PASSWORD': 'Anjalahanima',
-            'HOST': 'db.qkypgcjbirxgcmhpfbjk.supabase.co',
-            'PORT': '5432',
-        }
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',              # update if supabase shows different
+        'USER': 'postgres',              # update if supabase shows different
+        'PASSWORD': 'Anjalahanima',
+        'HOST': 'db.qkypgcjbirxgcmhpfbjk.supabase.co',
+        'PORT': '5432',
     }
+}
 
 
 # Password validation

@@ -219,6 +219,13 @@ def hospitality_management(request):
 
 def add_property(request):
     if request.method == "POST":
+        name = request.POST.get("name", "").strip()
+        prop_type = request.POST.get("property_type", "").strip()
+        location = request.POST.get("location", "").strip()
+
+        if not name or not prop_type or not location:
+            messages.error(request, "Name, type and location are required.")
+            return render(request, "admin/hospitality/hospitality_add.html")
         
         new_amenities = request.POST.getlist("new_amenities[]")
 
@@ -226,9 +233,9 @@ def add_property(request):
         amenities_text = ", ".join([a.strip() for a in new_amenities if a.strip()])
 
         Property.objects.create(
-            name=request.POST.get("name"),
-            property_type=request.POST.get("property_type"),
-            location=request.POST.get("location"),
+            name=name,
+            property_type=prop_type,
+            location=location,
             website=request.POST.get("website") or None,
             address=request.POST.get("address"),
             summary=request.POST.get("summary"),
@@ -247,9 +254,20 @@ def edit_property(request, property_id):
     prop = get_object_or_404(Property, id=property_id)
 
     if request.method == "POST":
-        prop.name = request.POST.get("name")
-        prop.property_type = request.POST.get("property_type")
-        prop.location = request.POST.get("location")
+        name = request.POST.get("name", "").strip()
+        prop_type = request.POST.get("property_type", "").strip()
+        location = request.POST.get("location", "").strip()
+        if not name or not prop_type or not location:
+            messages.error(request, "Name, type and location are required.")
+            return render(
+                request,
+                "admin/hospitality/hospitality_edit.html",
+                {"property": prop}
+            )
+
+        prop.name = name
+        prop.property_type = prop_type
+        prop.location = location
         prop.website = request.POST.get("website") or None
         prop.address = request.POST.get("address")
         prop.summary = request.POST.get("summary")
@@ -549,10 +567,18 @@ def employee_list(request):
 def add_employee(request):
     if request.method == 'POST':
         try:
+            # basic required validation
+            name = request.POST.get('name', '').strip()
+            email = request.POST.get('email', '').strip()
+            phone = request.POST.get('phone', '').strip()
+            if not name or not email or not phone:
+                messages.error(request, "Name, email and phone are required.")
+                return render(request, "admin/employee/add_employee.html")
+
             employee = Employee.objects.create(
-                name=request.POST.get('name'),
-                email=request.POST.get('email'),
-                phone=request.POST.get('phone'),
+                name=name,
+                email=email,
+                phone=phone,
                 role=request.POST.get('role', ''),
                 department=request.POST.get('department', ''),
                 join_date=request.POST.get('join_date') or None,
@@ -581,9 +607,17 @@ def edit_employee(request, pk):
     
     if request.method == 'POST':
         try:
-            employee.name = request.POST.get('name')
-            employee.email = request.POST.get('email')
-            employee.phone = request.POST.get('phone')
+            # validate required fields
+            name = request.POST.get('name', '').strip()
+            email = request.POST.get('email', '').strip()
+            phone = request.POST.get('phone', '').strip()
+            if not name or not email or not phone:
+                messages.error(request, "Name, email and phone are required.")
+                return render(request, "admin/employee/edit_employee.html", {'employee': employee})
+
+            employee.name = name
+            employee.email = email
+            employee.phone = phone
             employee.role = request.POST.get('role', '')
             employee.department = request.POST.get('department', '')
             employee.join_date = request.POST.get('join_date') or None
@@ -1104,10 +1138,23 @@ def add_voucher(request):
     
     if request.method == "POST":
         try:
+            cus_id = request.POST.get("customer_id")
+            vno = request.POST.get("voucher_no", "").strip()
+            vdate = request.POST.get("voucher_date")
+
+            # required validation
+            if not cus_id or not vno or not vdate:
+                messages.error(request, "Customer, voucher number, and date are required.")
+                return render(request, "admin/sales/vouchers/add_vouchers.html", {"customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees, "meals": meals})
+
+            if Voucher.objects.filter(voucher_no=vno).exists():
+                messages.error(request, "Voucher number already exists.")
+                return render(request, "admin/sales/vouchers/add_vouchers.html", {"customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees, "meals": meals})
+
             Voucher.objects.create(
-                customer_id=request.POST.get("customer_id"),
-                voucher_no=request.POST.get("voucher_no", "").strip(),
-                voucher_date=request.POST.get("voucher_date"),
+                customer_id=cus_id,
+                voucher_no=vno,
+                voucher_date=vdate,
                 sales_person_id=request.POST.get("sales_person") or None,
                 resort_id=request.POST.get("resort") or None,
                 checkin_date=request.POST.get("checkin_date"),
@@ -1155,6 +1202,7 @@ def edit_voucher(request, voucher_id):
     
     if request.method == "POST":
         try:
+            # don't allow editing voucher_no or voucher_date here; keep current values
             voucher.voucher_code = request.POST.get("voucher_code", "").strip()
             voucher.discount_amount = request.POST.get("discount_amount", 0)
             voucher.discount_percentage = request.POST.get("discount_percentage", 0) or None
@@ -1293,9 +1341,16 @@ def edit_invoice(request, invoice_id):
     
     if request.method == "POST":
         try:
-            invoice.customer_id = request.POST.get("customer_id")
-            invoice.invoice_no = request.POST.get("invoice_no", "").strip()
-            invoice.invoice_date = request.POST.get("invoice_date")
+            cust = request.POST.get("customer_id")
+            ino = request.POST.get("invoice_no", "").strip()
+            idate = request.POST.get("invoice_date")
+            if not cust or not ino or not idate:
+                messages.error(request, "Customer, Invoice No, and Invoice Date are required.")
+                return render(request, "admin/sales/invoice/edit_invoice.html", {"invoice": invoice, "customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees})
+
+            invoice.customer_id = cust
+            invoice.invoice_no = ino
+            invoice.invoice_date = idate
             invoice.sales_person_id = request.POST.get("sales_person") or None
             invoice.resort_id = request.POST.get("resort") or None
             invoice.checkin_date = request.POST.get("checkin_date") or None
@@ -1382,24 +1437,35 @@ def blog_list(request):
 def add_blog(request):
     if request.method == "POST":
         try:
+            title = (request.POST.get("title") or "").strip()
+            slug = (request.POST.get("slug") or "").strip()
+            excerpt = (request.POST.get("excerpt") or "").strip()
+            content = (request.POST.get("content") or "").strip()
+            author_name = (request.POST.get("author_name") or "").strip()
+            author_summary = (request.POST.get("author_summary") or "").strip()
+            reading_time = request.POST.get("reading_time")
+            publish_date = request.POST.get("publish_date")
+
+            # validation for required fields
+            if not title or not slug or not excerpt or not content or not author_name or not author_summary or not reading_time or not publish_date:
+                messages.error(request, "Please fill in all required fields.")
+                return render(request, "admin/blog/add_blog.html")
+
             hashtags_value = (request.POST.get("hashtags") or "").strip()
             
             blog = Blog.objects.create(
-                title=(request.POST.get("title") or "").strip(),
-                slug=(request.POST.get("slug") or "").strip(),
-                excerpt=(request.POST.get("excerpt") or "").strip(),
-                content=(request.POST.get("content") or "").strip(),
+                title=title,
+                slug=slug,
+                excerpt=excerpt,
+                content=content,
                 status=request.POST.get("status", "draft"),
                 category=request.POST.get("category", "other"),
                 package_id=(request.POST.get("package_id") or "").strip() or None,
 
-                author_name=(request.POST.get("author_name") or "").strip(),
-                author_summary=(request.POST.get("author_summary") or "").strip(),
-                reading_time=int(request.POST.get("reading_time") or 1),
-                publish_date=request.POST.get("publish_date"),
-
-                featured_image_url=(request.POST.get("featured_image_url") or "").strip() or None,
-                hashtags=hashtags_value,
+                author_name=author_name,
+                author_summary=author_summary,
+                reading_time=int(reading_time or 1),
+                publish_date=publish_date,
                 tags=hashtags_value,  # Save to both fields for compatibility
             )
 
@@ -1430,20 +1496,33 @@ def edit_blog(request, blog_id):
 
     if request.method == "POST":
         try:
+            title = (request.POST.get("title") or "").strip()
+            slug = (request.POST.get("slug") or "").strip()
+            excerpt = (request.POST.get("excerpt") or "").strip()
+            content = (request.POST.get("content") or "").strip()
+            author_name = (request.POST.get("author_name") or "").strip()
+            author_summary = (request.POST.get("author_summary") or "").strip()
+            reading_time = request.POST.get("reading_time")
+            publish_date = request.POST.get("publish_date")
+
+            if not title or not slug or not excerpt or not content or not author_name or not author_summary or not reading_time or not publish_date:
+                messages.error(request, "Please fill in all required fields.")
+                return render(request, "admin/blog/edit_blog.html", {"blog": blog})
+
             hashtags_value = (request.POST.get("hashtags") or "").strip()
             
-            blog.title = (request.POST.get("title") or "").strip()
-            blog.slug = (request.POST.get("slug") or "").strip()
-            blog.excerpt = (request.POST.get("excerpt") or "").strip()
-            blog.content = (request.POST.get("content") or "").strip()
+            blog.title = title
+            blog.slug = slug
+            blog.excerpt = excerpt
+            blog.content = content
             blog.status = request.POST.get("status", "draft")
             blog.category = request.POST.get("category", "other")
             blog.package_id = (request.POST.get("package_id") or "").strip() or None
 
-            blog.author_name = (request.POST.get("author_name") or "").strip()
-            blog.author_summary = (request.POST.get("author_summary") or "").strip()
-            blog.reading_time = int(request.POST.get("reading_time") or 1)
-            blog.publish_date = request.POST.get("publish_date")
+            blog.author_name = author_name
+            blog.author_summary = author_summary
+            blog.reading_time = int(reading_time or 1)
+            blog.publish_date = publish_date
 
             blog.featured_image_url = (request.POST.get("featured_image_url") or "").strip() or None
             blog.hashtags = hashtags_value
@@ -2155,10 +2234,16 @@ def add_destination(request):
     default_category = request.GET.get('category', 'Domestic')
     
     if request.method == "POST":
+        name = request.POST.get('name', '').strip()
+        country = request.POST.get('country', '').strip()
         category = request.POST.get('category')
+        if not name or not country:
+            messages.error(request, "Name and country are required.")
+            return render(request, 'admin/destination/add_destination.html', {'default_category': default_category})
+
         Destination.objects.create(
-            name=request.POST.get('name'),
-            country=request.POST.get('country'),
+            name=name,
+            country=country,
             category=category,
             description=request.POST.get('description'),
             is_popular=request.POST.get('is_popular') == 'on',
@@ -2176,8 +2261,13 @@ def add_destination(request):
 def edit_destination(request, destination_id):
     destination = get_object_or_404(Destination, id=destination_id)
     if request.method == "POST":
-        destination.name = request.POST.get('name')
-        destination.country = request.POST.get('country')
+        name = request.POST.get('name', '').strip()
+        country = request.POST.get('country', '').strip()
+        if not name or not country:
+            messages.error(request, "Name and country are required.")
+            return render(request, 'admin/destination/edit_destination.html', {'destination': destination})
+        destination.name = name
+        destination.country = country
         destination.category = request.POST.get('category')
         destination.description = request.POST.get('description')
         destination.is_popular = request.POST.get('is_popular') == 'on'

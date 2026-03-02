@@ -32,14 +32,6 @@ tbody tr:last-child td{border-bottom:none}
 <h1 class="page-title">Resorts</h1>
     <p class="page-sub">Manage resort partnerships</p>
 
-    {% if messages %}
-    <div id="message" style="background:#d4edda; border:1px solid #c3e6cb; border-radius:12px; padding:16px; margin-bottom:20px; color:#155724; font-weight:500; opacity:1; transition:opacity 0.3s;">
-      {% for message in messages %}
-        <strong>✓ Success:</strong> {{ message }}
-      {% endfor %}
-    </div>
-    {% endif %}
-
     <section class="card">
       <div class="card-head">
         <h3>Resort List</h3>

@@ -247,12 +247,12 @@ body{background:#f5f7fb;color:#111}
 
         <div class="field">
           <div class="label">Voucher Number <span class="req">*</span></div>
-          <input class="input" type="text" name="voucher_no" placeholder="e.g., VCH001" value="{{ form.voucher_no.value|default:'' }}">
+          <input class="input" type="text" name="voucher_no" placeholder="e.g., VCH001" value="{{ form.voucher_no.value|default:'' }}" required>
         </div>
 
         <div class="field">
           <div class="label">Voucher Date <span class="req">*</span></div>
-          <input class="input" type="date" name="voucher_date" value="{{ form.voucher_date.value|default:'' }}">
+          <input class="input" type="date" name="voucher_date" value="{{ form.voucher_date.value|default:'' }}" required>
         </div>
 
         <div class="field">

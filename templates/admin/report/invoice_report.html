@@ -58,15 +58,7 @@ tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
   <a href="{% url 'sales:customer_report' %}" class="tab">Customer</a>
 </div>
 
-{% if messages %}
-<div class="msg">
-  {% for message in messages %}
-    <div class="alert {% if message.tags %}{{ message.tags }}{% endif %}">
-      {{ message }}
-    </div>
-  {% endfor %}
-</div>
-{% endif %}
+
 
 <section class="card">
   <h3>Invoice Report</h3>

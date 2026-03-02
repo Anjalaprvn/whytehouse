@@ -42,15 +42,6 @@ tbody tr.data-row td{background:#fef9e7}
     <h1 class="page-title">Employee Management</h1>
     <p class="page-sub">Manage employee records</p>
 
-    <!-- Messages with auto-dismiss -->
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert-msg {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-error{% else %}alert-info{% endif %}" style="margin-bottom:16px;">
-          {{ message }}
-        </div>
-      {% endfor %}
-    {% endif %}
-
     <section class="card">
       <div class="card-head">
         <div class="left">

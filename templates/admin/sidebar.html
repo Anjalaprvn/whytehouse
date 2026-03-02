@@ -345,6 +345,15 @@ body{
 
 <div class="main-content">
   <div class="content-wrapper">
+    {% if messages %}
+      <div class="alert-container" style="margin-bottom:20px;">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}" {% if message.tags == 'success' %}style="padding:12px 18px; border-radius:8px; margin-bottom:6px; background:#d1e7dd; color:#0f5132;"{% else %}style="padding:12px 18px; border-radius:8px; margin-bottom:6px; background:#f8d7da; color:#842029;"{% endif %}>
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
     <div class="date-display" id="current-date"></div>
     {% block content %}
     <!-- Default content will go here -->

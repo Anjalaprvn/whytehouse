@@ -31,14 +31,6 @@ tbody tr:last-child td{border-bottom:none}
 {% endblock %}
 
 {% block content %}
-{% if messages %}
-  {% for message in messages %}
-    <div class="alert-msg {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-error{% endif %}">
-      {{ message }}
-    </div>
-  {% endfor %}
-{% endif %}
-
 <h1 class="page-title">Customers</h1>
 <p class="page-sub">Manage your customer database</p>
 

@@ -246,18 +246,6 @@
 {% endblock %}
 
 {% block content %}
-{% if messages %}
-  <div class="msg-wrap">
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }}"
-        style="{% if message.tags == 'success' %}background:#eefbf1;border:1px solid #bbf0c5;color:#16a34a;
-               {% elif message.tags == 'error' %}background:#fff1f2;border:1px solid #fda0a6;color:#dc2626;
-               {% else %}background:#fff6e8;border:1px solid #fde096;color:#d97706;{% endif %}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  </div>
-{% endif %}
 
 <h1 class="page-title">Invoice Management</h1>
 <p class="page-sub">Manage invoices and bookings</p>

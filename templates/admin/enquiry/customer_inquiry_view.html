@@ -88,21 +88,6 @@
 {% block content %}
 <div class="modal-overlay">
     <div class="modal-card">
-        {% if messages %}
-        <div id="success-message" style="margin-bottom:16px">
-            {% for message in messages %}
-            <div style="background:#d4edda;color:#155724;padding:12px;border-radius:10px;margin-bottom:8px;font-size:14px;font-weight:500">
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        <script>
-            setTimeout(() => {
-                const msg = document.getElementById('success-message');
-                if(msg) msg.style.display = 'none';
-            }, 3000);
-        </script>
-        {% endif %}
         
         <a href="{% url 'admin_panel:customer_inquiries' %}" class="close-btn">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
