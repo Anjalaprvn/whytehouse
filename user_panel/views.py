@@ -37,6 +37,12 @@ def enquire_now(request):
 def index(request):
     packages = TravelPackage.objects.filter(active=True, category='International')[:6]
     
+    # Get 4 featured packages for the gallery section
+    featured_packages = list(TravelPackage.objects.filter(active=True, category='International')[:4])
+    print(f"DEBUG: Featured packages count: {len(featured_packages)}")
+    for pkg in featured_packages:
+        print(f"  - {pkg.name} (ID: {pkg.id})")
+    
     # Get featured package for each destination (Vietnam=2, Malaysia=14, Thailand=8, Maldives=12)
     vietnam_package = TravelPackage.objects.filter(active=True, destination_id=2).first()
     malaysia_package = TravelPackage.objects.filter(active=True, destination_id=14).first()
@@ -51,6 +57,7 @@ def index(request):
     
     context = {
         'packages': packages,
+        'featured_packages': featured_packages,
         'vietnam_package': vietnam_package,
         'malaysia_package': malaysia_package,
         'thailand_package': thailand_package,
