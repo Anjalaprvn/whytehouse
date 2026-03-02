@@ -260,8 +260,8 @@ body{
 
     <!-- Sales Accordion -->
     <div class="accordion">
-      <input type="checkbox" id="sales-toggle" {% if request.resolver_match.namespace == 'sales' %}checked{% endif %}>
-      <label for="sales-toggle" {% if request.resolver_match.namespace == 'sales' %}class="active"{% endif %}>
+      <input type="checkbox" id="sales-toggle" {% if request.resolver_match.namespace == 'sales' and request.resolver_match.url_name != 'invoice_report' and request.resolver_match.url_name != 'voucher_report' and request.resolver_match.url_name != 'leads_report' and request.resolver_match.url_name != 'profit_report' and request.resolver_match.url_name != 'customer_report' %}checked{% endif %}>
+      <label for="sales-toggle" {% if request.resolver_match.namespace == 'sales' and request.resolver_match.url_name != 'invoice_report' and request.resolver_match.url_name != 'voucher_report' and request.resolver_match.url_name != 'leads_report' and request.resolver_match.url_name != 'profit_report' and request.resolver_match.url_name != 'customer_report' %}class="active"{% endif %}>
         <svg fill="none" viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
         <span>Sales</span>
         <span class="arrow">⌄</span>
@@ -310,7 +310,7 @@ body{
       <span>Report Generation</span>
     </a>
 
-    <a href="{% url 'admin_panel:admin_hospitality' %}">
+    <a href="{% url 'admin_panel:admin_hospitality' %}" {% if request.resolver_match.url_name == 'admin_hospitality' %}class="active"{% endif %}>
       <svg fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M3 17h18"/></svg>
       <span>Hospitality Management</span>
     </a>

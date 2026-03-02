@@ -206,9 +206,24 @@
             grid-template-columns: 1fr;
         }
     }
+    
+    .msg{max-width:100%;margin:0 0 16px 0}
+    .msg .alert{border-radius:12px;padding:12px 14px;border:1px solid #e5e7eb;background:#fff;margin-bottom:10px}
+    .msg .alert.error{background:#fff1f2;border-color:#fecaca;color:#b91c1c}
+    .msg .alert.success{background:#ecfdf5;border-color:#bbf7d0;color:#166534}
 </style>
 
 <div class="hospitality-container">
+
+    {% if messages %}
+    <div class="msg">
+      {% for message in messages %}
+        <div class="alert {% if message.tags %}{{ message.tags }}{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
 
     <div class="page-header">
         <div class="header-text">

@@ -180,7 +180,7 @@
         <div class="form-grid">
           <div class="form-group">
             <label for="resort_name">Resort Name *</label>
-            <input type="text" id="resort_name" name="resort_name" value="{{ resort.name }}" required>
+            <input type="text" id="resort_name" name="resort_name" value="{{ resort.resort_name }}" required>
           </div>
 
           <div class="form-group">
@@ -189,13 +189,18 @@
           </div>
 
           <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" value="{{ resort.email }}">
+            <label for="contact_person">Contact Person</label>
+            <input type="text" id="contact_person" name="contact_person" value="{{ resort.contact_person }}">
           </div>
 
           <div class="form-group">
-            <label for="phone">Phone</label>
-            <input type="tel" id="phone" name="phone" value="{{ resort.phone }}">
+            <label for="contact_number">Contact Number</label>
+            <input type="tel" id="contact_number" name="contact_number" value="{{ resort.contact_number }}">
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" value="{{ resort.email }}">
           </div>
 
           <div class="form-group">
@@ -206,8 +211,8 @@
           <div class="form-group">
             <label for="status">Status</label>
             <select id="status" name="status">
-              <option value="active" {% if resort.status == 'active' %}selected{% endif %}>Active</option>
-              <option value="inactive" {% if resort.status == 'inactive' %}selected{% endif %}>Inactive</option>
+              <option value="active" {% if resort.status == 'Active' %}selected{% endif %}>Active</option>
+              <option value="inactive" {% if resort.status == 'Inactive' %}selected{% endif %}>Inactive</option>
             </select>
           </div>
         </div>

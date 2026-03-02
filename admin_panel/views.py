@@ -973,7 +973,7 @@ def edit_resort(request, resort_id):
     if request.method == "POST":
         try:
             resort.resort_name = request.POST.get("resort_name", "").strip()
-            resort.location = request.POST.get("location", "").strip()
+            resort.location = request.POST.get("resort_place", "").strip()  # Changed from "location" to "resort_place"
             resort.contact_person = request.POST.get("contact_person", "").strip()
             resort.contact_number = request.POST.get("contact_number", "").strip()
             resort.email = request.POST.get("email", "").strip()
