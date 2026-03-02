@@ -1059,12 +1059,13 @@ def edit_meal(request, meal_id):
     
     if request.method == "POST":
         try:
-            meal.meal_name = request.POST.get("meal_name", "").strip()
+            meal.name = request.POST.get("name", "").strip()
             meal.description = request.POST.get("description", "").strip()
-            meal.price = request.POST.get("price", 0)
+            included_meals = request.POST.getlist("included_meals")
+            meal.included_meals = ", ".join(included_meals) if included_meals else ""
             meal.status = request.POST.get("status", "Available")
             meal.save()
-            messages.success(request, f"Meal updated successfully!")
+            messages.success(request, f"Meal '{meal.name}' updated successfully!")
             return redirect("sales:meal_list")
         except Exception as e:
             return render(request, "admin/sales/meals/edit_meals.html", {
@@ -1079,7 +1080,7 @@ def delete_meal(request, meal_id):
     
     try:
         meal = Meal.objects.get(id=meal_id)
-        meal_name = meal.meal_name
+        meal_name = meal.name
         meal.delete()
         messages.success(request, f"Meal '{meal_name}' deleted successfully!")
     except Meal.DoesNotExist:

@@ -294,4 +294,32 @@
     </section>
 
   </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const allMealsCheckbox = document.querySelector('input[value="All Meals"]');
+      const individualMeals = document.querySelectorAll('input[name="included_meals"]:not([value="All Meals"])');
+
+      // When "All Meals" is clicked
+      allMealsCheckbox.addEventListener('change', function() {
+        individualMeals.forEach(meal => {
+          meal.checked = this.checked;
+        });
+      });
+
+      // When individual meals are clicked
+      individualMeals.forEach(meal => {
+        meal.addEventListener('change', function() {
+          // If all individual meals are checked, auto-check "All Meals"
+          const allChecked = Array.from(individualMeals).every(m => m.checked);
+          if (allChecked) {
+            allMealsCheckbox.checked = true;
+          } else {
+            // If any individual meal is unchecked, uncheck "All Meals"
+            allMealsCheckbox.checked = false;
+          }
+        });
+      });
+    });
+  </script>
 {% endblock %}
