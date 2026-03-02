@@ -131,54 +131,9 @@ def lead_management(request):
     source_filter = request.GET.get('source', '')
     new_leads = request.GET.get('new', '')
     
-    # If General enquiry type is selected, use customer inquiries template
+    # If General enquiry type is selected, redirect to customer inquiries page
     if enquiry_type == 'General':
-        status_filter = request.GET.get('status', '')
-        general_leads = Lead.objects.filter(enquiry_type='General')
-        
-        # Apply status filter if provided
-        if status_filter:
-            general_leads = general_leads.filter(status=status_filter)
-        
-        general_leads = general_leads.order_by('-created_at')
-        
-        inquiries = []
-        for lead in general_leads:
-            # Extract email from remarks if available
-            email = ''
-            if lead.remarks and 'Email:' in lead.remarks:
-                email_part = lead.remarks.split('Email:')[1].split('\n')[0].strip()
-                email = email_part
-            
-            # Create inquiry-like object
-            inquiry_obj = type('obj', (object,), {
-                'id': lead.id,
-                'name': lead.full_name,
-                'email': email,
-                'phone': lead.mobile_number,
-                'package': 'General Inquiry',
-                'message': lead.remarks or '',
-                'status': lead.status,  # Use actual status from Lead model
-                'created_at': lead.created_at,
-            })
-            inquiries.append(inquiry_obj)
-        
-        # Count by status (from all General leads, not just filtered)
-        all_general_leads = Lead.objects.filter(enquiry_type='General')
-        new_count = all_general_leads.filter(status='New').count()
-        contacted_count = all_general_leads.filter(status='Contacted').count()
-        converted_count = all_general_leads.filter(status='Converted').count()
-        junk_count = all_general_leads.filter(status='Junk').count()
-        
-        context = {
-            'inquiries': inquiries,
-            'total_count': all_general_leads.count(),
-            'new_count': new_count,
-            'contacted_count': contacted_count,
-            'converted_count': converted_count,
-            'junk_count': junk_count,
-        }
-        return render(request, 'admin/enquiry/customer_inquiries.html', context)
+        return redirect('admin_panel:customer_inquiries')
     
     leads = Lead.objects.all()
     
@@ -193,7 +148,8 @@ def lead_management(request):
     
     leads = leads.order_by('-created_at')
     
-    general_count = Lead.objects.filter(enquiry_type='General').count()
+    # Count Inquiries for general (not Leads)
+    general_count = Inquiry.objects.count()
     international_count = Lead.objects.filter(enquiry_type='International').count()
     domestic_count = Lead.objects.filter(enquiry_type='Domestic').count()
     new_leads_count = Lead.objects.filter(source='Enquire Now').count()
