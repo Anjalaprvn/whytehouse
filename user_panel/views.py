@@ -59,17 +59,42 @@ def enquire_now(request):
 def index(request):
     packages = TravelPackage.objects.filter(active=True, category='International')[:6]
     
-    # Get 4 featured packages for the gallery section
-    featured_packages = list(TravelPackage.objects.filter(active=True, category='International')[:4])
-    print(f"DEBUG: Featured packages count: {len(featured_packages)}")
-    for pkg in featured_packages:
-        print(f"  - {pkg.name} (ID: {pkg.id})")
-    
     # Get featured package for each destination (Vietnam=2, Malaysia=14, Thailand=8, Maldives=12)
     vietnam_package = TravelPackage.objects.filter(active=True, destination_id=2).first()
     malaysia_package = TravelPackage.objects.filter(active=True, destination_id=14).first()
     thailand_package = TravelPackage.objects.filter(active=True, destination_id=8).first()
     maldives_package = TravelPackage.objects.filter(active=True, destination_id=12).first()
+    
+    # Get IDs of packages already shown in destination sections
+    shown_package_ids = []
+    if vietnam_package:
+        shown_package_ids.append(vietnam_package.id)
+    if malaysia_package:
+        shown_package_ids.append(malaysia_package.id)
+    if thailand_package:
+        shown_package_ids.append(thailand_package.id)
+    if maldives_package:
+        shown_package_ids.append(maldives_package.id)
+    
+    # Get 4 featured packages for the gallery section, excluding already shown ones
+    featured_packages = list(TravelPackage.objects.filter(
+        active=True, 
+        category='International'
+    ).exclude(id__in=shown_package_ids)[:4])
+    
+    # If we don't have 4 unique packages, fill with any available packages
+    if len(featured_packages) < 4:
+        additional_packages = list(TravelPackage.objects.filter(
+            active=True, 
+            category='International'
+        )[:4])
+        featured_packages = additional_packages
+    
+    print(f"=== INDEX VIEW DEBUG ===")
+    print(f"Shown in destinations: {shown_package_ids}")
+    print(f"Featured packages count: {len(featured_packages)}")
+    for pkg in featured_packages:
+        print(f"  - {pkg.name} (ID: {pkg.id}, Image: {pkg.image})")
     
     # Get destinations
     vietnam_dest = Destination.objects.filter(id=2).first()
@@ -89,6 +114,9 @@ def index(request):
         'thailand_dest': thailand_dest,
         'maldives_dest': maldives_dest,
     }
+    
+    print(f"Context keys: {context.keys()}")
+    print(f"=== END DEBUG ===")
     
     return render(request, 'user/international.html', context)
 def domestic(request):
