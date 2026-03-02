@@ -29,6 +29,7 @@ class Lead(models.Model):
     source = models.CharField(max_length=50, choices=SOURCE_CHOICES, default='Manual')
     enquiry_type = models.CharField(max_length=50, choices=ENQUIRY_TYPE_CHOICES, default='General')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='New')
+    is_viewed = models.BooleanField(default=False)
     remarks = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

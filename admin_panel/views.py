@@ -144,7 +144,7 @@ def lead_management(request):
         leads = leads.filter(source=source_filter)
     
     if new_leads == 'true':
-        leads = leads.filter(source='Enquire Now')
+        leads = leads.filter(is_viewed=False)
     
     leads = leads.order_by('-created_at')
     
@@ -152,7 +152,7 @@ def lead_management(request):
     general_count = Inquiry.objects.count()
     international_count = Lead.objects.filter(enquiry_type='International').count()
     domestic_count = Lead.objects.filter(enquiry_type='Domestic').count()
-    new_leads_count = Lead.objects.filter(source='Enquire Now').count()
+    new_leads_count = Lead.objects.filter(is_viewed=False).count()
     
     context = {
         'leads': leads,
@@ -206,6 +206,10 @@ def delete_lead(request, lead_id):
 
 def view_lead(request, lead_id):
     lead = get_object_or_404(Lead, id=lead_id)
+    # Mark lead as viewed
+    if not lead.is_viewed:
+        lead.is_viewed = True
+        lead.save()
     return render(request, 'admin/lead/lead_view.html', {'lead': lead})
 
 # HOSPITALITY
