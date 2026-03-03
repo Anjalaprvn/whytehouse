@@ -95,3 +95,12 @@ blog_patterns = [
     path('blogs/delete/<int:blog_id>/', views.delete_blog, name='delete_blog'),
     path('blogs/view/<slug:slug>/', views.view_blog, name='view_blog'),
 ]
+
+# FEEDBACK URL PATTERNS
+feedback_patterns = [
+    path('', views.feedback_list, name='feedback_list'),
+    path('add/', views.add_feedback, name='add_feedback'),
+    path('<int:feedback_id>/', views.view_feedback, name='view_feedback'),
+    path('<int:feedback_id>/delete/', views.delete_feedback, name='delete_feedback'),
+    path('<int:feedback_id>/toggle-featured/', views.toggle_featured_feedback, name='toggle_featured_feedback'),
+]

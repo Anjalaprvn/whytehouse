@@ -13,7 +13,7 @@ from django.contrib import messages
 from datetime import datetime
 
 
-from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry, Destination
+from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry, Destination, Feedback
 from .models import Employee,Blog,BlogImage
 
 from openpyxl import Workbook
@@ -2283,3 +2283,94 @@ def delete_destination(request, destination_id):
     destination.delete()
     messages.success(request, "Destination deleted successfully!")
     return redirect('admin_panel:destinations')
+
+# FEEDBACK MANAGEMENT
+def feedback_list(request):
+    feedbacks = Feedback.objects.all().order_by('-created_at')
+    
+    # Search functionality
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        feedbacks = feedbacks.filter(
+            Q(name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(mobile_number__icontains=search_query)
+        )
+    
+    # Filter by rating
+    rating_filter = request.GET.get('rating', '')
+    if rating_filter:
+        feedbacks = feedbacks.filter(rating=rating_filter)
+    
+    # also compute count of featured testimonials for quick stat
+    featured_count = Feedback.objects.filter(featured=True).count()
+    context = {
+        'feedbacks': feedbacks,
+        'search_query': search_query,
+        'rating_filter': rating_filter,
+        'total_feedbacks': Feedback.objects.count(),
+        'featured_count': featured_count,
+    }
+    return render(request, 'admin/feedback/feedback.html', context)
+
+def add_feedback(request):
+    if request.method == 'POST':
+        try:
+            name = request.POST.get('name', '').strip()
+            email = request.POST.get('email', '').strip()
+            mobile_number = request.POST.get('mobile_number', '').strip()
+            rating = request.POST.get('rating', '')
+            feedback_text = request.POST.get('feedback', '').strip()
+            
+            if not all([name, email, mobile_number, rating, feedback_text]):
+                messages.error(request, "All fields are required.")
+                return render(request, 'admin/feedback/add_feedback.html')
+            
+            featured_flag = request.POST.get('featured') == '1'
+            Feedback.objects.create(
+                name=name,
+                email=email,
+                mobile_number=mobile_number,
+                rating=int(rating),
+                feedback=feedback_text,
+                featured=featured_flag
+            )
+            messages.success(request, "Feedback added successfully!")
+            return redirect('feedback:feedback_list')
+        except Exception as e:
+            messages.error(request, f"Error adding feedback: {str(e)}")
+            return render(request, 'admin/feedback/add_feedback.html')
+    
+    return render(request, 'admin/feedback/add_feedback.html')
+
+def view_feedback(request, feedback_id):
+    feedback = get_object_or_404(Feedback, id=feedback_id)
+    return render(request, 'admin/feedback/view_feedback.html', {'feedback': feedback})
+
+def delete_feedback(request, feedback_id):
+    if request.method != 'POST':
+        return redirect('feedback:feedback_list')
+    
+    feedback = get_object_or_404(Feedback, id=feedback_id)
+    feedback.delete()
+    messages.success(request, 'Feedback deleted successfully!')
+    return redirect('feedback:feedback_list')
+
+
+def toggle_featured_feedback(request, feedback_id):
+    """
+    Toggle the `featured` flag for a feedback entry. When marked, it appears
+    on the public homepage "Hear from them" card. Clicking again unmarks it.
+    """
+    if request.method != 'POST':
+        # for safety require POST; could also allow GET but keep pattern consistent
+        return redirect('feedback:feedback_list')
+
+    feedback = get_object_or_404(Feedback, id=feedback_id)
+    feedback.featured = not feedback.featured
+    feedback.save()
+    if feedback.featured:
+        messages.success(request, 'Feedback marked as featured.')
+    else:
+        messages.info(request, 'Feedback unmarked as featured.')
+    return redirect('feedback:feedback_list')

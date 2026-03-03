@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from admin_panel.urls import sales_patterns, employee_patterns, blog_patterns
+from admin_panel.urls import sales_patterns, employee_patterns, blog_patterns, feedback_patterns
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,6 +31,8 @@ urlpatterns = [
     path('employee/', include((employee_patterns, 'employee'))),
     # Blog URLs (Admin)
     path('admin-blog/', include((blog_patterns, 'blog'))),
+    # Feedback URLs (Admin)
+    path('feedback/', include((feedback_patterns, 'feedback'))),
 
     #API URLS
     path("api/", include("admin_panel.api_urls")),

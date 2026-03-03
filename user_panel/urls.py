@@ -15,4 +15,7 @@ urlpatterns = [
     path("blog/", views.blog_list, name="blog_list"),
     path("blog/<slug:slug>/", views.blog_detail, name="blog_detail"),
     path('enquire-now/', views.enquire_now, name='enquire_now'),
+    # user feedback form (simple page without sidebar)
+    path('feedback-form/', views.feedback_form, name='feedback_form'),
+    path('feedback_form/', views.feedback_form, name='feedback_form_alt'),  # support underscore variant
 ]

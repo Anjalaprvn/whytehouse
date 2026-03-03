@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Submit Feedback</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: Arial, sans-serif; background:#f7f7f7; padding:40px; }
+    .card { max-width:700px; margin:0 auto; background:white; padding:24px; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.08); }
+    h1{margin-bottom:8px}
+    p.lead{color:#666; margin-top:0}
+    .form-row{display:flex; gap:12px}
+    .form-row .col{flex:1}
+    label{display:block; font-weight:600; margin-bottom:6px}
+    input[type="text"], input[type="email"], input[type="tel"], select, textarea{width:100%; padding:10px; border:1px solid #ddd; border-radius:6px}
+    textarea{min-height:120px}
+    .actions{text-align:right; margin-top:16px}
+    .btn{background:#d4a017; color:#000; padding:10px 16px; border-radius:6px; border:none; font-weight:700; cursor:pointer}
+    .btn.secondary{background:#eee}
+    .alert { padding:14px; border-radius:6px; margin-bottom:16px; font-weight:500 }
+    .alert-success { background:#dcfce7; color:#166534; border:1px solid #86efac }
+    .alert-error { background:#fee2e2; color:#991b1b; border:1px solid #fca5a5 }
+    .form-section { display:none }
+    .form-section.show { display:block }
+  </style>
+</head>
+<body>
+  <div class="card">
+    {% if success %}
+    <div class="alert alert-success">
+      <i class="fas fa-check-circle"></i> Thank you! Your feedback has been submitted successfully.
+    </div>
+    <div style="text-align:center; margin-top:20px">
+      <a href="/" class="btn">Back to Home</a>
+    </div>
+    {% else %}
+    <h1>Share your feedback</h1>
+    <p class="lead">We'd love to hear from you — leave a quick review below.</p>
+
+    {% if error %}
+    <div class="alert alert-error">
+      <i class="fas fa-exclamation-circle"></i> {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'user_panel:feedback_form' %}">
+      {% csrf_token %}
+
+      <div class="form-row">
+        <div class="col">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" required value="{{ request.POST.name }}">
+        </div>
+        <div class="col">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required value="{{ request.POST.email }}">
+        </div>
+      </div>
+
+      <div style="margin-top:12px">
+        <label for="mobile_number">Mobile Number</label>
+        <input type="tel" id="mobile_number" name="mobile_number" maxlength="10" value="{{ request.POST.mobile_number }}">
+      </div>
+
+      <div style="margin-top:12px">
+        <label for="rating">Rating</label>
+        <select id="rating" name="rating" required>
+          <option value="">Select rating</option>
+          <option value="5">5 - Excellent</option>
+          <option value="4">4 - Very Good</option>
+          <option value="3">3 - Good</option>
+          <option value="2">2 - Fair</option>
+          <option value="1">1 - Poor</option>
+        </select>
+      </div>
+
+      <div style="margin-top:12px">
+        <label for="feedback">Feedback</label>
+        <textarea id="feedback" name="feedback" required>{{ request.POST.feedback }}</textarea>
+      </div>
+
+      <div class="actions">
+        <a href="/" class="btn secondary">Cancel</a>
+        <button type="submit" class="btn">Submit Feedback</button>
+      </div>
+    </form>
+    {% endif %}
+  </div>
+</body>
+</html>

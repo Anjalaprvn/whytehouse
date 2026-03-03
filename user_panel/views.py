@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.http import JsonResponse
 from admin_panel.models import TravelPackage, Property, Inquiry, Lead, Blog, Destination
+from admin_panel.models import Feedback
 
 
 def enquire_now(request):
@@ -77,6 +78,9 @@ def index(request):
     thailand_dest = Destination.objects.filter(id=8).first()
     maldives_dest = Destination.objects.filter(id=12).first()
     
+    # fetch testimonials that have been marked featured
+    featured_feedbacks = Feedback.objects.filter(featured=True).order_by('-created_at')[:6]
+    
     context = {
         'packages': packages,
         'featured_packages': featured_packages,
@@ -88,6 +92,7 @@ def index(request):
         'malaysia_dest': malaysia_dest,
         'thailand_dest': thailand_dest,
         'maldives_dest': maldives_dest,
+        'featured_feedbacks': featured_feedbacks,
     }
     
     return render(request, 'user/international.html', context)
@@ -492,3 +497,67 @@ def package_detail(request, slug):
 def hospitality(request):
     properties = Property.objects.all()
     return render(request, 'user/hospitality.html', {'properties': properties})
+
+def feedback_form_submit(request):
+    """
+    Handle user feedback form submission from user feedback template
+    """
+    if request.method == "POST":
+        try:
+            name = request.POST.get('name', '').strip()
+            email = request.POST.get('email', '').strip()
+            mobile_number = request.POST.get('mobile_number', '').strip()
+            rating = request.POST.get('rating', '')
+            feedback_text = request.POST.get('feedback', '').strip()
+            
+            if not all([name, email, mobile_number, rating, feedback_text]):
+                return JsonResponse({'success': False, 'error': 'All fields are required'})
+            
+            Feedback.objects.create(
+                name=name,
+                email=email,
+                mobile_number=mobile_number,
+                rating=int(rating),
+                feedback=feedback_text
+            )
+            
+            # after submission send admin to feedback management page for immediate review
+            return JsonResponse({'success': True, 'message': 'Thank you! Your feedback has been submitted successfully.', 'redirect': '/admin/feedback/'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+def feedback_page(request):
+    return render(request, 'user/feedback.html')
+
+
+def feedback_form(request):
+    """Render a simple feedback form (no sidebar). On POST, save and show
+    success message on the same page.
+    """
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        mobile_number = request.POST.get('mobile_number', '').strip()
+        rating = request.POST.get('rating', '')
+        feedback_text = request.POST.get('feedback', '').strip()
+
+        if not all([name, email, rating, feedback_text]):
+            return render(request, 'user/feedback_form.html', {'error': 'Please fill required fields.'})
+
+        Feedback.objects.create(
+            name=name,
+            email=email,
+            mobile_number=mobile_number,
+            rating=int(rating),
+            feedback=feedback_text
+        )
+        # show success message on the same page
+        return render(request, 'user/feedback_form.html', {'success': True})
+
+    return render(request, 'user/feedback_form.html')
+
+
+

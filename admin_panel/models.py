@@ -470,3 +470,24 @@ class BlogImage(models.Model):
     def tag(self):
         """Returns the tag to use in content, e.g., {{image1}}"""
         return f"{{{{image{self.order + 1}}}}}"
+class Feedback(models.Model):
+    RATING_CHOICES = [
+        (1, "1 Star"),
+        (2, "2 Stars"),
+        (3, "3 Stars"),
+        (4, "4 Stars"),
+        (5, "5 Stars"),
+    ]
+
+    name = models.CharField(max_length=150)
+    email = models.EmailField()
+    mobile_number = models.CharField(max_length=10)
+    rating = models.IntegerField(choices=RATING_CHOICES)
+    feedback = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # whether this feedback is marked to appear on the homepage
+    featured = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.name} - {self.rating}⭐"
