@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.core.paginator import Paginator
@@ -29,43 +29,63 @@ def home(request):
 
 def login(request):
     if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
+        email = request.POST.get("email", "").strip().lower()
+        password = request.POST.get("password", "")
 
-        user = authenticate(username=username, password=password)
-        
-        if user is not None and user.email:
+        user = User.objects.filter(email__iexact=email).first()
+
+        if user and password and user.check_password(password):
+
+            # Generate OTP
             otp = random.randint(100000, 999999)
-            request.session['admin_otp'] = otp
-            request.session['admin_username'] = username
 
+            # Store in session
+            request.session["admin_otp"] = str(otp)
+            request.session["admin_user_id"] = user.id
+
+            # Send OTP email
             send_mail(
-                subject="Admin Login OTP for safe and secure login",
-                message=f"Your OTP is {otp}",
+                subject="Admin Login OTP",
+                message=f"Your OTP for login is: {otp}",
                 from_email="whytehousee@gmail.com",
                 recipient_list=[user.email],
+                fail_silently=False,
             )
-            return redirect('admin_panel:verify_otp')
+
+            messages.success(request, "OTP sent to your registered email.")
+            return redirect("admin_panel:verify_otp")
+
         else:
-            context = {'error': 'Invalid credentials or email not configured'}
-            return render(request, "admin/login.html", context)
+            return render(request, "admin/login.html", {
+                "error": "Invalid email or password"
+            })
 
     return render(request, "admin/login.html")
 
 def verify_otp(request):
     if request.method == "POST":
-        user_otp = request.POST.get("otp", "")
-        real_otp = str(request.session.get("admin_otp", ""))
+        entered_otp = request.POST.get("otp", "")
+        session_otp = request.session.get("admin_otp")
+        user_id = request.session.get("admin_user_id")
 
-        if user_otp == real_otp:
-            request.session['admin_logged_in'] = True
-            return redirect('dashboard')
+        if entered_otp == session_otp and user_id:
+            user = User.objects.get(id=user_id)
+
+            # Login user officially
+            auth_login(request, user)
+
+            # Clear OTP session
+            request.session.pop("admin_otp", None)
+            request.session.pop("admin_user_id", None)
+
+            return redirect("admin_panel:dashboard")
+
         else:
-            context = {'error': 'Invalid OTP. Please try again.'}
-            return render(request, "admin/verify_otp.html", context)
+            return render(request, "admin/verify_otp.html", {
+                "error": "Invalid OTP. Please try again."
+            })
 
     return render(request, "admin/verify_otp.html")
-
 def resend_otp(request):
    
     username = request.session.get('admin_username')

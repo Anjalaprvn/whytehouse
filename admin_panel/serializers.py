@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from .models import (
     Blog,
     Lead,
@@ -13,6 +14,7 @@ from .models import (
     Resort,
     Voucher,
     Invoice,
+    Feedback,
 )
 
 
@@ -439,3 +441,17 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "account_name",
             "sales_person_name",
         ]
+class FeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feedback
+        fields = [
+            "id",
+            "name",
+            "email",
+            "mobile_number",
+            "rating",
+            "feedback",
+            "featured",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]

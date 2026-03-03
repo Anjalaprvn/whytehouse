@@ -1,5 +1,5 @@
 from django.db.models import Q, Sum
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import (
@@ -15,7 +15,7 @@ from .models import (
     Employee,
     Resort,
     Voucher,
-    Invoice,
+    Invoice,Feedback,
 )
 from .serializers import (
     BlogSerializer,
@@ -32,8 +32,8 @@ from .serializers import (
     ResortSerializer,
     VoucherSerializer,
     InvoiceSerializer,
+    FeedbackSerializer,
 )
-
 
 # ==================== BLOG VIEWSET ====================
 class BlogViewSet(viewsets.ModelViewSet):
@@ -668,4 +668,23 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         """Get invoices with pending amount"""
         invoices = self.get_queryset().filter(pending__gt=0)
         serializer = self.get_serializer(invoices, many=True)
+        return Response(serializer.data)
+
+
+
+
+class FeedbackViewSet(viewsets.ModelViewSet):
+    serializer_class = FeedbackSerializer
+    queryset = Feedback.objects.all().order_by("-created_at")
+
+    # Public can submit feedback; editing/deleting should be admin-only.
+    def get_permissions(self):
+        if self.action in ["create", "list", "retrieve", "featured"]:
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
+
+    @action(detail=False, methods=["get"], url_path="featured", permission_classes=[permissions.AllowAny])
+    def featured(self, request):
+        qs = Feedback.objects.filter(featured=True).order_by("-created_at")
+        serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)

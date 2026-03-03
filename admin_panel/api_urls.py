@@ -13,6 +13,7 @@ from .api_views import (
     ResortViewSet,
     VoucherViewSet,
     InvoiceViewSet,
+    FeedbackViewSet,
 )
 
 router = DefaultRouter()
@@ -37,5 +38,8 @@ router.register(r"resorts", ResortViewSet, basename="resorts")
 router.register(r"meals", MealViewSet, basename="meals")
 router.register(r"accounts", AccountViewSet, basename="accounts")
 router.register(r"employees", EmployeeViewSet, basename="employees")
+
+# Feedback API
+router.register(r"feedback", FeedbackViewSet, basename="feedback")
 
 urlpatterns = router.urls

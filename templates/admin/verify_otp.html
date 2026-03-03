@@ -123,6 +123,15 @@
             font-size: 13px;
             border: 1px solid #fcc;
         }
+        .success-message {
+            background-color: #e6ffed;
+            color: #256029;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            border: 1px solid #6fd67a;
+        }
 
     </style>
 </head>
@@ -133,6 +142,13 @@
         <h2>Verify OTP</h2>
         <p class="subtitle">Enter the 6-digit code sent to your email / mobile</p>
 
+        {% if messages %}
+        <div class="message-container">
+            {% for message in messages %}
+            <div class="{% if message.tags %}{{ message.tags }}{% endif %}-message">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
         {% if error %}
         <div class="error-message">{{ error }}</div>
         {% endif %}
@@ -148,7 +164,7 @@
         </form>
 
         <div class="resend">
-            Didn’t receive the code? <a href="{% url 'resend_otp' %}">Resend OTP</a>
+            Didn't receive the code? <a href="{% url 'admin_panel:resend_otp' %}">Resend OTP</a>
         </div>
     </div>
 
