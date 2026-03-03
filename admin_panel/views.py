@@ -114,6 +114,10 @@ def forgot_password(request):
     return render(request, 'admin/forgotpassword.html')
 
 def dashboard(request):
+    # Redirect to login if user is not authenticated
+    if not request.user.is_authenticated:
+        return redirect('admin_panel:login')
+    
     from django.db.models import Sum, Count
     from datetime import datetime, timedelta
     
@@ -144,6 +148,12 @@ def dashboard(request):
         'recent_leads': recent_leads,
     }
     return render(request, 'admin/index.html', context)
+
+def logout_view(request):
+    from django.contrib.auth import logout
+    logout(request)
+    messages.success(request, 'You have been logged out successfully.')
+    return redirect('admin_panel:login')
 
 # LEADS
 def lead_management(request):
