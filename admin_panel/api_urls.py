@@ -1,6 +1,7 @@
 from rest_framework.routers import DefaultRouter
 from .api_views import (
     BlogViewSet,
+    BlogCategoryViewSet,
     LeadViewSet,
     PropertyViewSet,
     TravelPackageViewSet,
@@ -20,6 +21,7 @@ router = DefaultRouter()
 
 # Core APIs
 router.register(r"blogs", BlogViewSet, basename="blogs")
+router.register(r"blog-categories", BlogCategoryViewSet, basename="blog-categories")
 router.register(r"leads", LeadViewSet, basename="leads")
 router.register(r"properties", PropertyViewSet, basename="properties")
 router.register(r"inquiries", InquiryViewSet, basename="inquiries")

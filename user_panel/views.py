@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.http import JsonResponse
 from admin_panel.models import TravelPackage, Property, Inquiry, Lead, Blog, Destination
-from admin_panel.models import Feedback
+from admin_panel.models import Feedback,BlogCategory
 
 
 def enquire_now(request):
@@ -156,6 +156,8 @@ from django.shortcuts import render, get_object_or_404
 from admin_panel.models import Blog
 
 def blog_list(request):
+    from admin_panel.models import BlogCategory
+    
     q = request.GET.get("q", "").strip()
     category = request.GET.get("category", "").strip()
     
@@ -171,12 +173,9 @@ def blog_list(request):
         raw = getattr(b, "tags", "") or getattr(b, "hashtags", "") or getattr(b, "hashtag", "") or ""
         b.tag_list = [t.strip() for t in str(raw).split(",") if t.strip()]
     
-    # Get category counts
-    from django.db.models import Count
     all_count = Blog.objects.filter(status="published").count()
-    category_counts = {}
-    for cat_code, cat_name in Blog.CATEGORY_CHOICES:
-        category_counts[cat_code] = Blog.objects.filter(status="published", category=cat_code).count()
+    categories = [(cat.slug, cat.name) for cat in BlogCategory.objects.filter(is_active=True).order_by('order', 'name')]
+    category_counts = {cat[0]: Blog.objects.filter(status="published", category=cat[0]).count() for cat in categories}
 
     return render(request, "user/blog.html", {
         "blogs": blogs, 
@@ -184,7 +183,7 @@ def blog_list(request):
         "selected_category": category,
         "all_count": all_count,
         "category_counts": category_counts,
-        "categories": Blog.CATEGORY_CHOICES
+        "categories": categories
     })
 
 

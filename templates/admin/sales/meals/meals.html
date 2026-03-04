@@ -40,13 +40,23 @@ tbody tr:last-child td{border-bottom:none}
       <div class="card-head">
         <h3>Meal Plans</h3>
 
-        <a href="{% url 'sales:add_meal' %}" class="btn-add">
+        <div class="tools">
+          <form method="GET" class="search" id="searchForm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input type="text" name="search" placeholder="Search meals..." value="{{ search_query }}" id="searchInput">
+          </form>
+
+          <a href="{% url 'sales:add_meal' %}" class="btn-add">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M12 5V19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
             <path d="M5 12H19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
           </svg>
           Add Meal Plan
         </a>
+        </div>
       </div>
 
       <div class="table-wrap">
@@ -106,4 +116,17 @@ tbody tr:last-child td{border-bottom:none}
         </table>
       </div>
     </section>
+
+<script>
+let timeout;
+const input = document.getElementById('searchInput');
+const form = document.getElementById('searchForm');
+
+input.addEventListener('input', function() {
+  clearTimeout(timeout);
+  timeout = setTimeout(() => {
+    form.submit();
+  }, 500);
+});
+</script>
 {% endblock %}

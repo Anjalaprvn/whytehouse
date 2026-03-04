@@ -48,7 +48,7 @@ tbody tr:last-child td{border-bottom:none}
             </svg>
             <input type="text" placeholder="Search blogs..." />
           </div>
-
+          
           <a href="{% url 'blog:add_blog' %}" class="btn-add">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M12 5V19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
@@ -56,6 +56,14 @@ tbody tr:last-child td{border-bottom:none}
             </svg>
             Add Blog
           </a>
+          <a href="{% url 'blog:add_category' %}" class="btn-add">
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M12 5V19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M5 12H19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
+    </svg>
+    Add Category
+  </a>
+          
         </div>
       </div>
 

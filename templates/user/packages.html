@@ -208,7 +208,11 @@
     <div class="package-card">
         <a href="{% url 'user_panel:package_detail' package.id %}">                
             <div class="card-img-box">
-                <img src="{{ package.image.url }}" alt="{{ package.name }}">
+                {% if package.image %}
+                    <img src="{{ package.image.url }}" alt="{{ package.name }}">
+                {% else %}
+                    <img src="{% static 'images/placeholder.png' %}" alt="{{ package.name }}">
+                {% endif %}
                 <div class="badge-wrap">
                     <span class="badge badge-dom">{{ package.category }}</span>
                     <span class="badge badge-feat">Featured</span>

@@ -98,6 +98,8 @@ blog_patterns = [
     path('blogs/edit/<int:blog_id>/', views.edit_blog, name='edit_blog'),
     path('blogs/delete/<int:blog_id>/', views.delete_blog, name='delete_blog'),
     path('blogs/view/<slug:slug>/', views.view_blog, name='view_blog'),
+    path("blogs/category/add/", views.add_category, name="add_category"),
+    path("blogs/category/delete/<int:category_id>/", views.delete_category, name="delete_category"),
 ]
 
 # FEEDBACK URL PATTERNS

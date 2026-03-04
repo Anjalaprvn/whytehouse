@@ -342,14 +342,7 @@
               
             </select>
           </div>
-
-          <div class="field">
-            <div class="label">Category</div>
-            <input type="text" name="category" placeholder="e.g., Destinations, Travel Tips, Adventure" value="{% if blog %}{{ blog.category }}{% endif %}">
-          </div>
-        </div>
-
-        <div class="row-2">
+           <div class="row-2">
           <div class="field">
             <div class="label">Link to Package (Optional)</div>
             <input type="text" name="package_id" placeholder="Package ID" value="{% if blog %}{{ blog.package_id }}{% endif %}">
@@ -357,6 +350,18 @@
         </div>
       </div>
 
+          <br>
+          <div class="field">
+           <label for="category">Category</label>
+        <select id="category" name="category" required
+        style="width:50%;padding:10px;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;background:#f9fafb;">
+       <option value="">Select Category</option>
+         {% for c in categories %}
+     <option value="{{ c.slug }}">{{ c.name }}</option>
+  {% endfor %}
+</select>
+
+       
       <!-- AUTHOR & META INFORMATION -->
       <div class="card">
         <h2>Author &amp; Meta Information</h2>
@@ -643,6 +648,61 @@ window.addEventListener('DOMContentLoaded', function() {
     if (existingHashtags) {
         hashtags = existingHashtags.split(',').map(tag => tag.trim()).filter(tag => tag);
         updateHashtagsDisplay();
+    }
+    
+    // Initialize categories
+    const categoryInput = document.getElementById('category-input');
+    if (categoryInput.value) {
+        categories = categoryInput.value.split(',').map(c => c.trim()).filter(c => c);
+        updateCategoriesDisplay();
+    }
+});
+
+// Category functionality
+let categories = [];
+
+function addCategory() {
+    const input = document.getElementById('category-input');
+    const cat = input.value.trim();
+    
+    if (cat && !categories.includes(cat)) {
+        categories.push(cat);
+        updateCategoriesDisplay();
+        updateCategoryInput();
+    }
+}
+
+function removeCategory(index) {
+    categories.splice(index, 1);
+    updateCategoriesDisplay();
+    updateCategoryInput();
+}
+
+function updateCategoriesDisplay() {
+    const container = document.getElementById('categories-display');
+    container.innerHTML = '';
+    
+    categories.forEach((cat, index) => {
+        const catElement = document.createElement('div');
+        catElement.className = 'tag-display';
+        catElement.innerHTML = `
+            <span>${cat}</span>
+            <button type="button" onclick="removeCategory(${index})" class="remove-tag-btn">✕</button>
+        `;
+        container.appendChild(catElement);
+    });
+}
+
+function updateCategoryInput() {
+    const input = document.getElementById('category-input');
+    input.value = categories.join(', ');
+}
+
+// Add category on input blur
+document.getElementById('category-input').addEventListener('blur', function() {
+    const val = this.value.trim();
+    if (val && !categories.includes(val)) {
+        addCategory();
     }
 });
 {% endverbatim %}

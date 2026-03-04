@@ -2,6 +2,8 @@ from rest_framework import serializers
 
 from .models import (
     Blog,
+    BlogCategory,
+    BlogImage,
     Lead,
     Property,
     TravelPackage,
@@ -18,9 +20,49 @@ from .models import (
 )
 
 
+# ==================== BLOG CATEGORY SERIALIZER ====================
+class BlogCategorySerializer(serializers.ModelSerializer):
+    blog_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BlogCategory
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "order",
+            "is_active",
+            "created_at",
+            "blog_count",
+        ]
+        read_only_fields = ["id", "created_at", "blog_count"]
+
+    def get_blog_count(self, obj):
+        return Blog.objects.filter(status="published", category=obj.slug).count()
+
+
+# ==================== BLOG IMAGE SERIALIZER ====================
+class BlogImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BlogImage
+        fields = ["id", "image", "image_url", "order", "tag"]
+        read_only_fields = ["id", "image_url", "tag"]
+
+    def get_image_url(self, obj):
+        request = self.context.get("request")
+        if obj.image and request:
+            return request.build_absolute_uri(obj.image.url)
+        return None
+
+
 # ==================== BLOG SERIALIZER ====================
 class BlogSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField(read_only=True)
+    content_images = BlogImageSerializer(many=True, read_only=True)
+    category_name = serializers.SerializerMethodField()
+    tag_list = serializers.SerializerMethodField()
 
     class Meta:
         model = Blog
@@ -31,6 +73,8 @@ class BlogSerializer(serializers.ModelSerializer):
             "excerpt",
             "content",
             "status",
+            "category",
+            "category_name",
             "package_id",
             "author_name",
             "author_summary",
@@ -38,16 +82,61 @@ class BlogSerializer(serializers.ModelSerializer):
             "publish_date",
             "featured_image",
             "featured_image_url",
+            "image_url",
             "hashtags",
             "tags",
+            "tag_list",
+            "content_images",
             "created_at",
             "updated_at",
-            "image_url",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "image_url"]
+        read_only_fields = ["id", "created_at", "updated_at", "image_url", "category_name", "tag_list", "content_images"]
 
     def get_image_url(self, obj):
         return obj.image_url
+
+    def get_category_name(self, obj):
+        if obj.category:
+            cat = BlogCategory.objects.filter(slug=obj.category).first()
+            return cat.name if cat else obj.category
+        return None
+
+    def get_tag_list(self, obj):
+        raw = obj.tags or obj.hashtags or ""
+        return [t.strip() for t in str(raw).split(",") if t.strip()]
+
+
+class BlogListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for blog list views"""
+    image_url = serializers.SerializerMethodField()
+    category_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Blog
+        fields = [
+            "id",
+            "title",
+            "slug",
+            "excerpt",
+            "status",
+            "category",
+            "category_name",
+            "author_name",
+            "reading_time",
+            "publish_date",
+            "image_url",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at", "image_url", "category_name"]
+
+    def get_image_url(self, obj):
+        return obj.image_url
+
+    def get_category_name(self, obj):
+        if obj.category:
+            cat = BlogCategory.objects.filter(slug=obj.category).first()
+            return cat.name if cat else obj.category
+        return None
 
 
 # ==================== LEAD SERIALIZER ====================

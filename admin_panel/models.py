@@ -3,6 +3,26 @@ from datetime import time
 from django.utils import timezone
 from django.utils.text import slugify
 
+# BLOG CATEGORY MODEL
+class BlogCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, blank=True)
+    order = models.IntegerField(default=0, help_text="Display order (lower numbers appear first)")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    
+    class Meta:
+        ordering = ['order', 'name']
+        verbose_name_plural = 'Blog Categories'
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return self.name
+
 # LEAD MODEL
 class Lead(models.Model):
     SOURCE_CHOICES = (
@@ -396,18 +416,7 @@ class Blog(models.Model):
     STATUS_CHOICES = [
         ('draft', 'Draft'),
         ('published', 'Published'),
-    ]
-    
-    CATEGORY_CHOICES = [
-        ('destinations', 'Destinations'),
-        ('travel_tips', 'Travel Tips'),
-        ('food_culture', 'Food & Culture'),
-        ('packages', 'Packages & Deals'),
-        ('honeymoon', 'Honeymoon'),
-        ('family_travel', 'Family Travel'),
-        ('adventure', 'Adventure'),
-        ('travel_stories', 'Travel Stories'),
-        ('other', 'Other'),
+        ('scheduled', 'Scheduled'),
     ]
     
     # Matches your add_blog.html form EXACTLY
@@ -416,7 +425,7 @@ class Blog(models.Model):
     excerpt = models.TextField(max_length=500)
     content = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='other')
+    category = models.CharField(max_length=100, blank=True, null=True)
     package_id = models.CharField(max_length=50, blank=True, null=True)
     
     # Author fields
@@ -470,6 +479,7 @@ class BlogImage(models.Model):
     def tag(self):
         """Returns the tag to use in content, e.g., {{image1}}"""
         return f"{{{{image{self.order + 1}}}}}"
+
 class Feedback(models.Model):
     RATING_CHOICES = [
         (1, "1 Star"),

@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import (
     Blog,
+    BlogCategory,
     Lead,
     Property,
     TravelPackage,
@@ -19,6 +20,8 @@ from .models import (
 )
 from .serializers import (
     BlogSerializer,
+    BlogListSerializer,
+    BlogCategorySerializer,
     LeadSerializer,
     PropertySerializer,
     TravelPackageSerializer,
@@ -35,14 +38,61 @@ from .serializers import (
     FeedbackSerializer,
 )
 
+# ==================== BLOG CATEGORY VIEWSET ====================
+class BlogCategoryViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for Blog Categories
+    Filters: is_active, search
+    """
+    serializer_class = BlogCategorySerializer
+    queryset = BlogCategory.objects.all().order_by('order', 'name')
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        is_active = (self.request.query_params.get("is_active") or "").strip().lower()
+        if is_active == "true":
+            qs = qs.filter(is_active=True)
+        elif is_active == "false":
+            qs = qs.filter(is_active=False)
+
+        search_query = (self.request.query_params.get("search") or "").strip()
+        if search_query:
+            qs = qs.filter(
+                Q(name__icontains=search_query) |
+                Q(slug__icontains=search_query)
+            )
+
+        return qs
+
+    @action(detail=False, methods=["get"])
+    def active(self, request):
+        """Get all active categories"""
+        categories = self.get_queryset().filter(is_active=True)
+        serializer = self.get_serializer(categories, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["get"])
+    def blogs(self, request, pk=None):
+        """Get all blogs for a specific category"""
+        category = self.get_object()
+        blogs = Blog.objects.filter(status="published", category=category.slug).order_by("-publish_date")
+        serializer = BlogListSerializer(blogs, many=True, context={"request": request})
+        return Response(serializer.data)
+
+
 # ==================== BLOG VIEWSET ====================
 class BlogViewSet(viewsets.ModelViewSet):
     """
     API endpoint for Blogs
-    Filters: search, status
+    Filters: search, status, category
     """
-    serializer_class = BlogSerializer
     queryset = Blog.objects.all().order_by("-created_at")
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return BlogListSerializer
+        return BlogSerializer
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -53,12 +103,16 @@ class BlogViewSet(viewsets.ModelViewSet):
                 Q(title__icontains=search_query) |
                 Q(author_name__icontains=search_query) |
                 Q(slug__icontains=search_query) |
-                Q(status__icontains=search_query)
+                Q(content__icontains=search_query)
             )
 
         status_filter = (self.request.query_params.get("status") or "").strip()
         if status_filter:
             qs = qs.filter(status=status_filter)
+
+        category_filter = (self.request.query_params.get("category") or "").strip()
+        if category_filter:
+            qs = qs.filter(category=category_filter)
 
         return qs
 
@@ -84,6 +138,23 @@ class BlogViewSet(viewsets.ModelViewSet):
             "draft_count": qs.filter(status="draft").count(),
             "total": qs.count(),
         })
+
+    @action(detail=False, methods=["get"])
+    def published(self, request):
+        """Get all published blogs"""
+        blogs = self.get_queryset().filter(status="published").order_by("-publish_date")
+        serializer = self.get_serializer(blogs, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def by_category(self, request):
+        """Get blogs grouped by category"""
+        categories = BlogCategory.objects.filter(is_active=True).order_by('order', 'name')
+        result = {}
+        for cat in categories:
+            blogs = Blog.objects.filter(status="published", category=cat.slug).order_by("-publish_date")[:6]
+            result[cat.slug] = BlogListSerializer(blogs, many=True, context={"request": request}).data
+        return Response(result)
 
 
 # ==================== LEAD VIEWSET ====================

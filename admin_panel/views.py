@@ -11,6 +11,7 @@ import random
 from django.core.mail import send_mail
 from django.contrib import messages
 from datetime import datetime
+from .models import BlogCategory
 
 
 from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry, Destination, Feedback
@@ -1673,6 +1674,8 @@ def blog_list(request):
 
 
 def add_blog(request):
+    categories = BlogCategory.objects.all().order_by("name")
+
     if request.method == "POST":
         try:
             title = (request.POST.get("title") or "").strip()
@@ -1684,79 +1687,70 @@ def add_blog(request):
             reading_time = request.POST.get("reading_time")
             publish_date = request.POST.get("publish_date")
 
-            # validation for required fields
             if not title or not slug or not excerpt or not content or not author_name or not author_summary or not reading_time or not publish_date:
                 messages.error(request, "Please fill in all required fields.")
-                return render(request, "admin/blog/add_blog.html")
-            
-            # Validate slug format (alphanumeric and hyphens only)
+                return render(request, "admin/blog/add_blog.html", {"categories": categories})
+
             import re
             if not re.match(r'^[a-z0-9-]+$', slug):
                 messages.error(request, "Slug must contain only lowercase letters, numbers, and hyphens.")
-                return render(request, "admin/blog/add_blog.html")
-            
-            # Check for duplicate slug
+                return render(request, "admin/blog/add_blog.html", {"categories": categories})
+
             if Blog.objects.filter(slug=slug).exists():
                 messages.error(request, "A blog with this slug already exists.")
-                return render(request, "admin/blog/add_blog.html")
-            
-            # Validate reading time
+                return render(request, "admin/blog/add_blog.html", {"categories": categories})
+
             try:
                 reading_time_val = int(reading_time)
                 if reading_time_val < 1 or reading_time_val > 120:
                     messages.error(request, "Reading time must be between 1 and 120 minutes.")
-                    return render(request, "admin/blog/add_blog.html")
+                    return render(request, "admin/blog/add_blog.html", {"categories": categories})
             except ValueError:
                 messages.error(request, "Invalid reading time format.")
-                return render(request, "admin/blog/add_blog.html")
-            
-            # Validate excerpt length
+                return render(request, "admin/blog/add_blog.html", {"categories": categories})
+
             if len(excerpt) < 50 or len(excerpt) > 300:
                 messages.error(request, "Excerpt must be between 50 and 300 characters.")
-                return render(request, "admin/blog/add_blog.html")
+                return render(request, "admin/blog/add_blog.html", {"categories": categories})
 
             hashtags_value = (request.POST.get("hashtags") or "").strip()
-            
+            category_slug = request.POST.get("category", "")
+
             blog = Blog.objects.create(
                 title=title,
                 slug=slug,
                 excerpt=excerpt,
                 content=content,
                 status=request.POST.get("status", "draft"),
-                category=request.POST.get("category", "other"),
+                category=category_slug,
                 package_id=(request.POST.get("package_id") or "").strip() or None,
-
                 author_name=author_name,
                 author_summary=author_summary,
-                reading_time=int(reading_time or 1),
+                reading_time=reading_time_val,
                 publish_date=publish_date,
-                tags=hashtags_value,  # Save to both fields for compatibility
+                tags=hashtags_value,
             )
 
             if request.FILES.get("featured_image"):
                 blog.featured_image = request.FILES["featured_image"]
                 blog.save()
 
-            # Handle content images
             content_images = request.FILES.getlist("content_images")
             for idx, image_file in enumerate(content_images):
-                BlogImage.objects.create(
-                    blog=blog,
-                    image=image_file,
-                    order=idx
-                )
+                BlogImage.objects.create(blog=blog, image=image_file, order=idx)
 
             messages.success(request, "Blog created successfully!")
             return redirect("blog:blog_list")
 
         except Exception as e:
             messages.error(request, f"Error creating blog: {str(e)}")
+            return render(request, "admin/blog/add_blog.html", {"categories": categories})
 
-    return render(request, "admin/blog/add_blog.html")
-
+    return render(request, "admin/blog/add_blog.html", {"categories": categories})
 
 def edit_blog(request, blog_id):
     blog = get_object_or_404(Blog, id=blog_id)
+    categories = BlogCategory.objects.filter(is_active=True).order_by('order', 'name')
 
     if request.method == "POST":
         try:
@@ -1771,16 +1765,19 @@ def edit_blog(request, blog_id):
 
             if not title or not slug or not excerpt or not content or not author_name or not author_summary or not reading_time or not publish_date:
                 messages.error(request, "Please fill in all required fields.")
-                return render(request, "admin/blog/edit_blog.html", {"blog": blog})
+                return render(request, "admin/blog/edit_blog.html", {"blog": blog, "categories": categories})
 
             hashtags_value = (request.POST.get("hashtags") or "").strip()
+            
+            # Get category slug from dropdown
+            category_slug = request.POST.get("category", "")
             
             blog.title = title
             blog.slug = slug
             blog.excerpt = excerpt
             blog.content = content
             blog.status = request.POST.get("status", "draft")
-            blog.category = request.POST.get("category", "other")
+            blog.category = category_slug
             blog.package_id = (request.POST.get("package_id") or "").strip() or None
 
             blog.author_name = author_name
@@ -1827,7 +1824,7 @@ def edit_blog(request, blog_id):
         except Exception as e:
             messages.error(request, f"Error updating blog: {str(e)}")
 
-    return render(request, "admin/blog/edit_blog.html", {"blog": blog})
+    return render(request, "admin/blog/edit_blog.html", {"blog": blog, "categories": categories})
 
 
 def view_blog(request, slug):
@@ -1962,7 +1959,41 @@ def delete_blog(request, blog_id):
     blog.delete()
     messages.success(request, f"Blog '{title}' deleted successfully!")
     return redirect("blog:blog_list")
-# REPORT GENERATION VIEWS-----------------------------------------------------------
+
+
+def add_category(request):
+    if request.method == "POST":
+        name = (request.POST.get("name") or "").strip()
+        if not name:
+            messages.error(request, "Category name is required.")
+            return redirect("blog:add_category")
+
+        slug = slugify(name)
+
+        # ensure unique slug
+        base_slug = slug
+        i = 1
+        while BlogCategory.objects.filter(slug=slug).exists():
+            slug = f"{base_slug}-{i}"
+            i += 1
+
+        BlogCategory.objects.create(name=name, slug=slug)
+        messages.success(request, f"Category '{name}' added successfully!")
+        
+        return redirect("blog:add_category")
+
+    categories = BlogCategory.objects.all().order_by("name")
+    return render(request, "admin/blog/manage_categories.html", {"categories": categories})
+
+def delete_category(request, category_id):
+    try:
+        category = get_object_or_404(BlogCategory, id=category_id)
+        category_name = category.name
+        category.delete()
+        messages.success(request, f"Category '{category_name}' deleted successfully.")
+    except:
+        messages.warning(request, "Category not found or already deleted.")
+    return redirect("blog:add_category")
 
 def customer_report(request):
     customers = Customer.objects.all().order_by("-created_at")

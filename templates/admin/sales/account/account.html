@@ -26,6 +26,9 @@ tbody tr.strip td{background:#fef9e7}
 .icon-btn{width:36px;height:36px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;display:grid;place-items:center;cursor:pointer;text-decoration:none;border:none}
 .icon-btn svg{width:16px;height:16px}
 .icon-btn.delete svg{stroke:#ef4444}
+.search-box{display:flex;gap:10px;margin-bottom:20px}
+.search-box input{flex:1;padding:10px 14px;border:1px solid #e5e7eb;border-radius:10px;font-size:14px}
+.search-box button{background:#d4a017;color:#000;border:none;border-radius:10px;padding:10px 20px;font-weight:600;cursor:pointer}
 </style>
 {% endblock %}
 
@@ -44,6 +47,11 @@ tbody tr.strip td{background:#fef9e7}
           Add Bank Account
         </a>
       </div>
+
+      <form method="GET" class="search-box" id="searchForm">
+        <input type="text" name="search" placeholder="Search by account name, number, bank, or IFSC..." value="{{ search_query }}" id="searchInput">
+        <button type="submit">Search</button>
+      </form>
 
       <div class="table-wrap">
         <div class="scroll">
@@ -115,4 +123,17 @@ tbody tr.strip td{background:#fef9e7}
         </div>
       </div>
     </section>
+
+<script>
+let timeout;
+const input = document.getElementById('searchInput');
+const form = document.getElementById('searchForm');
+
+input.addEventListener('input', function() {
+  clearTimeout(timeout);
+  timeout = setTimeout(() => {
+    form.submit();
+  }, 500);
+});
+</script>
 {% endblock %}
