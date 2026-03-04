@@ -235,19 +235,21 @@
             <h3>Feedback List</h3>
 
             <div class="search-add-group">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search feedbacks..." id="searchInput" onkeyup="filterTable()">
-                </div>
+                <form method="GET" action="{% url 'feedback:feedback_list' %}" style="margin: 0; display: flex; gap: 15px; align-items: center;" id="filterForm">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="search" placeholder="Search feedbacks..." value="{{ search_query }}" id="searchInput">
+                    </div>
 
-                <select class="filter-select" id="ratingFilter" onchange="filterByRating()">
-                    <option value="">All Ratings</option>
-                    <option value="5">5 Stars</option>
-                    <option value="4">4 Stars</option>
-                    <option value="3">3 Stars</option>
-                    <option value="2">2 Stars</option>
-                    <option value="1">1 Star</option>
-                </select>
+                    <select class="filter-select" name="rating" id="ratingFilter" onchange="this.form.submit()">
+                        <option value="">All Ratings</option>
+                        <option value="5" {% if rating_filter == '5' %}selected{% endif %}>5 Stars</option>
+                        <option value="4" {% if rating_filter == '4' %}selected{% endif %}>4 Stars</option>
+                        <option value="3" {% if rating_filter == '3' %}selected{% endif %}>3 Stars</option>
+                        <option value="2" {% if rating_filter == '2' %}selected{% endif %}>2 Stars</option>
+                        <option value="1" {% if rating_filter == '1' %}selected{% endif %}>1 Star</option>
+                    </select>
+                </form>
 
                 <a href="{% url 'feedback:add_feedback' %}" class="btn-add">
                     <i class="fas fa-plus"></i> Add Feedback
@@ -320,44 +322,13 @@
 </div>
 
 <script>
-    function filterTable() {
-        const input = document.getElementById("searchInput");
-        const filter = input.value.toLowerCase();
-        const table = document.querySelector(".feedback-table");
-        const rows = table.getElementsByTagName("tr");
-
-        for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            const name = row.cells[1].textContent;
-            const email = row.cells[2].textContent;
-            const mobile = row.cells[3].textContent;
-
-            if (name.toLowerCase().indexOf(filter) > -1 || 
-                email.toLowerCase().indexOf(filter) > -1 ||
-                mobile.toLowerCase().indexOf(filter) > -1) {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
-        }
-    }
-
-    function filterByRating() {
-        const ratingFilter = document.getElementById("ratingFilter").value;
-        const table = document.querySelector(".feedback-table");
-        const rows = table.getElementsByTagName("tr");
-
-        for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            const rating = row.cells[4].textContent.trim().split(' ')[1];
-
-            if (ratingFilter === "" || rating == ratingFilter) {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
-        }
-    }
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        document.getElementById('filterForm').submit();
+    }, 500);
+});
 </script>
 
 {% endblock %}
