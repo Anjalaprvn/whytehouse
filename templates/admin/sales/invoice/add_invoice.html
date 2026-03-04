@@ -436,10 +436,9 @@
             <div class="select-wrap">
               <select name="meals_plan" required>
                 <option selected disabled>Select meals plan</option>
-                <option>EP</option>
-                <option>CP</option>
-                <option>MAP</option>
-                <option>AP</option>
+                {% for meal in meals %}
+                <option value="{{ meal.name }}">{{ meal.name }}</option>
+                {% endfor %}
               </select>
               <svg class="caret" viewBox="0 0 24 24" fill="none">
                 <path d="M7 10L12 15L17 10" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>

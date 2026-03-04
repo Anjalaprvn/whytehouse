@@ -182,10 +182,15 @@
             <h3>Lead History</h3>
 
             <div class="search-add-group">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search leads...">
-                </div>
+                <form method="GET" action="{% url 'admin_panel:leads' %}" style="margin: 0;" id="searchForm">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="search" placeholder="Search leads..." value="{{ search_query }}" id="searchInput">
+                        {% if selected_type %}<input type="hidden" name="type" value="{{ selected_type }}">{% endif %}
+                        {% if selected_source %}<input type="hidden" name="source" value="{{ selected_source }}">{% endif %}
+                        {% if selected_new %}<input type="hidden" name="new" value="{{ selected_new }}">{% endif %}
+                    </div>
+                </form>
 
                 <a href="{% url 'admin_panel:add_lead' %}" class="btn-add">
                     <i class="fas fa-plus"></i> Add New Lead
@@ -249,5 +254,15 @@
         </table>
     </div>
 </div>
+
+<script>
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        document.getElementById('searchForm').submit();
+    }, 500);
+});
+</script>
 
 {% endblock %}

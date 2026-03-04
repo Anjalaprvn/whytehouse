@@ -137,17 +137,7 @@
 
           <div class="field">
             <label>Category</label>
-            <select name="category">
-              <option value="destinations" {% if blog.category == "destinations" %}selected{% endif %}>Destinations</option>
-              <option value="travel_tips" {% if blog.category == "travel_tips" %}selected{% endif %}>Travel Tips</option>
-              <option value="food_culture" {% if blog.category == "food_culture" %}selected{% endif %}>Food & Culture</option>
-              <option value="packages" {% if blog.category == "packages" %}selected{% endif %}>Packages & Deals</option>
-              <option value="honeymoon" {% if blog.category == "honeymoon" %}selected{% endif %}>Honeymoon</option>
-              <option value="family_travel" {% if blog.category == "family_travel" %}selected{% endif %}>Family Travel</option>
-              <option value="adventure" {% if blog.category == "adventure" %}selected{% endif %}>Adventure</option>
-              <option value="travel_stories" {% if blog.category == "travel_stories" %}selected{% endif %}>Travel Stories</option>
-              <option value="other" {% if blog.category == "other" %}selected{% endif %}>Other</option>
-            </select>
+            <input type="text" name="category" placeholder="e.g., Destinations, Travel Tips, Adventure" value="{{ blog.category }}">
           </div>
 
           <div class="field">

@@ -58,6 +58,7 @@
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         border: 1px solid #e2e8f0;
         transition: 0.3s;
+        cursor: pointer;
     }
 
     .destination-card:hover {
@@ -190,12 +191,32 @@
 
     .category-badge.international {
         background: #10b981;
-    }</style>
+    }
+
+    .search-box {
+        margin-bottom: 20px;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 12px 18px;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .search-box input:focus {
+        border-color: #d4a017;
+        background: #fff;
+    }
+</style>
 
 <div class="destinations-container">
     <div class="page-header">
         <h2>Destinations Management</h2>
-        <a href="{% url 'admin_panel:add_destination' %}" class="add-btn">
+        <a href="{% url 'admin_panel:add_destination' %}?cat={{ selected_category }}" class="add-btn">
             <i class="fas fa-plus"></i> Add Destination
         </a>
     </div>
@@ -211,9 +232,16 @@
         </a>
     </div>
 
+    <div class="search-box">
+        <form method="GET" action="{% url 'admin_panel:destinations' %}" id="searchForm">
+            <input type="text" name="search" placeholder="Search destinations..." value="{{ search_query }}" id="searchInput">
+            <input type="hidden" name="cat" value="{{ selected_category }}">
+        </form>
+    </div>
+
     <div class="destinations-grid">
         {% for destination in destinations %}
-        <div class="destination-card">
+        <div class="destination-card" onclick="window.location.href='{% url 'admin_panel:view_destination' destination.id %}'">
             <div class="card-image-container">
                 {% if destination.image %}
                     <img src="{{ destination.image.url }}" alt="{{ destination.name }}" class="dest-image">
@@ -236,10 +264,10 @@
                     <p>{{ destination.description|truncatewords:15 }}</p>
                 {% endif %}
                 <div class="card-actions">
-                    <a href="{% url 'admin_panel:edit_destination' destination.id %}" class="btn-edit">
+                    <a href="{% url 'admin_panel:edit_destination' destination.id %}" class="btn-edit" onclick="event.stopPropagation()">
                         <i class="fas fa-edit"></i> Edit
                     </a>
-                    <a href="{% url 'admin_panel:delete_destination' destination.id %}" class="btn-delete" onclick="return confirm('Are you sure you want to delete this destination?')">
+                    <a href="{% url 'admin_panel:delete_destination' destination.id %}" class="btn-delete" onclick="event.stopPropagation(); return confirm('Are you sure you want to delete this destination?')">
                         <i class="fas fa-trash"></i> Delete
                     </a>
                 </div>
@@ -253,4 +281,14 @@
         {% endfor %}
     </div>
 </div>
+
+<script>
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        document.getElementById('searchForm').submit();
+    }, 500);
+});
+</script>
 {% endblock %}

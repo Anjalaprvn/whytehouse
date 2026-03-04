@@ -209,12 +209,14 @@
             <div class="form-group">
                 <label>Destination Image</label>
                 
-                {% if destination.image %}
-                    <div class="current-image">
+                <div class="current-image" id="image-preview-container">
+                    {% if destination.image %}
                         <p>Current Image:</p>
-                        <img src="{{ destination.image.url }}" alt="{{ destination.name }}">
-                    </div>
-                {% endif %}
+                        <img id="image-preview" src="{{ destination.image.url }}" alt="{{ destination.name }}">
+                    {% else %}
+                        <img id="image-preview" src="" alt="Preview" style="display:none; max-width: 200px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    {% endif %}
+                </div>
 
                 <div class="upload-box" onclick="document.getElementById('file-upload').click();">
                     <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
@@ -230,4 +232,23 @@
         </div>
     </form>
 </div>
+
+<script>
+document.getElementById('file-upload').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById('image-preview');
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            preview.style.maxWidth = '200px';
+            preview.style.borderRadius = '8px';
+            preview.style.border = '1px solid #e2e8f0';
+        }
+        reader.readAsDataURL(file);
+    }
+});
+</script>
 {% endblock %}

@@ -35,6 +35,11 @@ def login(request):
         user = User.objects.filter(email__iexact=email).first()
 
         if user and password and user.check_password(password):
+            # Check if user has email configured
+            if not user.email:
+                return render(request, "admin/login.html", {
+                    "error": "Email not configured for this account"
+                })
 
             # Generate OTP
             otp = random.randint(100000, 999999)
@@ -44,16 +49,20 @@ def login(request):
             request.session["admin_user_id"] = user.id
 
             # Send OTP email
-            send_mail(
-                subject="Admin Login OTP",
-                message=f"Your OTP for login is: {otp}",
-                from_email="whytehousee@gmail.com",
-                recipient_list=[user.email],
-                fail_silently=False,
-            )
-
-            messages.success(request, "OTP sent to your registered email.")
-            return redirect("admin_panel:verify_otp")
+            try:
+                send_mail(
+                    subject="Admin Login OTP",
+                    message=f"Your OTP for login is: {otp}",
+                    from_email="whytehousee@gmail.com",
+                    recipient_list=[user.email],
+                    fail_silently=False,
+                )
+                messages.success(request, "OTP sent to your registered email.")
+                return redirect("admin_panel:verify_otp")
+            except Exception as e:
+                return render(request, "admin/login.html", {
+                    "error": f"Failed to send OTP: {str(e)}"
+                })
 
         else:
             return render(request, "admin/login.html", {
@@ -63,23 +72,33 @@ def login(request):
     return render(request, "admin/login.html")
 
 def verify_otp(request):
+    # Check if session has required data
+    session_otp = request.session.get("admin_otp")
+    user_id = request.session.get("admin_user_id")
+    
+    if not session_otp or not user_id:
+        messages.error(request, "Session expired. Please login again.")
+        return redirect("admin_panel:login")
+    
     if request.method == "POST":
-        entered_otp = request.POST.get("otp", "")
-        session_otp = request.session.get("admin_otp")
-        user_id = request.session.get("admin_user_id")
+        entered_otp = request.POST.get("otp", "").strip()
 
-        if entered_otp == session_otp and user_id:
-            user = User.objects.get(id=user_id)
-
-            # Login user officially
-            auth_login(request, user)
-
-            # Clear OTP session
-            request.session.pop("admin_otp", None)
-            request.session.pop("admin_user_id", None)
-
-            return redirect("admin_panel:dashboard")
-
+        if entered_otp == session_otp:
+            try:
+                user = User.objects.get(id=user_id)
+                
+                # Login user officially
+                auth_login(request, user)
+                
+                # Clear OTP session
+                request.session.pop("admin_otp", None)
+                request.session.pop("admin_user_id", None)
+                
+                messages.success(request, "Login successful!")
+                return redirect("admin_panel:dashboard")
+            except User.DoesNotExist:
+                messages.error(request, "User not found. Please login again.")
+                return redirect("admin_panel:login")
         else:
             return render(request, "admin/verify_otp.html", {
                 "error": "Invalid OTP. Please try again."
@@ -87,28 +106,40 @@ def verify_otp(request):
 
     return render(request, "admin/verify_otp.html")
 def resend_otp(request):
-   
-    username = request.session.get('admin_username')
+    user_id = request.session.get('admin_user_id')
     
-    if username:
+    if not user_id:
+        messages.error(request, "Session expired. Please login again.")
+        return redirect('admin_panel:login')
+    
+    try:
+        user = User.objects.get(id=user_id)
+        if not user.email:
+            messages.error(request, "Email not configured for this account.")
+            return redirect('admin_panel:login')
+        
+        # Generate new OTP
+        otp = random.randint(100000, 999999)
+        request.session['admin_otp'] = str(otp)  # Store as string
+        
+        # Send OTP email
         try:
-            user = User.objects.get(username=username)
-            if user.email:
-                
-                otp = random.randint(100000, 999999)
-                request.session['admin_otp'] = otp
-                
-               
-                send_mail(
-                    subject="Admin Login OTP for safe and secure login",
-                    message=f"Your OTP is {otp}",
-                    from_email="whytehousee@gmail.com",
-                    recipient_list=[user.email],
-                )
-        except User.DoesNotExist:
-            pass
+            send_mail(
+                subject="Admin Login OTP - Resent",
+                message=f"Your new OTP for login is: {otp}",
+                from_email="whytehousee@gmail.com",
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+            messages.success(request, "OTP has been resent to your email.")
+        except Exception as e:
+            messages.error(request, f"Failed to resend OTP: {str(e)}")
+            
+    except User.DoesNotExist:
+        messages.error(request, "User not found. Please login again.")
+        return redirect('admin_panel:login')
     
-    return redirect('verify_otp')
+    return redirect('admin_panel:verify_otp')
 
 def forgot_password(request):
     return render(request, 'admin/forgotpassword.html')
@@ -160,12 +191,20 @@ def lead_management(request):
     enquiry_type = request.GET.get('type', '')
     source_filter = request.GET.get('source', '')
     new_leads = request.GET.get('new', '')
+    search_query = request.GET.get('search', '').strip()
     
     # If General enquiry type is selected, redirect to customer inquiries page
     if enquiry_type == 'General':
         return redirect('admin_panel:customer_inquiries')
     
     leads = Lead.objects.all()
+    
+    if search_query:
+        leads = leads.filter(
+            Q(full_name__icontains=search_query) |
+            Q(mobile_number__icontains=search_query) |
+            Q(place__icontains=search_query)
+        )
     
     if enquiry_type:
         leads = leads.filter(enquiry_type=enquiry_type)
@@ -189,6 +228,7 @@ def lead_management(request):
         'selected_type': enquiry_type,
         'selected_source': source_filter,
         'selected_new': new_leads,
+        'search_query': search_query,
         'general_count': general_count,
         'international_count': international_count,
         'domestic_count': domestic_count,
@@ -244,18 +284,45 @@ def view_lead(request, lead_id):
 
 # HOSPITALITY
 def hospitality_management(request):
-    properties = Property.objects.all().order_by("-created_at")
-    return render(request, "admin/hospitality/hospitality_management.html", {"properties": properties})
+    search_query = request.GET.get('search', '').strip()
+    properties = Property.objects.all()
+    
+    if search_query:
+        properties = properties.filter(
+            Q(name__icontains=search_query) |
+            Q(property_type__icontains=search_query) |
+            Q(location__icontains=search_query)
+        )
+    
+    properties = properties.order_by("-created_at")
+    return render(request, "admin/hospitality/hospitality_management.html", {"properties": properties, "search_query": search_query})
 
 def add_property(request):
     if request.method == "POST":
         name = request.POST.get("name", "").strip()
         prop_type = request.POST.get("property_type", "").strip()
         location = request.POST.get("location", "").strip()
+        website = request.POST.get("website", "").strip()
+        owner_name = request.POST.get("owner_name", "").strip()
+        owner_contact = request.POST.get("owner_contact", "").strip()
 
         if not name or not prop_type or not location:
             messages.error(request, "Name, type and location are required.")
             return render(request, "admin/hospitality/hospitality_add.html")
+        
+        # Validate website URL
+        if website:
+            import re
+            url_pattern = re.compile(r'^https?://[\w\-]+(\.[\w\-]+)+[/#?]?.*$')
+            if not url_pattern.match(website):
+                messages.error(request, "Invalid website URL format. Must start with http:// or https://")
+                return render(request, "admin/hospitality/hospitality_add.html")
+        
+        # Validate owner contact number
+        if owner_contact:
+            if not owner_contact.isdigit() or len(owner_contact) < 10:
+                messages.error(request, "Owner contact must be a valid phone number (minimum 10 digits).")
+                return render(request, "admin/hospitality/hospitality_add.html")
         
         new_amenities = request.POST.getlist("new_amenities[]")
 
@@ -266,11 +333,11 @@ def add_property(request):
             name=name,
             property_type=prop_type,
             location=location,
-            website=request.POST.get("website") or None,
+            website=website or None,
             address=request.POST.get("address"),
             summary=request.POST.get("summary"),
-            owner_name=request.POST.get("owner_name") or None,
-            owner_contact=request.POST.get("owner_contact") or None,
+            owner_name=owner_name or None,
+            owner_contact=owner_contact or None,
             amenities=amenities_text,
             image=request.FILES.get("image"),
         )
@@ -327,16 +394,29 @@ def delete_property(request, property_id):
     messages.success(request, "Property deleted successfully!")
     return redirect("admin_panel:admin_hospitality")
 
+def view_property(request, property_id):
+    prop = get_object_or_404(Property, id=property_id)
+    return render(request, "admin/hospitality/hospitality_view.html", {"property": prop})
+
 # TRAVEL PACKAGES
 def travel_packages(request):
     category = request.GET.get('cat', 'Domestic')
     destination_id = request.GET.get('dest')
+    search_query = request.GET.get('search', '').strip()
     
     # Get destinations for the selected category
     destinations = Destination.objects.filter(category=category).order_by('name')
     
     # Get packages based on category and destination
     packages = TravelPackage.objects.filter(category=category)
+    
+    if search_query:
+        packages = packages.filter(
+            Q(name__icontains=search_query) |
+            Q(location__icontains=search_query) |
+            Q(country__icontains=search_query)
+        )
+    
     if destination_id:
         packages = packages.filter(destination_id=destination_id)
     packages = packages.order_by('-created_at')
@@ -366,6 +446,7 @@ def travel_packages(request):
         'selected_destination_obj': selected_destination_obj,
         'domestic_count': domestic_count,
         'international_count': international_count,
+        'search_query': search_query,
     }
     return render(request, 'admin/packages/travel_packages.html', context)
 
@@ -383,6 +464,48 @@ def travel_package_add(request):
             pass
     
     if request.method == "POST":
+        name = request.POST.get('name', '').strip()
+        price = request.POST.get('price', '').strip()
+        duration = request.POST.get('duration', '').strip()
+        location = request.POST.get('location', '').strip()
+        description = request.POST.get('description', '').strip()
+        
+        # Validation
+        if not name or not price or not duration or not location:
+            messages.error(request, "Name, price, duration, and location are required.")
+            return render(request, 'admin/packages/travel_package_add.html', {
+                'default_category': default_category,
+                'selected_destination_id': int(destination_id) if destination_id else None,
+                'selected_destination_obj': selected_destination_obj,
+            })
+        
+        # Validate price
+        try:
+            price_val = float(price)
+            if price_val < 0:
+                messages.error(request, "Price must be a positive number.")
+                return render(request, 'admin/packages/travel_package_add.html', {
+                    'default_category': default_category,
+                    'selected_destination_id': int(destination_id) if destination_id else None,
+                    'selected_destination_obj': selected_destination_obj,
+                })
+        except ValueError:
+            messages.error(request, "Invalid price format.")
+            return render(request, 'admin/packages/travel_package_add.html', {
+                'default_category': default_category,
+                'selected_destination_id': int(destination_id) if destination_id else None,
+                'selected_destination_obj': selected_destination_obj,
+            })
+        
+        # Validate duration format (e.g., "3 Days 2 Nights")
+        if not any(word in duration.lower() for word in ['day', 'night', 'hour']):
+            messages.error(request, "Duration must include 'day', 'night', or 'hour'.")
+            return render(request, 'admin/packages/travel_package_add.html', {
+                'default_category': default_category,
+                'selected_destination_id': int(destination_id) if destination_id else None,
+                'selected_destination_obj': selected_destination_obj,
+            })
+        
         destination_id = request.POST.get('destination')
         destination = None
         if destination_id:
@@ -393,14 +516,14 @@ def travel_package_add(request):
         
         category = request.POST.get('category')
         TravelPackage.objects.create(
-            name=request.POST.get('name'),
+            name=name,
             category=category,
             destination=destination,
-            price=request.POST.get('price'),
-            duration=request.POST.get('duration'),
-            location=request.POST.get('location'),
+            price=price,
+            duration=duration,
+            location=location,
             country=request.POST.get('country'),
-            description=request.POST.get('description'),
+            description=description,
             itinerary='\n'.join(request.POST.getlist('itinerary[]')),
             inclusions='\n'.join(request.POST.getlist('inclusions[]')),
             exclusions='\n'.join(request.POST.getlist('exclusions[]')),
@@ -494,6 +617,10 @@ def travel_package_delete(request, package_id):
         return redirect(f'{url}?cat={category}&dest={destination_id}')
     else:
         return redirect(f'{url}?cat={category}')
+
+def travel_package_view(request, package_id):
+    package = get_object_or_404(TravelPackage, id=package_id)
+    return render(request, 'admin/packages/travel_package_view.html', {'package': package})
 
 # CUSTOMER INQUIRIES
 def customer_inquiries(request):
@@ -689,9 +816,20 @@ def view_employee(request, pk):
             #ACCOUNT
 
 def account_list(request):
+    search_query = request.GET.get('search', '').strip()
     accounts = Account.objects.all()
+    
+    if search_query:
+        accounts = accounts.filter(
+            Q(account_name__icontains=search_query) |
+            Q(account_number__icontains=search_query) |
+            Q(bank_name__icontains=search_query) |
+            Q(ifsc_code__icontains=search_query)
+        )
+    
     return render(request, 'admin/sales/account/account.html', {
-        'accounts': accounts
+        'accounts': accounts,
+        'search_query': search_query
     })
 
 def add_account(request):
@@ -709,6 +847,17 @@ def add_account(request):
                 messages.error(request, 'All fields are required.')
                 return render(request, 'admin/sales/account/add_account.html')
             
+            # Validate account number (digits only, 9-18 characters)
+            if not account_number.isdigit() or len(account_number) < 9 or len(account_number) > 18:
+                messages.error(request, 'Account number must be 9-18 digits.')
+                return render(request, 'admin/sales/account/add_account.html')
+            
+            # Validate IFSC code format (11 characters, alphanumeric)
+            import re
+            if not re.match(r'^[A-Z]{4}0[A-Z0-9]{6}$', ifsc_code.upper()):
+                messages.error(request, 'Invalid IFSC code format. Must be 11 characters (e.g., SBIN0001234).')
+                return render(request, 'admin/sales/account/add_account.html')
+            
             # Check for duplicate account number
             if Account.objects.filter(account_number=account_number).exists():
                 messages.error(request, 'Account number already exists.')
@@ -719,7 +868,7 @@ def add_account(request):
                 account_name=account_name,
                 account_number=account_number,
                 bank_name=bank_name,
-                ifsc_code=ifsc_code,
+                ifsc_code=ifsc_code.upper(),
                 account_type=account_type
             )
             
@@ -808,13 +957,25 @@ def delete_account(request, account_id):
         #CUSTOMER
 
 def customer_list(request):
+    search_query = request.GET.get('search', '').strip()
     customers = Customer.objects.all()
+    
+    if search_query:
+        customers = customers.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(display_name__icontains=search_query) |
+            Q(contact_number__icontains=search_query) |
+            Q(place__icontains=search_query)
+        )
+    
     print(f"=== CUSTOMER LIST DEBUG ===")
     print(f"Total customers in database: {customers.count()}")
     for customer in customers:
         print(f"  Customer {customer.id}: {customer.display_name} - {customer.contact_number}")
     return render(request, "admin/sales/customer/customer.html", {
-        "customers": customers
+        "customers": customers,
+        "search_query": search_query
     })
 
 def add_customer(request):
@@ -985,8 +1146,17 @@ def delete_customer(request, customer_id):
 
 # RESORT VIEWS
 def resort_list(request):
+    search_query = request.GET.get('search', '').strip()
     resorts = Resort.objects.all()
-    return render(request, "admin/sales/resort/resort.html", {"resorts": resorts})
+    
+    if search_query:
+        resorts = resorts.filter(
+            Q(resort_name__icontains=search_query) |
+            Q(location__icontains=search_query) |
+            Q(contact_person__icontains=search_query)
+        )
+    
+    return render(request, "admin/sales/resort/resort.html", {"resorts": resorts, "search_query": search_query})
 
 def add_resort(request):
     if request.method == "POST":
@@ -1075,8 +1245,16 @@ def delete_resort(request, resort_id):
 
 # MEAL VIEWS
 def meal_list(request):
+    search_query = request.GET.get('search', '').strip()
     meals = Meal.objects.all()
-    return render(request, "admin/sales/meals/meals.html", {"meals": meals})
+    
+    if search_query:
+        meals = meals.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+    
+    return render(request, "admin/sales/meals/meals.html", {"meals": meals, "search_query": search_query})
 
 def add_meal(request):
     if request.method == "POST":
@@ -1088,6 +1266,16 @@ def add_meal(request):
             
             if not name:
                 messages.error(request, "Meal Plan Name is required.")
+                return render(request, "admin/sales/meals/add_meals.html")
+            
+            # Validate name length
+            if len(name) < 2 or len(name) > 50:
+                messages.error(request, "Meal plan name must be between 2 and 50 characters.")
+                return render(request, "admin/sales/meals/add_meals.html")
+            
+            # Check if at least one meal is selected
+            if not included_meals:
+                messages.error(request, "Please select at least one meal type.")
                 return render(request, "admin/sales/meals/add_meals.html")
             
             if Meal.objects.filter(name=name).exists():
@@ -1156,8 +1344,17 @@ def delete_meal(request, meal_id):
 
 # VOUCHER VIEWS
 def voucher_list(request):
+    search_query = request.GET.get('search', '').strip()
     vouchers = Voucher.objects.all()
-    return render(request, "admin/sales/vouchers/vouchers.html", {"vouchers": vouchers})
+    
+    if search_query:
+        vouchers = vouchers.filter(
+            Q(voucher_no__icontains=search_query) |
+            Q(customer__display_name__icontains=search_query) |
+            Q(resort__resort_name__icontains=search_query)
+        )
+    
+    return render(request, "admin/sales/vouchers/vouchers.html", {"vouchers": vouchers, "search_query": search_query})
 
 def add_voucher(request):
     customers = Customer.objects.all()
@@ -1268,14 +1465,25 @@ def delete_voucher(request, voucher_id):
 
 # INVOICE VIEWS
 def invoice_list(request):
-    invoices = Invoice.objects.all().order_by('-invoice_date', '-id')
-    return render(request, "admin/sales/invoice/invoice.html", {"invoices": invoices})
+    search_query = request.GET.get('search', '').strip()
+    invoices = Invoice.objects.all()
+    
+    if search_query:
+        invoices = invoices.filter(
+            Q(invoice_no__icontains=search_query) |
+            Q(customer__display_name__icontains=search_query) |
+            Q(resort__resort_name__icontains=search_query)
+        )
+    
+    invoices = invoices.order_by('-invoice_date', '-id')
+    return render(request, "admin/sales/invoice/invoice.html", {"invoices": invoices, "search_query": search_query})
 
 def add_invoice(request):
     customers = Customer.objects.all()
     resorts = Resort.objects.all()
     accounts = Account.objects.all()
     employees = Employee.objects.filter(status='Active')
+    meals = Meal.objects.all()
     
     if request.method == "POST":
         try:
@@ -1346,8 +1554,8 @@ def add_invoice(request):
             return redirect("sales:invoice_list")
         except Exception as e:
             messages.error(request, f"Error adding invoice: {str(e)}")
-            return render(request, "admin/sales/invoice/add_invoice.html", {"customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees})
-    return render(request, "admin/sales/invoice/add_invoice.html", {"customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees})
+            return render(request, "admin/sales/invoice/add_invoice.html", {"customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees, "meals": meals})
+    return render(request, "admin/sales/invoice/add_invoice.html", {"customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees, "meals": meals})
 
 def view_invoice(request, invoice_id):
     try:
@@ -1479,6 +1687,32 @@ def add_blog(request):
             # validation for required fields
             if not title or not slug or not excerpt or not content or not author_name or not author_summary or not reading_time or not publish_date:
                 messages.error(request, "Please fill in all required fields.")
+                return render(request, "admin/blog/add_blog.html")
+            
+            # Validate slug format (alphanumeric and hyphens only)
+            import re
+            if not re.match(r'^[a-z0-9-]+$', slug):
+                messages.error(request, "Slug must contain only lowercase letters, numbers, and hyphens.")
+                return render(request, "admin/blog/add_blog.html")
+            
+            # Check for duplicate slug
+            if Blog.objects.filter(slug=slug).exists():
+                messages.error(request, "A blog with this slug already exists.")
+                return render(request, "admin/blog/add_blog.html")
+            
+            # Validate reading time
+            try:
+                reading_time_val = int(reading_time)
+                if reading_time_val < 1 or reading_time_val > 120:
+                    messages.error(request, "Reading time must be between 1 and 120 minutes.")
+                    return render(request, "admin/blog/add_blog.html")
+            except ValueError:
+                messages.error(request, "Invalid reading time format.")
+                return render(request, "admin/blog/add_blog.html")
+            
+            # Validate excerpt length
+            if len(excerpt) < 50 or len(excerpt) > 300:
+                messages.error(request, "Excerpt must be between 50 and 300 characters.")
                 return render(request, "admin/blog/add_blog.html")
 
             hashtags_value = (request.POST.get("hashtags") or "").strip()
@@ -2248,7 +2482,17 @@ def profit_report(request):
 # DESTINATION VIEWS
 def destination_list(request):
     category = request.GET.get('cat', 'Domestic')
-    destinations = Destination.objects.filter(category=category).order_by('-created_at')
+    search_query = request.GET.get('search', '').strip()
+    
+    destinations = Destination.objects.filter(category=category)
+    
+    if search_query:
+        destinations = destinations.filter(
+            Q(name__icontains=search_query) |
+            Q(country__icontains=search_query)
+        )
+    
+    destinations = destinations.order_by('-created_at')
     domestic_count = Destination.objects.filter(category='Domestic').count()
     international_count = Destination.objects.filter(category='International').count()
     context = {
@@ -2256,56 +2500,84 @@ def destination_list(request):
         'selected_category': category,
         'domestic_count': domestic_count,
         'international_count': international_count,
+        'search_query': search_query,
     }
     return render(request, 'admin/destination/destination.html', context)
 
 def add_destination(request):
     # Get category from URL parameter (from travel packages page)
-    default_category = request.GET.get('category', 'Domestic')
+    default_category = request.GET.get('cat', 'Domestic')
     
     if request.method == "POST":
         name = request.POST.get('name', '').strip()
         country = request.POST.get('country', '').strip()
         category = request.POST.get('category')
+        description = request.POST.get('description', '').strip()
+        
         if not name or not country:
             messages.error(request, "Name and country are required.")
+            return render(request, 'admin/destination/add_destination.html', {'default_category': default_category})
+        
+        # Validate name length
+        if len(name) < 2 or len(name) > 100:
+            messages.error(request, "Destination name must be between 2 and 100 characters.")
+            return render(request, 'admin/destination/add_destination.html', {'default_category': default_category})
+        
+        # Validate country length
+        if len(country) < 2 or len(country) > 100:
+            messages.error(request, "Country name must be between 2 and 100 characters.")
+            return render(request, 'admin/destination/add_destination.html', {'default_category': default_category})
+        
+        # Check for duplicate destination
+        if Destination.objects.filter(name__iexact=name, country__iexact=country).exists():
+            messages.error(request, "This destination already exists.")
+            return render(request, 'admin/destination/add_destination.html', {'default_category': default_category})
+        
+        # Validate description length if provided
+        if description and len(description) > 500:
+            messages.error(request, "Description must not exceed 500 characters.")
             return render(request, 'admin/destination/add_destination.html', {'default_category': default_category})
 
         Destination.objects.create(
             name=name,
             country=country,
             category=category,
-            description=request.POST.get('description'),
+            description=description,
             is_popular=request.POST.get('is_popular') == 'on',
             image=request.FILES.get('image')
         )
         messages.success(request, "Destination added successfully!")
         
-        # Redirect back to travel packages with the category
-        url = reverse('admin_panel:travel_packages')
+        # Redirect back to destinations with the category
+        url = reverse('admin_panel:destinations')
         return redirect(f'{url}?cat={category}')
     
     context = {'default_category': default_category}
     return render(request, 'admin/destination/add_destination.html', context)
+
+def view_destination(request, destination_id):
+    destination = get_object_or_404(Destination, id=destination_id)
+    return render(request, 'admin/destination/view_destination.html', {'destination': destination})
 
 def edit_destination(request, destination_id):
     destination = get_object_or_404(Destination, id=destination_id)
     if request.method == "POST":
         name = request.POST.get('name', '').strip()
         country = request.POST.get('country', '').strip()
+        category = request.POST.get('category')
         if not name or not country:
             messages.error(request, "Name and country are required.")
             return render(request, 'admin/destination/edit_destination.html', {'destination': destination})
         destination.name = name
         destination.country = country
-        destination.category = request.POST.get('category')
+        destination.category = category
         destination.description = request.POST.get('description')
         destination.is_popular = request.POST.get('is_popular') == 'on'
         if request.FILES.get('image'):
             destination.image = request.FILES.get('image')
         destination.save()
         messages.success(request, "Destination updated successfully!")
-        return redirect('admin_panel:destinations')
+        return redirect(f"{reverse('admin_panel:destinations')}?cat={category}")
     return render(request, 'admin/destination/edit_destination.html', {'destination': destination})
 
 def delete_destination(request, destination_id):
