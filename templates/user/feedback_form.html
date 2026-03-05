@@ -242,17 +242,9 @@
               <label for="feedback_type">Feedback Type <span class="req-dot"></span></label>
               <select id="feedback_type" name="feedback_type" required>
                 <option value="" disabled {% if not request.POST.feedback_type %}selected{% endif %}>Select feedback type</option>
-                <option value="Travel Package" {% if request.POST.feedback_type == "Travel Package" %}selected{% endif %}>Travel Package</option>
-                <option value="Customer Service" {% if request.POST.feedback_type == "Customer Service" %}selected{% endif %}>Customer Service</option>
-                <option value="Booking Experience" {% if request.POST.feedback_type == "Booking Experience" %}selected{% endif %}>Booking Experience</option>
-                <option value="Transportation" {% if request.POST.feedback_type == "Transportation" %}selected{% endif %}>Transportation</option>
-                <option value="Hotel / Resort" {% if request.POST.feedback_type == "Hotel / Resort" %}selected{% endif %}>Hotel / Resort</option>
-                <option value="Food / Meals" {% if request.POST.feedback_type == "Food / Meals" %}selected{% endif %}>Food / Meals</option>
-                <option value="Tour Guide" {% if request.POST.feedback_type == "Tour Guide" %}selected{% endif %}>Tour Guide</option>
-                <option value="Website Experience" {% if request.POST.feedback_type == "Website Experience" %}selected{% endif %}>Website Experience</option>
-                <option value="Trip Management" {% if request.POST.feedback_type == "Trip Management" %}selected{% endif %}>Trip Management</option>
-                <option value="Overall Experience" {% if request.POST.feedback_type == "Overall Experience" %}selected{% endif %}>Overall Experience</option>
-                <option value="Other" {% if request.POST.feedback_type == "Other" %}selected{% endif %}>Other</option>
+                {% for value, label in feedback_type_choices %}
+                <option value="{{ value }}" {% if request.POST.feedback_type == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
               </select>
             </div>
 <div class="field">
@@ -308,11 +300,7 @@
               <textarea id="feedback" name="feedback" required placeholder="Write your feedback...">{{ request.POST.feedback }}</textarea>
             </div>
 
-            <div class="field">
-              <label for="image">Upload Image <span class="hint">(optional)</span></label>
-              <input type="file" id="image" name="image" accept="image/*">
-              <div class="help">Upload a photo related to your feedback (JPG, PNG, max 5MB)</div>
-            </div>
+            
 
             <div class="actions">
               <button type="button" class="btn secondary" id="clearFormBtn">

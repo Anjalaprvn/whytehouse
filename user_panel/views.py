@@ -3,7 +3,9 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Q
 from admin_panel.models import TravelPackage, Property, Inquiry, Lead, Blog, Destination
-from admin_panel.models import Feedback,BlogCategory
+from admin_panel.models import Feedback,BlogCategory,Property
+from django.shortcuts import render, get_object_or_404
+from admin_panel.models import Blog
 
 
 def enquire_now(request):
@@ -153,8 +155,7 @@ def about(request):
 
 
 
-from django.shortcuts import render, get_object_or_404
-from admin_panel.models import Blog
+
 
 def blog_list(request):
     from admin_panel.models import BlogCategory
@@ -635,7 +636,8 @@ def package_detail(request, slug):
 
 def hospitality(request):
     properties = Property.objects.all()
-    return render(request, 'user/hospitality.html', {'properties': properties})
+    testimonials = Feedback.objects.filter(feedback_type='Property Management', featured=True).prefetch_related('images')
+    return render(request, 'user/hospitality.html', {'properties': properties, 'testimonials': testimonials})
 
 def feedback_form_submit(request):
     """
@@ -683,24 +685,34 @@ def feedback_form(request):
         feedback_type = request.POST.get('feedback_type', '').strip()
         rating = request.POST.get('rating', '')
         feedback_text = request.POST.get('feedback', '').strip()
-        image = request.FILES.get('image')
+        images = request.FILES.getlist('feedback_images')
 
         if not all([name, email, feedback_type, rating, feedback_text]):
-            return render(request, 'user/feedback_form.html', {'error': 'Please fill required fields.'})
+            return render(request, 'user/feedback_form.html', {
+                'error': 'Please fill required fields.',
+                'feedback_type_choices': Feedback.FEEDBACK_TYPE_CHOICES
+            })
 
-        Feedback.objects.create(
+        feedback = Feedback.objects.create(
             name=name,
             email=email,
             mobile_number=mobile_number,
             feedback_type=feedback_type,
             rating=int(rating),
-            feedback=feedback_text,
-            image=image
+            feedback=feedback_text
         )
+        
+        # Save multiple images
+        from admin_panel.models import FeedbackImage
+        for image in images:
+            FeedbackImage.objects.create(feedback=feedback, image=image)
+        
         # show success message on the same page
         return render(request, 'user/feedback_form.html', {'success': True})
 
-    return render(request, 'user/feedback_form.html')
+    return render(request, 'user/feedback_form.html', {
+        'feedback_type_choices': Feedback.FEEDBACK_TYPE_CHOICES
+    })
 
 
 

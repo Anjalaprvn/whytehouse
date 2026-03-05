@@ -497,13 +497,9 @@ class Feedback(models.Model):
         ('Travel Package', 'Travel Package'),
         ('Customer Service', 'Customer Service'),
         ('Booking Experience', 'Booking Experience'),
-        ('Transportation', 'Transportation'),
-        ('Hotel / Resort', 'Hotel / Resort'),
-        ('Food / Meals', 'Food / Meals'),
-        ('Tour Guide', 'Tour Guide'),
+        ('Property Management', 'Property Management'),
         ('Website Experience', 'Website Experience'),
         ('Trip Management', 'Trip Management'),
-        ('Overall Experience', 'Overall Experience'),
         ('Other', 'Other'),
     ]
 
@@ -514,7 +510,7 @@ class Feedback(models.Model):
     feedback_type = models.CharField(
         max_length=50,
         choices=FEEDBACK_TYPE_CHOICES,
-        default='Overall Experience'
+        default='Other'
     )
 
     rating = models.IntegerField(choices=RATING_CHOICES)
@@ -535,3 +531,12 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.rating}⭐"
+
+
+class FeedbackImage(models.Model):
+    feedback = models.ForeignKey(Feedback, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='feedback_images/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Image for {self.feedback.name}"

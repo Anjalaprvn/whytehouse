@@ -289,16 +289,23 @@ background:#f1f5f9
 
 
 <div class="info-group full-width">
-<label>Uploaded Image</label>
+<label>Uploaded Images</label>
 
-{% if feedback.image %}
+{% if feedback.images.all or feedback.image %}
 <div class="gallery">
+{% if feedback.image %}
 <a href="{{ feedback.image.url }}" target="_blank" class="gallery-item">
 <img src="{{ feedback.image.url }}" alt="Feedback image">
 </a>
+{% endif %}
+{% for img in feedback.images.all %}
+<a href="{{ img.image.url }}" target="_blank" class="gallery-item">
+<img src="{{ img.image.url }}" alt="Feedback image">
+</a>
+{% endfor %}
 </div>
 {% else %}
-<div class="no-images">No image uploaded</div>
+<div class="no-images">No images uploaded</div>
 {% endif %}
 
 </div>

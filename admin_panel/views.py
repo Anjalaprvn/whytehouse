@@ -2667,7 +2667,7 @@ def add_feedback(request):
             if not all([name, email, rating, feedback_text, feedback_type]):
                 messages.error(request, "Name, Email, Feedback Type, Rating and Feedback are required.")
                 return render(request, 'admin/feedback/add_feedback.html', {
-                    "feedback_type_choices": Feedback.FEEDBACK_TYPE_CHOICES
+                    'feedback_type_choices': Feedback.FEEDBACK_TYPE_CHOICES
                 })
 
             featured_flag = request.POST.get('featured') == '1'
@@ -2682,8 +2682,8 @@ def add_feedback(request):
                 featured=featured_flag
             )
 
-            # ✅ MULTIPLE IMAGES
-            images = request.FILES.getlist("feedback_images")
+            from admin_panel.models import FeedbackImage
+            images = request.FILES.getlist('images')
             for img in images:
                 FeedbackImage.objects.create(feedback=feedback_obj, image=img)
 
@@ -2693,11 +2693,11 @@ def add_feedback(request):
         except Exception as e:
             messages.error(request, f"Error adding feedback: {str(e)}")
             return render(request, 'admin/feedback/add_feedback.html', {
-                "feedback_type_choices": Feedback.FEEDBACK_TYPE_CHOICES
+                'feedback_type_choices': Feedback.FEEDBACK_TYPE_CHOICES
             })
 
     return render(request, 'admin/feedback/add_feedback.html', {
-        "feedback_type_choices": Feedback.FEEDBACK_TYPE_CHOICES
+        'feedback_type_choices': Feedback.FEEDBACK_TYPE_CHOICES
     })
 def view_feedback(request, feedback_id):
     feedback = get_object_or_404(Feedback, id=feedback_id)
