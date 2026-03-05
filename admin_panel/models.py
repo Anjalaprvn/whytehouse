@@ -488,10 +488,25 @@ class Feedback(models.Model):
         (4, "4 Stars"),
         (5, "5 Stars"),
     ]
+    
+    FEEDBACK_TYPE_CHOICES = [
+        ('Travel Package', 'Travel Package'),
+        ('Customer Service', 'Customer Service'),
+        ('Booking Experience', 'Booking Experience'),
+        ('Transportation', 'Transportation'),
+        ('Hotel / Resort', 'Hotel / Resort'),
+        ('Food / Meals', 'Food / Meals'),
+        ('Tour Guide', 'Tour Guide'),
+        ('Website Experience', 'Website Experience'),
+        ('Trip Management', 'Trip Management'),
+        ('Overall Experience', 'Overall Experience'),
+        ('Other', 'Other'),
+    ]
 
     name = models.CharField(max_length=150)
     email = models.EmailField()
     mobile_number = models.CharField(max_length=10)
+    feedback_type = models.CharField(max_length=50, choices=FEEDBACK_TYPE_CHOICES, default='Overall Experience')
     rating = models.IntegerField(choices=RATING_CHOICES)
     feedback = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
