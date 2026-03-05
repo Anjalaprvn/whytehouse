@@ -351,7 +351,7 @@
       .stat-item { flex: 1 1 30%; }
     }
 
-    /* ================= TESTIMONIALS ================= */
+    /* ================= TESTIMONIALS (UPDATED) ================= */
     .testimonials-section {
       padding: 100px 80px;
       background-color: #E6E6E6;
@@ -389,31 +389,89 @@
 
     .testimonial-card {
       background: #D9D9D9;
-      padding: 50px 40px;
       border-radius: 35px;
+      padding: 40px;
       position: relative;
+      transition: transform 0.3s ease;
+    }
+
+    .testimonial-card:hover {
+      transform: translateY(-5px);
     }
 
     .quote-icon {
       color: #DB902B;
-      font-size: 50px;
+      font-size: 60px;
       line-height: 1;
       margin-bottom: 15px;
-      font-family: serif;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
     }
 
     .testimonial-text {
-      font-size: 18px;
-      font-weight: 400;
-      color: #222;
-      margin-bottom: 40px;
-      line-height: 1.4;
+      font-size: 16px;
+      line-height: 1.7;
+      color: #333;
+      margin-bottom: 30px;
+      font-style: italic;
     }
 
-    .user-info { display: flex; align-items: center; gap: 15px; }
-    .avatar { width: 65px; height: 65px; border-radius: 18px; object-fit: cover; }
-    .user-name { font-size: 16px; font-weight: 600; margin: 0; color: #000; }
-    .user-handle { font-size: 14px; color: #777; margin: 0; }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      border-top: 1px solid rgba(0,0,0,0.1);
+      padding-top: 20px;
+    }
+
+    .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #DB902B;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 20px;
+    }
+
+    .user-details {
+      flex: 1;
+    }
+
+    .user-name {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 5px 0;
+      color: #000;
+    }
+
+    .user-handle {
+      font-size: 13px;
+      color: #000;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: 'Georgia', serif;
+      font-style: italic;
+      font-weight: 500;
+    }
+
+    .user-handle i {
+      color: #000;
+      font-size: 13px;
+    }
+
+    .rating-stars {
+      color: #DB902B;
+      margin-top: 8px;
+      font-size: 14px;
+      letter-spacing: 2px;
+    }
 
     /* ================= FOOTER ================= */
     .main-footer {
@@ -936,6 +994,7 @@
     </div>
   </section>
 
+  <!-- ================= UPDATED TESTIMONIALS SECTION (NO PROFILE IMAGES) ================= -->
   <section class="testimonials-section">
     <div class="testimonial-header">
       <h2 class="testimonial-title">Hear <i>from them</i></h2>
@@ -951,16 +1010,19 @@
           <div class="quote-icon">“</div>
           <p class="testimonial-text">{{ fb.feedback }}</p>
           <div class="user-info">
-            <img src="{% static 'images/user.png' %}" class="avatar" alt="{{ fb.name }}">
+            <div class="avatar">{{ fb.name|make_list|first }}</div>
             <div class="user-details">
               <h4 class="user-name">{{ fb.name }}</h4>
-              <p class="user-handle">{{ fb.name }}</p>
+              <p class="user-handle"><i>Verified Traveler</i></p>
+              <div class="rating-stars">
+                {% for i in "12345" %}
+                  {% if forloop.counter <= fb.rating %}★{% else %}☆{% endif %}
+                {% endfor %}
+              </div>
             </div>
           </div>
         </div>
         {% endfor %}
-      {% else %}
-        <p style="color:#fff; text-align:center; width:100%;">No testimonials available yet.</p>
       {% endif %}
     </div>
   </section>
