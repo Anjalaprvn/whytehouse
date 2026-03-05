@@ -131,8 +131,8 @@ def domestic(request):
     # Get domestic destinations for the explorer section
     domestic_destinations = Destination.objects.filter(category='Domestic').order_by('name')[:4]
     
-    # Get first 3 domestic destinations for gallery
-    gallery_destinations = Destination.objects.filter(category='Domestic').order_by('name')[:3]
+    # Get ALL domestic destinations for gallery (show 3 at a time with navigation)
+    gallery_destinations = Destination.objects.filter(category='Domestic').order_by('name')
     
     # Get all properties for hospitality section (show 3 at a time)
     properties = Property.objects.all()
@@ -525,48 +525,113 @@ def international_packages(request):
     return render(request, 'user/packages.html', context)
 
 def package_detail(request, slug):
+    from datetime import datetime
     package = get_object_or_404(TravelPackage, id=slug, active=True)
     
     if request.method == 'POST':
+        import re
         from admin_panel.models import Customer
         
         name = request.POST.get('name', '').strip()
         email = request.POST.get('email', '').strip()
         phone = request.POST.get('phone', '').strip()
-        guests = request.POST.get('guests', '1')
+        guests = request.POST.get('guests', '1').strip()
         start_date = request.POST.get('start_date', '').strip()
         
-        if name and phone:
-            # Split name into first and last
-            name_parts = name.split(' ', 1)
-            first_name = name_parts[0]
-            last_name = name_parts[1] if len(name_parts) > 1 else ''
-            
-            # Check if customer already exists with this phone number
-            customer, created = Customer.objects.get_or_create(
-                contact_number=phone,
-                defaults={
-                    'first_name': first_name,
-                    'last_name': last_name,
-                    'display_name': name,
-                    'whatsapp_number': phone,
-                    'same_as_whatsapp': True,
-                    'customer_type': 'Individual',
-                    'place': f'Booking: {package.name}'
+        # Validation
+        errors = []
+        
+        # Name validation
+        if not name or len(name) < 2:
+            errors.append('Name is required and must be at least 2 characters.')
+        
+        # Email validation
+        email_pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+        if not email or not re.match(email_pattern, email):
+            errors.append('Please enter a valid email address.')
+        
+        # Phone validation (exactly 10 digits)
+        phone_digits = re.sub(r'\D', '', phone)
+        
+        if not phone:
+            errors.append('Phone number is required.')
+        elif len(phone_digits) != 10:
+            errors.append('Phone number must be exactly 10 digits.')
+        elif not phone_digits.isdigit():
+            errors.append('Phone number must contain only digits.')
+        
+        # Guests validation
+        try:
+            guests_int = int(guests)
+            if guests_int < 1:
+                errors.append('Number of guests must be at least 1.')
+            elif guests_int > 50:
+                errors.append('Number of guests cannot exceed 50.')
+        except ValueError:
+            errors.append('Please enter a valid number of guests.')
+        
+        # Start date validation
+        if not start_date:
+            errors.append('Start date is required.')
+        else:
+            try:
+                date_obj = datetime.strptime(start_date, '%Y-%m-%d')
+                today = datetime.now().date()
+                if date_obj.date() < today:
+                    errors.append('Start date cannot be in the past.')
+            except ValueError:
+                errors.append('Please enter a valid date.')
+        
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return render(request, 'user/package_detail.html', {
+                'package': package,
+                'today': datetime.now(),
+                'form_data': {
+                    'name': name,
+                    'email': email,
+                    'phone': phone,
+                    'guests': guests,
+                    'start_date': start_date
                 }
-            )
-            
-            Lead.objects.create(
-                full_name=name,
-                mobile_number=phone,
-                source='Website',
-                remarks=f'Package: {package.name} | Email: {email} | Guests: {guests} | Start Date: {start_date}'
-            )
-            
-            messages.success(request, 'Booking request submitted! Our team will contact you soon.')
-            return redirect('user_panel:package_detail', slug=slug)
+            })
+        
+        # If validation passes, create customer and lead
+        # Split name into first and last
+        name_parts = name.split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+        
+        # Check if customer already exists with this phone number
+        customer, created = Customer.objects.get_or_create(
+            contact_number=phone,
+            defaults={
+                'first_name': first_name,
+                'last_name': last_name,
+                'display_name': name,
+                'whatsapp_number': phone,
+                'same_as_whatsapp': True,
+                'customer_type': 'Individual',
+                'place': f'Booking: {package.name}'
+            }
+        )
+        
+        Lead.objects.create(
+            full_name=name,
+            mobile_number=phone,
+            source='Website',
+            enquiry_type='Package Booking',
+            remarks=f'Package: {package.name} | Email: {email} | Guests: {guests} | Start Date: {start_date}'
+        )
+        
+        messages.success(request, 'Booking request submitted! Our team will contact you soon.')
+        return redirect('user_panel:package_detail', slug=slug)
     
-    return render(request, 'user/package_detail.html', {'package': package})
+    return render(request, 'user/package_detail.html', {
+        'package': package,
+        'today': datetime.now()
+    })
 
 def hospitality(request):
     properties = Property.objects.all()

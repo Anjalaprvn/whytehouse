@@ -332,45 +332,45 @@
                     {% csrf_token %}
                     {% if messages %}
                         {% for message in messages %}
-                        <div style="padding: 12px; border-radius: 10px; margin-bottom: 15px; font-size: 14px;" class="message-{{ message.tags }}">
+                        <div style="padding: 12px; border-radius: 10px; margin-bottom: 15px; font-size: 14px; {% if message.tags == 'error' %}background: #fee; color: #c33; border: 1px solid #fcc;{% elif message.tags == 'success' %}background: #efe; color: #3c3; border: 1px solid #cfc;{% endif %}" class="message-{{ message.tags }}">
                             {{ message }}
                         </div>
                         {% endfor %}
                     {% endif %}
                     <div class="form-group">
-                        <label>Full Name</label>
-                        <div class="input-wrapper"><input type="text" name="name" placeholder="Name" required></div>
+                        <label>Full Name <span style="color: red;">*</span></label>
+                        <div class="input-wrapper"><input type="text" name="name" placeholder="Enter your full name" value="{{ form_data.name|default:'' }}" required></div>
                     </div>
                     <div class="form-group">
-                        <label>Email</label>
-                        <div class="input-wrapper"><input type="email" name="email" placeholder="Email"></div>
+                        <label>Email <span style="color: red;">*</span></label>
+                        <div class="input-wrapper"><input type="email" name="email" placeholder="your.email@example.com" value="{{ form_data.email|default:'' }}" required></div>
                     </div>
                     <div class="form-group">
-                        <label>Phone</label>
-                        <div class="input-wrapper"><input type="tel" name="phone" placeholder="Phone Number" required></div>
+                        <label>Phone <span style="color: red;">*</span></label>
+                        <div class="input-wrapper"><input type="tel" name="phone" placeholder="Enter 10 digit phone number" value="{{ form_data.phone|default:'' }}" required maxlength="10" pattern="[0-9]{10}"></div>
                     </div>
                     <div class="form-group">
                         <label>Tour package</label>
-                        <div class="input-wrapper"><input type="text" value="{{ package.name }}" readonly></div>
+                        <div class="input-wrapper"><input type="text" value="{{ package.name }}" readonly style="background: #f5f5f5; cursor: not-allowed;"></div>
                     </div>
                     <div class="form-group">
-                        <label>Starting Date</label>
-                        <div class="input-wrapper"><input type="date" name="start_date"></div>
+                        <label>Starting Date <span style="color: red;">*</span></label>
+                        <div class="input-wrapper"><input type="date" name="start_date" value="{{ form_data.start_date|default:'' }}" required min="{{ today|date:'Y-m-d' }}"></div>
                     </div>
                     <div class="form-group">
-                        <label>Guests</label>
+                        <label>Guests <span style="color: red;">*</span></label>
                         <div class="input-wrapper">
-                            <select name="guests" id="guests-select">
-                                <option value="1">1</option>
-                                <option value="2" selected>2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                                <option value="7">7</option>
-                                <option value="8">8</option>
-                                <option value="9">9</option>
-                                <option value="10">10+</option>
+                            <select name="guests" id="guests-select" required>
+                                <option value="1" {% if form_data.guests == '1' %}selected{% endif %}>1 Guest</option>
+                                <option value="2" {% if form_data.guests == '2' or not form_data.guests %}selected{% endif %}>2 Guests</option>
+                                <option value="3" {% if form_data.guests == '3' %}selected{% endif %}>3 Guests</option>
+                                <option value="4" {% if form_data.guests == '4' %}selected{% endif %}>4 Guests</option>
+                                <option value="5" {% if form_data.guests == '5' %}selected{% endif %}>5 Guests</option>
+                                <option value="6" {% if form_data.guests == '6' %}selected{% endif %}>6 Guests</option>
+                                <option value="7" {% if form_data.guests == '7' %}selected{% endif %}>7 Guests</option>
+                                <option value="8" {% if form_data.guests == '8' %}selected{% endif %}>8 Guests</option>
+                                <option value="9" {% if form_data.guests == '9' %}selected{% endif %}>9 Guests</option>
+                                <option value="10" {% if form_data.guests == '10' %}selected{% endif %}>10+ Guests</option>
                             </select>
                         </div>
                     </div>
@@ -405,6 +405,109 @@
 
         // Initialize with default value (2 guests)
         guestsSelect.dispatchEvent(new Event('change'));
+
+        // Form validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const nameInput = document.querySelector('input[name="name"]');
+            const emailInput = document.querySelector('input[name="email"]');
+            const phoneInput = document.querySelector('input[name="phone"]');
+            const startDateInput = document.querySelector('input[name="start_date"]');
+            
+            // Validation patterns
+            const phonePattern = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/;
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            function showError(input, message) {
+                // Remove existing error
+                const existingError = input.parentElement.querySelector('.error-msg');
+                if (existingError) existingError.remove();
+                
+                // Add error message
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-msg';
+                errorDiv.style.color = '#dc2626';
+                errorDiv.style.fontSize = '12px';
+                errorDiv.style.marginTop = '5px';
+                errorDiv.textContent = message;
+                input.parentElement.appendChild(errorDiv);
+                input.style.borderColor = '#dc2626';
+            }
+            
+            function clearError(input) {
+                const existingError = input.parentElement.querySelector('.error-msg');
+                if (existingError) existingError.remove();
+                input.style.borderColor = '#F0F0F0';
+            }
+            
+            // Real-time validation for name
+            nameInput.addEventListener('input', function() {
+                if (this.value.trim().length < 2 && this.value.length > 0) {
+                    showError(this, 'Name must be at least 2 characters');
+                } else {
+                    clearError(this);
+                }
+            });
+            
+            // Real-time validation for email
+            emailInput.addEventListener('input', function() {
+                if (this.value && !emailPattern.test(this.value)) {
+                    showError(this, 'Please enter a valid email address');
+                } else {
+                    clearError(this);
+                }
+            });
+            
+            // Real-time validation for phone - only allow numbers
+            phoneInput.addEventListener('input', function() {
+                // Only allow digits (remove any non-digit characters)
+                this.value = this.value.replace(/[^\d]/g, '');
+                
+                // Limit to 10 digits
+                if (this.value.length > 10) {
+                    this.value = this.value.slice(0, 10);
+                }
+                
+                if (this.value && this.value.length < 10) {
+                    showError(this, 'Phone number must be exactly 10 digits');
+                } else if (this.value && this.value.length === 10) {
+                    clearError(this);
+                }
+            });
+            
+            // Form submission validation
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+                
+                // Validate name
+                if (nameInput.value.trim().length < 2) {
+                    showError(nameInput, 'Name is required (minimum 2 characters)');
+                    isValid = false;
+                }
+                
+                // Validate email
+                if (!emailPattern.test(emailInput.value)) {
+                    showError(emailInput, 'Please enter a valid email address');
+                    isValid = false;
+                }
+                
+                // Validate phone - must be exactly 10 digits
+                if (!phoneInput.value || phoneInput.value.length !== 10) {
+                    showError(phoneInput, 'Phone number must be exactly 10 digits');
+                    isValid = false;
+                }
+                
+                // Validate start date
+                if (!startDateInput.value) {
+                    showError(startDateInput, 'Please select a start date');
+                    isValid = false;
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                }
+            });
+        });
     </script>
 
     <section class="stories-section">

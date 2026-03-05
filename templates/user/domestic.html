@@ -478,9 +478,16 @@
         /* Slider Arrows */
         .gallery-footer {
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: center;
             gap: 15px;
             margin-top: 40px;
+        }
+
+        .hosp-counter {
+            font-size: 18px;
+            font-weight: 500;
+            color: white;
         }
 
         .arrow-btn {
@@ -1052,7 +1059,7 @@
             <h2 class="section-title">Why Choose<br>Whyte House Holidays?</h2>
             <div class="header-description">
                 <p>With over 10 years of experience in the travel and hospitality industry, Whyte House Holidays is a name trusted by travelers and property owners alike. We specialize in crafting seamless holiday experiences and managing exclusive properties with the highest standards of quality and care.</p>
-                <a href="#" class="btn-meet">Meet Our Team <i class="fa-solid fa-arrow-right"></i></a>
+                <a href="{% url 'user_panel:about'%}" class="btn-meet">Meet Our Team <i class="fa-solid fa-arrow-right"></i></a>
             </div>
         </div>
 
@@ -1177,8 +1184,11 @@
             </div>
 
             <div class="gallery-footer">
-                <button class="arrow-btn"><i class="fa-solid fa-arrow-left"></i></button>
-                <button class="arrow-btn"><i class="fa-solid fa-arrow-right"></i></button>
+                <div class="hosp-counter"><span id="dest-current">1</span>/<span id="dest-total">1</span></div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="arrow-btn" id="dest-prev"><i class="fa-solid fa-arrow-left"></i></button>
+                    <button class="arrow-btn" id="dest-next"><i class="fa-solid fa-arrow-right"></i></button>
+                </div>
             </div>
 
         </div>
@@ -1253,6 +1263,83 @@
             </div>
 
             <script>
+            // Gallery destinations navigation - show 3 at a time
+            document.addEventListener('DOMContentLoaded', function() {
+                const galleryCards = document.querySelectorAll('.gallery-grid .gallery-card');
+                const prevBtn = document.getElementById('dest-prev');
+                const nextBtn = document.getElementById('dest-next');
+                const currentSpan = document.getElementById('dest-current');
+                const totalSpan = document.getElementById('dest-total');
+                
+                const cardsPerPage = 3;
+                const totalCards = galleryCards.length;
+                const totalPages = Math.ceil(totalCards / cardsPerPage);
+                let currentPage = 0;
+                
+                // Assign page numbers to cards
+                galleryCards.forEach((card, index) => {
+                    card.setAttribute('data-page', Math.floor(index / cardsPerPage));
+                });
+                
+                if (totalSpan) totalSpan.textContent = totalPages;
+                
+                function updateButtons() {
+                    // Disable/enable buttons based on current page
+                    if (prevBtn) {
+                        if (currentPage === 0) {
+                            prevBtn.disabled = true;
+                            prevBtn.style.opacity = '0.3';
+                            prevBtn.style.cursor = 'not-allowed';
+                        } else {
+                            prevBtn.disabled = false;
+                            prevBtn.style.opacity = '1';
+                            prevBtn.style.cursor = 'pointer';
+                        }
+                    }
+                    
+                    if (nextBtn) {
+                        if (currentPage === totalPages - 1) {
+                            nextBtn.disabled = true;
+                            nextBtn.style.opacity = '0.3';
+                            nextBtn.style.cursor = 'not-allowed';
+                        } else {
+                            nextBtn.disabled = false;
+                            nextBtn.style.opacity = '1';
+                            nextBtn.style.cursor = 'pointer';
+                        }
+                    }
+                }
+                
+                function showPage(pageIndex) {
+                    galleryCards.forEach((card, index) => {
+                        const cardPage = parseInt(card.getAttribute('data-page'));
+                        card.style.display = (cardPage === pageIndex) ? 'block' : 'none';
+                    });
+                    if (currentSpan) currentSpan.textContent = pageIndex + 1;
+                    currentPage = pageIndex;
+                    updateButtons();
+                }
+                
+                // Initialize - show first page
+                showPage(0);
+                
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', function() {
+                        if (currentPage > 0) {
+                            showPage(currentPage - 1);
+                        }
+                    });
+                }
+                
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', function() {
+                        if (currentPage < totalPages - 1) {
+                            showPage(currentPage + 1);
+                        }
+                    });
+                }
+            });
+            
             // Property carousel navigation - show 3 at a time
             document.addEventListener('DOMContentLoaded', function() {
                 const propCards = document.querySelectorAll('#property-grid .prop-card');

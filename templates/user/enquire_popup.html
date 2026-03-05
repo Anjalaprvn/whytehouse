@@ -12,17 +12,17 @@
             
             <div class="form-group">
                 <label>Full Name *</label>
-                <input type="text" name="full_name" required>
+                <input type="text" name="full_name" id="enquire_name" required>
             </div>
             
             <div class="form-group">
                 <label>Mobile Number *</label>
-                <input type="tel" name="mobile_number" required>
+                <input type="tel" name="mobile_number" id="enquire_phone" required maxlength="10" pattern="[0-9]{10}" placeholder="Enter 10 digit phone number">
             </div>
             
             <div class="form-group">
                 <label>Email</label>
-                <input type="email" name="email">
+                <input type="email" name="email" id="enquire_email" placeholder="your.email@example.com">
             </div>
             
             <div class="form-group">
@@ -152,6 +152,17 @@
     background: #b8860b;
 }
 
+.error-msg {
+    color: #dc2626;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.form-group input.error,
+.form-group textarea.error {
+    border-color: #dc2626;
+}
+
 @media (max-width: 600px) {
     .popup-content {
         padding: 20px;
@@ -171,12 +182,114 @@ function openEnquirePopup(enquiryType = 'General') {
 function closeEnquirePopup() {
     document.getElementById('enquirePopup').style.display = 'none';
     document.body.style.overflow = 'auto';
+    // Clear form and errors
+    document.getElementById('enquireForm').reset();
+    clearAllErrors();
+}
+
+function showError(input, message) {
+    // Remove existing error
+    const existingError = input.parentElement.querySelector('.error-msg');
+    if (existingError) existingError.remove();
+    
+    // Add error message
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-msg';
+    errorDiv.textContent = message;
+    input.parentElement.appendChild(errorDiv);
+    input.classList.add('error');
+}
+
+function clearError(input) {
+    const existingError = input.parentElement.querySelector('.error-msg');
+    if (existingError) existingError.remove();
+    input.classList.remove('error');
+}
+
+function clearAllErrors() {
+    const errors = document.querySelectorAll('.error-msg');
+    errors.forEach(error => error.remove());
+    const errorInputs = document.querySelectorAll('.error');
+    errorInputs.forEach(input => input.classList.remove('error'));
 }
 
 // Close popup when clicking outside
 document.addEventListener('DOMContentLoaded', function() {
+    const nameInput = document.getElementById('enquire_name');
+    const phoneInput = document.getElementById('enquire_phone');
+    const emailInput = document.getElementById('enquire_email');
+    
+    // Validation patterns
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    // Real-time validation for name
+    if (nameInput) {
+        nameInput.addEventListener('input', function() {
+            if (this.value.trim().length < 2 && this.value.length > 0) {
+                showError(this, 'Name must be at least 2 characters');
+            } else {
+                clearError(this);
+            }
+        });
+    }
+    
+    // Real-time validation for phone - only allow numbers, exactly 10 digits
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+            // Only allow digits (remove any non-digit characters)
+            this.value = this.value.replace(/[^\d]/g, '');
+            
+            // Limit to 10 digits
+            if (this.value.length > 10) {
+                this.value = this.value.slice(0, 10);
+            }
+            
+            if (this.value && this.value.length < 10) {
+                showError(this, 'Phone number must be exactly 10 digits');
+            } else if (this.value && this.value.length === 10) {
+                clearError(this);
+            }
+        });
+    }
+    
+    // Real-time validation for email
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            if (this.value && !emailPattern.test(this.value)) {
+                showError(this, 'Please enter a valid email address');
+            } else {
+                clearError(this);
+            }
+        });
+    }
+    
+    // Form submission
     document.getElementById('enquireForm').addEventListener('submit', function(e) {
         e.preventDefault();
+        
+        let isValid = true;
+        
+        // Validate name
+        if (nameInput.value.trim().length < 2) {
+            showError(nameInput, 'Name is required (minimum 2 characters)');
+            isValid = false;
+        }
+        
+        // Validate phone - must be exactly 10 digits
+        if (!phoneInput.value || phoneInput.value.length !== 10) {
+            showError(phoneInput, 'Phone number must be exactly 10 digits');
+            isValid = false;
+        }
+        
+        // Validate email if provided
+        if (emailInput.value && !emailPattern.test(emailInput.value)) {
+            showError(emailInput, 'Please enter a valid email address');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            return;
+        }
         
         fetch('{% url "user_panel:enquire_now" %}', {
             method: 'POST',

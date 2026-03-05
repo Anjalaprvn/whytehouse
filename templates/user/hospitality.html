@@ -1607,7 +1607,7 @@
 
   function update(){
     const slideW = getSlideWidth();
-    track.style.transform = translateX(-${index * slideW}px);
+    track.style.transform = `translateX(-${index * slideW}px)`;
 
     dots.forEach(d => d.classList.remove("active"));
     if (dots[index]) dots[index].classList.add("active");
