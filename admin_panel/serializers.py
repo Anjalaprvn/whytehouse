@@ -58,6 +58,7 @@ class BlogImageSerializer(serializers.ModelSerializer):
 
 
 # ==================== BLOG SERIALIZER ====================
+
 class BlogSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField(read_only=True)
     content_images = BlogImageSerializer(many=True, read_only=True)

@@ -40,10 +40,7 @@ from .serializers import (
 
 # ==================== BLOG CATEGORY VIEWSET ====================
 class BlogCategoryViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for Blog Categories
-    Filters: is_active, search
-    """
+
     serializer_class = BlogCategorySerializer
     queryset = BlogCategory.objects.all().order_by('order', 'name')
 
