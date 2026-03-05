@@ -135,7 +135,21 @@
     .stars label:hover ~ label{
       color: var(--brand);
     }
+.preview-container{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:12px;
+}
 
+.preview-container img{
+  width:110px;
+  height:85px;
+  object-fit:cover;
+  border-radius:8px;
+  border:1px solid #ddd;
+  box-shadow:0 2px 6px rgba(0,0,0,0.08);
+}
     .rating-text{
       min-width:160px;
       text-align:right;
@@ -203,7 +217,7 @@
             </div>
           {% endif %}
 
-          <form method="post" action="{% url 'user_panel:feedback_form' %}">
+          <form method="post" action="{% url 'user_panel:feedback_form' %}" enctype="multipart/form-data">
             {% csrf_token %}
 
             <div class="grid">
@@ -241,7 +255,26 @@
                 <option value="Other" {% if request.POST.feedback_type == "Other" %}selected{% endif %}>Other</option>
               </select>
             </div>
+<div class="field">
+  <label for="feedback_images">
+    Upload Images <span class="hint">(optional)</span>
+  </label>
 
+  <input
+    type="file"
+    id="feedback_images"
+    name="feedback_images"
+    accept="image/png,image/jpeg,image/jpg"
+    multiple
+  >
+
+  <div class="help">
+    You can upload photos related to your trip or experience.
+  </div>
+
+  <!-- Preview Area -->
+  <div id="imagePreviewContainer" class="preview-container"></div>
+</div>
             <div class="field">
               <label>Rating <span class="req-dot"></span></label>
 
@@ -275,8 +308,16 @@
               <textarea id="feedback" name="feedback" required placeholder="Write your feedback...">{{ request.POST.feedback }}</textarea>
             </div>
 
+            <div class="field">
+              <label for="image">Upload Image <span class="hint">(optional)</span></label>
+              <input type="file" id="image" name="image" accept="image/*">
+              <div class="help">Upload a photo related to your feedback (JPG, PNG, max 5MB)</div>
+            </div>
+
             <div class="actions">
-              <a href="/" class="btn secondary"><i class="fa-solid fa-xmark"></i> Cancel</a>
+              <button type="button" class="btn secondary" id="clearFormBtn">
+  <i class="fa-solid fa-eraser"></i> Clear
+</button>
               <button type="submit" class="btn primary"><i class="fa-solid fa-paper-plane"></i> Submit Feedback</button>
             </div>
           </form>
@@ -297,6 +338,55 @@
             radios.forEach(r => r.addEventListener("change", sync));
             sync();
           })();
+          const imageInput = document.getElementById("feedback_images");
+const previewContainer = document.getElementById("imagePreviewContainer");
+
+imageInput.addEventListener("change", function(){
+
+  previewContainer.innerHTML = "";
+
+  const files = this.files;
+
+  if(files.length === 0) return;
+
+  Array.from(files).forEach(file => {
+
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+
+      const img = document.createElement("img");
+      img.src = e.target.result;
+
+      previewContainer.appendChild(img);
+    };
+
+    reader.readAsDataURL(file);
+
+  });
+
+});
+const clearBtn = document.getElementById("clearFormBtn");
+const formEl = document.querySelector('form[action="{% url "user_panel:feedback_form" %}"]') || document.querySelector("form");
+
+clearBtn.addEventListener("click", function () {
+  // Reset normal inputs/select/textarea
+  formEl.reset();
+
+  // Clear star rating (radio)
+  document.querySelectorAll('input[name="rating"]').forEach(r => r.checked = false);
+
+  // Reset rating text
+  const ratingText = document.getElementById("ratingText");
+  if (ratingText) ratingText.textContent = "Tap to rate";
+
+  // Clear file input + preview
+  const imageInput = document.getElementById("feedback_images");
+  const previewContainer = document.getElementById("imagePreviewContainer");
+
+  if (imageInput) imageInput.value = "";
+  if (previewContainer) previewContainer.innerHTML = "";
+});
         </script>
       {% endif %}
 

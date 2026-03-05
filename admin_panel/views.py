@@ -2628,8 +2628,7 @@ def delete_destination(request, destination_id):
 # FEEDBACK MANAGEMENT
 def feedback_list(request):
     feedbacks = Feedback.objects.all().order_by('-created_at')
-    
-    # Search functionality
+
     search_query = request.GET.get('search', '').strip()
     if search_query:
         feedbacks = feedbacks.filter(
@@ -2637,53 +2636,72 @@ def feedback_list(request):
             Q(email__icontains=search_query) |
             Q(mobile_number__icontains=search_query)
         )
-    
-    # Filter by rating
-    rating_filter = request.GET.get('rating', '')
+
+    rating_filter = request.GET.get('rating', '').strip()
     if rating_filter:
         feedbacks = feedbacks.filter(rating=rating_filter)
-    
-    # also compute count of featured testimonials for quick stat
+
+    type_filter = request.GET.get('feedback_type', '').strip()
+    if type_filter:
+        feedbacks = feedbacks.filter(feedback_type=type_filter)
+
     featured_count = Feedback.objects.filter(featured=True).count()
+
     context = {
         'feedbacks': feedbacks,
         'search_query': search_query,
         'rating_filter': rating_filter,
+        'type_filter': type_filter,
         'total_feedbacks': Feedback.objects.count(),
         'featured_count': featured_count,
+        'feedback_type_choices': Feedback.FEEDBACK_TYPE_CHOICES,
     }
     return render(request, 'admin/feedback/feedback.html', context)
-
 def add_feedback(request):
     if request.method == 'POST':
         try:
-            name = request.POST.get('name', '').strip()
-            email = request.POST.get('email', '').strip()
-            mobile_number = request.POST.get('mobile_number', '').strip()
-            rating = request.POST.get('rating', '')
-            feedback_text = request.POST.get('feedback', '').strip()
-            
-            if not all([name, email, mobile_number, rating, feedback_text]):
-                messages.error(request, "All fields are required.")
-                return render(request, 'admin/feedback/add_feedback.html')
-            
+            name = (request.POST.get('name') or '').strip()
+            email = (request.POST.get('email') or '').strip()
+            mobile_number = (request.POST.get('mobile_number') or '').strip()
+            feedback_type = (request.POST.get('feedback_type') or '').strip()
+            rating = (request.POST.get('rating') or '').strip()
+            feedback_text = (request.POST.get('feedback') or '').strip()
+
+            if not all([name, email, rating, feedback_text, feedback_type]):
+                messages.error(request, "Name, Email, Feedback Type, Rating and Feedback are required.")
+                return render(request, 'admin/feedback/add_feedback.html', {
+                    "feedback_type_choices": Feedback.FEEDBACK_TYPE_CHOICES
+                })
+
             featured_flag = request.POST.get('featured') == '1'
-            Feedback.objects.create(
+
+            feedback_obj = Feedback.objects.create(
                 name=name,
                 email=email,
                 mobile_number=mobile_number,
+                feedback_type=feedback_type,
                 rating=int(rating),
                 feedback=feedback_text,
                 featured=featured_flag
             )
+
+            # ✅ MULTIPLE IMAGES
+            images = request.FILES.getlist("feedback_images")
+            for img in images:
+                FeedbackImage.objects.create(feedback=feedback_obj, image=img)
+
             messages.success(request, "Feedback added successfully!")
             return redirect('feedback:feedback_list')
+
         except Exception as e:
             messages.error(request, f"Error adding feedback: {str(e)}")
-            return render(request, 'admin/feedback/add_feedback.html')
-    
-    return render(request, 'admin/feedback/add_feedback.html')
+            return render(request, 'admin/feedback/add_feedback.html', {
+                "feedback_type_choices": Feedback.FEEDBACK_TYPE_CHOICES
+            })
 
+    return render(request, 'admin/feedback/add_feedback.html', {
+        "feedback_type_choices": Feedback.FEEDBACK_TYPE_CHOICES
+    })
 def view_feedback(request, feedback_id):
     feedback = get_object_or_404(Feedback, id=feedback_id)
     return render(request, 'admin/feedback/view_feedback.html', {'feedback': feedback})

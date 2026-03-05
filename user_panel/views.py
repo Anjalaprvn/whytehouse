@@ -683,6 +683,7 @@ def feedback_form(request):
         feedback_type = request.POST.get('feedback_type', '').strip()
         rating = request.POST.get('rating', '')
         feedback_text = request.POST.get('feedback', '').strip()
+        image = request.FILES.get('image')
 
         if not all([name, email, feedback_type, rating, feedback_text]):
             return render(request, 'user/feedback_form.html', {'error': 'Please fill required fields.'})
@@ -693,7 +694,8 @@ def feedback_form(request):
             mobile_number=mobile_number,
             feedback_type=feedback_type,
             rating=int(rating),
-            feedback=feedback_text
+            feedback=feedback_text,
+            image=image
         )
         # show success message on the same page
         return render(request, 'user/feedback_form.html', {'success': True})

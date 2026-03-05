@@ -480,7 +480,11 @@ class BlogImage(models.Model):
         """Returns the tag to use in content, e.g., {{image1}}"""
         return f"{{{{image{self.order + 1}}}}}"
 
+
+from django.db import models
+
 class Feedback(models.Model):
+
     RATING_CHOICES = [
         (1, "1 Star"),
         (2, "2 Stars"),
@@ -488,7 +492,7 @@ class Feedback(models.Model):
         (4, "4 Stars"),
         (5, "5 Stars"),
     ]
-    
+
     FEEDBACK_TYPE_CHOICES = [
         ('Travel Package', 'Travel Package'),
         ('Customer Service', 'Customer Service'),
@@ -505,13 +509,28 @@ class Feedback(models.Model):
 
     name = models.CharField(max_length=150)
     email = models.EmailField()
-    mobile_number = models.CharField(max_length=10)
-    feedback_type = models.CharField(max_length=50, choices=FEEDBACK_TYPE_CHOICES, default='Overall Experience')
+    mobile_number = models.CharField(max_length=10, blank=True)
+
+    feedback_type = models.CharField(
+        max_length=50,
+        choices=FEEDBACK_TYPE_CHOICES,
+        default='Overall Experience'
+    )
+
     rating = models.IntegerField(choices=RATING_CHOICES)
+
     feedback = models.TextField()
+
+    # Image upload
+    image = models.ImageField(
+        upload_to='feedback_images/',
+        blank=True,
+        null=True
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # whether this feedback is marked to appear on the homepage
+    # show on homepage
     featured = models.BooleanField(default=False)
 
     def __str__(self):
