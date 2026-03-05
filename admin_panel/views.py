@@ -1068,8 +1068,6 @@ def add_customer(request):
             return render(request, "admin/sales/customer/add_customer.html", context)
 
     return render(request, "admin/sales/customer/add_customer.html", context)
-
-
 def view_customer(request, customer_id):
     try:
         customer = Customer.objects.get(id=customer_id)
@@ -1359,8 +1357,8 @@ def voucher_list(request):
     if search_query:
         vouchers = vouchers.filter(
             Q(voucher_no__icontains=search_query) |
-            Q(customer__display_name__icontains=search_query) |
-            Q(resort__resort_name__icontains=search_query)
+            Q(customer_display_name_icontains=search_query) |
+            Q(resort_resort_name_icontains=search_query)
         )
     
     return render(request, "admin/sales/vouchers/vouchers.html", {"vouchers": vouchers, "search_query": search_query})
@@ -1480,8 +1478,8 @@ def invoice_list(request):
     if search_query:
         invoices = invoices.filter(
             Q(invoice_no__icontains=search_query) |
-            Q(customer__display_name__icontains=search_query) |
-            Q(resort__resort_name__icontains=search_query)
+            Q(customer_display_name_icontains=search_query) |
+            Q(resort_resort_name_icontains=search_query)
         )
     
     invoices = invoices.order_by('-invoice_date', '-id')
@@ -1992,7 +1990,6 @@ def add_category(request):
 
     categories = BlogCategory.objects.all().order_by("name")
     return render(request, "admin/blog/manage_categories.html", {"categories": categories})
-
 def delete_category(request, category_id):
     try:
         category = get_object_or_404(BlogCategory, id=category_id)
@@ -2331,7 +2328,7 @@ def leads_report(request):
                 td = datetime.strptime(to_date, "%Y-%m-%d").date()
                 
                 # Base queryset
-                qs = Lead.objects.filter(created_at__date__range=(fd, td))
+                qs = Lead.objects.filter(created_at_date_range=(fd, td))
                 
                 # Enquiry type filter
                 if enquiry_type:
@@ -2568,7 +2565,7 @@ def add_destination(request):
             return render(request, 'admin/destination/add_destination.html', {'default_category': default_category})
         
         # Check for duplicate destination
-        if Destination.objects.filter(name__iexact=name, country__iexact=country).exists():
+        if Destination.objects.filter(name_iexact=name, country_iexact=country).exists():
             messages.error(request, "This destination already exists.")
             return render(request, 'admin/destination/add_destination.html', {'default_category': default_category})
         
@@ -2718,7 +2715,7 @@ def delete_feedback(request, feedback_id):
 
 def toggle_featured_feedback(request, feedback_id):
     """
-    Toggle the `featured` flag for a feedback entry. When marked, it appears
+    Toggle the featured flag for a feedback entry. When marked, it appears
     on the public homepage "Hear from them" card. Clicking again unmarks it.
     """
     if request.method != 'POST':

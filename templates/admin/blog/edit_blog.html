@@ -320,12 +320,20 @@ function removeNewImage(index) {
     newImagesArray.splice(index, 1);
     updateNewImagesPreview();
     
-    // Update the file input
+    // Update the file input with remaining files
     const input = document.getElementById('content-images-input');
     const dt = new DataTransfer();
     newImagesArray.forEach(img => dt.items.add(img.file));
     input.files = dt.files;
 }
+
+// Before form submission, ensure all files are in the input
+document.querySelector('form').addEventListener('submit', function(e) {
+    const input = document.getElementById('content-images-input');
+    const dt = new DataTransfer();
+    newImagesArray.forEach(img => dt.items.add(img.file));
+    input.files = dt.files;
+});
 
 function removeExistingImage(imageId) {
     if (confirm('Are you sure you want to remove this image?')) {

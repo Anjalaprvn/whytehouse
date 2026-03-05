@@ -10,7 +10,6 @@
         --brand-gold: #D4A373;
         --brand-black: #000000;
         --text-gray: #666666;
-        --footer-text: #999999;
         --white: #ffffff;
         --radius: 24px;
     }
@@ -24,6 +23,7 @@
         background: transparent;
     }
 
+    /* HERO */
     .hero {
         height: 65vh;
         width: 100%;
@@ -37,11 +37,13 @@
         color: white;
         text-align: center;
     }
-    .hero h1 { font-size: 56px; font-weight: 700; }
+    .hero h1 { font-size: 56px; font-weight: 700; margin:0; }
     .hero h1 span { color: var(--brand-gold); font-style: italic; font-weight: 400; }
+    .hero p { margin-top: 12px; max-width: 680px; padding: 0 16px; opacity: .9; }
 
     .container { width: 100%; margin: 0; padding: 0 80px 100px; }
 
+    /* FILTER */
     .filter-section {
         width: 100%;
         max-width: 100%;
@@ -63,12 +65,57 @@
     .tab.active { background: var(--brand-gold); color: white; }
     .tab.inactive { background: var(--brand-black); color: white; }
 
-    .blog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
-    .card { background: var(--white); border-radius: var(--radius); overflow: hidden; border: 1px solid #F0F0F0; transition: transform 0.3s ease; }
-    .card:hover { transform: translateY(-10px); }
+    /* ✅ FIXED BLOG GRID (equal width always) */
+    .blog-grid { 
+        display: grid; 
+        grid-template-columns: repeat(3, minmax(0, 1fr)); /* IMPORTANT FIX */
+        gap: 30px;
+        align-items: stretch;
+    }
 
-    .card-img-wrapper { position: relative; height: 240px; }
-    .card-img { width: 100%; height: 100%; object-fit: cover; }
+    /* ✅ CARD LINK */
+    .card-link { 
+        text-decoration: none; 
+        color: inherit; 
+        display: block;
+        height: 100%;
+        transition: all 0.3s ease; 
+        border-radius: var(--radius); 
+        min-width: 0; /* IMPORTANT FIX */
+    }
+
+    /* ✅ CARD */
+    .card { 
+        background: var(--white); 
+        border-radius: var(--radius); 
+        overflow: hidden; 
+        border: 1px solid #F0F0F0; 
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-width: 0; /* IMPORTANT FIX */
+    }
+
+    .card-link:hover .card { 
+        transform: translateY(-8px); 
+        border-color: var(--brand-gold);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+
+    /* IMAGE fixed height */
+    .card-img-wrapper { 
+        position: relative; 
+        height: 240px;
+        flex-shrink: 0;
+    }
+    
+    .card-img { 
+        width: 100%; 
+        height: 100%; 
+        object-fit: cover; 
+        display:block;
+    }
 
     .featured-badge {
         position: absolute;
@@ -83,21 +130,78 @@
         text-transform: uppercase;
     }
 
-    .card-body { padding: 25px; }
-    .card-meta { font-size: 12px; color: var(--text-gray); margin-bottom: 12px; }
-    .card-title { font-size: 20px; font-weight: 700; margin-bottom: 12px; line-height: 1.4; }
-    .card-text { color: var(--text-gray); font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+    /* BODY */
+    .card-body { 
+        padding: 25px; 
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        min-width: 0; /* IMPORTANT FIX */
+    }
 
-    .tag-group { display: flex; flex-wrap: wrap; gap: 8px; }
-    .tag-item { font-size: 11px; background: #F2F2F2; padding: 5px 12px; border-radius: 6px; color: #888; }
+    .card-meta { 
+        font-size: 12px; 
+        color: var(--text-gray); 
+        margin-bottom: 12px; 
+    }
 
-    .card-link { transition: all 0.3s ease; border-radius: var(--radius); text-decoration: none; color: inherit; display: block; }
-    .card-link:hover { transform: translateY(-8px); }
-    .card-link:hover .card { border-color: var(--brand-gold); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+    /* TITLE clamp */
+    .card-title { 
+        font-size: 20px; 
+        font-weight: 700; 
+        margin-bottom: 12px; 
+        line-height: 1.4;
 
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+
+        min-height: 56px;
+    }
+
+    /* TEXT clamp */
+    .card-text { 
+        color: var(--text-gray); 
+        font-size: 14px; 
+        line-height: 1.6; 
+        margin-bottom: 20px;
+
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+
+        flex-grow: 1;
+    }
+
+    /* ✅ TAGS (prevent stretching) */
+    .tag-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top:auto; min-width:0; }
+    .tag-item { 
+        font-size: 11px; 
+        background: #F2F2F2; 
+        padding: 5px 12px; 
+        border-radius: 6px; 
+        color: #888;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* RESPONSIVE */
     @media (max-width: 992px) {
-        .blog-grid { grid-template-columns: repeat(2, 1fr); }
-        .container { padding: 30px 40px; }
+        .blog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .container { padding: 30px 40px 80px; }
+        .filter-section{padding:28px}
+        .hero h1{font-size:44px}
+    }
+
+    @media (max-width: 600px) {
+        .blog-grid { grid-template-columns: 1fr; }
+        .container { padding: 24px 18px 70px; }
+        .hero{height:55vh}
+        .hero h1{font-size:36px}
     }
 </style>
 {% endblock %}
@@ -114,7 +218,7 @@
         <form method="GET" action="{% url 'user_panel:blog_list' %}">
             <div class="search-container">
                 <input type="text" name="q" class="search-input" placeholder="Search articles..." value="{{ q }}">
-                <button type="submit" class="filter-btn">
+                <button type="submit" class="filter-btn" aria-label="Search">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
                         <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
                     </svg>
@@ -136,7 +240,6 @@
                 <a href="{% url 'user_panel:blog_detail' slug=blog.slug %}" class="card-link">
                     <article class="card">
                         <div class="card-img-wrapper">
-
                             {% if blog.is_featured %}
                                 <span class="featured-badge">Featured</span>
                             {% endif %}
@@ -148,7 +251,6 @@
                             {% else %}
                                 <img src="{% static 'images/blog.png' %}" class="card-img" alt="{{ blog.title }}">
                             {% endif %}
-
                         </div>
 
                         <div class="card-body">
@@ -186,73 +288,44 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const tabs = document.querySelectorAll('.category-tabs .tab');
-    const searchForm = document.querySelector('form');
-    
+
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
-            // Remove active class from all tabs
             tabs.forEach(t => {
                 t.classList.remove('active');
-                if (!t.classList.contains('inactive')) {
-                    t.classList.add('inactive');
-                }
+                if (!t.classList.contains('inactive')) t.classList.add('inactive');
             });
-            
-            // Add active class to clicked tab (and remove inactive if present)
+
             this.classList.remove('inactive');
             this.classList.add('active');
-            
-            // Get the category from data attribute
+
             const category = this.getAttribute('data-category');
-            
-            // Update URL and reload with category parameter
             const url = new URL(window.location);
-            if (category) {
-                url.searchParams.set('category', category);
-            } else {
-                url.searchParams.delete('category');
-            }
-            
-            // Also preserve search query if it exists
+
+            if (category) url.searchParams.set('category', category);
+            else url.searchParams.delete('category');
+
             const searchInput = document.querySelector('input[name="q"]');
-            if (searchInput && searchInput.value) {
-                url.searchParams.set('q', searchInput.value);
-            }
-            
+            if (searchInput && searchInput.value) url.searchParams.set('q', searchInput.value);
+            else url.searchParams.delete('q');
+
             window.location.href = url.toString();
         });
     });
-    
-    // Set active tab based on current category in URL
+
     const urlParams = new URLSearchParams(window.location.search);
-    const currentCategory = urlParams.get('category');
-    
-    if (currentCategory) {
-        tabs.forEach(tab => {
-            if (tab.getAttribute('data-category') === currentCategory) {
-                tab.classList.remove('inactive');
-                tab.classList.add('active');
-            } else {
-                tab.classList.remove('active');
-                if (!tab.classList.contains('inactive')) {
-                    tab.classList.add('inactive');
-                }
-            }
-        });
-    } else {
-        // If no category in URL, make "All" tab active
-        tabs.forEach(tab => {
-            if (tab.getAttribute('data-category') === '') {
-                tab.classList.remove('inactive');
-                tab.classList.add('active');
-            } else {
-                tab.classList.remove('active');
-                if (!tab.classList.contains('inactive')) {
-                    tab.classList.add('inactive');
-                }
-            }
-        });
-    }
+    const currentCategory = urlParams.get('category') || '';
+
+    tabs.forEach(tab => {
+        const tabCat = tab.getAttribute('data-category') || '';
+        if (tabCat === currentCategory) {
+            tab.classList.remove('inactive');
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+            if (!tab.classList.contains('inactive')) tab.classList.add('inactive');
+        }
+    });
 });
 </script>
 {% endblock %}
