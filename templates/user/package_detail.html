@@ -312,6 +312,11 @@
                                 <span><span class="day-label">DAY {{ forloop.counter }}</span> {{ day|truncatewords:5 }}</span>
                                 <i class="fas fa-chevron-down"></i>
                             </div>
+                            <div class="itinerary-content" style="display: none;">
+                                <div>
+                                    <p style="color: #555; line-height: 1.6;">{{ day }}</p>
+                                </div>
+                            </div>
                         </div>
                         {% endif %}
                     {% endfor %}
@@ -405,6 +410,26 @@
 
         // Initialize with default value (2 guests)
         guestsSelect.dispatchEvent(new Event('change'));
+
+        // Itinerary accordion functionality
+        document.querySelectorAll('.itinerary-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const item = this.parentElement;
+                const content = item.querySelector('.itinerary-content');
+                const icon = this.querySelector('i');
+                
+                // Toggle content visibility
+                if (content.style.display === 'none' || content.style.display === '') {
+                    content.style.display = 'block';
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                } else {
+                    content.style.display = 'none';
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                }
+            });
+        });
 
         // Form validation
         document.addEventListener('DOMContentLoaded', function() {
