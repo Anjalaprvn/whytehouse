@@ -65,7 +65,25 @@
         align-items: center; 
         box-shadow: 0 15px 45px rgba(0,0,0,0.15);
     }
-    .search-wrapper input { flex: 1; border: none; outline: none; padding: 12px; font-size: 16px; }
+    .search-wrapper input { 
+        flex: 1; 
+        border: none; 
+        outline: none; 
+        padding: 12px; 
+        font-size: 16px; 
+    }
+    .search-wrapper button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .search-wrapper button:hover {
+        opacity: 0.7;
+    }
     
     .categories-container { display: flex; justify-content: center; gap: 12px; margin-bottom: 50px; flex-wrap: wrap; }
     .cat-pill {
@@ -173,33 +191,99 @@
 </header>
 
 <div class="search-container">
-    <div class="search-wrapper">
-        <input type="text" placeholder="Search destinations or country...">
-        <div class="filter-icon"><i class="fas fa-search" style="color: #666;"></i></div>
-    </div>
+    <form method="GET" action="" class="search-wrapper" id="searchForm">
+        <input type="text" name="search" id="searchInput" placeholder="Search destinations or country..." value="{{ search_query }}" autocomplete="off">
+        {% if selected_destination %}
+        <input type="hidden" name="dest" value="{{ selected_destination }}">
+        {% endif %}
+        {% if search_query %}
+        <button type="button" id="clearSearch" style="background: none; border: none; cursor: pointer; padding: 8px; margin-right: 5px;">
+            <i class="fas fa-times" style="color: #999; font-size: 16px;"></i>
+        </button>
+        {% endif %}
+        <button type="submit" style="background: none; border: none; cursor: pointer; padding: 8px 12px;">
+            <i class="fas fa-search" style="color: #666; font-size: 18px;"></i>
+        </button>
+    </form>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('searchForm');
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearch');
+    
+    // Handle form submission
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const searchValue = searchInput.value.trim();
+            
+            // Build URL with parameters
+            const url = new URL(window.location.href);
+            
+            if (searchValue) {
+                url.searchParams.set('search', searchValue);
+            } else {
+                url.searchParams.delete('search');
+            }
+            
+            window.location.href = url.toString();
+        });
+    }
+    
+    // Handle clear button
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('search');
+            window.location.href = url.toString();
+        });
+    }
+    
+    // Handle Enter key
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchForm.dispatchEvent(new Event('submit'));
+            }
+        });
+    }
+});
+</script>
+
 <div class="categories-container">
+    {% if search_query %}
+    <div style="width: 100%; text-align: center; margin-bottom: 10px; color: #666; font-size: 14px;">
+        Showing results for "<strong>{{ search_query }}</strong>" 
+        <a href="{% if category %}{% if category == 'Domestic' %}{% url 'user_panel:domestic_packages' %}{% else %}{% url 'user_panel:international_packages' %}{% endif %}{% if selected_destination %}?dest={{ selected_destination }}{% endif %}{% else %}?country={{ selected_country|default:'all' }}{% endif %}" 
+           style="color: var(--brand-gold); text-decoration: none; margin-left: 10px;">
+            <i class="fas fa-times-circle"></i> Clear search
+        </a>
+    </div>
+    {% endif %}
+    
     {% if category %}
         <!-- Show destination filters when on domestic or international packages page -->
-        <a href="{% if category == 'Domestic' %}{% url 'user_panel:domestic_packages' %}{% else %}{% url 'user_panel:international_packages' %}{% endif %}" 
+        <a href="{% if category == 'Domestic' %}{% url 'user_panel:domestic_packages' %}{% else %}{% url 'user_panel:international_packages' %}{% endif %}{% if search_query %}?search={{ search_query }}{% endif %}" 
            class="cat-pill {% if not selected_destination %}active{% endif %}">
             All {{ category }}
         </a>
         {% for dest in destinations %}
-        <a href="{% if category == 'Domestic' %}{% url 'user_panel:domestic_packages' %}?dest={{ dest.id }}{% else %}{% url 'user_panel:international_packages' %}?dest={{ dest.id }}{% endif %}" 
+        <a href="{% if category == 'Domestic' %}{% url 'user_panel:domestic_packages' %}?dest={{ dest.id }}{% if search_query %}&search={{ search_query }}{% endif %}{% else %}{% url 'user_panel:international_packages' %}?dest={{ dest.id }}{% if search_query %}&search={{ search_query }}{% endif %}{% endif %}" 
            class="cat-pill {% if selected_destination == dest.id %}active{% endif %}">
             {{ dest.name }}
         </a>
         {% endfor %}
     {% else %}
         <!-- Legacy country filters (if still needed) -->
-        <a href="?country=all" class="cat-pill {% if selected_country == 'all' %}active{% endif %}">All</a>
-        <a href="?country=thailand" class="cat-pill {% if selected_country == 'thailand' %}active{% endif %}">Thailand</a>
-        <a href="?country=vietnam" class="cat-pill {% if selected_country == 'vietnam' %}active{% endif %}">Vietnam</a>
-        <a href="?country=malaysia" class="cat-pill {% if selected_country == 'malaysia' %}active{% endif %}">Malaysia</a>
-        <a href="?country=paris" class="cat-pill {% if selected_country == 'paris' %}active{% endif %}">Paris</a>
-        <a href="?country=london" class="cat-pill {% if selected_country == 'london' %}active{% endif %}">London</a>
+        <a href="?country=all{% if search_query %}&search={{ search_query }}{% endif %}" class="cat-pill {% if selected_country == 'all' %}active{% endif %}">All</a>
+        <a href="?country=thailand{% if search_query %}&search={{ search_query }}{% endif %}" class="cat-pill {% if selected_country == 'thailand' %}active{% endif %}">Thailand</a>
+        <a href="?country=vietnam{% if search_query %}&search={{ search_query }}{% endif %}" class="cat-pill {% if selected_country == 'vietnam' %}active{% endif %}">Vietnam</a>
+        <a href="?country=malaysia{% if search_query %}&search={{ search_query }}{% endif %}" class="cat-pill {% if selected_country == 'malaysia' %}active{% endif %}">Malaysia</a>
+        <a href="?country=paris{% if search_query %}&search={{ search_query }}{% endif %}" class="cat-pill {% if selected_country == 'paris' %}active{% endif %}">Paris</a>
+        <a href="?country=london{% if search_query %}&search={{ search_query }}{% endif %}" class="cat-pill {% if selected_country == 'london' %}active{% endif %}">London</a>
     {% endif %}
 </div>
 

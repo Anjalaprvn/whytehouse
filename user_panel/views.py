@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.http import JsonResponse
+from django.db.models import Q
 from admin_panel.models import TravelPackage, Property, Inquiry, Lead, Blog, Destination
 from admin_panel.models import Feedback,BlogCategory
 
@@ -411,24 +412,54 @@ def contact(request):
 
 def packages(request):
     country = request.GET.get('country', 'all')
+    search_query = request.GET.get('search', '').strip()
     
+    # Filter packages
     if country == 'all':
         all_packages = TravelPackage.objects.filter(active=True)
     else:
         all_packages = TravelPackage.objects.filter(active=True, country__iexact=country)
     
-    return render(request, 'user/packages.html', {'packages': all_packages, 'selected_country': country})
+    # Apply search filter
+    if search_query:
+        all_packages = all_packages.filter(
+            Q(name__icontains=search_query) |
+            Q(location__icontains=search_query) |
+            Q(country__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(destination__name__icontains=search_query)
+        )
+    
+    return render(request, 'user/packages.html', {
+        'packages': all_packages, 
+        'selected_country': country,
+        'search_query': search_query
+    })
 
 def domestic_packages(request):
     destination_id = request.GET.get('dest')
+    search_query = request.GET.get('search', '').strip()
     
     # Get all domestic destinations
     destinations = Destination.objects.filter(category='Domestic').order_by('name')
     
     # Filter packages
     packages = TravelPackage.objects.filter(active=True, category='Domestic')
+    
+    # Apply search filter
+    if search_query:
+        packages = packages.filter(
+            Q(name__icontains=search_query) |
+            Q(location__icontains=search_query) |
+            Q(country__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(destination__name__icontains=search_query)
+        )
+    
+    # Apply destination filter
     if destination_id:
         packages = packages.filter(destination_id=destination_id)
+    
     packages = packages.order_by('-created_at')
     
     # Get selected destination object
@@ -444,20 +475,35 @@ def domestic_packages(request):
         'destinations': destinations,
         'selected_destination': int(destination_id) if destination_id else None,
         'selected_destination_obj': selected_destination,
-        'category': 'Domestic'
+        'category': 'Domestic',
+        'search_query': search_query
     }
     return render(request, 'user/packages.html', context)
 
 def international_packages(request):
     destination_id = request.GET.get('dest')
+    search_query = request.GET.get('search', '').strip()
     
     # Get all international destinations
     destinations = Destination.objects.filter(category='International').order_by('name')
     
     # Filter packages
     packages = TravelPackage.objects.filter(active=True, category='International')
+    
+    # Apply search filter
+    if search_query:
+        packages = packages.filter(
+            Q(name__icontains=search_query) |
+            Q(location__icontains=search_query) |
+            Q(country__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(destination__name__icontains=search_query)
+        )
+    
+    # Apply destination filter
     if destination_id:
         packages = packages.filter(destination_id=destination_id)
+    
     packages = packages.order_by('-created_at')
     
     # Get selected destination object
@@ -473,7 +519,8 @@ def international_packages(request):
         'destinations': destinations,
         'selected_destination': int(destination_id) if destination_id else None,
         'selected_destination_obj': selected_destination,
-        'category': 'International'
+        'category': 'International',
+        'search_query': search_query
     }
     return render(request, 'user/packages.html', context)
 
