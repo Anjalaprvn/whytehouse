@@ -159,6 +159,10 @@ def dashboard(request):
     total_profit = Invoice.objects.aggregate(Sum('profit'))['profit__sum'] or 0
     new_leads = Lead.objects.filter(created_at__gte=datetime.now() - timedelta(days=30)).count()
     total_customers = Customer.objects.count()
+    total_feedbacks = Feedback.objects.count()
+    total_blogs = Blog.objects.count()
+    international_packages = TravelPackage.objects.filter(category='International').count()
+    domestic_packages = TravelPackage.objects.filter(category='Domestic').count()
     
     # Upcoming bookings (vouchers with future check-in dates)
     upcoming_bookings = Voucher.objects.filter(checkin_date__gte=datetime.now()).order_by('checkin_date')[:3]
@@ -175,6 +179,10 @@ def dashboard(request):
         'total_profit': total_profit,
         'new_leads': new_leads,
         'total_customers': total_customers,
+        'total_feedbacks': total_feedbacks,
+        'total_blogs': total_blogs,
+        'international_packages': international_packages,
+        'domestic_packages': domestic_packages,
         'upcoming_bookings': upcoming_bookings,
         'recent_invoices': recent_invoices,
         'recent_leads': recent_leads,

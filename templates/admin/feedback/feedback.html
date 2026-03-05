@@ -157,6 +157,7 @@
 
 .action-icons {
     text-align: center;
+    white-space: nowrap;
 }
 
 .action-icons a,
@@ -169,6 +170,8 @@
     border: none;
     cursor: pointer;
     padding: 0;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 .action-icons a:hover,
@@ -264,6 +267,7 @@
                     <th>Name</th>
                     <th>Email</th>
                     <th>Mobile No</th>
+                    <th>Type</th>
                     <th>Rating</th>
                     <th>Feedback</th>
                     <th>Date</th>
@@ -278,6 +282,7 @@
                     <td>{{ feedback.name }}</td>
                     <td>{{ feedback.email }}</td>
                     <td>{{ feedback.mobile_number }}</td>
+                    <td>{{ feedback.feedback_type }}</td>
                     <td>
                         <span class="rating-badge star-{{ feedback.rating }}">
                             <i class="fas fa-star"></i> {{ feedback.rating }} Star{% if feedback.rating != 1 %}s{% endif %}
@@ -311,7 +316,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" style="text-align:center; padding:40px; color:#999;">
+                    <td colspan="9" style="text-align:center; padding:40px; color:#999;">
                         No feedbacks found.
                     </td>
                 </tr>

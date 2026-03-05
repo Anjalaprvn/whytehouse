@@ -82,7 +82,7 @@
     .req-dot{width:6px;height:6px;border-radius:50%;background:var(--brand);display:inline-block}
     .hint{font-weight:700;color:var(--muted);font-size:12px}
 
-    input[type="text"], input[type="email"], input[type="tel"], textarea{
+    input[type="text"], input[type="email"], input[type="tel"], textarea, select{
       width:100%;
       padding:12px 12px;
       border:1px solid var(--border);
@@ -94,7 +94,7 @@
     }
     textarea{min-height:140px;resize:vertical}
 
-    input:focus, textarea:focus{
+    input:focus, textarea:focus, select:focus{
       border-color: rgba(212,160,23,.65);
       box-shadow: var(--focus);
     }
@@ -222,6 +222,24 @@
               <label for="mobile_number">Mobile Number <span class="hint">(optional)</span></label>
               <input type="tel" id="mobile_number" name="mobile_number" maxlength="10" value="{{ request.POST.mobile_number }}" placeholder="10-digit number">
               <div class="help">Example: 9876543210</div>
+            </div>
+
+            <div class="field">
+              <label for="feedback_type">Feedback Type <span class="req-dot"></span></label>
+              <select id="feedback_type" name="feedback_type" required>
+                <option value="" disabled {% if not request.POST.feedback_type %}selected{% endif %}>Select feedback type</option>
+                <option value="Travel Package" {% if request.POST.feedback_type == "Travel Package" %}selected{% endif %}>Travel Package</option>
+                <option value="Customer Service" {% if request.POST.feedback_type == "Customer Service" %}selected{% endif %}>Customer Service</option>
+                <option value="Booking Experience" {% if request.POST.feedback_type == "Booking Experience" %}selected{% endif %}>Booking Experience</option>
+                <option value="Transportation" {% if request.POST.feedback_type == "Transportation" %}selected{% endif %}>Transportation</option>
+                <option value="Hotel / Resort" {% if request.POST.feedback_type == "Hotel / Resort" %}selected{% endif %}>Hotel / Resort</option>
+                <option value="Food / Meals" {% if request.POST.feedback_type == "Food / Meals" %}selected{% endif %}>Food / Meals</option>
+                <option value="Tour Guide" {% if request.POST.feedback_type == "Tour Guide" %}selected{% endif %}>Tour Guide</option>
+                <option value="Website Experience" {% if request.POST.feedback_type == "Website Experience" %}selected{% endif %}>Website Experience</option>
+                <option value="Trip Management" {% if request.POST.feedback_type == "Trip Management" %}selected{% endif %}>Trip Management</option>
+                <option value="Overall Experience" {% if request.POST.feedback_type == "Overall Experience" %}selected{% endif %}>Overall Experience</option>
+                <option value="Other" {% if request.POST.feedback_type == "Other" %}selected{% endif %}>Other</option>
+              </select>
             </div>
 
             <div class="field">

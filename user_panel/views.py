@@ -680,16 +680,18 @@ def feedback_form(request):
         name = request.POST.get('name', '').strip()
         email = request.POST.get('email', '').strip()
         mobile_number = request.POST.get('mobile_number', '').strip()
+        feedback_type = request.POST.get('feedback_type', '').strip()
         rating = request.POST.get('rating', '')
         feedback_text = request.POST.get('feedback', '').strip()
 
-        if not all([name, email, rating, feedback_text]):
+        if not all([name, email, feedback_type, rating, feedback_text]):
             return render(request, 'user/feedback_form.html', {'error': 'Please fill required fields.'})
 
         Feedback.objects.create(
             name=name,
             email=email,
             mobile_number=mobile_number,
+            feedback_type=feedback_type,
             rating=int(rating),
             feedback=feedback_text
         )
