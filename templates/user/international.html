@@ -125,8 +125,13 @@
     .progress-bar { position: absolute; bottom: 35px; right: 100px; width: 440px; height: 2px; background: rgba(255,255,255,0.2); }
     .progress-fill { width: 40%; height: 100%; background: white; }
 
+    /* ================= UNIFIED WAVY BACKGROUND FOR THREE SECTIONS ================= */
+    .unified-wavy-bg {
+      background: #FFF url("{% static 'images/wavy-bg.png' %}") center/cover;
+    }
+
     /* ================= ABOUT SECTION ================= */
-    .wavy-bg { background: #FFF url("{% static 'images/wavy_bg.jpg' %}") center/cover; padding: 120px 0; }
+    .wavy-bg { padding: 120px 0; }
     .about-section { padding: 0 100px; color: var(--text-dark); position: relative; }
 
     .section-tag {
@@ -181,7 +186,10 @@
     .row-3 { padding-left: 15%; border-bottom: 1px solid var(--border-light); }
 
     /* ================= PACKAGES SECTION ================= */
-    .packages-section { padding: 80px 40px; background-color: #FFFFFF; overflow: hidden; }
+    .packages-section { 
+      padding: 80px 40px; 
+      overflow: hidden; 
+    }
 
     .section-title-main {
       font-size: 44px; font-weight: 300; text-align: center; margin-bottom: 40px;
@@ -354,7 +362,6 @@
     /* ================= TESTIMONIALS (UPDATED) ================= */
     .testimonials-section {
       padding: 100px 80px;
-      background-color: #E6E6E6;
       font-family: 'Poppins', sans-serif;
     }
 
@@ -676,6 +683,7 @@
     <div class="progress-bar"><div class="progress-fill"></div></div>
   </div>
 
+  <div class="unified-wavy-bg">
   <div class="wavy-bg">
     <section class="about-section">
       <div class="section-tag">Why Choose Us <span>✕</span></div>
@@ -1026,6 +1034,7 @@
       {% endif %}
     </div>
   </section>
+  </div><!-- End unified-wavy-bg -->
 
   <footer class="main-footer">
     <div class="footer-cta">
