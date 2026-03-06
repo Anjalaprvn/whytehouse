@@ -10,8 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
 
   <style>
-    /* ================= GLOBAL ================= */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
     :root {
       --accent-orange: #DB902B;
       --text-dark: #1A1A1A;
@@ -27,190 +27,499 @@
     .hero-section {
       background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.3)),
                   url("{% static 'images/picture.png' %}") no-repeat center center/cover;
-      height: 100vh; width: 100%; color: white; position: relative; overflow: hidden;
+      height: 100vh;
+      width: 100%;
+      color: white;
+      position: relative;
+      overflow: hidden;
     }
 
-    nav { display: flex; justify-content: space-between; align-items: center; padding: 50px 100px; position: relative; z-index: 100; }
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 50px 100px;
+      position: relative;
+      z-index: 100;
+    }
+
     .logo-img { height: 65px; width: auto; }
 
     .nav-center {
-      background: var(--glass-bg); backdrop-filter: blur(25px); padding: 15px 45px;
-      border-radius: 60px; display: flex; gap: 35px; border: 1px solid var(--glass-border);
+      background: var(--glass-bg);
+      backdrop-filter: blur(25px);
+      padding: 15px 45px;
+      border-radius: 60px;
+      display: flex;
+      gap: 35px;
+      border: 1px solid var(--glass-border);
     }
-    .nav-center a { text-decoration: none; color: white; font-size: 15px; opacity: 0.8; transition: 0.3s; }
-    .nav-center .active { opacity: 1; font-weight: 600; border-bottom: 2px solid var(--accent-orange); }
+
+    .nav-center a {
+      text-decoration: none;
+      color: white;
+      font-size: 15px;
+      opacity: 0.8;
+      transition: 0.3s;
+    }
+
+    .nav-center .active {
+      opacity: 1;
+      font-weight: 600;
+      border-bottom: 2px solid var(--accent-orange);
+    }
 
     .nav-right {
-      background: var(--glass-bg); backdrop-filter: blur(25px); padding: 15px 30px;
-      border-radius: 60px; border: 1px solid var(--glass-border); font-size: 15px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(25px);
+      padding: 15px 30px;
+      border-radius: 60px;
+      border: 1px solid var(--glass-border);
+      font-size: 15px;
     }
 
-    .hero-text { text-align: center; margin-top: 20px; }
-    .hero-text h1 { font-family: 'Playfair Display', serif; font-size: 90px; line-height: 1.1; font-weight: 400; }
-    .hero-text .italic-peace { font-weight: 700; font-style: italic; }
+    .hero-text {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .hero-text h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 90px;
+      line-height: 1.1;
+      font-weight: 400;
+    }
+
+    .hero-text .italic-peace {
+      font-weight: 700;
+      font-style: italic;
+    }
 
     /* --- SIDE DESTINATIONS --- */
-    .side-tabs { position: absolute; left: 100px; top: 55%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 20px; }
-    .tab {
-      background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(15px); padding: 10px 25px 10px 10px;
-      border-radius: 50px; width: 240px; display: flex; align-items: center; justify-content: space-between;
-      border: 1px solid var(--glass-border); cursor: pointer; transition: 0.3s;
-    }
-    .tab:hover { background: rgba(0, 0, 0, 0.6); transform: translateX(5px); }
-    .tab.active { background: var(--accent-orange); border-color: transparent; }
-    .tab-left { display: flex; align-items: center; gap: 12px; }
-    .tab img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
-    .flight-icon { width: 18px; height: 18px; fill: white; }
-
-    /* --- BOTTOM GALLERY AREA (RIGHT + CAROUSEL) --- */
-    .bottom-container{
-  position: absolute;
-  bottom: 60px;
-  right: 100px;
-  left: 360px;              /* ✅ reserve space for sidebar */
-  display: flex;
-  justify-content: flex-end; /* ✅ push content to the right */
-  align-items: flex-end;
-  gap: 20px;
-  z-index: 30;
-}
-
-    .main-card {
-  width: 330px;
-  /* background: rgba(0, 0, 0, 0.4); */
-  /* backdrop-filter: blur(30px); */
-  /* border-radius: 35px */
-  padding: 18px;
-  border: none;              /* ✅ no border */
-  position: relative;
-}
-    .main-card .thumb { width: 100%; height: 190px; border-radius: 25px; object-fit: cover; }
-
-    .book-btn {
-      position: absolute; right: 20px; top: 175px;
-      background: var(--accent-orange);
-      color: white; border: none;
-      padding: 12px 24px; border-radius: 40px;
-      font-size: 13px; font-weight: 600;
-      display: flex; align-items: center; gap: 8px;
-      cursor: pointer;
-    }
-
-    .gallery-strip { display: flex; gap: 15px; margin-left: 0px; }
-   .gallery-img {
-  width: 135px;
-  height: 260px;
-  border-radius: 30px;
-  object-fit: cover;
-  border: none;              /* ✅ no border */
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-    /* Carousel wrapper for main card */
-    .carousel{
-      width: 330px;
-      overflow: hidden;
-      border-radius: 35px;
-    }
-    .carousel-track{
+    .side-tabs {
+      position: absolute;
+      left: 100px;
+      top: 55%;
+      transform: translateY(-50%);
       display: flex;
-      transition: transform 0.6s ease;
-      will-change: transform;
-    }
-    .carousel-slide{
-      min-width: 330px;
+      flex-direction: column;
+      gap: 20px;
     }
 
-    .progress-bar { position: absolute; bottom: 35px; right: 100px; width: 440px; height: 2px; background: rgba(255,255,255,0.2); }
-    .progress-fill { width: 40%; height: 100%; background: white; }
+    .tab {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(15px);
+      padding: 10px 25px 10px 10px;
+      border-radius: 50px;
+      width: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid var(--glass-border);
+      cursor: pointer;
+      transition: 0.3s;
+    }
 
-    /* ================= UNIFIED WAVY BACKGROUND FOR THREE SECTIONS ================= */
+    .tab:hover {
+      background: rgba(0, 0, 0, 0.6);
+      transform: translateX(5px);
+    }
+
+    .tab.active {
+      background: var(--accent-orange);
+      border-color: transparent;
+    }
+
+    .tab-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .tab img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .flight-icon {
+      width: 18px;
+      height: 18px;
+      fill: white;
+    }
+
+    /* --- BOTTOM GALLERY AREA --- */
+    .bottom-container{
+      position: absolute;
+      bottom: 60px;
+      right: 100px;
+      left: 100px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-end;
+      z-index: 30;
+    }
+
+    .gallery-strip{
+      display: flex;
+      gap: 16px;
+      align-items: flex-end;
+      position: relative;
+    }
+
+    .gallery-item-wrap{
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .gallery-card{
+      position: relative;
+      width: 120px;
+      height: 250px;
+      border-radius: 30px;
+      overflow: hidden;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.35s ease;
+      transform: scale(1);
+      opacity: 0.7;
+    }
+
+    .gallery-card img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .gallery-card::after{
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.08));
+      transition: 0.3s ease;
+    }
+
+    .gallery-card .mini-book-btn{
+      position: absolute;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%) translateY(14px);
+      background: var(--accent-orange);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+      z-index: 2;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+
+    .gallery-card .mini-label{
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      z-index: 2;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      transition: 0.3s ease;
+    }
+
+    .gallery-card:hover,
+    .gallery-card.active{
+      width: 350px;
+      height: 290px;
+      opacity: 1;
+      transform: translateY(-8px);
+    }
+
+    .gallery-card:hover::after,
+    .gallery-card.active::after{
+      background: linear-gradient(to top, rgba(0,0,0,0.35), rgba(0,0,0,0.03));
+    }
+
+    .gallery-card:hover .mini-book-btn,
+    .gallery-card.active .mini-book-btn{
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .gallery-card:hover .mini-label,
+    .gallery-card.active .mini-label{
+      opacity: 0;
+    }
+
+    .card-description{
+      width: 350px;
+      margin-top: 10px;
+      color: #fff;
+      font-size: 14px;
+      line-height: 1.6;
+      display: none;
+    }
+
+    .gallery-item-wrap.active .card-description{
+      display: block;
+    }
+
+    .progress-bar {
+      position: absolute;
+      bottom: 35px;
+      right: 100px;
+      width: 520px;
+      height: 2px;
+      background: rgba(255,255,255,0.2);
+    }
+
+    .progress-fill {
+      width: 25%;
+      height: 100%;
+      background: white;
+      transition: width 0.4s ease;
+    }
+
+    /* ================= UNIFIED WAVY BACKGROUND ================= */
     .unified-wavy-bg {
       background: #FFF url("{% static 'images/wavy-bg.png' %}") center/cover;
     }
 
     /* ================= ABOUT SECTION ================= */
     .wavy-bg { padding: 120px 0; }
-    .about-section { padding: 0 100px; color: var(--text-dark); position: relative; }
+
+    .about-section {
+      padding: 0 100px;
+      color: var(--text-dark);
+      position: relative;
+    }
 
     .section-tag {
-      position: absolute; top: -50px; left: 100px; padding: 10px 25px; background: white;
-      border: 1px solid var(--border-light); border-radius: 100px; font-size: 14px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 10px;
+      position: absolute;
+      top: -50px;
+      left: 100px;
+      padding: 10px 25px;
+      background: white;
+      border: 1px solid var(--border-light);
+      border-radius: 100px;
+      font-size: 14px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .about-header { text-align: center; margin-bottom: 100px; }
-    .about-header h1 { font-family: 'Poppins', sans-serif; font-size: 58px; font-weight: 400; line-height: 1.2; }
-    .about-header .highlight { color: var(--accent-orange); font-weight: 500; }
+    .about-header {
+      text-align: center;
+      margin-bottom: 100px;
+    }
+
+    .about-header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 58px;
+      font-weight: 400;
+      line-height: 1.2;
+    }
+
+    .about-header .highlight {
+      color: var(--accent-orange);
+      font-weight: 500;
+    }
 
     .pill-divider {
-      display: inline-block; width: 160px; height: 55px;
+      display: inline-block;
+      width: 160px;
+      height: 55px;
       background: url("{% static 'images/vietnam.png' %}") center/cover;
-      border-radius: 40px; vertical-align: middle; margin: 0 10px;
+      border-radius: 40px;
+      vertical-align: middle;
+      margin: 0 10px;
     }
 
-    .about-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 60px; align-items: flex-start; margin-bottom: 100px; }
-    .about-left h2 { font-size: 44px; margin-bottom: 30px; }
-    .why-underline { position: relative; font-style: italic; font-weight: 700; z-index: 1; }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 60px;
+      align-items: flex-start;
+      margin-bottom: 100px;
+    }
+
+    .about-left h2 {
+      font-size: 44px;
+      margin-bottom: 30px;
+    }
+
+    .why-underline {
+      position: relative;
+      font-style: italic;
+      font-weight: 700;
+      z-index: 1;
+    }
+
     .why-underline::after {
-      content: ''; position: absolute; bottom: 8px; left: 0; width: 100%; height: 10px;
-      background: var(--accent-orange); opacity: 0.3; z-index: -1; border-radius: 20px;
+      content: '';
+      position: absolute;
+      bottom: 8px;
+      left: 0;
+      width: 100%;
+      height: 10px;
+      background: var(--accent-orange);
+      opacity: 0.3;
+      z-index: -1;
+      border-radius: 20px;
     }
-    .about-desc { font-size: 17px; color: var(--text-gray); line-height: 1.7; margin-bottom: 40px; }
 
-    .team-cta { display: flex; align-items: center; gap: 15px; }
+    .about-desc {
+      font-size: 17px;
+      color: var(--text-gray);
+      line-height: 1.7;
+      margin-bottom: 40px;
+    }
+
+    .team-cta {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
     .avatar-stack { display: flex; }
+
     .avatar-img {
-      width: 55px; height: 55px; border-radius: 50%; border: 3px solid white;
-      margin-left: -18px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      border: 3px solid white;
+      margin-left: -18px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
+
     .avatar-img:first-child { margin-left: 0; }
+
     .cta-arrow {
-      background: var(--accent-orange); color: white; width: 35px; height: 35px;
-      border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none;
+      background: var(--accent-orange);
+      color: white;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
     }
 
-    .about-gallery { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; }
-    .gallery-main { width: 100%; height: 530px; border-radius: 30px; object-fit: cover; }
-    .gallery-stack { display: flex; flex-direction: column; gap: 20px; }
-    .stack-img-top { width: 100%; height: 330px; border-radius: 30px; object-fit: cover; }
-    .stack-img-bot { width: 100%; height: 180px; border-radius: 30px; object-fit: cover; }
+    .about-gallery {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 20px;
+    }
 
-    .features-container { max-width: 1200px; margin: 0 auto; }
-    .feature-row { display: flex; justify-content: space-between; align-items: center; padding: 40px 0; border-top: 1px solid var(--border-light); }
-    .feature-row h4 { font-size: 26px; font-weight: 500; min-width: 300px; }
-    .feature-row p { font-size: 15px; color: var(--text-gray); max-width: 500px; line-height: 1.6; }
+    .gallery-main {
+      width: 100%;
+      height: 530px;
+      border-radius: 30px;
+      object-fit: cover;
+    }
+
+    .gallery-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .stack-img-top {
+      width: 100%;
+      height: 330px;
+      border-radius: 30px;
+      object-fit: cover;
+    }
+
+    .stack-img-bot {
+      width: 100%;
+      height: 180px;
+      border-radius: 30px;
+      object-fit: cover;
+    }
+
+    .features-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .feature-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 40px 0;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .feature-row h4 {
+      font-size: 26px;
+      font-weight: 500;
+      min-width: 300px;
+    }
+
+    .feature-row p {
+      font-size: 15px;
+      color: var(--text-gray);
+      max-width: 500px;
+      line-height: 1.6;
+    }
+
     .row-1 { padding-right: 15%; }
     .row-2 { padding-left: 10%; padding-right: 10%; }
     .row-3 { padding-left: 15%; border-bottom: 1px solid var(--border-light); }
 
     /* ================= PACKAGES SECTION ================= */
-    .packages-section { 
-      padding: 80px 40px; 
-      overflow: hidden; 
+    .packages-section {
+      padding: 80px 40px;
+      overflow: hidden;
     }
 
     .section-title-main {
-      font-size: 44px; font-weight: 300; text-align: center; margin-bottom: 40px;
-      color: #1A1A1A; letter-spacing: -0.5px;
+      font-size: 44px;
+      font-weight: 300;
+      text-align: center;
+      margin-bottom: 40px;
+      color: #1A1A1A;
+      letter-spacing: -0.5px;
     }
 
-    .package-nav { display: flex; justify-content: center; gap: 60px; margin-bottom: 50px; }
+    .package-nav {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      margin-bottom: 50px;
+    }
 
     .nav-tab {
       display: inline-block;
-      font-size: 18px; color: #999; cursor: pointer;
-      padding-bottom: 10px; position: relative;
+      font-size: 18px;
+      color: #999;
+      cursor: pointer;
+      padding-bottom: 10px;
+      position: relative;
       transition: color 0.3s;
     }
 
     .nav-tab:hover { color: #000; }
     .nav-tab.active { color: #000; }
+
     .nav-tab.active::after {
       content: '';
-      position: absolute; bottom: 0; left: 0;
-      width: 100%; height: 2px; background: #000;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: #000;
     }
 
     .destination-container {
@@ -232,6 +541,7 @@
       backdrop-filter: blur(8px);
       transition: all 0.3s ease;
     }
+
     .layer-2 { bottom: -28px; width: 1150px; opacity: 0.5; background: rgba(30, 30, 30, 0.2); }
     .layer-1 { bottom: -14px; width: 1230px; opacity: 0.8; background: rgba(35, 35, 35, 0.18); }
 
@@ -251,32 +561,39 @@
       background-size: cover;
       background-position: center;
     }
+
     .destination-card.active { display: flex; opacity: 1; }
 
     .flight-path-container {
       position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       pointer-events: none;
     }
 
     .airplane-icon {
       position: absolute;
-      top: 30%; right: 8%;
+      top: 30%;
+      right: 8%;
       transform: rotate(35deg);
       color: var(--accent-orange);
     }
 
     .map-silhouette {
       position: absolute;
-      left: 60px; top: 60px;
-      width: 100px; opacity: 0.9;
+      left: 60px;
+      top: 60px;
+      width: 100px;
+      opacity: 0.9;
       filter: brightness(0) invert(1);
     }
 
     .top-right-info {
       position: absolute;
-      top: 60px; right: 60px;
+      top: 60px;
+      right: 60px;
       text-align: right;
       max-width: 440px;
       font-size: 14px;
@@ -291,9 +608,24 @@
       width: 100%;
     }
 
-    .dest-title { font-size: 82px; font-weight: 400; margin: 0; line-height: 1; }
-    .dest-price { font-size: 20px; margin: 15px 0 25px 0; font-weight: 300; }
-    .dest-price .new { color: var(--accent-orange); font-weight: 600; font-size: 24px; }
+    .dest-title {
+      font-size: 82px;
+      font-weight: 400;
+      margin: 0;
+      line-height: 1;
+    }
+
+    .dest-price {
+      font-size: 20px;
+      margin: 15px 0 25px 0;
+      font-weight: 300;
+    }
+
+    .dest-price .new {
+      color: var(--accent-orange);
+      font-weight: 600;
+      font-size: 24px;
+    }
 
     .btn-learn {
       display: inline-flex;
@@ -314,24 +646,48 @@
       gap: 20px;
     }
 
-    .nav-arrows { display: flex; gap: 10px; margin-bottom: 5px; }
+    .nav-arrows {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+
     .arrow {
-      width: 36px; height: 36px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       border: 1px solid rgba(255,255,255,0.4);
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
     }
 
-    .mini-gallery { display: flex; gap: 15px; align-items: flex-end; }
+    .mini-gallery {
+      display: flex;
+      gap: 15px;
+      align-items: flex-end;
+    }
+
     .gallery-item {
-      width: 130px; height: 130px;
+      width: 130px;
+      height: 130px;
       border-radius: 20px;
       overflow: hidden;
       border: 1px solid rgba(255,255,255,0.1);
     }
-    .gallery-item.active { width: 180px; height: 180px; border: 2px solid var(--accent-orange); }
-    .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+
+    .gallery-item.active {
+      width: 180px;
+      height: 180px;
+      border: 2px solid var(--accent-orange);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
     /* ================= STATISTICS SECTION ================= */
     .stats-grid {
@@ -342,24 +698,48 @@
       margin: 80px auto 40px;
       padding: 0 20px;
     }
-    .stat-item { text-align: center; flex: 1; }
-    .stat-icon { margin-bottom: 15px; height: 32px; display: flex; justify-content: center; align-items: center; }
-    .stat-icon img { height: 100%; width: auto; opacity: 0.8; }
-    .stat-number { font-size: 32px; font-weight: 600; color: #1A1A1A; margin: 0; }
-    .stat-label { font-size: 13px; color: #666666; margin-top: 5px; font-weight: 400; }
-    .stat-divider { width: 1px; height: 60px; background-color: #E0E0E0; margin: 0 10px; }
 
-    @media (max-width: 992px) {
-      nav { padding: 30px 20px; }
-      .side-tabs { left: 20px; }
-      .bottom-container { right: 20px; flex-direction: column; align-items: flex-end; }
-      .progress-bar { right: 20px; width: 300px; }
-      .stats-grid { flex-wrap: wrap; gap: 30px; }
-      .stat-divider { display: none; }
-      .stat-item { flex: 1 1 30%; }
+    .stat-item {
+      text-align: center;
+      flex: 1;
     }
 
-    /* ================= TESTIMONIALS (UPDATED) ================= */
+    .stat-icon {
+      margin-bottom: 15px;
+      height: 32px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .stat-icon img {
+      height: 100%;
+      width: auto;
+      opacity: 0.8;
+    }
+
+    .stat-number {
+      font-size: 32px;
+      font-weight: 600;
+      color: #1A1A1A;
+      margin: 0;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #666666;
+      margin-top: 5px;
+      font-weight: 400;
+    }
+
+    .stat-divider {
+      width: 1px;
+      height: 60px;
+      background-color: #E0E0E0;
+      margin: 0 10px;
+    }
+
+    /* ================= TESTIMONIALS ================= */
     .testimonials-section {
       padding: 100px 80px;
       font-family: 'Poppins', sans-serif;
@@ -378,6 +758,7 @@
       color: #000;
       margin: 0;
     }
+
     .testimonial-title i { font-style: italic; }
 
     .testimonial-subtitle {
@@ -445,9 +826,7 @@
       font-size: 20px;
     }
 
-    .user-details {
-      flex: 1;
-    }
+    .user-details { flex: 1; }
 
     .user-name {
       font-size: 18px;
@@ -535,7 +914,10 @@
       border-top: 1px solid #333;
     }
 
-    .footer-brand .logo { width: 120px; margin-bottom: 25px; }
+    .footer-brand .logo {
+      width: 120px;
+      margin-bottom: 25px;
+    }
 
     .brand-desc {
       font-size: 13px;
@@ -556,12 +938,14 @@
 
     .footer-col ul { list-style: none; padding: 0; }
     .footer-col ul li { margin-bottom: 15px; }
+
     .footer-col ul li a {
       text-decoration: none;
       color: #888;
       font-size: 14px;
       transition: 0.3s;
     }
+
     .footer-col ul li a:hover { color: #DB902B; }
 
     .copyright {
@@ -572,7 +956,52 @@
     }
 
     @media (max-width: 992px) {
-      .footer-cta { flex-direction: column; text-align: center; gap: 30px; }
+      nav { padding: 30px 20px; }
+
+      .side-tabs { left: 20px; }
+
+      .bottom-container{
+        right: 20px;
+        left: 20px;
+        justify-content: center;
+      }
+
+      .gallery-card{
+        width: 90px;
+        height: 180px;
+      }
+
+      .gallery-card:hover,
+      .gallery-card.active{
+        width: 130px;
+        height: 220px;
+      }
+
+      .card-description{
+        width: 130px;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .progress-bar {
+        right: 20px;
+        width: 300px;
+      }
+
+      .stats-grid {
+        flex-wrap: wrap;
+        gap: 30px;
+      }
+
+      .stat-divider { display: none; }
+      .stat-item { flex: 1 1 30%; }
+
+      .footer-cta {
+        flex-direction: column;
+        text-align: center;
+        gap: 30px;
+      }
+
       .subscribe-box { width: 100%; }
       .footer-content { grid-template-columns: 1fr 1fr; }
       .testimonials-section { padding: 60px 20px; }
@@ -585,6 +1014,7 @@
   <div class="hero-section">
     <nav>
       <img src="{% static 'images/logo.png' %}" class="logo-img" alt="Whyte House">
+
       <div class="nav-center">
         <a href="{% url 'user_panel:index' %}" class="active">Home</a>
         <a href="{% url 'user_panel:about' %}">About</a>
@@ -592,6 +1022,7 @@
         <a href="{% url 'user_panel:international_packages' %}">Packages</a>
         <a href="{% url 'user_panel:contact' %}">Contact Us</a>
       </div>
+
       <div class="nav-right">
         <a href="{% url 'user_panel:domestic' %}" style="text-decoration: none; color: white;">Domestic</a>
         | <span style="color:#000; font-weight:600;">International</span>
@@ -628,54 +1059,65 @@
       </a>
     </div>
 
-    <!-- ✅ RIGHT SIDE CAROUSEL -->
     <div class="bottom-container">
-      <div class="carousel">
-        <div class="carousel-track">
-          {% if featured_packages %}
-            {% for package in featured_packages %}
-              <div class="carousel-slide">
-                <div class="main-card">
-                  <img src="{% if package.image %}{{ package.image.url }}{% else %}{% static 'images/i1.png' %}{% endif %}" class="thumb" alt="{{ package.name }}">
-                  <a href="{% url 'user_panel:package_detail' package.id %}" class="book-btn" style="text-decoration:none; color:inherit;">
-                    Book Now <span>↗</span>
-                  </a>
-                  <div style="margin-top:25px;">
-                    <h3 style="font-size:20px; font-weight:500;">{{ package.name }}</h3>
-                    <p style="font-size:13px; opacity:0.7; margin-top:5px;">{{ package.description|truncatewords:10 }}</p>
-                  </div>
-                </div>
-              </div>
-            {% endfor %}
-          {% else %}
-            <div class="carousel-slide">
-              <div class="main-card">
-                <img src="{% static 'images/i1.png' %}" class="thumb" alt="Serene Boating">
-                <button class="book-btn">Book Now <span>↗</span></button>
-                <div style="margin-top:25px;">
-                  <h3 style="font-size:20px; font-weight:500;">Serene Boating</h3>
-                  <p style="font-size:13px; opacity:0.7; margin-top:5px;">Emerald waters and limestone karsts.</p>
-                </div>
-              </div>
-            </div>
-          {% endif %}
-        </div>
-      </div>
-
       <div class="gallery-strip">
         {% if featured_packages %}
-          {% for package in featured_packages %}
-            <img
-              src="{% if package.image %}{{ package.image.url }}{% else %}{% static 'images/i1.png' %}{% endif %}"
-              class="gallery-img"
-              data-index="{{ forloop.counter0 }}"
-              alt="{{ package.name }}"
-            >
+          {% for package in featured_packages|slice:":4" %}
+            <div class="gallery-item-wrap {% if forloop.first %}active{% endif %}">
+              <div class="gallery-card {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}">
+                <img src="{% if package.image %}{{ package.image.url }}{% else %}{% static 'images/i1.png' %}{% endif %}" alt="{{ package.name }}">
+                <div class="mini-label">{{ package.name|truncatechars:14 }}</div>
+                <a href="{% url 'user_panel:package_detail' package.id %}" class="mini-book-btn">Book Now ↗</a>
+              </div>
+              <div class="card-description">
+                {{ package.description|default:"No description available."|striptags|truncatechars:180 }}
+              </div>
+            </div>
           {% endfor %}
         {% else %}
-          <img src="{% static 'images/i2.png' %}" class="gallery-img" alt="thumb">
-          <img src="{% static 'images/i3.png' %}" class="gallery-img" alt="thumb">
-          <img src="{% static 'images/i4.png' %}" class="gallery-img" alt="thumb">
+          <div class="gallery-item-wrap active">
+            <div class="gallery-card active" data-index="0">
+              <img src="{% static 'images/i2.png' %}" alt="thumb">
+              <div class="mini-label">Vietnam</div>
+              <a href="#" class="mini-book-btn">Book Now ↗</a>
+            </div>
+            <div class="card-description">
+              Explore the beauty of Vietnam with curated international holiday experiences.
+            </div>
+          </div>
+
+          <div class="gallery-item-wrap">
+            <div class="gallery-card" data-index="1">
+              <img src="{% static 'images/i3.png' %}" alt="thumb">
+              <div class="mini-label">Thailand</div>
+              <a href="#" class="mini-book-btn">Book Now ↗</a>
+            </div>
+            <div class="card-description">
+              Discover Thailand with relaxing beaches, nightlife, and cultural experiences.
+            </div>
+          </div>
+
+          <div class="gallery-item-wrap">
+            <div class="gallery-card" data-index="2">
+              <img src="{% static 'images/i4.png' %}" alt="thumb">
+              <div class="mini-label">Malaysia</div>
+              <a href="#" class="mini-book-btn">Book Now ↗</a>
+            </div>
+            <div class="card-description">
+              Enjoy Malaysia with city lights, island escapes, and unforgettable moments.
+            </div>
+          </div>
+
+          <div class="gallery-item-wrap">
+            <div class="gallery-card" data-index="3">
+              <img src="{% static 'images/i1.png' %}" alt="thumb">
+              <div class="mini-label">Maldives</div>
+              <a href="#" class="mini-book-btn">Book Now ↗</a>
+            </div>
+            <div class="card-description">
+              Experience the Maldives with luxury stays and crystal-clear waters.
+            </div>
+          </div>
         {% endif %}
       </div>
     </div>
@@ -684,357 +1126,352 @@
   </div>
 
   <div class="unified-wavy-bg">
-  <div class="wavy-bg">
-    <section class="about-section">
-      <div class="section-tag">Why Choose Us <span>✕</span></div>
+    <div class="wavy-bg">
+      <section class="about-section">
+        <div class="section-tag">Why Choose Us <span>✕</span></div>
 
-      <div class="about-header">
-        <h1><span class="highlight">Elevate</span> <div class="pill-divider"></div> your well-being <br> with our <i>professional team.</i></h1>
-      </div>
+        <div class="about-header">
+          <h1><span class="highlight">Elevate</span> <div class="pill-divider"></div> your well-being <br> with our <i>professional team.</i></h1>
+        </div>
 
-      <div class="about-grid">
-        <div class="about-left">
-          <h2><span class="why-underline">Why</span> Whyte House Holidays</h2>
-          <p class="about-desc">With over 10 years of experience in the travel and hospitality industry, Whyte House Holidays is a name trusted by travelers and property owners alike.</p>
-          <div class="team-cta">
-            <div class="avatar-stack">
-              <img src="{% static 'images/team1.png' %}" class="avatar-img" alt="team">
-              <img src="{% static 'images/team2.png' %}" class="avatar-img" alt="team">
-              <img src="{% static 'images/team3.png' %}" class="avatar-img" alt="team">
-              <img src="{% static 'images/team4.png' %}" class="avatar-img" alt="team">
+        <div class="about-grid">
+          <div class="about-left">
+            <h2><span class="why-underline">Why</span> Whyte House Holidays</h2>
+            <p class="about-desc">With over 10 years of experience in the travel and hospitality industry, Whyte House Holidays is a name trusted by travelers and property owners alike.</p>
+            <div class="team-cta">
+              <div class="avatar-stack">
+                <img src="{% static 'images/team1.png' %}" class="avatar-img" alt="team">
+                <img src="{% static 'images/team2.png' %}" class="avatar-img" alt="team">
+                <img src="{% static 'images/team3.png' %}" class="avatar-img" alt="team">
+                <img src="{% static 'images/team4.png' %}" class="avatar-img" alt="team">
+              </div>
+              <span style="font-weight:600;">Meet our Professional Team</span>
+              <a href="#" class="cta-arrow">↗</a>
             </div>
-            <span style="font-weight:600;">Meet our Professional Team</span>
-            <a href="#" class="cta-arrow">↗</a>
+          </div>
+
+          <div class="about-gallery">
+            <img src="{% static 'images/i5.png' %}" class="gallery-main" alt="gallery">
+            <div class="gallery-stack">
+              <img src="{% static 'images/i6.png' %}" class="stack-img-top" alt="gallery">
+              <img src="{% static 'images/i2.png' %}" class="stack-img-bot" alt="gallery">
+            </div>
           </div>
         </div>
 
-        <div class="about-gallery">
-          <img src="{% static 'images/i5.png' %}" class="gallery-main" alt="gallery">
-          <div class="gallery-stack">
-            <img src="{% static 'images/i6.png' %}" class="stack-img-top" alt="gallery">
-            <img src="{% static 'images/i2.png' %}" class="stack-img-bot" alt="gallery">
+        <div class="features-container">
+          <div class="feature-row row-1"><h4>A Decade of Trust</h4><p>10+ years of proven expertise in the travel industry.</p></div>
+          <div class="feature-row row-2"><h4>Curated Quality</h4><p>Over 200 handpicked properties, personally inspected.</p></div>
+          <div class="feature-row row-3"><h4>Dedicated Support</h4><p>Support team ensuring quick communication before and after trip.</p></div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-icon"><img src="{% static 'images/r1.png' %}" alt="Icon"></div>
+            <h3 class="stat-number">10+</h3>
+            <p class="stat-label">Years of Excellence</p>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <div class="stat-icon"><img src="{% static 'images/r2.png' %}" alt="Icon"></div>
+            <h3 class="stat-number">50+</h3>
+            <p class="stat-label">Years of Excellence</p>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <div class="stat-icon"><img src="{% static 'images/r3.png' %}" alt="Icon"></div>
+            <h3 class="stat-number">200+</h3>
+            <p class="stat-label">Managed Properties</p>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <div class="stat-icon"><img src="{% static 'images/r4.png' %}" alt="Icon"></div>
+            <h3 class="stat-number">5000+</h3>
+            <p class="stat-label">Happy Travelers</p>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <div class="stat-icon"><img src="{% static 'images/r5.png' %}" alt="Icon"></div>
+            <h3 class="stat-number">4.9/5</h3>
+            <p class="stat-label">Client Satisfaction</p>
           </div>
         </div>
-      </div>
-
-      <div class="features-container">
-        <div class="feature-row row-1"><h4>A Decade of Trust</h4><p>10+ years of proven expertise in the travel industry.</p></div>
-        <div class="feature-row row-2"><h4>Curated Quality</h4><p>Over 200 handpicked properties, personally inspected.</p></div>
-        <div class="feature-row row-3"><h4>Dedicated Support</h4><p>Support team ensuring quick communication before and after trip.</p></div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-icon"><img src="{% static 'images/r1.png' %}" alt="Icon"></div>
-          <h3 class="stat-number">10+</h3>
-          <p class="stat-label">Years of Excellence</p>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <div class="stat-icon"><img src="{% static 'images/r2.png' %}" alt="Icon"></div>
-          <h3 class="stat-number">50+</h3>
-          <p class="stat-label">Years of Excellence</p>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <div class="stat-icon"><img src="{% static 'images/r3.png' %}" alt="Icon"></div>
-          <h3 class="stat-number">200+</h3>
-          <p class="stat-label">Managed Properties</p>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <div class="stat-icon"><img src="{% static 'images/r4.png' %}" alt="Icon"></div>
-          <h3 class="stat-number">5000+</h3>
-          <p class="stat-label">Happy Travelers</p>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <div class="stat-icon"><img src="{% static 'images/r5.png' %}" alt="Icon"></div>
-          <h3 class="stat-number">4.9/5</h3>
-          <p class="stat-label">Client Satisfaction</p>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <section class="packages-section">
-    <h2 class="section-title-main">Choose <i>where</i> are we looking for?</h2>
-
-    <div class="package-nav">
-      <div class="nav-tab active" data-dest="vietnam" style="cursor: pointer;">Vietnam</div>
-      <div class="nav-tab" data-dest="malaysia" style="cursor: pointer;">Malaysia</div>
-      <div class="nav-tab" data-dest="thailand" style="cursor: pointer;">Thailand</div>
-      <div class="nav-tab" data-dest="maldives" style="cursor: pointer;">Maldives</div>
+      </section>
     </div>
 
-    <div class="destination-container">
-      <div class="stack-layer layer-2"></div>
-      <div class="stack-layer layer-1"></div>
+    <section class="packages-section">
+      <h2 class="section-title-main">Choose <i>where</i> are we looking for?</h2>
 
-      <!-- Vietnam Card -->
-      <div class="destination-card dest-vietnam active"
-           style="background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)),
-           url('{% if vietnam_dest.image %}{{ vietnam_dest.image.url }}{% else %}{% static "images/bg.png" %}{% endif %}') center/cover;">
-        <div class="flight-path-container">
-          <svg width="100%" height="100%" viewBox="0 0 1000 600" preserveAspectRatio="none" fill="none">
-            <path d="M40 540 Q 250 540, 380 500 T 550 540 T 750 520 T 920 220"
-                  stroke="white" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="6 6"/>
-          </svg>
-          <div class="airplane-icon">
-            <svg width="35" height="35" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M21,16L21,14L13,9L13,3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5L10,9L2,14L2,16L10,13.5L10,19L8,20.5L8,22L11.5,21L15,22L15,20.5L13,19L13,13.5L21,16Z" />
+      <div class="package-nav">
+        <div class="nav-tab active" data-dest="vietnam" style="cursor: pointer;">Vietnam</div>
+        <div class="nav-tab" data-dest="malaysia" style="cursor: pointer;">Malaysia</div>
+        <div class="nav-tab" data-dest="thailand" style="cursor: pointer;">Thailand</div>
+        <div class="nav-tab" data-dest="maldives" style="cursor: pointer;">Maldives</div>
+      </div>
+
+      <div class="destination-container">
+        <div class="stack-layer layer-2"></div>
+        <div class="stack-layer layer-1"></div>
+
+        <div class="destination-card dest-vietnam"
+             style="background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)),
+             url('{% if vietnam_dest.image %}{{ vietnam_dest.image.url }}{% else %}{% static "images/bg.png" %}{% endif %}') center/cover;">
+          <div class="flight-path-container">
+            <svg width="100%" height="100%" viewBox="0 0 1000 600" preserveAspectRatio="none" fill="none">
+              <path d="M40 540 Q 250 540, 380 500 T 550 540 T 750 520 T 920 220"
+                    stroke="white" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="6 6"/>
             </svg>
-          </div>
-        </div>
-
-        <img src="{% static 'images/outline.png' %}" class="map-silhouette" alt="map">
-        <div class="top-right-info">{% if vietnam_dest %}{{ vietnam_dest.description }}{% endif %}</div>
-
-        <div class="bottom-layout">
-          <div class="dest-info-box">
-            {% if vietnam_package %}
-              <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">{{ vietnam_package.duration|format_duration }}</span>
-              <h2 class="dest-title">{{ vietnam_package.name }}</h2>
-              <p class="dest-price">From <span class="new">₹ {{ vietnam_package.price|floatformat:0 }}</span></p>
-              <a href="{% url 'user_panel:package_detail' vietnam_package.id %}" class="btn-learn">Book Now <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
-            {% else %}
-              <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">☀️ 5 / 🌙 4</span>
-              <h2 class="dest-title">Vietnam</h2>
-              <p class="dest-price">From <span class="new">₹ 42,200</span></p>
-              <a href="{% url 'user_panel:international_packages' %}?dest=2" class="btn-learn">View Packages <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
-            {% endif %}
-          </div>
-
-          <div class="gallery-wrapper">
-            <div class="nav-arrows">
-              <div class="arrow arrow-prev">←</div>
-              <div class="arrow arrow-next">→</div>
+            <div class="airplane-icon">
+              <svg width="35" height="35" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21,16L21,14L13,9L13,3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5L10,9L2,14L2,16L10,13.5L10,19L8,20.5L8,22L11.5,21L15,22L15,20.5L13,19L13,13.5L21,16Z" />
+              </svg>
             </div>
+          </div>
 
-            <div class="mini-gallery">
+          <img src="{% static 'images/outline.png' %}" class="map-silhouette" alt="map">
+          <div class="top-right-info">{% if vietnam_dest %}{{ vietnam_dest.description }}{% endif %}</div>
+
+          <div class="bottom-layout">
+            <div class="dest-info-box">
               {% if vietnam_package %}
-                <div class="gallery-item active"><img src="{% if vietnam_package.image %}{{ vietnam_package.image.url }}{% else %}{% static 'images/i1.png' %}{% endif %}" alt=""></div>
-                <div class="gallery-item"><img src="{% if vietnam_package.story_main_image %}{{ vietnam_package.story_main_image.url }}{% else %}{% static 'images/i7.png' %}{% endif %}" alt=""></div>
-                <div class="gallery-item"><img src="{% if vietnam_package.story_side_image1 %}{{ vietnam_package.story_side_image1.url }}{% else %}{% static 'images/i3.png' %}{% endif %}" alt=""></div>
-                <div class="gallery-item"><img src="{% if vietnam_package.story_side_image2 %}{{ vietnam_package.story_side_image2.url }}{% else %}{% static 'images/i6.png' %}{% endif %}" alt=""></div>
+                <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">{{ vietnam_package.duration|format_duration }}</span>
+                <h2 class="dest-title">{{ vietnam_package.name }}</h2>
+                <p class="dest-price">From <span class="new">₹ {{ vietnam_package.price|floatformat:0 }}</span></p>
+                <a href="{% url 'user_panel:package_detail' vietnam_package.id %}" class="btn-learn">Book Now <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
               {% else %}
-                <div class="gallery-item active"><img src="{% static 'images/i1.png' %}" alt=""></div>
-                <div class="gallery-item"><img src="{% static 'images/i7.png' %}" alt=""></div>
-                <div class="gallery-item"><img src="{% static 'images/i3.png' %}" alt=""></div>
-                <div class="gallery-item"><img src="{% static 'images/i6.png' %}" alt=""></div>
+                <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">☀️ 5 / 🌙 4</span>
+                <h2 class="dest-title">Vietnam</h2>
+                <p class="dest-price">From <span class="new">₹ 42,200</span></p>
+                <a href="{% url 'user_panel:international_packages' %}?dest=2" class="btn-learn">View Packages <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
               {% endif %}
             </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Malaysia Card -->
-      <div class="destination-card dest-malaysia"
-           style="background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)),
-           url('{% if malaysia_dest.image %}{{ malaysia_dest.image.url }}{% else %}{% static "images/bg.png" %}{% endif %}') center/cover;">
-        <div class="flight-path-container">
-          <svg width="100%" height="100%" viewBox="0 0 1000 600" preserveAspectRatio="none" fill="none">
-            <path d="M40 540 Q 250 540, 380 500 T 550 540 T 750 520 T 920 220"
-                  stroke="white" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="6 6"/>
-          </svg>
-          <div class="airplane-icon">
-            <svg width="35" height="35" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M21,16L21,14L13,9L13,3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5L10,9L2,14L2,16L10,13.5L10,19L8,20.5L8,22L11.5,21L15,22L15,20.5L13,19L13,13.5L21,16Z" />
-            </svg>
-          </div>
-        </div>
+            <div class="gallery-wrapper">
+              <div class="nav-arrows">
+                <div class="arrow arrow-prev">←</div>
+                <div class="arrow arrow-next">→</div>
+              </div>
 
-        <img src="{% static 'images/outline.png' %}" class="map-silhouette" alt="map">
-        <div class="top-right-info">{% if malaysia_dest %}{{ malaysia_dest.description }}{% endif %}</div>
-
-        <div class="bottom-layout">
-          <div class="dest-info-box">
-            {% if malaysia_package %}
-              <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">{{ malaysia_package.duration|format_duration }}</span>
-              <h2 class="dest-title">{{ malaysia_package.name }}</h2>
-              <p class="dest-price">From <span class="new">₹ {{ malaysia_package.price|floatformat:0 }}</span></p>
-              <a href="{% url 'user_panel:package_detail' malaysia_package.id %}" class="btn-learn">Book Now <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
-            {% else %}
-              <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">☀️ 6 / 🌙 5</span>
-              <h2 class="dest-title">Malaysia</h2>
-              <p class="dest-price">From <span class="new">₹ 38,500</span></p>
-              <a href="{% url 'user_panel:international_packages' %}?dest=14" class="btn-learn">View Packages <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
-            {% endif %}
-          </div>
-
-          <div class="gallery-wrapper">
-            <div class="nav-arrows">
-              <div class="arrow arrow-prev">←</div>
-              <div class="arrow arrow-next">→</div>
-            </div>
-
-            <div class="mini-gallery">
-              {% if malaysia_package %}
-                <div class="gallery-item active"><img src="{% if malaysia_package.image %}{{ malaysia_package.image.url }}{% else %}{% static 'images/i1.png' %}{% endif %}" alt=""></div>
-                <div class="gallery-item"><img src="{% if malaysia_package.story_main_image %}{{ malaysia_package.story_main_image.url }}{% else %}{% static 'images/i7.png' %}{% endif %}" alt=""></div>
-                <div class="gallery-item"><img src="{% if malaysia_package.story_side_image1 %}{{ malaysia_package.story_side_image1.url }}{% else %}{% static 'images/i3.png' %}{% endif %}" alt=""></div>
-                <div class="gallery-item"><img src="{% if malaysia_package.story_side_image2 %}{{ malaysia_package.story_side_image2.url }}{% else %}{% static 'images/i6.png' %}{% endif %}" alt=""></div>
-              {% else %}
-                <div class="gallery-item active"><img src="{% static 'images/i1.png' %}" alt=""></div>
-                <div class="gallery-item"><img src="{% static 'images/i7.png' %}" alt=""></div>
-                <div class="gallery-item"><img src="{% static 'images/i3.png' %}" alt=""></div>
-                <div class="gallery-item"><img src="{% static 'images/i6.png' %}" alt=""></div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Thailand Card -->
-      <div class="destination-card dest-thailand"
-           style="background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)),
-           url('{% if thailand_dest.image %}{{ thailand_dest.image.url }}{% else %}{% static "images/bg.png" %}{% endif %}') center/cover;">
-        <div class="flight-path-container">
-          <svg width="100%" height="100%" viewBox="0 0 1000 600" preserveAspectRatio="none" fill="none">
-            <path d="M40 540 Q 250 540, 380 500 T 550 540 T 750 520 T 920 220"
-                  stroke="white" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="6 6"/>
-          </svg>
-          <div class="airplane-icon">
-            <svg width="35" height="35" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M21,16L21,14L13,9L13,3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5L10,9L2,14L2,16L10,13.5L10,19L8,20.5L8,22L11.5,21L15,22L15,20.5L13,19L13,13.5L21,16Z" />
-            </svg>
-          </div>
-        </div>
-
-        <img src="{% static 'images/outline.png' %}" class="map-silhouette" alt="map">
-        <div class="top-right-info">{% if thailand_dest %}{{ thailand_dest.description }}{% endif %}</div>
-
-        <div class="bottom-layout">
-          <div class="dest-info-box">
-            {% if thailand_package %}
-              <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">{{ thailand_package.duration|format_duration }}</span>
-              <h2 class="dest-title">{{ thailand_package.name }}</h2>
-              <p class="dest-price">From <span class="new">₹ {{ thailand_package.price|floatformat:0 }}</span></p>
-              <a href="{% url 'user_panel:package_detail' thailand_package.id %}" class="btn-learn">Book Now <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
-            {% else %}
-              <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">☀️ 5 / 🌙 4</span>
-              <h2 class="dest-title">Thailand</h2>
-              <p class="dest-price">From <span class="new">₹ 35,800</span></p>
-              <a href="{% url 'user_panel:international_packages' %}?dest=8" class="btn-learn">View Packages <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
-            {% endif %}
-          </div>
-
-          <div class="gallery-wrapper">
-            <div class="nav-arrows">
-              <div class="arrow arrow-prev">←</div>
-              <div class="arrow arrow-next">→</div>
-            </div>
-
-            <div class="mini-gallery">
-              {% if thailand_package %}
-                <div class="gallery-item active"><img src="{% if thailand_package.image %}{{ thailand_package.image.url }}{% else %}{% static 'images/i1.png' %}{% endif %}" alt=""></div>
-                <div class="gallery-item"><img src="{% if thailand_package.story_main_image %}{{ thailand_package.story_main_image.url }}{% else %}{% static 'images/i7.png' %}{% endif %}" alt=""></div>
-                <div class="gallery-item"><img src="{% if thailand_package.story_side_image1 %}{{ thailand_package.story_side_image1.url }}{% else %}{% static 'images/i3.png' %}{% endif %}" alt=""></div>
-                <div class="gallery-item"><img src="{% if thailand_package.story_side_image2 %}{{ thailand_package.story_side_image2.url }}{% else %}{% static 'images/i6.png' %}{% endif %}" alt=""></div>
-              {% else %}
-                <div class="gallery-item active"><img src="{% static 'images/i1.png' %}" alt=""></div>
-                <div class="gallery-item"><img src="{% static 'images/i7.png' %}" alt=""></div>
-                <div class="gallery-item"><img src="{% static 'images/i3.png' %}" alt=""></div>
-                <div class="gallery-item"><img src="{% static 'images/i6.png' %}" alt=""></div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Maldives Card -->
-      <div class="destination-card dest-maldives"
-           style="background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)),
-           url('{% if maldives_dest.image %}{{ maldives_dest.image.url }}{% else %}{% static "images/bg.png" %}{% endif %}') center/cover;">
-        <div class="flight-path-container">
-          <svg width="100%" height="100%" viewBox="0 0 1000 600" preserveAspectRatio="none" fill="none">
-            <path d="M40 540 Q 250 540, 380 500 T 550 540 T 750 520 T 920 220"
-                  stroke="white" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="6 6"/>
-          </svg>
-          <div class="airplane-icon">
-            <svg width="35" height="35" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M21,16L21,14L13,9L13,3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5L10,9L2,14L2,16L10,13.5L10,19L8,20.5L8,22L11.5,21L15,22L15,20.5L13,19L13,13.5L21,16Z" />
-            </svg>
-          </div>
-        </div>
-
-        <img src="{% static 'images/outline.png' %}" class="map-silhouette" alt="map">
-        <div class="top-right-info">{% if maldives_dest %}{{ maldives_dest.description }}{% endif %}</div>
-
-        <div class="bottom-layout">
-          <div class="dest-info-box">
-            {% if maldives_package %}
-              <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">{{ maldives_package.duration|format_duration }}</span>
-              <h2 class="dest-title">{{ maldives_package.name }}</h2>
-              <p class="dest-price">From <span class="new">₹ {{ maldives_package.price|floatformat:0 }}</span></p>
-              <a href="{% url 'user_panel:package_detail' maldives_package.id %}" class="btn-learn">Book Now <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
-            {% else %}
-              <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">☀️ 4 / 🌙 3</span>
-              <h2 class="dest-title">Maldives</h2>
-              <p class="dest-price">From <span class="new">₹ 65,000</span></p>
-              <a href="{% url 'user_panel:international_packages' %}?dest=12" class="btn-learn">View Packages <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
-            {% endif %}
-          </div>
-
-          <div class="gallery-wrapper">
-            <div class="nav-arrows">
-              <div class="arrow arrow-prev">←</div>
-              <div class="arrow arrow-next">→</div>
-            </div>
-
-            <div class="mini-gallery">
-              {% if maldives_package %}
-                <div class="gallery-item active"><img src="{% if maldives_package.image %}{{ maldives_package.image.url }}{% else %}{% static 'images/i1.png' %}{% endif %}" alt=""></div>
-                <div class="gallery-item"><img src="{% if maldives_package.story_main_image %}{{ maldives_package.story_main_image.url }}{% else %}{% static 'images/i7.png' %}{% endif %}" alt=""></div>
-                <div class="gallery-item"><img src="{% if maldives_package.story_side_image1 %}{{ maldives_package.story_side_image1.url }}{% else %}{% static 'images/i3.png' %}{% endif %}" alt=""></div>
-                <div class="gallery-item"><img src="{% if maldives_package.story_side_image2 %}{{ maldives_package.story_side_image2.url }}{% else %}{% static 'images/i6.png' %}{% endif %}" alt=""></div>
-              {% else %}
-                <div class="gallery-item active"><img src="{% static 'images/i1.png' %}" alt=""></div>
-                <div class="gallery-item"><img src="{% static 'images/i7.png' %}" alt=""></div>
-                <div class="gallery-item"><img src="{% static 'images/i3.png' %}" alt=""></div>
-                <div class="gallery-item"><img src="{% static 'images/i6.png' %}" alt=""></div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ================= UPDATED TESTIMONIALS SECTION (NO PROFILE IMAGES) ================= -->
-  <section class="testimonials-section">
-    <div class="testimonial-header">
-      <h2 class="testimonial-title">Hear <i>from them</i></h2>
-      <p class="testimonial-subtitle">
-        Unmatched elegance and world-class service. Experience luxury redefined through every detail. Trusted by discerning clients worldwide.
-      </p>
-    </div>
-
-    <div class="testimonials-grid">
-      {% if featured_feedbacks %}
-        {% for fb in featured_feedbacks %}
-        <div class="testimonial-card">
-          <div class="quote-icon">“</div>
-          <p class="testimonial-text">{{ fb.feedback }}</p>
-          <div class="user-info">
-            <div class="avatar">{{ fb.name|make_list|first }}</div>
-            <div class="user-details">
-              <h4 class="user-name">{{ fb.name }}</h4>
-              <p class="user-handle"><i>Verified Traveler</i></p>
-              <div class="rating-stars">
-                {% for i in "12345" %}
-                  {% if forloop.counter <= fb.rating %}★{% else %}☆{% endif %}
-                {% endfor %}
+              <div class="mini-gallery">
+                {% if vietnam_package %}
+                  <div class="gallery-item active"><img src="{% if vietnam_package.image %}{{ vietnam_package.image.url }}{% else %}{% static 'images/i1.png' %}{% endif %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% if vietnam_package.story_main_image %}{{ vietnam_package.story_main_image.url }}{% else %}{% static 'images/i7.png' %}{% endif %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% if vietnam_package.story_side_image1 %}{{ vietnam_package.story_side_image1.url }}{% else %}{% static 'images/i3.png' %}{% endif %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% if vietnam_package.story_side_image2 %}{{ vietnam_package.story_side_image2.url }}{% else %}{% static 'images/i6.png' %}{% endif %}" alt=""></div>
+                {% else %}
+                  <div class="gallery-item active"><img src="{% static 'images/i1.png' %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% static 'images/i7.png' %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% static 'images/i3.png' %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% static 'images/i6.png' %}" alt=""></div>
+                {% endif %}
               </div>
             </div>
           </div>
         </div>
-        {% endfor %}
-      {% endif %}
-    </div>
-  </section>
-  </div><!-- End unified-wavy-bg -->
+
+        <div class="destination-card dest-malaysia"
+             style="background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)),
+             url('{% if malaysia_dest.image %}{{ malaysia_dest.image.url }}{% else %}{% static "images/bg.png" %}{% endif %}') center/cover;">
+          <div class="flight-path-container">
+            <svg width="100%" height="100%" viewBox="0 0 1000 600" preserveAspectRatio="none" fill="none">
+              <path d="M40 540 Q 250 540, 380 500 T 550 540 T 750 520 T 920 220"
+                    stroke="white" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="6 6"/>
+            </svg>
+            <div class="airplane-icon">
+              <svg width="35" height="35" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21,16L21,14L13,9L13,3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5L10,9L2,14L2,16L10,13.5L10,19L8,20.5L8,22L11.5,21L15,22L15,20.5L13,19L13,13.5L21,16Z" />
+              </svg>
+            </div>
+          </div>
+
+          <img src="{% static 'images/outline.png' %}" class="map-silhouette" alt="map">
+          <div class="top-right-info">{% if malaysia_dest %}{{ malaysia_dest.description }}{% endif %}</div>
+
+          <div class="bottom-layout">
+            <div class="dest-info-box">
+              {% if malaysia_package %}
+                <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">{{ malaysia_package.duration|format_duration }}</span>
+                <h2 class="dest-title">{{ malaysia_package.name }}</h2>
+                <p class="dest-price">From <span class="new">₹ {{ malaysia_package.price|floatformat:0 }}</span></p>
+                <a href="{% url 'user_panel:package_detail' malaysia_package.id %}" class="btn-learn">Book Now <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
+              {% else %}
+                <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">☀️ 6 / 🌙 5</span>
+                <h2 class="dest-title">Malaysia</h2>
+                <p class="dest-price">From <span class="new">₹ 38,500</span></p>
+                <a href="{% url 'user_panel:international_packages' %}?dest=14" class="btn-learn">View Packages <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
+              {% endif %}
+            </div>
+
+            <div class="gallery-wrapper">
+              <div class="nav-arrows">
+                <div class="arrow arrow-prev">←</div>
+                <div class="arrow arrow-next">→</div>
+              </div>
+
+              <div class="mini-gallery">
+                {% if malaysia_package %}
+                  <div class="gallery-item active"><img src="{% if malaysia_package.image %}{{ malaysia_package.image.url }}{% else %}{% static 'images/i1.png' %}{% endif %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% if malaysia_package.story_main_image %}{{ malaysia_package.story_main_image.url }}{% else %}{% static 'images/i7.png' %}{% endif %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% if malaysia_package.story_side_image1 %}{{ malaysia_package.story_side_image1.url }}{% else %}{% static 'images/i3.png' %}{% endif %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% if malaysia_package.story_side_image2 %}{{ malaysia_package.story_side_image2.url }}{% else %}{% static 'images/i6.png' %}{% endif %}" alt=""></div>
+                {% else %}
+                  <div class="gallery-item active"><img src="{% static 'images/i1.png' %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% static 'images/i7.png' %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% static 'images/i3.png' %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% static 'images/i6.png' %}" alt=""></div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="destination-card dest-thailand"
+             style="background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)),
+             url('{% if thailand_dest.image %}{{ thailand_dest.image.url }}{% else %}{% static "images/bg.png" %}{% endif %}') center/cover;">
+          <div class="flight-path-container">
+            <svg width="100%" height="100%" viewBox="0 0 1000 600" preserveAspectRatio="none" fill="none">
+              <path d="M40 540 Q 250 540, 380 500 T 550 540 T 750 520 T 920 220"
+                    stroke="white" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="6 6"/>
+            </svg>
+            <div class="airplane-icon">
+              <svg width="35" height="35" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21,16L21,14L13,9L13,3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5L10,9L2,14L2,16L10,13.5L10,19L8,20.5L8,22L11.5,21L15,22L15,20.5L13,19L13,13.5L21,16Z" />
+              </svg>
+            </div>
+          </div>
+
+          <img src="{% static 'images/outline.png' %}" class="map-silhouette" alt="map">
+          <div class="top-right-info">{% if thailand_dest %}{{ thailand_dest.description }}{% endif %}</div>
+
+          <div class="bottom-layout">
+            <div class="dest-info-box">
+              {% if thailand_package %}
+                <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">{{ thailand_package.duration|format_duration }}</span>
+                <h2 class="dest-title">{{ thailand_package.name }}</h2>
+                <p class="dest-price">From <span class="new">₹ {{ thailand_package.price|floatformat:0 }}</span></p>
+                <a href="{% url 'user_panel:package_detail' thailand_package.id %}" class="btn-learn">Book Now <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
+              {% else %}
+                <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">☀️ 5 / 🌙 4</span>
+                <h2 class="dest-title">Thailand</h2>
+                <p class="dest-price">From <span class="new">₹ 35,800</span></p>
+                <a href="{% url 'user_panel:international_packages' %}?dest=8" class="btn-learn">View Packages <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
+              {% endif %}
+            </div>
+
+            <div class="gallery-wrapper">
+              <div class="nav-arrows">
+                <div class="arrow arrow-prev">←</div>
+                <div class="arrow arrow-next">→</div>
+              </div>
+
+              <div class="mini-gallery">
+                {% if thailand_package %}
+                  <div class="gallery-item active"><img src="{% if thailand_package.image %}{{ thailand_package.image.url }}{% else %}{% static 'images/i1.png' %}{% endif %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% if thailand_package.story_main_image %}{{ thailand_package.story_main_image.url }}{% else %}{% static 'images/i7.png' %}{% endif %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% if thailand_package.story_side_image1 %}{{ thailand_package.story_side_image1.url }}{% else %}{% static 'images/i3.png' %}{% endif %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% if thailand_package.story_side_image2 %}{{ thailand_package.story_side_image2.url }}{% else %}{% static 'images/i6.png' %}{% endif %}" alt=""></div>
+                {% else %}
+                  <div class="gallery-item active"><img src="{% static 'images/i1.png' %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% static 'images/i7.png' %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% static 'images/i3.png' %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% static 'images/i6.png' %}" alt=""></div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="destination-card dest-maldives"
+             style="background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)),
+             url('{% if maldives_dest.image %}{{ maldives_dest.image.url }}{% else %}{% static "images/bg.png" %}{% endif %}') center/cover;">
+          <div class="flight-path-container">
+            <svg width="100%" height="100%" viewBox="0 0 1000 600" preserveAspectRatio="none" fill="none">
+              <path d="M40 540 Q 250 540, 380 500 T 550 540 T 750 520 T 920 220"
+                    stroke="white" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="6 6"/>
+            </svg>
+            <div class="airplane-icon">
+              <svg width="35" height="35" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21,16L21,14L13,9L13,3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5L10,9L2,14L2,16L10,13.5L10,19L8,20.5L8,22L11.5,21L15,22L15,20.5L13,19L13,13.5L21,16Z" />
+              </svg>
+            </div>
+          </div>
+
+          <img src="{% static 'images/outline.png' %}" class="map-silhouette" alt="map">
+          <div class="top-right-info">{% if maldives_dest %}{{ maldives_dest.description }}{% endif %}</div>
+
+          <div class="bottom-layout">
+            <div class="dest-info-box">
+              {% if maldives_package %}
+                <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">{{ maldives_package.duration|format_duration }}</span>
+                <h2 class="dest-title">{{ maldives_package.name }}</h2>
+                <p class="dest-price">From <span class="new">₹ {{ maldives_package.price|floatformat:0 }}</span></p>
+                <a href="{% url 'user_panel:package_detail' maldives_package.id %}" class="btn-learn">Book Now <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
+              {% else %}
+                <span style="font-size: 14px; letter-spacing: 2px; opacity: 0.9;">☀️ 4 / 🌙 3</span>
+                <h2 class="dest-title">Maldives</h2>
+                <p class="dest-price">From <span class="new">₹ 65,000</span></p>
+                <a href="{% url 'user_panel:international_packages' %}?dest=12" class="btn-learn">View Packages <span style="font-size: 18px; margin-left: 5px;">↗</span></a>
+              {% endif %}
+            </div>
+
+            <div class="gallery-wrapper">
+              <div class="nav-arrows">
+                <div class="arrow arrow-prev">←</div>
+                <div class="arrow arrow-next">→</div>
+              </div>
+
+              <div class="mini-gallery">
+                {% if maldives_package %}
+                  <div class="gallery-item active"><img src="{% if maldives_package.image %}{{ maldives_package.image.url }}{% else %}{% static 'images/i1.png' %}{% endif %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% if maldives_package.story_main_image %}{{ maldives_package.story_main_image.url }}{% else %}{% static 'images/i7.png' %}{% endif %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% if maldives_package.story_side_image1 %}{{ maldives_package.story_side_image1.url }}{% else %}{% static 'images/i3.png' %}{% endif %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% if maldives_package.story_side_image2 %}{{ maldives_package.story_side_image2.url }}{% else %}{% static 'images/i6.png' %}{% endif %}" alt=""></div>
+                {% else %}
+                  <div class="gallery-item active"><img src="{% static 'images/i1.png' %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% static 'images/i7.png' %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% static 'images/i3.png' %}" alt=""></div>
+                  <div class="gallery-item"><img src="{% static 'images/i6.png' %}" alt=""></div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="testimonials-section">
+      <div class="testimonial-header">
+        <h2 class="testimonial-title">Hear <i>from them</i></h2>
+        <p class="testimonial-subtitle">
+          Unmatched elegance and world-class service. Experience luxury redefined through every detail. Trusted by discerning clients worldwide.
+        </p>
+      </div>
+
+      <div class="testimonials-grid">
+        {% if featured_feedbacks %}
+          {% for fb in featured_feedbacks %}
+          <div class="testimonial-card">
+            <div class="quote-icon">“</div>
+            <p class="testimonial-text">{{ fb.feedback }}</p>
+            <div class="user-info">
+              <div class="avatar">{{ fb.name|make_list|first }}</div>
+              <div class="user-details">
+                <h4 class="user-name">{{ fb.name }}</h4>
+                <p class="user-handle"><i>Verified Traveler</i></p>
+                <div class="rating-stars">
+                  {% for i in "12345" %}
+                    {% if forloop.counter <= fb.rating %}★{% else %}☆{% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </section>
+  </div>
 
   <footer class="main-footer">
     <div class="footer-cta">
@@ -1093,44 +1530,70 @@
 
   {% include 'user/enquire_popup.html' %}
 
-  <!-- ✅ SCRIPT 1: Bottom right carousel (Book Now slider) -->
   <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const track = document.querySelector('.carousel-track');
-    const thumbs = document.querySelectorAll('.gallery-strip .gallery-img');
-    const progressFill = document.querySelector('.progress-fill');
+    document.addEventListener('DOMContentLoaded', function () {
+      const cards = document.querySelectorAll('.gallery-strip .gallery-card');
+      const wraps = document.querySelectorAll('.gallery-strip .gallery-item-wrap');
+      const progressFill = document.querySelector('.progress-fill');
 
-    if (!track || thumbs.length === 0) return;
+      if (cards.length === 0) return;
 
-    let currentIndex = 0;
-    const total = thumbs.length;
-    const slideWidth = 330;
+      let currentIndex = 0;
+      const total = cards.length;
+      let autoSlide;
 
-    function goTo(index) {
-      currentIndex = index;
-      track.style.transform = `translateX(-${slideWidth * index}px)`;
+      function setActiveCard(index) {
+        cards.forEach((card, i) => {
+          card.classList.toggle('active', i === index);
+        });
 
-      if (progressFill) {
-        progressFill.style.width = `${((index + 1) / total) * 100}%`;
+        wraps.forEach((wrap, i) => {
+          wrap.classList.toggle('active', i === index);
+        });
+
+        if (progressFill) {
+          progressFill.style.width = `${((index + 1) / total) * 100}%`;
+        }
       }
 
-      // ✅ NO BORDER highlight
-      thumbs.forEach(t => t.style.opacity = '0.6');
-      thumbs[index].style.opacity = '1';
-    }
+      function goTo(index) {
+        currentIndex = index;
+        setActiveCard(index);
+      }
 
-    thumbs.forEach((thumb, index) => {
-      thumb.addEventListener('click', () => goTo(index));
+      function startAutoSlide() {
+        stopAutoSlide();
+        autoSlide = setInterval(() => {
+          goTo((currentIndex + 1) % total);
+        }, 5000);
+      }
+
+      function stopAutoSlide() {
+        if (autoSlide) clearInterval(autoSlide);
+      }
+
+      cards.forEach((card, index) => {
+        card.addEventListener('mouseenter', () => {
+          goTo(index);
+          stopAutoSlide();
+        });
+
+        card.addEventListener('mouseleave', () => {
+          startAutoSlide();
+        });
+
+        card.addEventListener('click', (e) => {
+          if (!e.target.closest('.mini-book-btn')) {
+            goTo(index);
+          }
+        });
+      });
+
+      goTo(0);
+      startAutoSlide();
     });
+  </script>
 
-    setInterval(() => {
-      goTo((currentIndex + 1) % total);
-    }, 5000);
-
-    goTo(0);
-  });
-</script>
-  <!-- ✅ SCRIPT 2: Destination tab switcher + mini gallery arrows -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const tabs = document.querySelectorAll('.package-nav .nav-tab');
@@ -1151,6 +1614,10 @@
           });
         });
       });
+
+      if (cards.length > 0) {
+        cards[0].classList.add('active');
+      }
 
       cards.forEach(card => {
         const prevArrow = card.querySelector('.arrow-prev');

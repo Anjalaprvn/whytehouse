@@ -743,16 +743,22 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
 class FeedbackViewSet(viewsets.ModelViewSet):
     serializer_class = FeedbackSerializer
-    queryset = Feedback.objects.all().order_by("-created_at")
+    queryset = Feedback.objects.all().prefetch_related('images').order_by("-created_at")
 
-    # Public can submit feedback; editing/deleting should be admin-only.
     def get_permissions(self):
         if self.action in ["create", "list", "retrieve", "featured"]:
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        feedback_type = (self.request.query_params.get("feedback_type") or "").strip()
+        if feedback_type:
+            qs = qs.filter(feedback_type=feedback_type)
+        return qs
+
     @action(detail=False, methods=["get"], url_path="featured", permission_classes=[permissions.AllowAny])
     def featured(self, request):
-        qs = Feedback.objects.filter(featured=True).order_by("-created_at")
+        qs = Feedback.objects.filter(featured=True).prefetch_related('images').order_by("-created_at")
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
