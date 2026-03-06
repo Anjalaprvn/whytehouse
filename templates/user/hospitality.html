@@ -744,6 +744,18 @@
   align-items:center;
   gap:14px;
 }
+.client-info .avatar-circle{
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  background:#d28b2e;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  font-weight:600;
+  color:#fff;
+}
 .client-info img{
   width:56px;
   height:56px;
@@ -1389,147 +1401,69 @@
     <div class="testimonial-wrapper">
 
       <div class="testimonial-viewport">
-        <div class="testimonial-track" id="testimonialTrack">
+      <div class="testimonial-track" id="testimonialTrack">
 
-          <!-- Slide 1 -->
-          <div class="testimonial-slide">
-            <div class="testimonial-card">
-              <div class="testimonial-image">
-                <img src="{% static 'images/amber.png' %}" alt="Property">
-              </div>
+  {% for fb in testimonials %}
+  <div class="testimonial-slide">
+    <div class="testimonial-card">
 
-              <div class="testimonial-content">
-                <div class="quote-icon">“</div>
-                <p>
-                  Whyte House leveraged our property’s unique history, implementing a strategic vision
-                  that transformed our heritage asset into a prestigious landmark with record-breaking occupancy.
-                </p>
-
-                <div class="client-info">
-                  <img src="{% static 'images/person.png' %}" alt="Client">
-                  <div>
-                    <h4>Evan Thomas</h4>
-                    <div class="stars">★ ★ ★ ★ ★</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Slide 2 -->
-          <div class="testimonial-slide">
-            <div class="testimonial-card">
-              <div class="testimonial-image">
-                <img src="{% static 'images/zenith.png' %}" alt="Property">
-              </div>
-
-              <div class="testimonial-content">
-                <div class="quote-icon">“</div>
-                <p>
-                  Our bookings improved within weeks. Their team upgraded our listing quality, guest handling,
-                  and pricing strategy—results were visible immediately.
-                </p>
-
-                <div class="client-info">
-                  <img src="{% static 'images/person.png' %}" alt="Client">
-                  <div>
-                    <h4>Meera Nair</h4>
-                    <div class="stars">★ ★ ★ ★ ★</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Slide 3 -->
-          <div class="testimonial-slide">
-            <div class="testimonial-card">
-              <div class="testimonial-image">
-                <img src="{% static 'images/blog.png' %}" alt="Property">
-              </div>
-
-              <div class="testimonial-content">
-                <div class="quote-icon">“</div>
-                <p>
-                  The operations became smooth—staff training, check-in workflows, and guest communication
-                  are now consistent and professional.
-                </p>
-
-                <div class="client-info">
-                  <img src="{% static 'images/person.png' %}" alt="Client">
-                  <div>
-                    <h4>Arjun Menon</h4>
-                    <div class="stars">★ ★ ★ ★ ★</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Slide 4 -->
-          <div class="testimonial-slide">
-            <div class="testimonial-card">
-              <div class="testimonial-image">
-                <img src="{% static 'images/h1.png' %}" alt="Property">
-              </div>
-
-              <div class="testimonial-content">
-                <div class="quote-icon">“</div>
-                <p>
-                  Their marketing & distribution is strong. We started receiving higher quality guests and better reviews,
-                  which increased repeat bookings.
-                </p>
-
-                <div class="client-info">
-                  <img src="{% static 'images/person.png' %}" alt="Client">
-                  <div>
-                    <h4>Sarah Williams</h4>
-                    <div class="stars">★ ★ ★ ★ ★</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Slide 5 -->
-          <div class="testimonial-slide">
-            <div class="testimonial-card">
-              <div class="testimonial-image">
-                <img src="{% static 'images/h2.png' %}" alt="Property">
-              </div>
-
-              <div class="testimonial-content">
-                <div class="quote-icon">“</div>
-                <p>
-                  What I love most is transparency. Monthly reporting, revenue insights, and clear plans—
-                  it feels like my property is managed like a premium brand.
-                </p>
-
-                <div class="client-info">
-                  <img src="{% static 'images/person.png' %}" alt="Client">
-                  <div>
-                    <h4>Rohit Sharma</h4>
-                    <div class="stars">★ ★ ★ ★ ★</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
+      <div class="testimonial-image">
+        {% if fb.images.first %}
+          <img src="{{ fb.images.first.image.url }}" alt="Property">
+        {% else %}
+        <img src="{% static 'images/about.png' %}" alt="Property">
+        {% endif %}
       </div>
 
+      <div class="testimonial-content">
+        <div class="quote-icon">“</div>
+
+        <p>{{ fb.feedback }}</p>
+
+        <div class="client-info">
+          <div class="avatar-circle">{{ fb.name|first|upper }}</div>
+          <div>
+            <h4>{{ fb.name }}</h4>
+
+            <div class="stars">
+              {% for i in "x"|rjust:"5" %}
+                {% if forloop.counter <= fb.rating %}
+                  ★
+                {% else %}
+                  ☆
+                {% endif %}
+              {% endfor %}
+            </div>
+
+            <div style="margin-top:6px;font-size:13px;color:#6b7280;">
+              {{ fb.feedback_type }}
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
+  </div>
+  {% empty %}
+    <div class="testimonial-slide">
+      <div class="testimonial-card">
+        <div class="testimonial-content">
+          <div class="quote-icon">“</div>
+          <p>No testimonials available.</p>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+
+</div>
 
     <div class="testimonial-nav">
       <button type="button" id="testimonialPrev">←</button>
 
       <div class="testimonial-dots" id="testimonialDots">
-        <div class="testimonial-dot active" data-index="0"></div>
-        <div class="testimonial-dot" data-index="1"></div>
-        <div class="testimonial-dot" data-index="2"></div>
-        <div class="testimonial-dot" data-index="3"></div>
-        <div class="testimonial-dot" data-index="4"></div>
+        {% for fb in testimonials %}
+        <div class="testimonial-dot{% if forloop.first %} active{% endif %}" data-index="{{ forloop.counter0 }}"></div>
+        {% endfor %}
       </div>
 
       <button type="button" id="testimonialNext">→</button>
@@ -1615,7 +1549,7 @@
   const nextBtn = document.getElementById("testimonialNext");
   const dotsWrap = document.getElementById("testimonialDots");
   const dots = dotsWrap ? dotsWrap.querySelectorAll(".testimonial-dot") : [];
-  const total = 5;
+  const total = dots.length || 1;
 
   let index = 0;
 
@@ -1691,3 +1625,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
+
+

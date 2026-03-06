@@ -243,7 +243,7 @@
     <div class="form-card">
         <h3>Feedback Information</h3>
 
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
 
             <div class="form-grid">
@@ -264,6 +264,16 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Feedback Type <span>*</span></label>
+                    <select name="feedback_type" required>
+                        <option value="">Select Type</option>
+                        {% for value, label in feedback_type_choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label>Rating <span>*</span></label>
                     <select name="rating" required>
                         <option value="">Select Rating</option>
@@ -278,6 +288,11 @@
                 <div class="form-group full-width">
                     <label>Feedback Message <span>*</span></label>
                     <textarea name="feedback" placeholder="Enter customer feedback..." required>{{ request.POST.feedback }}</textarea>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Upload Images <span style="font-weight:400;color:#71717a">(optional)</span></label>
+                    <input type="file" name="images" accept="image/*" multiple>
                 </div>
                 
                 <!-- checkbox for marking feedback as featured on homepage -->
