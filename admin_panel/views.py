@@ -2565,7 +2565,7 @@ def add_destination(request):
             return render(request, 'admin/destination/add_destination.html', {'default_category': default_category})
         
         # Check for duplicate destination
-        if Destination.objects.filter(name_iexact=name, country_iexact=country).exists():
+        if Destination.objects.filter(name__iexact=name, country__iexact=country).exists():
             messages.error(request, "This destination already exists.")
             return render(request, 'admin/destination/add_destination.html', {'default_category': default_category})
         

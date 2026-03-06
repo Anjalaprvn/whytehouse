@@ -199,10 +199,10 @@
         {% endif %}
 
         <div class="action-buttons">
-            <a href="{% url 'admin_panel:edit_property' property.id %}" class="btn btn-edit">
+            <a href="{% url 'admin_panel:admin_edit_property' property.id %}" class="btn btn-edit">
                 <i class="fas fa-edit"></i> Edit Property
             </a>
-            <a href="{% url 'admin_panel:delete_property' property.id %}" class="btn btn-delete" onclick="return confirm('Are you sure you want to delete this property?')">
+            <a href="{% url 'admin_panel:admin_delete_property' property.id %}" class="btn btn-delete" onclick="return confirm('Are you sure you want to delete this property?')">
                 <i class="fas fa-trash"></i> Delete Property
             </a>
         </div>
