@@ -5,7 +5,7 @@
 
 {% block nav_packages %}class="active"{% endblock %}
 
-{% block extra_css %}
+{% block content %}
 <style>
         :root {
             --brand-gold: #D4A373;
@@ -46,7 +46,7 @@
         .detail-hero {
             height: 70vh;
             background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.2)), 
-                        url("{{ package.image.url }}");
+                        url("{% if package.image %}{{ package.image.url }}{% else %}{% static 'images/default-package.jpg' %}{% endif %}");
             background-size: cover;
             background-position: center;
             position: relative;
@@ -248,12 +248,13 @@
             background: transparent;
         }
     </style>
-{% endblock %}
+</head>
+<body>
 
-{% block content %}
+
 
     <header class="detail-hero">
-        <a href="{% url 'user_panel:international_packages' %}" class="back-btn">
+        <a href="{% if package.category == 'Domestic' %}{% url 'user_panel:domestic_packages' %}{% else %}{% url 'user_panel:international_packages' %}{% endif %}" class="back-btn">
             <i class="fas fa-arrow-left"></i> Back to Packages
         </a>
     </header>
@@ -563,5 +564,4 @@
             </div>
         </div>
     </section>
-
 {% endblock %}

@@ -2,9 +2,10 @@
 {% load static %}
 
 {% block title %}{{ blog.title }} | Whyte House{% endblock %}
+
 {% block nav_blog %}class="active"{% endblock %}
 
-{% block extra_css %}
+{% block content %}
 <style>
 :root {
     --brand-gold: #D4A373;
@@ -303,9 +304,10 @@ body > nav{
     }
 }
 </style>
-{% endblock %}
+</head>
+<body>
 
-{% block content %}
+
 
 <header class="detail-hero">
     <div class="hero-content">
@@ -379,5 +381,4 @@ body > nav{
     </div>
 
 </main>
-
 {% endblock %}

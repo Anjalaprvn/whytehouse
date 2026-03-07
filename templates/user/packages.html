@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<div class="categories-container">
+<div class="categories-container" id="packages-section">
     {% if search_query %}
     <div style="width: 100%; text-align: center; margin-bottom: 10px; color: #666; font-size: 14px;">
         Showing results for "<strong>{{ search_query }}</strong>" 
@@ -266,12 +266,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     {% if category %}
         <!-- Show destination filters when on domestic or international packages page -->
-        <a href="{% if category == 'Domestic' %}{% url 'user_panel:domestic_packages' %}{% else %}{% url 'user_panel:international_packages' %}{% endif %}{% if search_query %}?search={{ search_query }}{% endif %}" 
+        <a href="{% if category == 'Domestic' %}{% url 'user_panel:domestic_packages' %}{% else %}{% url 'user_panel:international_packages' %}{% endif %}{% if search_query %}?search={{ search_query }}{% endif %}#packages-section" 
            class="cat-pill {% if not selected_destination %}active{% endif %}">
             All {{ category }}
         </a>
         {% for dest in destinations %}
-        <a href="{% if category == 'Domestic' %}{% url 'user_panel:domestic_packages' %}?dest={{ dest.id }}{% if search_query %}&search={{ search_query }}{% endif %}{% else %}{% url 'user_panel:international_packages' %}?dest={{ dest.id }}{% if search_query %}&search={{ search_query }}{% endif %}{% endif %}" 
+        <a href="{% if category == 'Domestic' %}{% url 'user_panel:domestic_packages' %}?dest={{ dest.id }}{% if search_query %}&search={{ search_query }}{% endif %}{% else %}{% url 'user_panel:international_packages' %}?dest={{ dest.id }}{% if search_query %}&search={{ search_query }}{% endif %}{% endif %}#packages-section" 
            class="cat-pill {% if selected_destination == dest.id %}active{% endif %}">
             {{ dest.name }}
         </a>
@@ -286,6 +286,20 @@ document.addEventListener('DOMContentLoaded', function() {
         <a href="?country=london{% if search_query %}&search={{ search_query }}{% endif %}" class="cat-pill {% if selected_country == 'london' %}active{% endif %}">London</a>
     {% endif %}
 </div>
+
+<script>
+// Smooth scroll to packages section on page load if hash is present
+window.addEventListener('DOMContentLoaded', function() {
+    if (window.location.hash === '#packages-section') {
+        setTimeout(function() {
+            const element = document.getElementById('packages-section');
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 100);
+    }
+});
+</script>
 
 <main class="packages-grid">
     {% for package in packages %}
