@@ -196,7 +196,7 @@ def blog_detail(request, slug):
 
     # Replace {{image1}}, {{image2}}, etc. with actual image HTML
     content = blog.content
-    content_images = blog.content_images.all()
+    content_images = blog.images.all()
     
     # Normalize line endings and split content
     content = content.replace('\r\n', '\n').replace('\r', '\n')

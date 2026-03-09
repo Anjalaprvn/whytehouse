@@ -146,9 +146,13 @@ def forgot_password(request):
     return render(request, 'admin/forgotpassword.html')
 
 def dashboard(request):
-    # Redirect to login if user is not authenticated
     if not request.user.is_authenticated:
+        messages.error(request, "Please login to access this page.")
         return redirect('admin_panel:login')
+    
+    if request.session.get('admin_otp') or request.session.get('admin_user_id'):
+        messages.error(request, "Please complete OTP verification.")
+        return redirect('admin_panel:verify_otp')
     
     from django.db.models import Sum, Count
     from datetime import datetime, timedelta
@@ -773,7 +777,6 @@ def edit_employee(request, pk):
     
     if request.method == 'POST':
         try:
-            # validate required fields
             name = request.POST.get('name', '').strip()
             email = request.POST.get('email', '').strip()
             phone = request.POST.get('phone', '').strip()
@@ -789,6 +792,10 @@ def edit_employee(request, pk):
             employee.join_date = request.POST.get('join_date') or None
             employee.salary = request.POST.get('salary') or None
             employee.status = request.POST.get('status', 'Active')
+            
+            if request.FILES.get('profile_picture'):
+                employee.profile_picture = request.FILES['profile_picture']
+            
             employee.save()
             
             messages.success(request, f'Employee {employee.name} updated successfully!')
@@ -1807,7 +1814,7 @@ def edit_blog(request, blog_id):
                 BlogImage.objects.filter(id__in=deleted_ids, blog=blog).delete()
                 
                 # Reorder remaining images
-                remaining_images = blog.content_images.all().order_by('order')
+                remaining_images = blog.images.all().order_by('order')
                 for idx, img in enumerate(remaining_images):
                     img.order = idx
                     img.save()
@@ -1816,7 +1823,7 @@ def edit_blog(request, blog_id):
             content_images = request.FILES.getlist("content_images")
             if content_images:
                 # Get current max order
-                current_max = blog.content_images.count()
+                current_max = blog.images.count()
                 for idx, image_file in enumerate(content_images):
                     BlogImage.objects.create(
                         blog=blog,
@@ -1842,7 +1849,7 @@ def view_blog(request, slug):
 
     # Replace {{image1}}, {{image2}}, etc. with actual image HTML
     content = blog.content
-    content_images = blog.content_images.all()
+    content_images = blog.images.all()
     
     # Normalize line endings and split content
     content = content.replace('\r\n', '\n').replace('\r', '\n')

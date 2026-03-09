@@ -419,26 +419,31 @@ class Blog(models.Model):
         ('scheduled', 'Scheduled'),
     ]
     
-    # Matches your add_blog.html form EXACTLY
+    CATEGORY_CHOICES = [
+        ('travel', 'Travel'),
+        ('adventure', 'Adventure'),
+        ('culture', 'Culture'),
+        ('food', 'Food'),
+        ('tips', 'Tips'),
+    ]
+    
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200, unique=True, blank=True)
     excerpt = models.TextField(max_length=500)
     content = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
-    category = models.CharField(max_length=100, blank=True, null=True)
+    category = models.CharField(max_length=100, choices=CATEGORY_CHOICES, blank=True, null=True)
     package_id = models.CharField(max_length=50, blank=True, null=True)
     
-    # Author fields
     author_name = models.CharField(max_length=100)
     author_summary = models.TextField(max_length=500)
     reading_time = models.PositiveIntegerField(default=1)
     publish_date = models.DateField()
     
-    # Images - matches your form
+    # Main images
     featured_image = models.ImageField(upload_to='blog_images/featured/', blank=True, null=True)
     featured_image_url = models.URLField(blank=True, null=True)
     
-    # Hashtags - matches your JS
     hashtags = models.CharField(max_length=500, blank=True)
     tags = models.CharField(max_length=255, blank=True, null=True, help_text="Comma separated tags")
     
@@ -461,10 +466,8 @@ class Blog(models.Model):
         return self.featured_image.url if self.featured_image else self.featured_image_url
 
 
-
 class BlogImage(models.Model):
-    """Model to store multiple content images for a blog post"""
-    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='content_images')
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='blog_images/content/')
     order = models.PositiveIntegerField(default=0)
     uploaded_at = models.DateTimeField(auto_now_add=True)
@@ -474,11 +477,6 @@ class BlogImage(models.Model):
     
     def __str__(self):
         return f"Image {self.order + 1} for {self.blog.title}"
-    
-    @property
-    def tag(self):
-        """Returns the tag to use in content, e.g., {{image1}}"""
-        return f"{{{{image{self.order + 1}}}}}"
 
 
 from django.db import models
@@ -514,19 +512,9 @@ class Feedback(models.Model):
     )
 
     rating = models.IntegerField(choices=RATING_CHOICES)
-
     feedback = models.TextField()
 
-    # Image upload
-    image = models.ImageField(
-        upload_to='feedback_images/',
-        blank=True,
-        null=True
-    )
-
     created_at = models.DateTimeField(auto_now_add=True)
-
-    # show on homepage
     featured = models.BooleanField(default=False)
 
     def __str__(self):
