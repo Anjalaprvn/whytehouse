@@ -157,7 +157,6 @@ class Inquiry(models.Model):
         ('Junk', 'Junk'),
     )
 
-    # ✅ LINK TO LEAD (NEW)
     lead = models.ForeignKey(
         Lead,
         on_delete=models.SET_NULL,

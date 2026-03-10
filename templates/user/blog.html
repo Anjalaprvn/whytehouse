@@ -47,7 +47,7 @@
     .filter-section {
         width: 100%;
         max-width: 100%;
-        margin: -60px auto 50px;
+        margin: 0 auto 50px;
         background: var(--white);
         padding: 40px;
         border-radius: var(--radius);
@@ -288,12 +288,10 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const tabs = document.querySelectorAll('.category-tabs .tab');
+    const searchForm = document.querySelector('form');
 
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
-            // Save current scroll position
-            sessionStorage.setItem('blogScrollPos', window.scrollY);
-            
             tabs.forEach(t => {
                 t.classList.remove('active');
                 if (!t.classList.contains('inactive')) t.classList.add('inactive');
@@ -329,13 +327,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!tab.classList.contains('inactive')) tab.classList.add('inactive');
         }
     });
-    
-    // Restore scroll position after page load
-    const savedScrollPos = sessionStorage.getItem('blogScrollPos');
-    if (savedScrollPos) {
-        window.scrollTo(0, parseInt(savedScrollPos));
-        sessionStorage.removeItem('blogScrollPos');
-    }
 });
 </script>
 {% endblock %}
