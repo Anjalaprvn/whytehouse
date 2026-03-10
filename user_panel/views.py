@@ -133,6 +133,12 @@ def domestic(request):
     # Get domestic destinations for the explorer section
     domestic_destinations = Destination.objects.filter(category='Domestic').order_by('name')[:4]
     
+    # Get featured package for each destination (Kozhikode, Munnar, Wayanad, Ooty)
+    kozhikode_package = TravelPackage.objects.filter(active=True, category='Domestic', destination__name__icontains='Kozhikode').first()
+    munnar_package = TravelPackage.objects.filter(active=True, category='Domestic', destination__name__icontains='Munnar').first()
+    wayanad_package = TravelPackage.objects.filter(active=True, category='Domestic', destination__name__icontains='Wayanad').first()
+    ooty_package = TravelPackage.objects.filter(active=True, category='Domestic', destination__name__icontains='Ooty').first()
+    
     # Get ALL domestic destinations for gallery (show 3 at a time with navigation)
     gallery_destinations = Destination.objects.filter(category='Domestic').order_by('name')
     
@@ -144,6 +150,10 @@ def domestic(request):
         'domestic_destinations': domestic_destinations,
         'gallery_destinations': gallery_destinations,
         'properties': properties,
+        'kozhikode_package': kozhikode_package,
+        'munnar_package': munnar_package,
+        'wayanad_package': wayanad_package,
+        'ooty_package': ooty_package,
     }
     
     return render(request, 'user/domestic.html', context)

@@ -311,17 +311,17 @@
         .dest-link { color: rgba(255, 255, 255, 0.6); text-decoration: none; font-size: 16px; position: relative; padding-bottom: 5px; transition: 0.3s; }
         .dest-link.active, .dest-link:hover { color: white; }
         .dest-link.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: var(--white); }
-.resort-showcase { 
+        .resort-showcase { 
     display: flex;
     justify-content: space-between; 
-    align-items: flex-start;   /* move content upward */
+    align-items: flex-start;
     padding-top: 20px;
+    gap: 40px;
 }
         .resort-info { 
         max-width: 400px;
         margin-left: 500px;
         margin-top: -40px;
-         
      }
         .resort-subtitle { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; color: rgba(255,255,255,0.8); }
         .resort-subtitle span { font-weight: 700; color: white; }
@@ -329,16 +329,12 @@
     font-size: 15px;
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.7);
-    max-width: 260px;
+    max-width: 320px;
 }
         .resort-cta { 
             text-align: right;
-               margin-left: -100px;
-                 margin-top: -50px;
-                  border-left: 1px solid white;
-                  
-    padding-left: 40px;
-    
+            border-left: 1px solid white;
+            padding-left: 40px;
          }
         .resort-name { font-size: 32px; font-weight: 500; margin-bottom: 15px; color: white; }
 
@@ -1143,20 +1139,16 @@
         <div class="dest-header">
             <h2 class="dest-title">Choose <span>where</span> are we<br>looking for?</h2>
             <div class="dest-nav">
-                <a href="#" class="dest-link active">Kozhikode</a>
-                <a href="#" class="dest-link">Munnar</a>
-                <a href="#" class="dest-link">Wayanad</a>
-                <a href="#" class="dest-link">Ooty</a>
+                <a href="#" class="dest-link active" data-dest="kozhikode">Kozhikode</a>
+                <a href="#" class="dest-link" data-dest="munnar">Munnar</a>
+                <a href="#" class="dest-link" data-dest="wayanad">Wayanad</a>
+                <a href="#" class="dest-link" data-dest="ooty">Ooty</a>
             </div>
         </div>
 
         <div class="resort-showcase">
             <div class="resort-info">
-                <p class="resort-subtitle">"A Lake <span>Paradise</span>"</p>
-             <p class="resort-desc">
-    A boutique lakefront resort<br>
-    offering curated luxury experiences.
-</p>
+                <p class="resort-desc"></p>
             </div>
             <div class="resort-cta">
                 <h3 class="resort-name">Le Montigo Resorts</h3>
@@ -1471,6 +1463,56 @@
     <h2 class="section-title">
         Capture your <b>unforgettable</b> moments <i>with us</i>
     </h2>
+
+<script>
+// Destination switcher
+document.addEventListener('DOMContentLoaded', function() {
+    const destLinks = document.querySelectorAll('.dest-link');
+    const resortName = document.querySelector('.resort-name');
+    const resortDesc = document.querySelector('.resort-desc');
+    
+    const resorts = {
+        kozhikode: {
+            name: '{% if kozhikode_package %}{{ kozhikode_package.name }}{% else %}Le Montigo Resorts{% endif %}',
+            desc: '{% if kozhikode_package and kozhikode_package.description %}{{ kozhikode_package.description|truncatewords:15 }}{% else %}A boutique lakefront resort offering curated luxury experiences.{% endif %}'
+        },
+        munnar: {
+            name: '{% if munnar_package %}{{ munnar_package.name }}{% else %}Munnar Hill Resort{% endif %}',
+            desc: '{% if munnar_package and munnar_package.description %}{{ munnar_package.description|truncatewords:15 }}{% else %}Experience the misty mountains and tea plantations.{% endif %}'
+        },
+        wayanad: {
+            name: '{% if wayanad_package %}{{ wayanad_package.name }}{% else %}Wayanad Wild Resort{% endif %}',
+            desc: '{% if wayanad_package and wayanad_package.description %}{{ wayanad_package.description|truncatewords:15 }}{% else %}Immerse yourself in pristine wilderness and nature.{% endif %}'
+        },
+        ooty: {
+            name: '{% if ooty_package %}{{ ooty_package.name }}{% else %}Ooty Valley Resort{% endif %}',
+            desc: '{% if ooty_package and ooty_package.description %}{{ ooty_package.description|truncatewords:15 }}{% else %}Discover the queen of hill stations charm.{% endif %}'
+        }
+    };
+    
+    // Set initial description
+    if (resortDesc && resorts.kozhikode) {
+        resortDesc.textContent = resorts.kozhikode.desc;
+    }
+    
+    destLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            destLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+            
+            const dest = this.getAttribute('data-dest');
+            if (resorts[dest]) {
+                resortName.textContent = resorts[dest].name;
+                if (resortDesc) {
+                    resortDesc.textContent = resorts[dest].desc;
+                }
+            }
+        });
+    });
+});
+</script>
 
     <div class="vlog-wrapper">
         <div class="vlog-item">
