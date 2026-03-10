@@ -1,10 +1,12 @@
 from django.urls import path
 from . import views
+from django.shortcuts import redirect
 
 app_name = 'user_panel'
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('', lambda request: redirect('user_panel:domestic', permanent=False)),
+    path('international/', views.index, name='index'),
     path('domestic/', views.domestic, name='domestic'), 
     path('about/', views.about, name='about'),
     path('contact/', views.contact, name='contact'),

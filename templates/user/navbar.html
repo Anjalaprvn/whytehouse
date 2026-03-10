@@ -140,6 +140,7 @@
     // Update Home and Packages links based on section
     const homeLink = document.getElementById('nav-home-link');
     const packagesLink = document.getElementById('nav-packages-link');
+    const internationalToggle = document.getElementById('international-toggle');
     
     if (currentSection === 'domestic') {
         if (homeLink) homeLink.href = "{% url 'user_panel:domestic' %}";
@@ -149,9 +150,11 @@
         if (packagesLink) packagesLink.href = "{% url 'user_panel:international_packages' %}";
     }
     
+    // Update International toggle to always point to international_packages
+    if (internationalToggle) internationalToggle.href = "{% url 'user_panel:international_packages' %}";
+    
     // Update highlighting for Domestic/International toggle
     const domesticToggle = document.getElementById('domestic-toggle');
-    const internationalToggle = document.getElementById('international-toggle');
     
     if (currentSection === 'domestic') {
         if (domesticToggle) {
