@@ -61,7 +61,7 @@
             <a href="{% url 'user_panel:contact'%}" {% block nav_contact %}{% endblock %}>Contact Us</a>
         </div>
         <div class="nav-right">
-            <a href="{% url 'user_panel:domestic_packages' %}" id="domestic-toggle" style="text-decoration: none; color: rgba(255,255,255,0.6);">Domestic</a> | <a href="{% url 'user_panel:international_packages' %}" id="international-toggle" style="text-decoration: none; color: rgba(255,255,255,0.6);">International</a>
+            <a href="{% url 'user_panel:domestic' %}" id="domestic-toggle" style="text-decoration: none; color: rgba(255,255,255,0.6);">Domestic</a> | <a href="{% url 'user_panel:index' %}" id="international-toggle" style="text-decoration: none; color: rgba(255,255,255,0.6);">International</a>
         </div>
     </nav>
 
@@ -150,8 +150,8 @@
         if (packagesLink) packagesLink.href = "{% url 'user_panel:international_packages' %}";
     }
     
-    // Update International toggle to always point to international_packages
-    if (internationalToggle) internationalToggle.href = "{% url 'user_panel:international_packages' %}";
+    // Update International toggle to always point to international home
+    if (internationalToggle) internationalToggle.href = "{% url 'user_panel:index' %}";
     
     // Update highlighting for Domestic/International toggle
     const domesticToggle = document.getElementById('domestic-toggle');

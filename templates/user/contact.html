@@ -28,7 +28,7 @@
 
     .hero {
         position: relative;
-        height: 520px; 
+        height: 450px;
         width: 100%;
         background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.1)), 
                     url("{% static 'images/contactbg.png' %}") center bottom / cover no-repeat;
@@ -39,7 +39,7 @@
 
     .hero-content {
         padding: 0 8%;
-        margin-top: 160px;
+        margin-top: 120px;
     }
 
     .hero-content h1 { 
@@ -60,25 +60,21 @@
         background-color: #fff;
         background-image: url("{% static 'images/wavy-bg.png' %}");
         background-size: cover;
-        background-position: center;
+        background-position: top center;
         background-repeat: no-repeat;
         position: relative;
         padding-bottom: 80px;
+      margin-top: -100px;
     }
 
     .main-content::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 400px;
-        background: url("{% static 'images/bg-texture.png' %}") top center repeat-x;
-        opacity: 0.15;
-        z-index: 1;
+       content: "";
+        display: none;
     }
 
     .container {
         max-width: 1200px;
-        margin: -80px auto 0;
+        margin: 40px auto 0;
         padding: 0 20px;
         position: relative;
         z-index: 10;
