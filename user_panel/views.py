@@ -632,7 +632,7 @@ def package_detail(request, slug):
             full_name=name,
             mobile_number=phone,
             source='Website',
-            enquiry_type='Package Booking',
+            enquiry_type=package.category,  # Use package category (Domestic/International)
             remarks=f'Package: {package.name} | Email: {email} | Guests: {guests} | Start Date: {start_date}'
         )
         

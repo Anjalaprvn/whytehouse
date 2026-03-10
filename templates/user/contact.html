@@ -1,201 +1,591 @@
-{% extends 'user/navbar.html' %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | Whyte House Holidays</title>
 
-{% block title %}Contact Us | Whyte House Holidays{% endblock %}
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-{% block nav_contact %}class="active"{% endblock %}
+    <style>
+        :root{
+            --primary: #D8892B;
+            --primary-dark: #C8791D;
+            --text-dark: #1B1B1B;
+            --text-light: #6F6F6F;
+            --card-bg: #F8F6F3;
+            --input-bg: #FCFBF9;
+            --input-border: #E6BB84;
+            --white: #ffffff;
+            --shadow: 0 20px 50px rgba(0,0,0,0.08);
+            --radius-xl: 26px;
+            --radius-lg: 18px;
+            --radius-md: 14px;
+        }
 
-{% block content %}
-<style>
-    :root {
-        --primary: #D39C52;
-        --bg-light: #F9F9F9;
-        --text-dark: #1A1A1A;
-        --radius: 24px;
-    }
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
 
-    body {
-        background-color: #fff;
-        color: var(--text-dark);
-    }
+        html{
+            scroll-behavior: smooth;
+        }
 
-    nav {
-        position: absolute;
-        top: 20px;
-        width: 100%;
-        background: transparent;
-    }
+        body{
+            background: #fff;
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
 
-    .hero {
-        position: relative;
-        height: 450px;
-        width: 100%;
-        background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.1)), 
-                    url("{% static 'images/contactbg.png' %}") center bottom / cover no-repeat;
-        display: flex;
-        flex-direction: column;
-        color: #fff;
-    }
+        a{
+            text-decoration: none;
+        }
 
-    .hero-content {
-        padding: 0 8%;
-        margin-top: 120px;
-    }
+        /* ================= HERO ================= */
+        .hero{
+            position: relative;
+            width: 100%;
+            height: 430px;
+            background:
+                linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.22) 35%, rgba(0,0,0,0.18) 100%),
+                url("{% static 'images/contactbg.png' %}") center center / cover no-repeat;
+            color: #fff;
+            overflow: hidden;
+        }
 
-    .hero-content h1 { 
-        font-size: 56px; 
-        font-weight: 700; 
-    }
+        .hero::after{
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 8% 50%, rgba(0,0,0,0.30), transparent 20%),
+                radial-gradient(circle at 92% 45%, rgba(0,0,0,0.30), transparent 22%);
+            pointer-events: none;
+        }
 
-    .hero-content h1 span { color: var(--primary); }
+        /* ================= NAVBAR ================= */
+        .navbar{
+            position: absolute;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(1180px, calc(100% - 60px));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 5;
+        }
 
-    .hero-content p { 
-        font-size: 16px; 
-        max-width: 500px; 
-        opacity: 0.9;
-        margin-top: 10px;
-    }
+        .logo img{
+            height: 48px;
+            object-fit: contain;
+        }
 
-    .main-content {
-        background-color: #fff;
-        background-image: url("{% static 'images/wavy-bg.png' %}");
-        background-size: cover;
-        background-position: top center;
-        background-repeat: no-repeat;
-        position: relative;
-        padding-bottom: 80px;
-      margin-top: -100px;
-    }
+        .nav-pill,
+        .switch-pill{
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            padding: 12px 28px;
+            border-radius: 999px;
+            background: rgba(29, 36, 39, 0.38);
+            border: 1px solid rgba(255,255,255,0.10);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+        }
 
-    .main-content::before {
-       content: "";
-        display: none;
-    }
+        .nav-pill a,
+        .switch-pill a{
+            color: rgba(255,255,255,0.92);
+            font-size: 14px;
+            font-weight: 400;
+            transition: 0.25s ease;
+        }
 
-    .container {
-        max-width: 1200px;
-        margin: 40px auto 0;
-        padding: 0 20px;
-        position: relative;
-        z-index: 10;
-        display: grid;
-        grid-template-columns: 1.8fr 1fr;
-        gap: 30px;
-    }
+        .nav-pill a:hover,
+        .switch-pill a:hover{
+            color: #fff;
+        }
 
-    .card {
-        background: white;
-        border-radius: var(--radius);
-        box-shadow: 0 40px 100px rgba(0,0,0,0.06);
-        padding: 50px;
-    }
+        .nav-pill a.active{
+            color: var(--primary);
+            position: relative;
+            font-weight: 500;
+        }
 
-    .form-card h2 { font-size: 32px; margin-bottom: 35px; }
+        .nav-pill a.active::after{
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -6px;
+            width: 100%;
+            height: 2px;
+            border-radius: 4px;
+            background: var(--primary);
+        }
 
-    .form-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 25px;
-    }
+        .switch-pill{
+            gap: 14px;
+            padding: 12px 24px;
+        }
 
-    .full-width { grid-column: span 2; }
+        .switch-pill .divider{
+            color: rgba(255,255,255,0.38);
+            font-size: 14px;
+        }
 
-    .field-label {
-        display: block;
-        font-weight: 600;
-        font-size: 14px;
-        margin-bottom: 10px;
-        color: #333;
-    }
+        .switch-pill a:last-child{
+            opacity: 0.95;
+        }
 
-    input, select, textarea {
-        width: 100%;
-        padding: 16px 20px;
-        border: 1px solid #F0F0F0;
-        border-radius: 12px;
-        background: #F9F9F9;
-        font-size: 14px;
-        outline: none;
-        transition: 0.3s;
-    }
+        /* ================= HERO CONTENT ================= */
+        .hero-content{
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 54px;
+            width: min(1180px, calc(100% - 60px));
+            z-index: 4;
+        }
 
-    input:focus { border-color: var(--primary); background: #fff; }
+        .hero-content h1{
+            font-size: 50px;
+            line-height: 1.05;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+        }
 
-    .submit-btn {
-        background: var(--primary);
-        color: white;
-        border: none;
-        padding: 18px 40px;
-        border-radius: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        margin-top: 30px;
-        display: inline-flex;
-        align-items: center;
-        gap: 12px;
-    }
+        .hero-content h1 span{
+            color: var(--primary);
+        }
 
-    .sidebar { display: flex; flex-direction: column; gap: 20px; }
+        .hero-content p{
+            max-width: 620px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.85);
+            font-weight: 400;
+        }
 
-    .info-card { padding: 40px; }
+        /* ================= MAIN ================= */
+        .main-content{
+            position: relative;
+            background: #fff;
+            padding-bottom: 90px;
+        }
 
-    .info-item {
-        display: flex;
-        gap: 20px;
-        margin-bottom: 30px;
-    }
+        .main-content::before{
+            content: "";
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 720px;
+            background: url("{% static 'images/bg-texture.png' %}") top center / cover no-repeat;
+            opacity: 0.22;
+            pointer-events: none;
+            z-index: 0;
+        }
 
-    .info-item .icon-box {
-        color: var(--primary);
-        font-size: 20px;
-        margin-top: 5px;
-    }
+        .container{
+            position: relative;
+            z-index: 2;
+            width: min(1180px, calc(100% - 60px));
+            margin: 40px auto 0;
+            display: grid;
+            grid-template-columns: 1.65fr 0.75fr;
+            gap: 18px;
+            align-items: start;
+        }
 
-    .info-item h4 { font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
-    .info-item p { font-size: 16px; font-weight: 500; color: #333; margin-top: 4px; }
+        .card{
+            background: rgba(250, 248, 245, 0.96);
+            border: 1px solid rgba(224, 203, 177, 0.7);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow);
+        }
 
-    .whatsapp-btn {
-        background: var(--primary);
-        color: white;
-        text-decoration: none;
-        padding: 20px;
-        border-radius: 20px;
-        text-align: center;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-    }
+        /* ================= LEFT FORM CARD ================= */
+        .form-card{
+            padding: 34px 34px 16px;
+        }
 
-    .map-section {
-        max-width: 1200px;
-        margin: 80px auto 0;
-        padding: 0 20px;
-    }
+        .form-card h2{
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: #171717;
+        }
 
-    .map-section h3 { margin-bottom: 20px; font-weight: 700; }
+        .form-grid{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px 16px;
+        }
 
-    .map-box {
-        height: 450px;
-        border-radius: var(--radius);
-        overflow: hidden;
-        border: 1px solid #eee;
-    }
+        .full-width{
+            grid-column: 1 / -1;
+        }
 
-    @media (max-width: 992px) {
-        .container { grid-template-columns: 1fr; margin-top: -80px; }
-        .hero-content h1 { font-size: 40px; }
-    }
-</style>
+        .field-label{
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1E1E1E;
+            margin-bottom: 7px;
+        }
+
+        input,
+        select,
+        textarea{
+            width: 100%;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            border-radius: 15px;
+            padding: 14px 16px;
+            font-size: 12px;
+            color: #2A2A2A;
+            outline: none;
+            transition: 0.25s ease;
+        }
+
+        input::placeholder,
+        textarea::placeholder{
+            color: #B7B0A7;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus{
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(216, 137, 43, 0.08);
+        }
+
+        textarea{
+            resize: none;
+            min-height: 68px;
+        }
+
+        .submit-btn{
+            width: 100%;
+            margin-top: 12px;
+            border: none;
+            background: linear-gradient(180deg, #D8892B 0%, #CC7819 100%);
+            color: #1b1207;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 14px 18px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.25s ease;
+        }
+
+        .submit-btn i{
+            font-size: 11px;
+        }
+
+        .submit-btn:hover{
+            transform: translateY(-1px);
+            filter: brightness(1.02);
+        }
+
+        /* ================= RIGHT SIDEBAR ================= */
+        .sidebar{
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .info-card{
+            padding: 28px 24px 18px;
+        }
+
+        .info-card h3{
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: #1A1A1A;
+        }
+
+        .info-item{
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .icon-box{
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: #F5DFC4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .icon-box i{
+            font-size: 12px;
+        }
+
+        .info-item h4{
+            font-size: 11px;
+            line-height: 1.2;
+            font-weight: 600;
+            color: #222;
+            margin-bottom: 3px;
+        }
+
+        .info-item p{
+            font-size: 10px;
+            line-height: 1.5;
+            color: #B0AAA3;
+            max-width: 210px;
+        }
+
+        .whatsapp-btn{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(180deg, #D8892B 0%, #CC7819 100%);
+            color: #16110B;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 14px 16px;
+            border-radius: 8px;
+            box-shadow: 0 12px 30px rgba(216, 137, 43, 0.18);
+        }
+
+        .whatsapp-btn i{
+            color: #000;
+            font-size: 12px;
+        }
+
+        /* ================= MAP ================= */
+        .map-section{
+            position: relative;
+            z-index: 2;
+            width: min(1180px, calc(100% - 60px));
+            margin: 34px auto 0;
+        }
+
+        .map-section h3{
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #151515;
+        }
+
+        .map-help{
+            font-size: 10px;
+            color: #B8B1A8;
+            margin-bottom: 14px;
+        }
+
+        .map-box{
+            width: 100%;
+            height: 310px;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid #EEE4D6;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+            background: #E8F5FB;
+        }
+
+        .map-box iframe{
+            width: 100%;
+            height: 100%;
+            border: 0;
+            display: block;
+        }
+
+        /* ================= FOOTER ================= */
+        .footer{
+            background: #050505;
+            color: #fff;
+            margin-top: 90px;
+            padding: 90px 8% 50px;
+        }
+
+        .footer-grid{
+            max-width: 1180px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr;
+            gap: 50px;
+        }
+
+        .footer-logo{
+            height: 45px;
+            margin-bottom: 22px;
+            filter: brightness(0) invert(1);
+        }
+
+        .footer h4{
+            font-size: 18px;
+            margin-bottom: 24px;
+        }
+
+        .footer p,
+        .footer a{
+            color: #B8B8B8;
+            font-size: 14px;
+            line-height: 1.9;
+        }
+
+        .footer ul{
+            list-style: none;
+        }
+
+        .footer li{
+            margin-bottom: 10px;
+        }
+
+        .newsletter-box{
+            margin-top: 16px;
+            display: flex;
+            background: #171717;
+            border: 1px solid #2C2C2C;
+            border-radius: 999px;
+            padding: 6px;
+        }
+
+        .newsletter-box input{
+            border: 0;
+            background: transparent;
+            color: #fff;
+            padding: 12px 16px 12px 18px;
+            font-size: 14px;
+        }
+
+        .newsletter-box input:focus{
+            box-shadow: none;
+        }
+
+        .newsletter-box button{
+            border: none;
+            background: var(--primary);
+            color: #fff;
+            border-radius: 999px;
+            padding: 12px 22px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* ================= RESPONSIVE ================= */
+        @media (max-width: 1100px){
+            .container{
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar{
+                max-width: 420px;
+            }
+        }
+
+        @media (max-width: 768px){
+            .hero{
+                height: 520px;
+            }
+
+            .navbar{
+                width: calc(100% - 24px);
+                top: 14px;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .nav-pill,
+            .switch-pill{
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 16px;
+                padding: 12px 16px;
+            }
+
+            .hero-content{
+                width: calc(100% - 24px);
+                bottom: 32px;
+            }
+
+            .hero-content h1{
+                font-size: 38px;
+            }
+
+            .container,
+            .map-section{
+                width: calc(100% - 24px);
+            }
+
+            .form-card{
+                padding: 22px 18px 14px;
+            }
+
+            .form-grid{
+                grid-template-columns: 1fr;
+            }
+
+            .full-width{
+                grid-column: auto;
+            }
+
+            .footer-grid{
+                grid-template-columns: 1fr;
+            }
+
+            .newsletter-box{
+                flex-direction: column;
+                border-radius: 18px;
+            }
+
+            .newsletter-box button{
+                width: 100%;
+                border-radius: 14px;
+            }
+        }
+    </style>
 </head>
 <body>
 
-
 <header class="hero">
+    <nav class="navbar">
+        <div class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Whyte House">
+        </div>
+
+        <div class="nav-pill">
+            <a href="/index">Home</a>
+            <a href="/about">About</a>
+            <a href="/blog">Blog</a>
+            <a href="/packages">Packages</a>
+            <a href="/contact" class="active">Contact Us</a>
+        </div>
+
+        <div class="switch-pill">
+            <a href="{% url 'user_panel:domestic' %}">Domestic</a>
+            <span class="divider">|</span>
+            <a href="{% url 'user_panel:index' %}">International</a>
+        </div>
+    </nav>
+
     <div class="hero-content">
         <h1>Get in <span>Touch</span></h1>
-        <p>Planning your next escape? Our travel experts are ready to help you craft the perfect itinerary.</p>
+        <p>Have questions about our tours? We're here to help you plan your perfect adventure</p>
     </div>
 </header>
 
@@ -203,208 +593,150 @@
     <div class="container">
         <div class="card form-card">
             <h2>Send Us a Message</h2>
-            {% if messages %}
-                {% for message in messages %}
-                <div class="alert-msg" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; {% if message.tags == 'success' %}background: #eefbf1; border: 1px solid #bbf0c5; color: #16a34a;{% elif message.tags == 'error' %}background: #fff1f2; border: 1px solid #fda0a6; color: #dc2626;{% endif %}">
-                    {{ message }}
-                </div>
-                {% endfor %}
-            {% endif %}
+
             <form action="" method="POST">
                 {% csrf_token %}
-                <!-- Hidden field to track which section user came from -->
-                <input type="hidden" name="source_page" value="{% if request.META.HTTP_REFERER and 'domestic' in request.META.HTTP_REFERER %}Domestic{% else %}International{% endif %}">
+
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="field-label">Full Name</label>
-                        <input type="text" name="name" placeholder="Enter your full name" required>
+                        <input type="text" name="name" placeholder="Your full name" required>
                     </div>
+
                     <div class="form-group">
                         <label class="field-label">Email Address</label>
-                        <input type="email" name="email" placeholder="example@mail.com" required>
+                        <input type="email" name="email" placeholder="your@email.com" required>
                     </div>
+
                     <div class="form-group">
                         <label class="field-label">Phone Number</label>
-                        <input type="text" name="phone" placeholder="+91 00000 00000">
+                        <input type="text" name="phone" placeholder="+91 1234567890">
                     </div>
+
                     <div class="form-group">
                         <label class="field-label">Enquiry Type</label>
                         <select name="subject">
+                            <option>Package related</option>
                             <option>Holiday Package</option>
                             <option>Property Management</option>
+                            <option>General Enquiry</option>
                         </select>
                     </div>
+
                     <div class="form-group full-width">
                         <label class="field-label">Your Message</label>
-                        <textarea name="message" rows="5" placeholder="How can we help you?"></textarea>
+                        <textarea name="message" rows="4" placeholder="Share your thoughts to us."></textarea>
                     </div>
                 </div>
+
                 <button type="submit" class="submit-btn">
-                    <i class="fa-regular fa-paper-plane"></i> Send Message
+                    <i class="fa-regular fa-paper-plane"></i>
+                    Leave a Message
                 </button>
             </form>
         </div>
 
         <div class="sidebar">
             <div class="card info-card">
-                <h3 style="margin-bottom: 30px; font-weight: 700;">Contact Details</h3>
-                
+                <h3>Get in Touch</h3>
+
                 <div class="info-item">
-                    <div class="icon-box"><i class="fa-solid fa-phone"></i></div>
+                    <div class="icon-box">
+                        <i class="fa-solid fa-phone"></i>
+                    </div>
                     <div>
-                        <h4>Call Us</h4>
-                        <p>+91 78 523 521 45</p>
+                        <h4>Phone</h4>
+                        <p>+90 1234 567 890</p>
                     </div>
                 </div>
 
                 <div class="info-item">
-                    <div class="icon-box"><i class="fa-solid fa-envelope"></i></div>
+                    <div class="icon-box">
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
                     <div>
-                        <h4>Email Us</h4>
-                        <p>info@whytehouse.com</p>
+                        <h4>Email</h4>
+                        <p>whytehouse@gmail.com</p>
                     </div>
                 </div>
 
                 <div class="info-item">
-                    <div class="icon-box"><i class="fa-solid fa-location-dot"></i></div>
+                    <div class="icon-box">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </div>
                     <div>
-                        <h4>Visit Us</h4>
-                        <p>Kakkanchery, Kozhikode, Kerala 673521</p>
+                        <h4>Office</h4>
+                        <p>123 Street, Kozhikode, 567 507</p>
+                    </div>
+                </div>
+
+                <div class="info-item" style="margin-bottom: 0;">
+                    <div class="icon-box">
+                        <i class="fa-regular fa-clock"></i>
+                    </div>
+                    <div>
+                        <h4>Working Hours</h4>
+                        <p>Mon - Fri 9:00 AM - 6:00 PM | Sat - 9:00 AM - 2:00 PM</p>
                     </div>
                 </div>
             </div>
 
             <a href="https://wa.me/917852352145" class="whatsapp-btn">
-                <i class="fa-brands fa-whatsapp"></i> Quick Chat on WhatsApp
+                <i class="fa-brands fa-whatsapp"></i>
+                Chat on Whatsapp
             </a>
         </div>
     </div>
 
     <div class="map-section">
         <h3>Find on Map</h3>
+        <div class="map-help">Use Ctrl + scroll to zoom the map</div>
+
         <div class="map-box">
-            <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3913.376483788!2d75.890!3d11.139!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTHCsDA4JzIwLjQiTiA3NcKwNTMnMjQuMCJF!5e0!3m2!1sen!2sin!4v1710000000000" 
-                width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy">
+            <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3913.376483788!2d75.890!3d11.139!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTHCsDA4JzIwLjQiTiA3NcKwNTMnMjQuMCJF!5e0!3m2!1sen!2sin!4v1710000000000"
+                allowfullscreen=""
+                loading="lazy">
             </iframe>
         </div>
     </div>
 </main>
 
-<script>
-// Form validation
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
-    const nameInput = document.querySelector('input[name="name"]');
-    const emailInput = document.querySelector('input[name="email"]');
-    const phoneInput = document.querySelector('input[name="phone"]');
-    const messageInput = document.querySelector('textarea[name="message"]');
-    
-    // Phone validation pattern (international format with optional country code)
-    const phonePattern = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/;
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
-    function showError(input, message) {
-        // Remove existing error
-        const existingError = input.parentElement.querySelector('.error-msg');
-        if (existingError) existingError.remove();
-        
-        // Add error message
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-msg';
-        errorDiv.style.color = '#dc2626';
-        errorDiv.style.fontSize = '12px';
-        errorDiv.style.marginTop = '5px';
-        errorDiv.textContent = message;
-        input.parentElement.appendChild(errorDiv);
-        input.style.borderColor = '#dc2626';
-    }
-    
-    function clearError(input) {
-        const existingError = input.parentElement.querySelector('.error-msg');
-        if (existingError) existingError.remove();
-        input.style.borderColor = '#F0F0F0';
-    }
-    
-    // Real-time validation
-    nameInput.addEventListener('input', function() {
-        if (this.value.trim().length < 2) {
-            showError(this, 'Name must be at least 2 characters');
-        } else {
-            clearError(this);
-        }
-    });
-    
-    emailInput.addEventListener('input', function() {
-        if (!emailPattern.test(this.value)) {
-            showError(this, 'Please enter a valid email address');
-        } else {
-            clearError(this);
-        }
-    });
-    
-    phoneInput.addEventListener('input', function() {
-        // Allow digits, +, -, spaces, parentheses
-        this.value = this.value.replace(/[^\d\+\-\s\(\)]/g, '');
-        
-        if (this.value && this.value.length < 10) {
-            showError(this, 'Phone number must be at least 10 digits');
-        } else if (this.value && !phonePattern.test(this.value)) {
-            showError(this, 'Please enter a valid phone number');
-        } else {
-            clearError(this);
-        }
-    });
-    
-    // Form submission validation
-    form.addEventListener('submit', function(e) {
-        let isValid = true;
-        
-        // Validate name
-        if (nameInput.value.trim().length < 2) {
-            showError(nameInput, 'Name is required (minimum 2 characters)');
-            isValid = false;
-        }
-        
-        // Validate email
-        if (!emailPattern.test(emailInput.value)) {
-            showError(emailInput, 'Please enter a valid email address');
-            isValid = false;
-        }
-        
-        // Validate phone
-        if (phoneInput.value && phoneInput.value.length < 10) {
-            showError(phoneInput, 'Phone number must be at least 10 digits');
-            isValid = false;
-        } else if (phoneInput.value && !phonePattern.test(phoneInput.value)) {
-            showError(phoneInput, 'Please enter a valid phone number');
-            isValid = false;
-        }
-        
-        // Validate message
-        if (messageInput.value.trim().length < 10) {
-            showError(messageInput, 'Message must be at least 10 characters');
-            isValid = false;
-        }
-        
-        if (!isValid) {
-            e.preventDefault();
-            // Scroll to first error
-            const firstError = document.querySelector('.error-msg');
-            if (firstError) {
-                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-    });
-});
+<footer class="footer">
+    <div class="footer-grid">
+        <div>
+            <img src="{% static 'images/logo.png' %}" alt="Whyte House Logo" class="footer-logo">
+            <p>Book Your Tour Today. Join us for an unforgettable getaway and adventures.</p>
+        </div>
 
-// Auto-hide success messages
-setTimeout(() => {
-    document.querySelectorAll('.alert-msg').forEach(el => {
-        el.style.transition = 'opacity 0.5s';
-        el.style.opacity = '0';
-        setTimeout(() => el.remove(), 500);
-    });
-}, 3000);
-</script>
-{% endblock %}
+        <div>
+            <h4>Explore</h4>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">Packages</a></li>
+            </ul>
+        </div>
+
+        <div>
+            <h4>Legal</h4>
+            <ul>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms & Conditions</a></li>
+            </ul>
+        </div>
+
+        <div>
+            <h4>Newsletter</h4>
+            <p>Get travel updates and exclusive offers.</p>
+            <div class="newsletter-box">
+                <input type="email" placeholder="Enter your email">
+                <button>Subscribe</button>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
