@@ -91,9 +91,11 @@ def verify_otp(request):
                 # Login user officially
                 auth_login(request, user)
                 
-                # Clear OTP session
+                # Clear OTP session but keep verification flag
                 request.session.pop("admin_otp", None)
                 request.session.pop("admin_user_id", None)
+                # Set OTP verified flag
+                request.session['admin_otp_verified'] = True
                 
                 messages.success(request, "Login successful!")
                 return redirect("admin_panel:dashboard")
@@ -146,13 +148,12 @@ def forgot_password(request):
     return render(request, 'admin/forgotpassword.html')
 
 def dashboard(request):
-    if not request.user.is_authenticated:
+    # Check if user has completed OTP verification (custom session check)
+    otp_verified = request.session.get('admin_otp_verified', False)
+    
+    if not otp_verified:
         messages.error(request, "Please login to access this page.")
         return redirect('admin_panel:login')
-    
-    if request.session.get('admin_otp') or request.session.get('admin_user_id'):
-        messages.error(request, "Please complete OTP verification.")
-        return redirect('admin_panel:verify_otp')
     
     from django.db.models import Sum, Count
     from datetime import datetime, timedelta
@@ -195,6 +196,7 @@ def dashboard(request):
 
 def logout_view(request):
     from django.contrib.auth import logout
+    request.session.pop('admin_otp_verified', None)
     logout(request)
     messages.success(request, 'You have been logged out successfully.')
     return redirect('admin_panel:login')
