@@ -21,6 +21,7 @@ urlpatterns = [
     path("hospitality-management/<int:property_id>/", views.view_property, name="admin_view_property"),
     path("hospitality-management/edit/<int:property_id>/", views.edit_property, name="admin_edit_property"),
     path("hospitality-management/delete/<int:property_id>/", views.delete_property, name="admin_delete_property"),
+    path("hospitality-management/toggle-status/<int:property_id>/", views.toggle_property_status, name="toggle_property_status"),
     path('travel-packages/', views.travel_packages, name='travel_packages'),
     path('travel-packages/add/', views.travel_package_add, name='travel_package_add'),
     path('travel-packages/<int:package_id>/', views.travel_package_view, name='travel_package_view'),

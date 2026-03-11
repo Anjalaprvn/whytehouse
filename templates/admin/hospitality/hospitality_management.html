@@ -245,7 +245,7 @@
                 {% else %}
                     <img src="https://placehold.co/300x170" class="property-image">
                 {% endif %}
-                <span class="status-badge">Live</span>
+                <span class="status-badge" style="{% if not property.is_active %}background:#ef4444;{% endif %}">{% if property.is_active %}Live{% else %}Disabled{% endif %}</span>
             </div>
 
             <div class="property-info">
@@ -281,6 +281,13 @@
                 {% endif %}
 
                 <div class="action-buttons">
+                    <form method="POST" action="{% url 'admin_panel:toggle_property_status' property.id %}" style="flex: 1; margin: 0;" onclick="event.stopPropagation();">
+                        {% csrf_token %}
+                        <button type="submit" style="width: 100%; padding: 6px 10px; background: {% if property.is_active %}#dcfce7{% else %}#fef3c7{% endif %}; color: {% if property.is_active %}#16a34a{% else %}#92400e{% endif %}; border: none; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer;">
+                            <i class="fa-solid fa-{% if property.is_active %}check-circle{% else %}ban{% endif %}"></i> {% if property.is_active %}Enabled{% else %}Disabled{% endif %}
+                        </button>
+                    </form>
+                    
                     <a href="{% url 'admin_panel:admin_edit_property' property.id %}" class="edit-btn" onclick="event.stopPropagation()">
                         <i class="fa-solid fa-edit"></i> Edit
                     </a>

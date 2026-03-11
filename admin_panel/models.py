@@ -79,6 +79,7 @@ class Property(models.Model):
     amenities = models.TextField(blank=True, null=True)
 
     image = models.ImageField(upload_to='properties/', blank=True, null=True)
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):

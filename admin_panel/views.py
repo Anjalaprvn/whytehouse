@@ -420,6 +420,18 @@ def delete_property(request, property_id):
     messages.success(request, "Property deleted successfully!")
     return redirect("admin_panel:admin_hospitality")
 
+def toggle_property_status(request, property_id):
+    if request.method != 'POST':
+        return redirect('admin_panel:admin_hospitality')
+    
+    prop = get_object_or_404(Property, id=property_id)
+    prop.is_active = not prop.is_active
+    prop.save()
+    
+    status_text = "enabled" if prop.is_active else "disabled"
+    messages.success(request, f"Property '{prop.name}' has been {status_text} successfully!")
+    return redirect('admin_panel:admin_hospitality')
+
 def view_property(request, property_id):
     prop = get_object_or_404(Property, id=property_id)
     return render(request, "admin/hospitality/hospitality_view.html", {"property": prop})
@@ -1057,6 +1069,26 @@ def add_customer(request):
             if not first_name or not display_name or not contact_number:
                 context["error"] = "First Name, Display Name, and Contact Number are required."
                 return render(request, "admin/sales/customer/add_customer.html", context)
+            
+            # First name validation
+            if len(first_name) < 2 or len(first_name) > 50:
+                context["error"] = "First Name must be between 2 and 50 characters."
+                return render(request, "admin/sales/customer/add_customer.html", context)
+            
+            # Display name validation
+            if len(display_name) < 2 or len(display_name) > 100:
+                context["error"] = "Display Name must be between 2 and 100 characters."
+                return render(request, "admin/sales/customer/add_customer.html", context)
+            
+            # Contact number validation
+            import re
+            if not contact_number.isdigit():
+                context["error"] = "Contact Number must contain only digits."
+                return render(request, "admin/sales/customer/add_customer.html", context)
+            
+            if len(contact_number) < 10 or len(contact_number) > 15:
+                context["error"] = "Contact Number must be between 10 and 15 digits."
+                return render(request, "admin/sales/customer/add_customer.html", context)
 
             # NO-JS WhatsApp logic
             if same_as_whatsapp:
@@ -1066,6 +1098,39 @@ def add_customer(request):
             # If whatsapp_number is empty, set it to contact_number (prevents NOT NULL issues)
             if not whatsapp_number:
                 whatsapp_number = contact_number
+            
+            # WhatsApp number validation if different from contact
+            if whatsapp_number != contact_number:
+                if not whatsapp_number.isdigit():
+                    context["error"] = "WhatsApp Number must contain only digits."
+                    return render(request, "admin/sales/customer/add_customer.html", context)
+                
+                if len(whatsapp_number) < 10 or len(whatsapp_number) > 15:
+                    context["error"] = "WhatsApp Number must be between 10 and 15 digits."
+                    return render(request, "admin/sales/customer/add_customer.html", context)
+            
+            # Work number validation (optional)
+            if work_number:
+                if not work_number.isdigit():
+                    context["error"] = "Work Number must contain only digits."
+                    return render(request, "admin/sales/customer/add_customer.html", context)
+                
+                if len(work_number) < 10 or len(work_number) > 15:
+                    context["error"] = "Work Number must be between 10 and 15 digits."
+                    return render(request, "admin/sales/customer/add_customer.html", context)
+            
+            # GST number validation (optional)
+            if gst_number:
+                gst_pattern = r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$'
+                if not re.match(gst_pattern, gst_number.upper()):
+                    context["error"] = "Invalid GST Number format. Must be 15 characters (e.g., 22AAAAA0000A1Z5)."
+                    return render(request, "admin/sales/customer/add_customer.html", context)
+                gst_number = gst_number.upper()
+            
+            # Place validation (optional)
+            if place and len(place) > 100:
+                context["error"] = "Place must not exceed 100 characters."
+                return render(request, "admin/sales/customer/add_customer.html", context)
 
             # Optional: prevent duplicates if contact_number is unique
             if Customer.objects.filter(contact_number=contact_number).exists():
