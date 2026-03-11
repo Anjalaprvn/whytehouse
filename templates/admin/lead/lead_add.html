@@ -182,6 +182,47 @@
             setTimeout(() => alert.remove(), 500);
         });
     }, 3000);
+
+    function updateEmployeeDropdown() {
+        const employeeSelect = document.querySelector('select[name="employee"]');
+        const selectedEmployeeId = employeeSelect.value;
+        
+        if (!selectedEmployeeId) return;
+        
+        // Get all options
+        const options = Array.from(employeeSelect.options);
+        const selectedOption = options.find(opt => opt.value === selectedEmployeeId);
+        
+        if (!selectedOption) return;
+        
+        // Reorder: move selected to top, keep others in original order
+        const otherOptions = options.filter(opt => opt.value !== selectedEmployeeId && opt.value !== '');
+        const selectOption = options.find(opt => opt.value === '');
+        
+        // Clear and rebuild
+        employeeSelect.innerHTML = '';
+        
+        if (selectOption) {
+            employeeSelect.appendChild(selectOption.cloneNode(true));
+        }
+        
+        if (selectedOption) {
+            const cloned = selectedOption.cloneNode(true);
+            cloned.selected = true;
+            employeeSelect.appendChild(cloned);
+        }
+        
+        otherOptions.forEach(opt => {
+            employeeSelect.appendChild(opt.cloneNode(true));
+        });
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const employeeSelect = document.querySelector('select[name="employee"]');
+        if (employeeSelect) {
+            employeeSelect.addEventListener('change', updateEmployeeDropdown);
+        }
+    });
 </script>
 
 <div class="lead-form-container">
@@ -239,6 +280,16 @@
                         <option value="Manual">Manual Entry</option>
                         <option value="Website">Website</option>
                         <option value="Referral">Referral</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Assign Employee</label>
+                    <select name="employee">
+                        <option value="">Select Employee</option>
+                        {% for employee in employees %}
+                            <option value="{{ employee.id }}">{{ employee.name }}</option>
+                        {% endfor %}
                     </select>
                 </div>
 

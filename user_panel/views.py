@@ -322,7 +322,7 @@ def contact(request):
         phone = (request.POST.get('phone') or '').strip()
         package = (request.POST.get('package') or '').strip()
         message = (request.POST.get('message') or '').strip()
-        source_page = (request.POST.get('source_page') or 'General').strip()
+        subject = (request.POST.get('subject') or 'General Enquiry').strip()
 
         # Validation
         errors = []
@@ -378,17 +378,15 @@ def contact(request):
             }
         )
 
-        # ✅ 1) Find existing lead by phone (or create new)
+        # Find existing lead by phone (or create new)
         lead = Lead.objects.filter(mobile_number=phone).first()
 
         if lead:
-            # Update basic info if needed (optional)
+            # Update basic info if needed
             if lead.full_name != name:
                 lead.full_name = name
-            # Keep latest message in remarks (optional)
-            lead.remarks = (lead.remarks or "") + f"\n\n[{package or 'General Inquiry'}] {email}: {message}"
             lead.source = 'Website'
-            lead.enquiry_type = source_page  # Set enquiry type based on source page
+            lead.enquiry_type = subject
             lead.save()
         else:
             lead = Lead.objects.create(
@@ -396,11 +394,11 @@ def contact(request):
                 mobile_number=phone,
                 place=None,
                 source='Website',
-                enquiry_type=source_page,  # Set enquiry type based on source page
-                remarks=f"Email: {email}\nPackage: {package or 'General Inquiry'}\nMessage: {message}"
+                enquiry_type=subject,
+                remarks=''
             )
 
-        # ✅ 2) Create inquiry AND link it to lead
+        # Create inquiry with separate fields
         Inquiry.objects.create(
             lead=lead,
             name=name,

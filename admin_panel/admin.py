@@ -5,19 +5,28 @@ from .models import (
     Customer, Employee, Account, Resort, Meal, Voucher, Invoice
 )
 
+# Inquiry Admin Inline
+class InquiryInline(admin.TabularInline):
+    model = Inquiry
+    extra = 0
+    fields = ('name', 'email', 'phone', 'package', 'message', 'status')
+    readonly_fields = ('name', 'email', 'phone', 'package', 'message', 'created_at')
+    can_delete = False
+
 # Lead Admin
 @admin.register(Lead)
 class LeadAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'mobile_number', 'source', 'enquiry_type', 'status', 'created_at')
-    list_filter = ('source', 'enquiry_type', 'status', 'created_at')
-    search_fields = ('full_name', 'mobile_number', 'place')
+    list_display = ('full_name', 'mobile_number', 'source', 'enquiry_type', 'status', 'employee', 'created_at')
+    list_filter = ('source', 'enquiry_type', 'status', 'employee', 'created_at')
+    search_fields = ('full_name', 'mobile_number', 'place', 'employee__name')
     readonly_fields = ('created_at', 'updated_at')
+    inlines = [InquiryInline]
     fieldsets = (
         ('Basic Information', {
             'fields': ('full_name', 'mobile_number', 'place')
         }),
         ('Enquiry Details', {
-            'fields': ('source', 'enquiry_type', 'status')
+            'fields': ('source', 'enquiry_type', 'status', 'employee')
         }),
         ('Additional Info', {
             'fields': ('remarks',)

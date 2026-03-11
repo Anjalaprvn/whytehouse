@@ -13,6 +13,7 @@ from django.contrib import messages
 from datetime import datetime
 from .models import BlogCategory
 from django.http import JsonResponse
+from .lead_assignment import get_next_employee_for_lead, get_employees_ordered_for_display
 
 
 from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry, Destination, Feedback
@@ -254,21 +255,34 @@ def lead_management(request):
 
 def add_lead(request):
     if request.method == "POST":
+        employee_id = request.POST.get('employee')
+        next_employee = get_next_employee_for_lead()
         Lead.objects.create(
             full_name=request.POST.get('full_name'),
             mobile_number=request.POST.get('mobile_number'),
             place=request.POST.get('place'),
             source=request.POST.get('source'),
             enquiry_type=request.POST.get('enquiry_type', 'General'),
-            remarks=request.POST.get('remarks')
+            remarks=request.POST.get('remarks'),
+            employee_id=employee_id if employee_id else (next_employee.id if next_employee else None)
         )
         messages.success(request, "Lead added successfully!")
         return redirect('admin_panel:leads')
-    return render(request, 'admin/lead/lead_add.html')
+    
+    all_employees = Employee.objects.filter(status='Active').order_by('name')
+    next_emp = get_next_employee_for_lead()
+    
+    employees_list = list(all_employees)
+    if next_emp and next_emp in employees_list:
+        employees_list.remove(next_emp)
+        employees_list.insert(0, next_emp)
+    
+    return render(request, 'admin/lead/lead_add.html', {'employees': employees_list})
 
 def edit_lead(request, id):
     lead = get_object_or_404(Lead, id=id)
     if request.method == "POST":
+        employee_id = request.POST.get('employee')
         lead.full_name = request.POST.get('full_name')
         lead.mobile_number = request.POST.get('mobile_number')
         lead.place = request.POST.get('place')
@@ -276,10 +290,20 @@ def edit_lead(request, id):
         lead.enquiry_type = request.POST.get('enquiry_type', 'General')
         lead.status = request.POST.get('status', 'New')
         lead.remarks = request.POST.get('remarks')
+        lead.employee_id = employee_id if employee_id else None
         lead.save()
         messages.success(request, "Lead updated successfully!")
         return redirect('admin_panel:leads')
-    return render(request, 'admin/lead/lead_edit.html', {'lead': lead})
+    
+    all_employees = Employee.objects.filter(status='Active').order_by('name')
+    next_emp = get_next_employee_for_lead()
+    
+    employees_list = list(all_employees)
+    if next_emp and next_emp in employees_list:
+        employees_list.remove(next_emp)
+        employees_list.insert(0, next_emp)
+    
+    return render(request, 'admin/lead/lead_edit.html', {'lead': lead, 'employees': employees_list})
 
 def delete_lead(request, lead_id):
     if request.method != 'POST':
@@ -292,11 +316,19 @@ def delete_lead(request, lead_id):
 
 def view_lead(request, lead_id):
     lead = get_object_or_404(Lead, id=lead_id)
-    # Mark lead as viewed
     if not lead.is_viewed:
         lead.is_viewed = True
         lead.save()
-    return render(request, 'admin/lead/lead_view.html', {'lead': lead})
+    
+    all_employees = Employee.objects.filter(status='Active').order_by('name')
+    next_emp = get_next_employee_for_lead()
+    
+    employees_list = list(all_employees)
+    if next_emp and next_emp in employees_list:
+        employees_list.remove(next_emp)
+        employees_list.insert(0, next_emp)
+    
+    return render(request, 'admin/lead/lead_view.html', {'lead': lead, 'employees': employees_list})
 
 # HOSPITALITY
 def hospitality_management(request):
@@ -717,7 +749,16 @@ def customer_inquiries(request):
 
 def view_inquiry(request, inquiry_id):
     inquiry = get_object_or_404(Inquiry, id=inquiry_id)
-    return render(request, 'admin/enquiry/customer_inquiry_view.html', {'inquiry': inquiry})
+    
+    all_employees = Employee.objects.filter(status='Active').order_by('name')
+    next_emp = get_next_employee_for_lead()
+    
+    employees_list = list(all_employees)
+    if next_emp and next_emp in employees_list:
+        employees_list.remove(next_emp)
+        employees_list.insert(0, next_emp)
+    
+    return render(request, 'admin/enquiry/customer_inquiry_view.html', {'inquiry': inquiry, 'employees': employees_list})
 
 def update_inquiry_status(request, inquiry_id):
     if request.method == 'POST':
