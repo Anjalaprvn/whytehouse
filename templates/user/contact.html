@@ -1,13 +1,12 @@
+{% extends 'user/navbar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Us | Whyte House Holidays</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% block title %}Contact Us | Whyte House Holidays{% endblock %}
+
+{% block nav_contact %}class="active"{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
         :root{
@@ -42,8 +41,11 @@
             overflow-x: hidden;
         }
 
-        a{
-            text-decoration: none;
+        nav {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            background: transparent;
         }
 
         /* ================= HERO ================= */
@@ -66,82 +68,6 @@
                 radial-gradient(circle at 8% 50%, rgba(0,0,0,0.30), transparent 20%),
                 radial-gradient(circle at 92% 45%, rgba(0,0,0,0.30), transparent 22%);
             pointer-events: none;
-        }
-
-        /* ================= NAVBAR ================= */
-        .navbar{
-            position: absolute;
-            top: 18px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: min(1180px, calc(100% - 60px));
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 5;
-        }
-
-        .logo img{
-            height: 48px;
-            object-fit: contain;
-        }
-
-        .nav-pill,
-        .switch-pill{
-            display: flex;
-            align-items: center;
-            gap: 28px;
-            padding: 12px 28px;
-            border-radius: 999px;
-            background: rgba(29, 36, 39, 0.38);
-            border: 1px solid rgba(255,255,255,0.10);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-        }
-
-        .nav-pill a,
-        .switch-pill a{
-            color: rgba(255,255,255,0.92);
-            font-size: 14px;
-            font-weight: 400;
-            transition: 0.25s ease;
-        }
-
-        .nav-pill a:hover,
-        .switch-pill a:hover{
-            color: #fff;
-        }
-
-        .nav-pill a.active{
-            color: var(--primary);
-            position: relative;
-            font-weight: 500;
-        }
-
-        .nav-pill a.active::after{
-            content: "";
-            position: absolute;
-            left: 0;
-            bottom: -6px;
-            width: 100%;
-            height: 2px;
-            border-radius: 4px;
-            background: var(--primary);
-        }
-
-        .switch-pill{
-            gap: 14px;
-            padding: 12px 24px;
-        }
-
-        .switch-pill .divider{
-            color: rgba(255,255,255,0.38);
-            font-size: 14px;
-        }
-
-        .switch-pill a:last-child{
-            opacity: 0.95;
         }
 
         /* ================= HERO CONTENT ================= */
@@ -502,22 +428,6 @@
                 height: 520px;
             }
 
-            .navbar{
-                width: calc(100% - 24px);
-                top: 14px;
-                flex-direction: column;
-                gap: 12px;
-            }
-
-            .nav-pill,
-            .switch-pill{
-                width: 100%;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 16px;
-                padding: 12px 16px;
-            }
-
             .hero-content{
                 width: calc(100% - 24px);
                 bottom: 32px;
@@ -559,29 +469,10 @@
             }
         }
     </style>
-</head>
-<body>
+{% endblock %}
 
+{% block content %}
 <header class="hero">
-    <nav class="navbar">
-        <div class="logo">
-            <img src="{% static 'images/logo.png' %}" alt="Whyte House">
-        </div>
-
-        <div class="nav-pill">
-            <a href="/index">Home</a>
-            <a href="/about">About</a>
-            <a href="/blog">Blog</a>
-            <a href="/packages">Packages</a>
-            <a href="/contact" class="active">Contact Us</a>
-        </div>
-
-        <div class="switch-pill">
-            <a href="{% url 'user_panel:domestic' %}">Domestic</a>
-            <span class="divider">|</span>
-            <a href="{% url 'user_panel:index' %}">International</a>
-        </div>
-    </nav>
 
     <div class="hero-content">
         <h1>Get in <span>Touch</span></h1>
@@ -737,6 +628,4 @@
         </div>
     </div>
 </footer>
-
-</body>
-</html>
+{% endblock %}
