@@ -13,7 +13,6 @@ from django.contrib import messages
 from datetime import datetime
 from .models import BlogCategory
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 
 
 from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry, Destination, Feedback
@@ -648,7 +647,6 @@ def travel_package_view(request, package_id):
     package = get_object_or_404(TravelPackage, id=package_id)
     return render(request, 'admin/packages/travel_package_view.html', {'package': package})
 
-@csrf_exempt
 def toggle_package_status(request, package_id):
     """Toggle active/inactive status of a package"""
     if request.method == 'POST':
@@ -656,9 +654,21 @@ def toggle_package_status(request, package_id):
             package = get_object_or_404(TravelPackage, id=package_id)
             package.active = not package.active
             package.save()
-            return JsonResponse({'success': True, 'active': package.active})
+            
+            # Check if it's an AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'active': package.active})
+            else:
+                # Regular form submission - redirect back
+                messages.success(request, f'Package status updated to {"Active" if package.active else "Inactive"}')
+                return redirect('admin_panel:travel_packages')
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': str(e)})
+            else:
+                messages.error(request, f'Error updating status: {str(e)}')
+                return redirect('admin_panel:travel_packages')
+    
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 # CUSTOMER INQUIRIES
@@ -2607,13 +2617,16 @@ def add_destination(request):
             messages.error(request, "Description must not exceed 500 characters.")
             return render(request, 'admin/destination/add_destination.html', {'default_category': default_category})
 
+        packages_start_from = request.POST.get('packages_start_from', '').strip()
         Destination.objects.create(
             name=name,
             country=country,
             category=category,
             description=description,
             is_popular=request.POST.get('is_popular') == 'on',
-            image=request.FILES.get('image')
+            packages_start_from=packages_start_from if packages_start_from else None,
+            image=request.FILES.get('image'),
+            map_image=request.FILES.get('map_image')
         )
         messages.success(request, "Destination added successfully!")
         
@@ -2642,8 +2655,12 @@ def edit_destination(request, destination_id):
         destination.category = category
         destination.description = request.POST.get('description')
         destination.is_popular = request.POST.get('is_popular') == 'on'
+        packages_start_from = request.POST.get('packages_start_from', '').strip()
+        destination.packages_start_from = packages_start_from if packages_start_from else None
         if request.FILES.get('image'):
             destination.image = request.FILES.get('image')
+        if request.FILES.get('map_image'):
+            destination.map_image = request.FILES.get('map_image')
         destination.save()
         messages.success(request, "Destination updated successfully!")
         return redirect(f"{reverse('admin_panel:destinations')}?cat={category}")

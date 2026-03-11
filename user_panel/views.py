@@ -63,22 +63,36 @@ def enquire_now(request):
 def index(request):
     packages = TravelPackage.objects.filter(active=True, category='International')[:6]
     
-    # Get featured package for each destination (Vietnam=2, Malaysia=14, Thailand=8, Maldives=12)
-    vietnam_package = TravelPackage.objects.filter(active=True, destination_id=2).first()
-    malaysia_package = TravelPackage.objects.filter(active=True, destination_id=14).first()
-    thailand_package = TravelPackage.objects.filter(active=True, destination_id=8).first()
-    maldives_package = TravelPackage.objects.filter(active=True, destination_id=12).first()
+    # Get selected destination from URL parameter
+    selected_dest_id = request.GET.get('dest')
     
-    # Get IDs of packages already shown in destination sections
+    # Get international destinations for side tabs (limited to 3, only popular)
+    side_tab_destinations = Destination.objects.filter(
+        category='International',
+        is_popular=True,
+        packages__active=True
+    ).distinct().order_by('name')[:3]
+    
+    # Get international destinations for filter tabs (limited to 4, only popular)
+    filter_destinations = Destination.objects.filter(
+        category='International',
+        is_popular=True,
+        packages__active=True
+    ).distinct().order_by('name')[:4]
+    
+    # Build destination data with ALL packages for each destination
+    destination_data = []
+    for dest in filter_destinations:
+        packages_list = TravelPackage.objects.filter(active=True, destination=dest)
+        destination_data.append({
+            'destination': dest,
+            'packages': packages_list
+        })
+    
+    # Get all package IDs already shown in destination sections
     shown_package_ids = []
-    if vietnam_package:
-        shown_package_ids.append(vietnam_package.id)
-    if malaysia_package:
-        shown_package_ids.append(malaysia_package.id)
-    if thailand_package:
-        shown_package_ids.append(thailand_package.id)
-    if maldives_package:
-        shown_package_ids.append(maldives_package.id)
+    for data in destination_data:
+        shown_package_ids.extend([pkg.id for pkg in data['packages']])
     
     # Get 4 featured packages for the gallery section, excluding already shown ones
     featured_packages = list(TravelPackage.objects.filter(
@@ -94,37 +108,18 @@ def index(request):
         )[:4])
         featured_packages = additional_packages
     
-    print(f"=== INDEX VIEW DEBUG ===")
-    print(f"Shown in destinations: {shown_package_ids}")
-    print(f"Featured packages count: {len(featured_packages)}")
-    for pkg in featured_packages:
-        print(f"  - {pkg.name} (ID: {pkg.id}, Image: {pkg.image})")
-    
-    # Get destinations
-    vietnam_dest = Destination.objects.filter(id=2).first()
-    malaysia_dest = Destination.objects.filter(id=14).first()
-    thailand_dest = Destination.objects.filter(id=8).first()
-    maldives_dest = Destination.objects.filter(id=12).first()
-    
     # fetch testimonials that have been marked featured
     featured_feedbacks = Feedback.objects.filter(featured=True).order_by('-created_at')[:6]
     
     context = {
         'packages': packages,
         'featured_packages': featured_packages,
-        'vietnam_package': vietnam_package,
-        'malaysia_package': malaysia_package,
-        'thailand_package': thailand_package,
-        'maldives_package': maldives_package,
-        'vietnam_dest': vietnam_dest,
-        'malaysia_dest': malaysia_dest,
-        'thailand_dest': thailand_dest,
-        'maldives_dest': maldives_dest,
+        'side_tab_destinations': side_tab_destinations,
+        'filter_destinations': filter_destinations,
+        'destination_data': destination_data,
         'featured_feedbacks': featured_feedbacks,
+        'selected_dest_id': int(selected_dest_id) if selected_dest_id else None,
     }
-    
-    print(f"Context keys: {context.keys()}")
-    print(f"=== END DEBUG ===")
     
     return render(request, 'user/international.html', context)
 def domestic(request):

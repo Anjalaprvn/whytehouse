@@ -99,7 +99,9 @@ class Destination(models.Model):
     country = models.CharField(max_length=100)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='Domestic')
     description = models.TextField(blank=True, null=True)
+    packages_start_from = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     image = models.ImageField(upload_to='destinations/', blank=True, null=True)
+    map_image = models.ImageField(upload_to='destinations/maps/', blank=True, null=True)
     is_popular = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
 

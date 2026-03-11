@@ -142,7 +142,7 @@
 
         <div class="info-row">
             <div class="info-label">Country</div>
-            <div class="info-value">{{ destination.country }}</div>
+            <div class="info-value">{{ destination.country|default:"-" }}</div>
         </div>
 
         <div class="info-row">
@@ -153,6 +153,20 @@
                 </span>
             </div>
         </div>
+
+        {% if destination.description and destination.description|lower != 'none' %}
+        <div class="info-row">
+            <div class="info-label">Description</div>
+            <div class="info-value">{{ destination.description }}</div>
+        </div>
+        {% endif %}
+
+        {% if destination.packages_start_from %}
+        <div class="info-row">
+            <div class="info-label">Packages Start From</div>
+            <div class="info-value">₹ {{ destination.packages_start_from|floatformat:2 }}</div>
+        </div>
+        {% endif %}
 
         <div class="info-row">
             <div class="info-label">Popular Destination</div>
@@ -165,12 +179,19 @@
             </div>
         </div>
 
-        {% if destination.description %}
+        {% if destination.map_image %}
         <div class="info-row">
-            <div class="info-label">Description</div>
-            <div class="info-value">{{ destination.description }}</div>
+            <div class="info-label">Map Image</div>
+            <div class="info-value">
+                <img src="{{ destination.map_image.url }}" alt="Map" style="max-width: 200px; border-radius: 8px;">
+            </div>
         </div>
         {% endif %}
+
+        <div class="info-row">
+            <div class="info-label">Created At</div>
+            <div class="info-value">{{ destination.created_at|date:"F d, Y - h:i A" }}</div>
+        </div>
 
         <div class="action-buttons">
             <a href="{% url 'admin_panel:edit_destination' destination.id %}" class="btn btn-edit">

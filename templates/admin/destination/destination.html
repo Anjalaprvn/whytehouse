@@ -259,9 +259,11 @@
             </div>
             <div class="card-body">
                 <h3>{{ destination.name }}</h3>
+                {% if destination.country and destination.country|lower != 'none' %}
                 <p>{{ destination.country }}</p>
-                {% if destination.description %}
-                    <p>{{ destination.description|truncatewords:15 }}</p>
+                {% endif %}
+                {% if destination.description and destination.description|lower != 'none' %}
+                    <p style="color: #64748b; font-size: 13px;">{{ destination.description|truncatewords:15 }}</p>
                 {% endif %}
                 <div class="card-actions">
                     <a href="{% url 'admin_panel:edit_destination' destination.id %}" class="btn-edit" onclick="event.stopPropagation()">
