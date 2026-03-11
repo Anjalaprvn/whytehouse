@@ -21,6 +21,7 @@ urlpatterns = [
     path("hospitality-management/<int:property_id>/", views.view_property, name="admin_view_property"),
     path("hospitality-management/edit/<int:property_id>/", views.edit_property, name="admin_edit_property"),
     path("hospitality-management/delete/<int:property_id>/", views.delete_property, name="admin_delete_property"),
+    path("hospitality-management/toggle-status/<int:property_id>/", views.toggle_property_status, name="toggle_property_status"),
     path('travel-packages/', views.travel_packages, name='travel_packages'),
     path('travel-packages/add/', views.travel_package_add, name='travel_package_add'),
     path('travel-packages/<int:package_id>/', views.travel_package_view, name='travel_package_view'),
@@ -99,6 +100,7 @@ blog_patterns = [
     path('blogs/edit/<int:blog_id>/', views.edit_blog, name='edit_blog'),
     path('blogs/delete/<int:blog_id>/', views.delete_blog, name='delete_blog'),
     path('blogs/view/<slug:slug>/', views.view_blog, name='view_blog'),
+    path('blogs/toggle-status/<int:blog_id>/', views.toggle_blog_status, name='toggle_blog_status'),
     path("blogs/category/add/", views.add_category, name="add_category"),
     path("blogs/category/delete/<int:category_id>/", views.delete_category, name="delete_category"),
 ]

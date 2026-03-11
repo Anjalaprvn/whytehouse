@@ -110,6 +110,20 @@ tbody tr:last-child td{border-bottom:none}
                         <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                       </svg>
                     </a>
+                    <form method="POST" action="{% url 'blog:toggle_blog_status' blog.id %}" style="display:inline;">
+                      {% csrf_token %}
+                      <button type="submit" class="icon-btn" title="{% if blog.status == 'published' %}Unpublish{% else %}Publish{% endif %}" style="{% if blog.status == 'published' %}background:#d1fae5;border-color:#065f46;{% else %}background:#fef3c7;border-color:#92400e;{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                          {% if blog.status == 'published' %}
+                            <path d="M9 12l2 2 4-4" stroke="#065f46" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="12" cy="12" r="10" stroke="#065f46"/>
+                          {% else %}
+                            <circle cx="12" cy="12" r="10" stroke="#92400e"/>
+                            <path d="M12 6v6l4 2" stroke="#92400e" stroke-linecap="round"/>
+                          {% endif %}
+                        </svg>
+                      </button>
+                    </form>
                     <form method="POST" action="{% url 'blog:delete_blog' blog.id %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this blog?');">
                       {% csrf_token %}
                       <button type="submit" class="icon-btn delete" title="Delete">

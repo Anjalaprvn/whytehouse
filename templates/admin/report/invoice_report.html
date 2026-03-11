@@ -15,11 +15,8 @@
 .span-2{grid-column:1/-1}
 .field label{display:block;font-size:13px;font-weight:600;margin-bottom:8px;color:#111}
 .req{color:#dc2626;margin-left:4px}
-.input-wrap{position:relative}
 input[type="date"],input[type="text"],select{width:100%;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;font-size:14px;outline:none}
 input:focus,select:focus{border-color:#d4a017;background:#fff}
-.cal-ic{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;opacity:0.5;pointer-events:none}
-input[type="date"]{padding-right:44px}
 .select-wrap{position:relative}
 select{appearance:none;padding-right:44px;cursor:pointer}
 .caret{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;opacity:0.5;pointer-events:none}
@@ -69,28 +66,12 @@ tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
     <div class="grid">
       <div class="field">
         <label>From Date <span class="req">*</span></label>
-        <div class="input-wrap">
-          <input type="date" name="from_date" value="{{ selected.from_date }}" required>
-          <svg class="cal-ic" viewBox="0 0 24 24" fill="none">
-            <path d="M8 3V5" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
-            <path d="M16 3V5" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
-            <path d="M4 9H20" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
-            <path d="M6 5H18C19.105 5 20 5.895 20 7V19C20 20.105 19.105 21 18 21H6C4.895 21 4 20.105 4 19V7C4 5.895 4.895 5 6 5Z" stroke="#111" stroke-width="2.2" stroke-linejoin="round"/>
-          </svg>
-        </div>
+        <input type="date" name="from_date" value="{{ selected.from_date }}" required>
       </div>
 
       <div class="field">
         <label>To Date <span class="req">*</span></label>
-        <div class="input-wrap">
-          <input type="date" name="to_date" value="{{ selected.to_date }}" required>
-          <svg class="cal-ic" viewBox="0 0 24 24" fill="none">
-            <path d="M8 3V5" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
-            <path d="M16 3V5" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
-            <path d="M4 9H20" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
-            <path d="M6 5H18C19.105 5 20 5.895 20 7V19C20 20.105 19.105 21 18 21H6C4.895 21 4 20.105 4 19V7C4 5.895 4.895 5 6 5Z" stroke="#111" stroke-width="2.2" stroke-linejoin="round"/>
-          </svg>
-        </div>
+        <input type="date" name="to_date" value="{{ selected.to_date }}" required>
       </div>
 
       <div class="field span-2">

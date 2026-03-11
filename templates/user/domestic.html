@@ -1096,10 +1096,14 @@
         <div class="dest-header">
             <h2 class="dest-title">Choose <span>where</span> are we<br>looking for?</h2>
             <div class="dest-nav">
-                <a href="#" class="dest-link active" data-dest="kozhikode">Kozhikode</a>
-                <a href="#" class="dest-link" data-dest="munnar">Munnar</a>
-                <a href="#" class="dest-link" data-dest="wayanad">Wayanad</a>
-                <a href="#" class="dest-link" data-dest="ooty">Ooty</a>
+                {% for dest in domestic_destinations %}
+                    <a href="#" class="dest-link {% if forloop.first %}active{% endif %}" data-dest="{{ dest.name|lower }}">{{ dest.name }}</a>
+                {% empty %}
+                    <a href="#" class="dest-link active" data-dest="kozhikode">Kozhikode</a>
+                    <a href="#" class="dest-link" data-dest="munnar">Munnar</a>
+                    <a href="#" class="dest-link" data-dest="wayanad">Wayanad</a>
+                    <a href="#" class="dest-link" data-dest="ooty">Ooty</a>
+                {% endfor %}
             </div>
         </div>
 
@@ -1109,7 +1113,7 @@
             </div>
             <div class="resort-cta">
                 <h3 class="resort-name">Le Montigo Resorts</h3>
-                <a href="#" class="btn-enquire" onclick="openEnquirePopup('Domestic')">Enquire Now <i class="fa-solid fa-arrow-right"></i></a>
+                <a href="#" class="btn-enquire" id="resort-enquire-btn">Enquire Now <i class="fa-solid fa-arrow-right"></i></a>
             </div>
         </div>
     </div>
@@ -1427,29 +1431,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const destLinks = document.querySelectorAll('.dest-link');
     const resortName = document.querySelector('.resort-name');
     const resortDesc = document.querySelector('.resort-desc');
+    const enquireBtn = document.getElementById('resort-enquire-btn');
     
     const resorts = {
-        kozhikode: {
-            name: '{% if kozhikode_package %}{{ kozhikode_package.name }}{% else %}Le Montigo Resorts{% endif %}',
-            desc: '{% if kozhikode_package and kozhikode_package.description %}{{ kozhikode_package.description|truncatewords:15 }}{% else %}A boutique lakefront resort offering curated luxury experiences.{% endif %}'
+        {% for dest in domestic_destinations %}
+        '{{ dest.name|lower }}': {
+            name: '{% if dest.packages.first %}{{ dest.packages.first.name }}{% else %}{{ dest.name }} Resort{% endif %}',
+            desc: '{% if dest.packages.first and dest.packages.first.description %}{{ dest.packages.first.description|truncatewords:15 }}{% elif dest.description %}{{ dest.description|truncatewords:15 }}{% else %}Discover the beauty of {{ dest.name }}.{% endif %}',
+            packageId: '{% if dest.packages.first %}{{ dest.packages.first.id }}{% else %}#{% endif %}'
         },
-        munnar: {
-            name: '{% if munnar_package %}{{ munnar_package.name }}{% else %}Munnar Hill Resort{% endif %}',
-            desc: '{% if munnar_package and munnar_package.description %}{{ munnar_package.description|truncatewords:15 }}{% else %}Experience the misty mountains and tea plantations.{% endif %}'
-        },
-        wayanad: {
-            name: '{% if wayanad_package %}{{ wayanad_package.name }}{% else %}Wayanad Wild Resort{% endif %}',
-            desc: '{% if wayanad_package and wayanad_package.description %}{{ wayanad_package.description|truncatewords:15 }}{% else %}Immerse yourself in pristine wilderness and nature.{% endif %}'
-        },
-        ooty: {
-            name: '{% if ooty_package %}{{ ooty_package.name }}{% else %}Ooty Valley Resort{% endif %}',
-            desc: '{% if ooty_package and ooty_package.description %}{{ ooty_package.description|truncatewords:15 }}{% else %}Discover the queen of hill stations charm.{% endif %}'
-        }
+        {% endfor %}
     };
     
-    // Set initial description
-    if (resortDesc && resorts.kozhikode) {
-        resortDesc.textContent = resorts.kozhikode.desc;
+    // Set initial description for first destination
+    if (resortDesc && destLinks.length > 0) {
+        const firstDest = destLinks[0].getAttribute('data-dest');
+        if (resorts[firstDest]) {
+            resortDesc.textContent = resorts[firstDest].desc;
+            resortName.textContent = resorts[firstDest].name;
+            if (enquireBtn && resorts[firstDest].packageId !== '#') {
+                enquireBtn.href = '/packages/' + resorts[firstDest].packageId + '/';
+            }
+        }
     }
     
     destLinks.forEach(link => {
@@ -1464,6 +1467,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 resortName.textContent = resorts[dest].name;
                 if (resortDesc) {
                     resortDesc.textContent = resorts[dest].desc;
+                }
+                if (enquireBtn) {
+                    if (resorts[dest].packageId !== '#') {
+                        enquireBtn.href = '/packages/' + resorts[dest].packageId + '/';
+                    } else {
+                        enquireBtn.href = '{% url "user_panel:domestic_packages" %}';
+                    }
                 }
             }
         });
