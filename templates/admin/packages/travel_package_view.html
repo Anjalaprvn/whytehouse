@@ -25,6 +25,7 @@
 <a href="{% url 'admin_panel:travel_packages' %}?cat={{ package.category }}" class="back-btn">← Back to Packages</a>
 
 <div class="package-header">
+    <div style="font-size: 14px; color: #999; margin-bottom: 8px;">{{ package.package_id }}</div>
     <div class="package-title">{{ package.name }}</div>
     <div class="package-meta">
         <span><i class="fas fa-map-marker-alt"></i> {{ package.location }}</span>
