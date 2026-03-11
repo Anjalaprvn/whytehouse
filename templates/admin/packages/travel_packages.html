@@ -3,6 +3,7 @@
 {% load custom_filters %}
 
 {% block content %}
+{% csrf_token %}
 <style>
     .msg{max-width:100%;margin:0 0 16px 0}
     .msg .alert{border-radius:12px;padding:12px 14px;border:1px solid #e5e7eb;background:#fff;margin-bottom:10px}
@@ -226,17 +227,63 @@ function updateStatus(packageId) {
     const checkbox = document.getElementById('toggle-' + packageId);
     const badge = document.getElementById('badge-' + packageId);
 
-    // 1. Instantly Update UI Colors
-    if (checkbox.checked) {
-        badge.innerText = "Active";
-        badge.className = "status-badge badge-active";
-    } else {
-        badge.innerText = "Inactive";
-        badge.className = "status-badge badge-inactive";
-    }
+    // Get CSRF token
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken');
 
-    // 2. Optional: Send to Database via AJAX
-    // fetch(`/custom-admin/toggle-status/${packageId}/`);
+    // Send to backend - Fixed URL path
+    fetch(`/travel-packages/toggle/${packageId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Update UI based on response
+            if (data.active) {
+                badge.innerText = "Active";
+                badge.className = "status-badge badge-active";
+                checkbox.checked = true;
+            } else {
+                badge.innerText = "Inactive";
+                badge.className = "status-badge badge-inactive";
+                checkbox.checked = false;
+            }
+        } else {
+            // Revert checkbox if failed
+            checkbox.checked = !checkbox.checked;
+            alert('Failed to update status: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Revert checkbox on error
+        checkbox.checked = !checkbox.checked;
+        alert('Error updating status: ' + error.message);
+    });
+}
+
+// Helper function to get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 </script>
 {% endblock %}

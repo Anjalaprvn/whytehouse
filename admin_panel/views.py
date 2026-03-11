@@ -12,6 +12,8 @@ from django.core.mail import send_mail
 from django.contrib import messages
 from datetime import datetime
 from .models import BlogCategory
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 
 from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry, Destination, Feedback
@@ -386,8 +388,17 @@ def edit_property(request, property_id):
         prop.owner_name = request.POST.get("owner_name") or None
         prop.owner_contact = request.POST.get("owner_contact") or None
 
-        new_amenities = request.POST.getlist("new_amenities[]")
-        prop.amenities = ", ".join([a.strip() for a in new_amenities if a.strip()])
+        # Get existing amenities from checkboxes
+        selected_amenities = request.POST.getlist("amenities")
+        # Get new amenity from text input
+        new_amenity = request.POST.get("new_amenity", "").strip()
+        
+        # Combine all amenities
+        all_amenities = list(selected_amenities)
+        if new_amenity:
+            all_amenities.append(new_amenity)
+        
+        prop.amenities = ", ".join([a.strip() for a in all_amenities if a.strip()])
 
         if request.FILES.get("image"):
             prop.image = request.FILES.get("image")
@@ -636,6 +647,19 @@ def travel_package_delete(request, package_id):
 def travel_package_view(request, package_id):
     package = get_object_or_404(TravelPackage, id=package_id)
     return render(request, 'admin/packages/travel_package_view.html', {'package': package})
+
+@csrf_exempt
+def toggle_package_status(request, package_id):
+    """Toggle active/inactive status of a package"""
+    if request.method == 'POST':
+        try:
+            package = get_object_or_404(TravelPackage, id=package_id)
+            package.active = not package.active
+            package.save()
+            return JsonResponse({'success': True, 'active': package.active})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 # CUSTOMER INQUIRIES
 def customer_inquiries(request):

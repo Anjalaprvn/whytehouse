@@ -272,13 +272,13 @@
                     {% endif %}
                 </div>
 
+                {% if property.amenity_list %}
                 <div class="amenities-list">
-                    {% for amenity in property.amenities.all %}
-                        <span class="amenity-tag">{{ amenity.name }}</span>
-                    {% empty %}
-                        <span class="amenity-tag">No amenities</span>
+                    {% for amenity in property.amenity_list %}
+                        <span class="amenity-tag">{{ amenity }}</span>
                     {% endfor %}
                 </div>
+                {% endif %}
 
                 <div class="action-buttons">
                     <a href="{% url 'admin_panel:admin_edit_property' property.id %}" class="edit-btn" onclick="event.stopPropagation()">
