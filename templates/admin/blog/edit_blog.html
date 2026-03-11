@@ -1,357 +1,631 @@
-{% extends "admin/sidebar.html" %}
+{% extends 'admin/sidebar.html' %}
 {% load static %}
 
 {% block extra_css %}
 <style>
-  :root{
-    --bg:#f5f7fb;
-    --card:#ffffff;
-    --text:#0f172a;
-    --muted:#64748b;
-    --line:#e9eef6;
-    --input:#f3f4f6;
-    --btn:#d7aa3c;
-    --btnHover:#c99722;
-    --radius:18px;
-  }
+    :root{
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e9eef6;
+      --input:#f3f4f6;
+      --shadow:0 10px 25px rgba(15,23,42,.06);
+      --radius:18px;
+      --btn:#d7aa3c;
+      --btnHover:#c99722;
+    }
 
-  .page-title{font-size:28px;font-weight:700;margin-bottom:6px;color:var(--text)}
-  .page-sub{color:var(--muted);margin-bottom:18px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .field{display:flex;flex-direction:column;gap:6px}
-  label{font-size:13px;color:var(--muted);font-weight:600}
-  input, textarea, select{
-    width:100%;
-    padding:12px 12px;
-    border-radius:12px;
-    border:1px solid var(--line);
-    background:var(--input);
-    outline:none;
-  }
-  textarea{min-height:160px;resize:vertical;background:#fff}
-  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px}
-  .btn{padding:10px 16px;border-radius:12px;border:0;cursor:pointer;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
-  .btn-primary{background:var(--btn);color:#000}
-  .btn-primary:hover{background:var(--btnHover)}
-  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--text)}
-  @media (max-width: 900px){
-    .grid{grid-template-columns:1fr}
-  }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif}
+    body{background:var(--bg);color:var(--text)}
+    a{text-decoration:none;color:inherit}
 
-  /* Content Image Preview Cards */
-  .upload-btn{
-    display:inline-flex;
-    align-items:center;
-    gap:10px;
-    border:1px solid var(--line);
-    background:#fff;
-    padding:10px 14px;
-    border-radius:12px;
-    cursor:pointer;
-    font-weight:600;
-    font-size:14px;
-  }
-  .image-preview-grid {
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
-    gap:12px;
-    margin-top:14px;
-  }
-  .image-card {
-    border:1px solid var(--line);
-    border-radius:12px;
-    overflow:hidden;
-    background:#fff;
-  }
-  .image-card img {
-    width:100%;
-    height:120px;
-    object-fit:cover;
-    display:block;
-  }
-  .image-card-footer {
-    padding:8px 10px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:6px;
-  }
-  .image-tag {
-    background:#f1f5f9;
-    padding:4px 8px;
-    border-radius:6px;
-    font-size:11px;
-    font-weight:600;
-    color:#475569;
-    font-family:monospace;
-    cursor:pointer;
-    user-select:all;
-  }
-  .image-tag:hover {
-    background:#e2e8f0;
-  }
-  .remove-image-btn {
-    background:#fee2e2;
-    border:none;
-    color:#dc2626;
-    width:24px;
-    height:24px;
-    border-radius:6px;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:14px;
-    padding:0;
-  }
-  .remove-image-btn:hover {
-    background:#fecaca;
-  }
-  
-  /* Category tags */
-  .tag-display {
-    display:inline-flex;
-    align-items:center;
-    background:#f1f5f9;
-    border-radius:20px;
-    padding:6px 12px;
-    font-size:13px;
-    gap:6px;
-  }
-  .tag-display span {
-    color:#475569;
-    font-weight:500;
-  }
-  .remove-tag-btn {
-    background:none;
-    border:none;
-    color:#94a3b8;
-    cursor:pointer;
-    font-size:14px;
-    width:20px;
-    height:20px;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:0;
-  }
-  .remove-tag-btn:hover {
-    background:#e2e8f0;
-    color:#64748b;
-  }
-</style>
+    /* Header */
+    .top{
+      display:flex;
+      align-items:center;
+      gap:16px;
+      margin-bottom:18px;
+    }
+
+    .back-btn{
+      width:44px;height:44px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 6px 16px rgba(15,23,42,.05);
+      cursor:pointer;
+    }
+    .back-btn svg{width:18px;height:18px;opacity:.85}
+
+    .title-wrap{display:flex;flex-direction:column;gap:6px}
+    .title-wrap h1{font-size:34px;line-height:1.15;font-weight:600;letter-spacing:-.3px}
+    .title-wrap p{color:var(--muted);font-size:14px}
+
+    /* Card */
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:22px;
+      margin-top:16px;
+    }
+    .card h2{
+      font-size:20px;
+      font-weight:600;
+      margin-bottom:16px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px 18px;
+    }
+
+    .field{display:flex;flex-direction:column;gap:8px}
+    .label{
+      font-size:14px;
+      font-weight:600;
+      color:#0b1220;
+    }
+    .req{color:#ef4444;margin-left:4px}
+    .help{color:var(--muted);font-size:13px}
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea{
+      width:100%;
+      border:1px solid var(--line);
+      background:var(--input);
+      padding:14px 14px;
+      border-radius:12px;
+      outline:none;
+      font-size:14px;
+      color:var(--text);
+      transition:.2s ease;
+    }
+    textarea{min-height:90px;resize:vertical}
+    input:focus, select:focus, textarea:focus{
+      background:#fff;
+      border-color:#d7dce5;
+      box-shadow:0 0 0 3px rgba(215,170,60,.15);
+    }
+
+    .row-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px 18px;
+      margin-top:12px;
+    }
+
+    /* Upload */
+    .upload-line{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .upload-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      border:1px solid var(--line);
+      background:#fff;
+      padding:12px 14px;
+      border-radius:12px;
+      cursor:pointer;
+      box-shadow:0 6px 16px rgba(15,23,42,.05);
+      font-weight:500;
+    }
+    .upload-btn svg{width:18px;height:18px;opacity:.85}
+    .upload-hint{color:var(--muted);font-size:13px;line-height:1.45}
+
+    .dropzone{
+      margin-top:14px;
+      border:2px dashed #d7deea;
+      border-radius:14px;
+      background:#fbfcff;
+      padding:26px;
+      min-height:170px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--muted);
+      text-align:center;
+      gap:12px;
+    }
+    .dropzone svg{width:44px;height:44px;opacity:.65}
+
+    /* Hashtags */
+    .tag-row{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .tag-row .tag-input{flex:1;min-width:220px}
+    .tag-add{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      border:1px solid var(--line);
+      background:#fff;
+      padding:12px 16px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:600;
+      color:#6b7280;
+    }
+    .tag-add .hash{
+      width:26px;height:26px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:700;
+      background:#f8fafc;
+    }
+    
+    /* Hashtag display styles */
+    .tag-display {
+      display:inline-flex;
+      align-items:center;
+      background:#f1f5f9;
+      border-radius:20px;
+      padding:6px 12px;
+      font-size:13px;
+      gap:6px;
+    }
+    .tag-display span {
+      color:#475569;
+      font-weight:500;
+    }
+    .remove-tag-btn {
+      background:none;
+      border:none;
+      color:#94a3b8;
+      cursor:pointer;
+      font-size:14px;
+      width:20px;
+      height:20px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0;
+    }
+    .remove-tag-btn:hover {
+      background:#e2e8f0;
+      color:#64748b;
+    }
+
+    /* Footer buttons */
+    .actions{
+      display:flex;
+      gap:14px;
+      margin-top:18px;
+      align-items:center;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background:#fff;
+      color:#111827;
+      padding:12px 22px;
+      border-radius:14px;
+      font-weight:500;
+      cursor:pointer;
+      box-shadow:0 6px 16px rgba(15,23,42,.05);
+    }
+    .btn.primary{
+      background:var(--btn);
+      border-color:transparent;
+      color:#111827;
+      font-weight:600;
+    }
+    .btn.primary:hover{background:var(--btnHover)}
+    .btn:active{transform:translateY(1px)}
+
+    /* Responsive */
+    @media(max-width:860px){
+      .grid{grid-template-columns:1fr}
+      .row-2{grid-template-columns:1fr}
+      .title-wrap h1{font-size:28px}
+    }
+
+    /* Content Image Preview Cards */
+    .image-card {
+      border:1px solid var(--line);
+      border-radius:12px;
+      overflow:hidden;
+      background:#fff;
+      box-shadow:0 4px 12px rgba(15,23,42,.04);
+    }
+    .image-card img {
+      width:100%;
+      height:140px;
+      object-fit:cover;
+      display:block;
+    }
+    .image-card-footer {
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .image-tag {
+      background:#f1f5f9;
+      padding:4px 10px;
+      border-radius:6px;
+      font-size:12px;
+      font-weight:600;
+      color:#475569;
+      font-family:monospace;
+      cursor:pointer;
+      user-select:all;
+    }
+    .image-tag:hover {
+      background:#e2e8f0;
+    }
+    .remove-image-btn {
+      background:#fee2e2;
+      border:none;
+      color:#dc2626;
+      width:28px;
+      height:28px;
+      border-radius:6px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:16px;
+      padding:0;
+    }
+    .remove-image-btn:hover {
+      background:#fecaca;
+    }
+
+    .image-preview-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+      gap:14px;
+      margin-top:16px;
+    }
+  </style>
 {% endblock %}
 
 {% block content %}
-<div class="main">
-  <div class="page">
-    <div class="card">
-      <div class="page-title">Edit Blog</div>
-      <div class="page-sub">Update blog details and save changes.</div>
 
-      <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
+    <div class="top">
+      <a class="back-btn" href="{% url 'blog:blog_list' %}" aria-label="Back">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M15 18l-6-6 6-6" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+
+      <div class="title-wrap">
+        <h1>Edit Blog Post</h1>
+        <p>Update blog details</p>
+      </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- BASIC INFORMATION -->
+      <div class="card">
+        <h2>Basic Information</h2>
 
         <div class="grid">
           <div class="field">
-            <label>Title</label>
-            <input type="text" name="title" value="{{ blog.title }}" required>
+            <div class="label">Blog Title <span class="req">*</span></div>
+            <input type="text" name="title" placeholder="Top 10 Beaches to Visit in Goa" value="{{ blog.title }}" required>
           </div>
 
           <div class="field">
-            <label>Status</label>
+            <div class="label">URL Slug <span class="req">*</span></div>
+            <input type="text" name="slug" placeholder="top-10-beaches-goa" value="{{ blog.slug }}" required>
+            <div class="help">URL: <span style="color:#475569">/blog/{{ blog.slug }}</span></div>
+          </div>
+
+          <div class="field" style="grid-column:1/-1">
+            <div class="label">Excerpt <span class="req">*</span></div>
+            <textarea name="excerpt" placeholder="Brief description for preview..." required>{{ blog.excerpt }}</textarea>
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="field">
+            <div class="label">Status</div>
             <select name="status">
-              <option value="draft" {% if blog.status == "draft" %}selected{% endif %}>Draft</option>
-              <option value="published" {% if blog.status == "published" %}selected{% endif %}>Published</option>
+              <option value="draft" {% if blog.status == 'draft' %}selected{% endif %}>Draft</option>
+              <option value="published" {% if blog.status == 'published' %}selected{% endif %}>Published</option>
             </select>
           </div>
-
           <div class="field">
-            <label>Category</label>
-            <select name="category">
-              <option value="">Select Category</option>
-              {% for cat in categories %}
-                <option value="{{ cat.slug }}" {% if blog.category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
-              {% endfor %}
-            </select>
+            <div class="label">Link to Package (Optional)</div>
+            <input type="text" name="package_id" placeholder="Package ID" value="{{ blog.package_id }}">
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:12px">
+          <div class="label">Category</div>
+          <select id="category" name="category" required style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;background:#f9fafb;">
+            <option value="">Select Category</option>
+            {% for c in categories %}
+              <option value="{{ c.slug }}" {% if blog.category == c.slug %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- AUTHOR & META INFORMATION -->
+      <div class="card">
+        <h2>Author &amp; Meta Information</h2>
+
+        <div class="grid">
+          <div class="field" style="grid-column:1/-1">
+            <div class="label">Author Name <span class="req">*</span></div>
+            <input type="text" name="author_name" placeholder="John Doe" value="{{ blog.author_name }}" required>
+          </div>
+
+          <div class="field" style="grid-column:1/-1">
+            <div class="label">Author Summary <span class="req">*</span></div>
+            <textarea name="author_summary" placeholder="Brief description about the author..." required>{{ blog.author_summary }}</textarea>
           </div>
 
           <div class="field">
-            <label>Author Name</label>
-            <input type="text" name="author_name" value="{{ blog.author_name }}">
+            <div class="label">Reading Time (minutes) <span class="req">*</span></div>
+            <input type="number" name="reading_time" min="1" placeholder="5" value="{{ blog.reading_time }}" required>
           </div>
 
           <div class="field">
-            <label>Publish Date</label>
-            <input type="date" name="publish_date" value="{{ blog.publish_date|date:'Y-m-d' }}">
+            <div class="label">Publish Date <span class="req">*</span></div>
+            <input type="date" name="publish_date" value="{{ blog.publish_date|date:'Y-m-d' }}" required>
           </div>
+        </div>
+      </div>
 
-          <div class="field">
-            <label>Reading Time (minutes)</label>
-            <input type="number" name="reading_time" min="1" value="{{ blog.reading_time }}">
+      <!-- FEATURED IMAGE -->
+      <div class="card">
+        <h2>Featured Image</h2>
+
+        <div class="field">
+          <div class="label">Image URL or Upload</div>
+          <input type="text" name="featured_image_url" placeholder="https://example.com/image.jpg" value="{{ blog.featured_image_url }}">
+        </div>
+
+        <div class="upload-line" style="margin-top:12px">
+          <label class="upload-btn">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 16V4" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
+              <path d="M7 9l5-5 5 5" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Upload Image
+            <input id="featured_image_input" type="file" name="featured_image" accept="image/*" hidden>
+          </label>
+
+          <div class="upload-hint">
+            You can either paste an image URL or upload an image file.
           </div>
-
-          <div class="field">
-            <label>Featured Image</label>
-            <input type="file" id="featured-image-input" name="featured_image" accept="image/*">
+        </div>
+        <div style="margin-top:12px">
+          <div id="image-name" style="margin-bottom:10px; font-size:14px; color:#666;"></div>
+          <div id="image-preview-container" style="margin-top:10px;">
             {% if blog.featured_image %}
-            <div style="margin-top:8px;">
-              <img id="featured-image-preview" src="{{ blog.featured_image.url }}" alt="Featured image" style="max-width:200px; border-radius:8px;" />
-            </div>
+              <img id="image-preview" src="{{ blog.featured_image.url }}" alt="Preview" style="max-width:320px; max-height:200px; display:block; object-fit:cover; border-radius:8px; border:1px solid #ddd; padding:4px;">
+              <div style="margin-top:8px; font-size:13px; color:#666;">Current image: {{ blog.featured_image.name|default:"No file name" }}</div>
+            {% elif blog.featured_image_url %}
+              <img id="image-preview" src="{{ blog.featured_image_url }}" alt="Preview" style="max-width:320px; max-height:200px; display:block; object-fit:cover; border-radius:8px; border:1px solid #ddd; padding:4px;">
+              <div style="margin-top:8px; font-size:13px; color:#666;">Current image from URL</div>
             {% else %}
-            <img id="featured-image-preview" src="" alt="Featured image preview" style="display:none; max-width:200px; border-radius:8px; margin-top:8px;" />
+              <img id="image-preview" src="" alt="Preview" style="max-width:320px; max-height:200px; display:none; object-fit:cover; border-radius:8px; border:1px solid #ddd; padding:4px;">
             {% endif %}
           </div>
         </div>
+      </div>
 
-        <div class="field" style="margin-top:14px">
-          <label>Excerpt</label>
-          <textarea name="excerpt">{{ blog.excerpt }}</textarea>
+      <!-- CONTENT IMAGES -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+          <h2 style="margin:0">Content Images</h2>
+
+          <label class="upload-btn" id="content-images-btn">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 16V4" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
+              <path d="M7 9l5-5 5 5" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Add Images
+            <input type="file" id="content-images-input" name="content_images" accept="image/*" multiple hidden>
+          </label>
         </div>
 
-        <div class="field" style="margin-top:14px">
-          <label>Author Summary</label>
-          <textarea name="author_summary">{{ blog.author_summary }}</textarea>
-        </div>
+        <p class="upload-hint" style="margin-top:10px">
+          Upload images to use in your blog content. Reference them using <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">(image1)</code>, <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">(image2)</code>, etc. in your content.
+        </p>
 
-        <!-- Content Images Section -->
-        <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--line)">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <div>
-              <div style="font-size:16px;font-weight:600;color:var(--text)">Content Images</div>
-              <div style="font-size:12px;color:var(--muted);margin-top:4px">Upload images to use in your blog content. Reference them using <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px">{{image1}}</code>, <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px">{{image2}}</code>, etc.</div>
+        <!-- Existing Images -->
+        {% if blog.images.all %}
+        <div class="image-preview-grid" id="existing-images">
+          {% for img in blog.images.all %}
+          <div class="image-card" data-image-id="{{ img.id }}">
+            <img src="{{ img.image.url }}" alt="Content image {{ forloop.counter }}">
+            <div class="image-card-footer">
+              <span class="image-tag" onclick="copyToClipboard('(image{{ forloop.counter }})')" title="Click to copy">(image{{ forloop.counter }})</span>
+              <button type="button" class="remove-image-btn" onclick="removeExistingImage({{ img.id }})" title="Remove image">✕</button>
             </div>
-            <label class="upload-btn">
-              + Add Images
-              <input type="file" id="content-images-input" name="content_images" accept="image/*" multiple hidden>
-            </label>
           </div>
+          {% endfor %}
+        </div>
+        {% endif %}
 
-          <!-- Existing Images -->
-          {% if blog.content_images.all %}
-          <div class="image-preview-grid" id="existing-images">
-            {% for img in blog.content_images.all %}
-            <div class="image-card" data-image-id="{{ img.id }}">
-              <img src="{{ img.image.url }}" alt="Content image {{ forloop.counter }}">
-              <div class="image-card-footer">
-                <span class="image-tag" onclick="copyToClipboard('{{ img.tag }}')" title="Click to copy">{{ img.tag }}</span>
-                <button type="button" class="remove-image-btn" onclick="removeExistingImage({{ img.id }})" title="Remove image">✕</button>
-              </div>
-            </div>
-            {% endfor %}
+        <!-- New Images Preview -->
+        <div id="content-images-preview" style="display:none;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:16px;">
+          <!-- Image previews will be added here -->
+        </div>
+
+        <div id="content-images-empty" class="dropzone" style="margin-top:14px;{% if blog.images.all %}display:none{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
+            <path d="M7 10l5-5 5 5" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 5v12" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <div>
+            <div style="font-weight:600;color:#475569;margin-bottom:4px">No images uploaded</div>
+            <div style="font-size:13px">Click "Add Images" to upload content images</div>
           </div>
-          {% endif %}
-
-          <!-- New Images Preview -->
-          <div class="image-preview-grid" id="new-images-preview" style="display:none;margin-top:12px"></div>
-          
-          <!-- Hidden field to track deleted images -->
-          <input type="hidden" id="deleted-images" name="deleted_images" value="">
         </div>
 
-        <div class="field" style="margin-top:14px">
-          <label>Content</label>
-          <textarea name="content" required>{{ blog.content }}</textarea>
+        <!-- Hidden field to track deleted images -->
+        <input type="hidden" id="deleted-images" name="deleted_images" value="">
+      </div>
+
+      <!-- HASHTAGS -->
+      <div class="card">
+        <h2>Hashtags</h2>
+
+        <div class="tag-row">
+          <input id="hashtag-input" class="tag-input" type="text" placeholder="Enter a hashtag" onkeypress="if(event.key==='Enter'){event.preventDefault();addHashtag();}">
+          <button type="button" class="tag-add" onclick="addHashtag()">
+            <span class="hash">#</span>
+            Add
+          </button>
         </div>
 
-        <div class="row">
-          <button type="submit" class="btn btn-primary">Save Changes</button>
-          <a href="{% url 'blog:blog_list' %}" class="btn btn-secondary">Cancel</a>
+        <div id="hashtags-container" style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;"></div>
+        <input type="hidden" id="hashtags-hidden" name="hashtags" value="{{ blog.hashtags }}">
+
+        <p class="help" style="margin-top:10px">Add individual hashtags using the "#add" button or enter comma-separated tags</p>
+      </div>
+
+      <!-- CONTENT -->
+      <div class="card">
+        <h2>Content <span class="req">*</span></h2>
+
+        <div class="field">
+          <textarea name="content" rows="9" placeholder="Write your blog content here... Use (image1), (image2), etc. to reference uploaded images." required>{{ blog.content }}</textarea>
+          <div class="help">You can use Markdown or plain text. Use (image1), (image2), etc. to reference uploaded images.</div>
         </div>
-      </form>
-    </div>
-  </div>
-</div>
+
+        <div class="actions">
+          <a class="btn" href="{% url 'blog:blog_list' %}">Cancel</a>
+          <button class="btn primary" type="submit">Save Changes</button>
+        </div>
+      </div>
+
+</form>
 
 <script>
 {% verbatim %}
+// Image preview functionality
+document.getElementById('featured_image_input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById('image-preview');
+    const imageName = document.getElementById('image-name');
+    const previewContainer = document.getElementById('image-preview-container');
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            imageName.textContent = 'Selected file: ' + file.name;
+        }
+        reader.readAsDataURL(file);
+    } else {
+        preview.style.display = 'none';
+        imageName.textContent = '';
+    }
+});
+
 // Content Images functionality
-let newImagesArray = [];
+let contentImagesArray = [];
 let deletedImageIds = [];
 let existingImagesCount = document.querySelectorAll('#existing-images .image-card').length;
 
 document.getElementById('content-images-input').addEventListener('change', function(e) {
     const files = Array.from(e.target.files);
     
-    files.forEach((file) => {
+    files.forEach((file, index) => {
         const reader = new FileReader();
         reader.onload = function(e) {
-            newImagesArray.push({
+            contentImagesArray.push({
                 file: file,
                 dataUrl: e.target.result,
                 name: file.name
             });
-            updateNewImagesPreview();
+            updateContentImagesPreview();
         }
         reader.readAsDataURL(file);
     });
 });
 
-function updateNewImagesPreview() {
-    const previewContainer = document.getElementById('new-images-preview');
+function updateContentImagesPreview() {
+    const previewContainer = document.getElementById('content-images-preview');
+    const emptyState = document.getElementById('content-images-empty');
     
-    if (newImagesArray.length === 0) {
+    if (contentImagesArray.length === 0) {
         previewContainer.style.display = 'none';
+        if (!document.querySelectorAll('#existing-images .image-card').length) {
+            emptyState.style.display = 'flex';
+        }
         return;
     }
     
     previewContainer.style.display = 'grid';
+    emptyState.style.display = 'none';
     previewContainer.innerHTML = '';
     
-    newImagesArray.forEach((img, index) => {
+    contentImagesArray.forEach((img, index) => {
         const imageNumber = existingImagesCount + index + 1;
         const card = document.createElement('div');
         card.className = 'image-card';
-        const imageTag = '{{image' + imageNumber + '}}';
+        const imageTag = '(image' + imageNumber + ')';
         card.innerHTML = `
             <img src="${img.dataUrl}" alt="${img.name}">
             <div class="image-card-footer">
                 <span class="image-tag" onclick="copyToClipboard('${imageTag}')" title="Click to copy">${imageTag}</span>
-                <button type="button" class="remove-image-btn" onclick="removeNewImage(${index})" title="Remove image">✕</button>
+                <button type="button" class="remove-image-btn" onclick="removeContentImage(${index})" title="Remove image">✕</button>
             </div>
         `;
         previewContainer.appendChild(card);
     });
 }
 
-function removeNewImage(index) {
-    newImagesArray.splice(index, 1);
-    updateNewImagesPreview();
+function removeContentImage(index) {
+    contentImagesArray.splice(index, 1);
+    updateContentImagesPreview();
     
-    // Update the file input with remaining files
+    // Update the file input
     const input = document.getElementById('content-images-input');
     const dt = new DataTransfer();
-    newImagesArray.forEach(img => dt.items.add(img.file));
+    contentImagesArray.forEach(img => dt.items.add(img.file));
     input.files = dt.files;
 }
 
-// Before form submission, ensure all files are in the input
-document.querySelector('form').addEventListener('submit', function(e) {
-    const input = document.getElementById('content-images-input');
-    const dt = new DataTransfer();
-    newImagesArray.forEach(img => dt.items.add(img.file));
-    input.files = dt.files;
-});
-
 function removeExistingImage(imageId) {
     if (confirm('Are you sure you want to remove this image?')) {
-        // Add to deleted list
         deletedImageIds.push(imageId);
         document.getElementById('deleted-images').value = deletedImageIds.join(',');
         
-        // Remove from UI
         const card = document.querySelector(`[data-image-id="${imageId}"]`);
         if (card) {
             card.remove();
         }
         
-        // Update existing count
         existingImagesCount = document.querySelectorAll('#existing-images .image-card').length;
+        updateContentImagesPreview();
         
-        // Update new images preview to reflect new numbering
-        updateNewImagesPreview();
+        if (existingImagesCount === 0 && contentImagesArray.length === 0) {
+            document.getElementById('content-images-empty').style.display = 'flex';
+        }
     }
 }
 
@@ -369,77 +643,64 @@ function copyToClipboard(text) {
         }, 1500);
     });
 }
+
+// Hashtag functionality
+let hashtags = [];
+
+function addHashtag() {
+    const hashtagInput = document.getElementById('hashtag-input');
+    const tag = hashtagInput.value.trim();
+    
+    if (tag && !hashtags.includes(tag)) {
+        hashtags.push(tag);
+        updateHashtagsDisplay();
+        hashtagInput.value = '';
+        updateHiddenInput();
+    }
+}
+
+function removeHashtag(index) {
+    hashtags.splice(index, 1);
+    updateHashtagsDisplay();
+    updateHiddenInput();
+}
+
+function updateHashtagsDisplay() {
+    const container = document.getElementById('hashtags-container');
+    container.innerHTML = '';
+    
+    hashtags.forEach((tag, index) => {
+        const tagElement = document.createElement('div');
+        tagElement.className = 'tag-display';
+        tagElement.innerHTML = `
+            <span>#${tag}</span>
+            <button type="button" onclick="removeHashtag(${index})" class="remove-tag-btn">✕</button>
+        `;
+        container.appendChild(tagElement);
+    });
+}
+
+function updateHiddenInput() {
+    const hiddenInput = document.getElementById('hashtags-hidden');
+    hiddenInput.value = hashtags.join(',');
+}
+
+// Initialize hashtags from existing value
+window.addEventListener('DOMContentLoaded', function() {
+    const existingHashtags = document.getElementById('hashtags-hidden').value;
+    if (existingHashtags) {
+        hashtags = existingHashtags.split(',').map(tag => tag.trim()).filter(tag => tag);
+        updateHashtagsDisplay();
+    }
+});
+
+// Before form submission, ensure all files are in the input
+document.querySelector('form').addEventListener('submit', function(e) {
+    const input = document.getElementById('content-images-input');
+    const dt = new DataTransfer();
+    contentImagesArray.forEach(img => dt.items.add(img.file));
+    input.files = dt.files;
+});
 {% endverbatim %}
-  
-<script>
-    // featured image preview
-    const featuredInput = document.getElementById('featured-image-input');
-    const featuredPreview = document.getElementById('featured-image-preview');
-    featuredInput.addEventListener('change', function(e) {
-      const file = this.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-          featuredPreview.src = ev.target.result;
-          featuredPreview.style.display = 'block';
-        }
-        reader.readAsDataURL(file);
-      }
-    });
-    
-    // Category functionality
-    let categories = [];
-    
-    window.addEventListener('DOMContentLoaded', function() {
-        const categoryInput = document.getElementById('category-input');
-        if (categoryInput.value) {
-            categories = categoryInput.value.split(',').map(c => c.trim()).filter(c => c);
-            updateCategoriesDisplay();
-        }
-    });
-    
-    function addCategory() {
-        const input = document.getElementById('category-input');
-        const cat = input.value.trim();
-        
-        if (cat && !categories.includes(cat)) {
-            categories.push(cat);
-            updateCategoriesDisplay();
-            updateCategoryInput();
-        }
-    }
-    
-    function removeCategory(index) {
-        categories.splice(index, 1);
-        updateCategoriesDisplay();
-        updateCategoryInput();
-    }
-    
-    function updateCategoriesDisplay() {
-        const container = document.getElementById('categories-display');
-        container.innerHTML = '';
-        
-        categories.forEach((cat, index) => {
-            const catElement = document.createElement('div');
-            catElement.className = 'tag-display';
-            catElement.innerHTML = `
-                <span>${cat}</span>
-                <button type="button" onclick="removeCategory(${index})" class="remove-tag-btn">✕</button>
-            `;
-            container.appendChild(catElement);
-        });
-    }
-    
-    function updateCategoryInput() {
-        const input = document.getElementById('category-input');
-        input.value = categories.join(', ');
-    }
-    
-    document.getElementById('category-input').addEventListener('blur', function() {
-        const val = this.value.trim();
-        if (val && !categories.includes(val)) {
-            addCategory();
-        }
-    });
 </script>
 {% endblock %}
