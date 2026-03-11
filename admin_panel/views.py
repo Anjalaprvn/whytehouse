@@ -1975,6 +1975,22 @@ def delete_blog(request, blog_id):
     messages.success(request, f"Blog '{title}' deleted successfully!")
     return redirect("blog:blog_list")
 
+def toggle_blog_status(request, blog_id):
+    if request.method != 'POST':
+        return redirect('blog:blog_list')
+    
+    blog = get_object_or_404(Blog, id=blog_id)
+    
+    if blog.status == 'published':
+        blog.status = 'draft'
+        messages.success(request, f"Blog '{blog.title}' unpublished successfully!")
+    else:
+        blog.status = 'published'
+        messages.success(request, f"Blog '{blog.title}' published successfully!")
+    
+    blog.save()
+    return redirect('blog:blog_list')
+
 
 def add_category(request):
     if request.method == "POST":
