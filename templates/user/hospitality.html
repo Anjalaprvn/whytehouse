@@ -1217,6 +1217,7 @@
 
    <div class="property-grid">
     {% for property in properties %}
+    <a href="{% url 'user_panel:hospitality_detail' property.id %}" style="text-decoration: none; color: inherit;">
     <div class="property-card">
     {% if property.image %}
         <img src="{{ property.image.url }}" alt="{{ property.name }}">
@@ -1232,6 +1233,7 @@
         </div>
     </div>
 </div>
+</a>
 {% endfor %}
 
         

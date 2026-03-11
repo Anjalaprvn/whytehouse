@@ -649,6 +649,21 @@ def hospitality(request):
     testimonials = Feedback.objects.filter(feedback_type='Property Management', featured=True).prefetch_related('images')
     return render(request, 'user/hospitality.html', {'properties': properties, 'testimonials': testimonials})
 
+def hospitality_detail(request, property_id):
+    """
+    Display detailed information about a specific hospitality property
+    """
+    property = get_object_or_404(Property, id=property_id)
+    # Get related properties (same type or location)
+    related_properties = Property.objects.filter(
+        Q(property_type=property.property_type) | Q(location=property.location)
+    ).exclude(id=property.id)[:3]
+    
+    return render(request, 'user/hospitality_detail.html', {
+        'property': property,
+        'related_properties': related_properties
+    })
+
 def feedback_form_submit(request):
     """
     Handle user feedback form submission from user feedback template
