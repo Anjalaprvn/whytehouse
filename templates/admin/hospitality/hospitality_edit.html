@@ -236,10 +236,10 @@
             <div class="form-group">
                 <label>Amenities</label>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px;">
-                    {% for amenity in amenities %}
+                    {% for amenity in property.amenity_list %}
                     <label style="display: flex; align-items: center; gap: 8px; font-weight: 400; cursor: pointer;">
-                        <input type="checkbox" name="amenities" value="{{ amenity.id }}" {% if amenity in property.amenities.all %}checked{% endif %} style="width: auto;">
-                        <span>{{ amenity.name }}</span>
+                        <input type="checkbox" name="amenities" value="{{ amenity }}" checked style="width: auto;">
+                        <span>{{ amenity }}</span>
                     </label>
                     {% endfor %}
                 </div>
