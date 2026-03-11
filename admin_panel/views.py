@@ -1459,6 +1459,7 @@ def voucher_list(request):
             Q(resort_resort_name_icontains=search_query)
         )
     
+    vouchers = vouchers.order_by('-voucher_date', '-id')
     return render(request, "admin/sales/vouchers/vouchers.html", {"vouchers": vouchers, "search_query": search_query})
 
 def add_voucher(request):
@@ -2442,7 +2443,7 @@ def leads_report(request):
                 td = datetime.strptime(to_date, "%Y-%m-%d").date()
                 
                 # Base queryset
-                qs = Lead.objects.filter(created_at_date_range=(fd, td))
+                qs = Lead.objects.filter(created_at__date__range=(fd, td))
                 
                 # Enquiry type filter
                 if enquiry_type:
@@ -2509,7 +2510,7 @@ def leads_report(request):
 
 def profit_report(request):
     resorts = Resort.objects.all().order_by("resort_name")
-    invoices = Invoice.objects.none()
+    records = []
     employee_view = False
     employees = Employee.objects.none()
     
@@ -2535,29 +2536,67 @@ def profit_report(request):
                 fd = datetime.strptime(from_date, "%Y-%m-%d").date()
                 td = datetime.strptime(to_date, "%Y-%m-%d").date()
                 
-                # Filter employees who have invoices in the selected date range and resort
+                # Get invoices
+                invoice_qs = Invoice.objects.select_related(
+                    "customer", "resort", "sales_person"
+                ).filter(resort_id=resort_id, invoice_date__range=(fd, td))
+                
+                # Get vouchers
+                voucher_qs = Voucher.objects.select_related(
+                    "customer", "resort", "sales_person"
+                ).filter(resort_id=resort_id, voucher_date__range=(fd, td))
+                
+                # Filter employees who have invoices or vouchers in the selected date range and resort
                 if employee_view:
-                    employee_ids = Invoice.objects.filter(
-                        resort_id=resort_id,
-                        invoice_date__range=(fd, td),
+                    invoice_emp_ids = invoice_qs.filter(
                         sales_person__isnull=False
                     ).values_list('sales_person_id', flat=True).distinct()
+                    
+                    voucher_emp_ids = voucher_qs.filter(
+                        sales_person__isnull=False
+                    ).values_list('sales_person_id', flat=True).distinct()
+                    
+                    employee_ids = set(list(invoice_emp_ids) + list(voucher_emp_ids))
                     
                     employees = Employee.objects.filter(
                         id__in=employee_ids,
                         status="Active"
                     ).order_by("name")
                 
-                # Base queryset
-                qs = Invoice.objects.select_related(
-                    "customer", "resort", "sales_person"
-                ).filter(resort_id=resort_id, invoice_date__range=(fd, td))
-                
                 # Employee filter
                 if employee_view and employee_id:
-                    qs = qs.filter(sales_person_id=employee_id)
+                    invoice_qs = invoice_qs.filter(sales_person_id=employee_id)
+                    voucher_qs = voucher_qs.filter(sales_person_id=employee_id)
                 
-                invoices = qs.order_by("-invoice_date", "-id")
+                # Combine invoices and vouchers into a unified list
+                for inv in invoice_qs:
+                    records.append({
+                        'type': 'Invoice',
+                        'number': inv.invoice_no,
+                        'date': inv.invoice_date,
+                        'customer': inv.customer.display_name if inv.customer else '-',
+                        'sales_person': inv.sales_person.name if inv.sales_person else '-',
+                        'resort': inv.resort.resort_name if inv.resort else '-',
+                        'total': inv.total,
+                        'resort_cost': inv.resort_price,
+                        'profit': inv.profit,
+                    })
+                
+                for vou in voucher_qs:
+                    records.append({
+                        'type': 'Voucher',
+                        'number': vou.voucher_no,
+                        'date': vou.voucher_date,
+                        'customer': vou.customer.display_name if vou.customer else '-',
+                        'sales_person': vou.sales_person.name if vou.sales_person else '-',
+                        'resort': vou.resort.resort_name if vou.resort else '-',
+                        'total': vou.total_amount,
+                        'resort_cost': vou.resort_price,
+                        'profit': vou.profit,
+                    })
+                
+                # Sort by date descending
+                records = sorted(records, key=lambda x: x['date'], reverse=True)
                 
                 # Excel export
                 if action == "excel":
@@ -2570,9 +2609,9 @@ def profit_report(request):
                     header_font = Font(bold=True, color="FFFFFF")
                     
                     # Headers
-                    headers = ["Invoice No", "Date", "Customer", "Resort", "Total", "Resort Cost", "Profit"]
+                    headers = ["Type", "Number", "Date", "Customer", "Resort", "Total", "Resort Cost", "Profit"]
                     if employee_view:
-                        headers.insert(3, "Sales Person")
+                        headers.insert(4, "Sales Person")
                     
                     for col_num, header in enumerate(headers, 1):
                         cell = ws.cell(row=1, column=col_num, value=header)
@@ -2581,22 +2620,23 @@ def profit_report(request):
                         cell.alignment = Alignment(horizontal="center", vertical="center")
                     
                     # Data rows
-                    for row_num, invoice in enumerate(invoices, 2):
-                        ws.cell(row=row_num, column=1, value=invoice.invoice_no)
-                        ws.cell(row=row_num, column=2, value=invoice.invoice_date.strftime("%d/%m/%Y"))
-                        ws.cell(row=row_num, column=3, value=invoice.customer.display_name if invoice.customer else "-")
+                    for row_num, record in enumerate(records, 2):
+                        ws.cell(row=row_num, column=1, value=record['type'])
+                        ws.cell(row=row_num, column=2, value=record['number'])
+                        ws.cell(row=row_num, column=3, value=record['date'].strftime("%d/%m/%Y"))
+                        ws.cell(row=row_num, column=4, value=record['customer'])
                         
                         if employee_view:
-                            ws.cell(row=row_num, column=4, value=invoice.sales_person.name if invoice.sales_person else "-")
-                            ws.cell(row=row_num, column=5, value=invoice.resort.resort_name if invoice.resort else "-")
-                            ws.cell(row=row_num, column=6, value=float(invoice.total))
-                            ws.cell(row=row_num, column=7, value=float(invoice.resort_price))
-                            ws.cell(row=row_num, column=8, value=float(invoice.profit))
+                            ws.cell(row=row_num, column=5, value=record['sales_person'])
+                            ws.cell(row=row_num, column=6, value=record['resort'])
+                            ws.cell(row=row_num, column=7, value=float(record['total']))
+                            ws.cell(row=row_num, column=8, value=float(record['resort_cost']))
+                            ws.cell(row=row_num, column=9, value=float(record['profit']))
                         else:
-                            ws.cell(row=row_num, column=4, value=invoice.resort.resort_name if invoice.resort else "-")
-                            ws.cell(row=row_num, column=5, value=float(invoice.total))
-                            ws.cell(row=row_num, column=6, value=float(invoice.resort_price))
-                            ws.cell(row=row_num, column=7, value=float(invoice.profit))
+                            ws.cell(row=row_num, column=5, value=record['resort'])
+                            ws.cell(row=row_num, column=6, value=float(record['total']))
+                            ws.cell(row=row_num, column=7, value=float(record['resort_cost']))
+                            ws.cell(row=row_num, column=8, value=float(record['profit']))
                     
                     # Auto-adjust column widths
                     for col in ws.columns:
@@ -2623,7 +2663,7 @@ def profit_report(request):
     
     return render(request, "admin/report/profit_report.html", {
         "resorts": resorts,
-        "invoices": invoices,
+        "records": records,
         "employees": employees,
         "employee_view": employee_view,
         "selected": selected,
