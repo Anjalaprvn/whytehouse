@@ -145,12 +145,9 @@
         {% if messages %}
         <div class="message-container">
             {% for message in messages %}
-            <div class="{% if message.tags %}{{ message.tags }}{% endif %}-message">{{ message }}</div>
+            <div class="{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% else %}{{ message.tags }}{% endif %}-message">{{ message }}</div>
             {% endfor %}
         </div>
-        {% endif %}
-        {% if error %}
-        <div class="error-message">{{ error }}</div>
         {% endif %}
 
         <form method="POST">

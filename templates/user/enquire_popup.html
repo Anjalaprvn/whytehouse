@@ -295,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             body: new FormData(this),
             headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                'X-CSRFToken': this.querySelector('[name=csrfmiddlewaretoken]').value
             }
         })
         .then(response => response.json())
