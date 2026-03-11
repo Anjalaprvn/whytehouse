@@ -206,6 +206,7 @@
                     <th>Mobile No</th>
                     <th>Enquiry Type</th>
                     <th>Source</th>
+                    <th>Assignment Status</th>
                     <th style="text-align:center;">Actions</th>
                 </tr>
             </thead>
@@ -229,6 +230,18 @@
                         <span class="source-badge">
                             {{ lead.get_source_display }}
                         </span>
+                    </td>
+                    <td>
+                        {% if lead.employee %}
+                            <span class="source-badge" style="background: #dcfce7; color: #16a34a;">
+                                <i class="fas fa-check-circle"></i> Assigned
+                            </span>
+                            <div style="font-size: 12px; color: #666; margin-top: 4px;">{{ lead.employee.name }}</div>
+                        {% else %}
+                            <span class="source-badge" style="background: #fee2e2; color: #dc2626;">
+                                <i class="fas fa-times-circle"></i> Not Assigned
+                            </span>
+                        {% endif %}
                     </td>
                     <td class="action-icons">
                         <a href="{% url 'admin_panel:view_lead' lead.id %}"><i class="fas fa-eye"></i></a>

@@ -296,12 +296,25 @@ def edit_lead(request, id):
         return redirect('admin_panel:leads')
     
     all_employees = Employee.objects.filter(status='Active').order_by('name')
-    next_emp = get_next_employee_for_lead()
+    assigned_employee_ids = set(Lead.objects.exclude(id=id).filter(employee__isnull=False).values_list('employee_id', flat=True))
     
-    employees_list = list(all_employees)
-    if next_emp and next_emp in employees_list:
-        employees_list.remove(next_emp)
-        employees_list.insert(0, next_emp)
+    current_employee = lead.employee
+    employees_list = []
+    
+    if current_employee:
+        employees_list.append(current_employee)
+    
+    for e in all_employees:
+        if current_employee and e.id == current_employee.id:
+            continue
+        if e.id not in assigned_employee_ids:
+            employees_list.append(e)
+    
+    for e in all_employees:
+        if current_employee and e.id == current_employee.id:
+            continue
+        if e.id in assigned_employee_ids:
+            employees_list.append(e)
     
     return render(request, 'admin/lead/lead_edit.html', {'lead': lead, 'employees': employees_list})
 
