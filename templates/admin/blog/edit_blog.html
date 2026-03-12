@@ -511,8 +511,10 @@
         <h2>Content <span class="req">*</span></h2>
 
         <div class="field">
-          <textarea name="content" rows="9" placeholder="Write your blog content here... Use (image1), (image2), etc. to reference uploaded images." required>{{ blog.content }}</textarea>
-          <div class="help">You can use Markdown or plain text. Use (image1), (image2), etc. to reference uploaded images.</div>
+          <textarea name="content" rows="9" placeholder="Write your blog content here..." required>{{ blog.content }}</textarea>
+          <div class="help" style="margin-top: 10px; padding: 12px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px;">
+            <strong>📷 How to add images:</strong> Use <span style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{"{"}}image1{{"}"}}</span>, <span style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{"{"}}image2{{"}"}}</span>, etc. in your content where you want images to appear. You have {{ blog.images.count }} image(s) uploaded.
+          </div>
         </div>
 
         <div class="actions">

@@ -201,7 +201,7 @@ def blog_detail(request, slug):
 
     # Replace {{image1}}, {{image2}}, etc. with actual image HTML
     content = blog.content
-    content_images = blog.images.all()
+    content_images = blog.images.all().order_by('order')
     
     # Normalize line endings and split content
     content = content.replace('\r\n', '\n').replace('\r', '\n')
@@ -242,7 +242,7 @@ def blog_detail(request, slug):
                 processed_lines.append(f'''
                     <div class="content-row">
                         <figure class="content-image-left">
-                            <img src="{img.image.url}" alt="Content image {image_num}">
+                            <img src="{img.image.url}" alt="Image {image_num}" data-gallery-order="{idx}">
                         </figure>
                         <div class="content-text"><p>{text_content}</p></div>
                     </div>
@@ -269,7 +269,7 @@ def blog_detail(request, slug):
                     <div class="content-row">
                         <div class="content-text"><p>{text_content}</p></div>
                         <figure class="content-image-right">
-                            <img src="{img.image.url}" alt="Content image {image_num}">
+                            <img src="{img.image.url}" alt="Image {image_num}" data-gallery-order="{idx}">
                         </figure>
                     </div>
                 ''')
@@ -284,7 +284,7 @@ def blog_detail(request, slug):
                     processed_lines.append(f'<p>{text_content}</p>')
                 processed_lines.append(f'''
                     <figure class="content-image-center">
-                        <img src="{img.image.url}" alt="Content image {image_num}">
+                        <img src="{img.image.url}" alt="Image {image_num}" data-gallery-order="{idx}">
                     </figure>
                 ''')
                 has_image = True
@@ -298,7 +298,7 @@ def blog_detail(request, slug):
                     processed_lines.append(f'<p>{text_content}</p>')
                 processed_lines.append(f'''
                     <figure class="content-image-center">
-                        <img src="{img.image.url}" alt="Content image {image_num}">
+                        <img src="{img.image.url}" alt="Image {image_num}" data-gallery-order="{idx}">
                     </figure>
                 ''')
                 has_image = True

@@ -279,8 +279,8 @@ body > nav {
 }
 
 .gallery-thumb {
-    width: 70px;
-    height: 70px;
+    width: 100px;
+    height: 100px;
     border-radius: 14px;
     overflow: hidden;
     flex-shrink: 0;
@@ -307,8 +307,8 @@ body > nav {
 }
 
 .gallery-info {
-    min-width: 0;
-    flex: 1;
+      display: none;
+    
 }
 
 .gallery-label {
@@ -516,11 +516,17 @@ body > nav {
     background: var(--brand-gold);
 }
 
+/* ===== UPDATED IMAGE CENTER ALIGNMENT ===== */
 .article-body img {
-    max-width: 100%;
-    height: auto;
+    display: block;
+    width: 600px !important;
+    height: 400px !important;
+    object-fit: cover;
     border-radius: 15px;
     transition: var(--transition);
+    margin: 28px auto !important;
+    float: none !important;
+    clear: both;
 }
 
 .article-body img:hover {
@@ -529,11 +535,23 @@ body > nav {
 }
 
 .article-body figure {
-    margin: 35px 0;
+    margin: 35px auto !important;
     padding: 10px;
     background: var(--light-gray);
     border-radius: 20px;
     box-shadow: var(--shadow-md);
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    text-align: center;
+    float: none !important;
+    clear: both;
+}
+
+.article-body figure img {
+    display: block;
+    margin: 0 auto !important;
+    float: none !important;
 }
 
 .article-body figcaption {
@@ -542,6 +560,23 @@ body > nav {
     color: var(--text-light);
     margin-top: 12px;
     font-style: italic;
+}
+
+.article-body p img,
+.article-body > img,
+.article-body p figure,
+.article-body > figure,
+.article-body .image,
+.article-body [style*="float:left"],
+.article-body [style*="float: right"],
+.article-body [style*="float:right"],
+.article-body [align="left"],
+.article-body [align="right"] {
+    float: none !important;
+    clear: both !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: block;
 }
 
 .author-card {
@@ -619,8 +654,8 @@ body > nav {
     }
 
     .gallery-thumb {
-        width: 60px;
-        height: 60px;
+        width: 100px;
+        height: 100px;
     }
 }
 
@@ -722,6 +757,7 @@ body > nav {
             </div>
 
             <article class="article-body" id="articleBody">
+                <!-- DEBUG: Check if we have processed content -->
                 {% if processed_content %}
                     {{ processed_content|safe }}
                 {% elif blog.content %}
@@ -731,6 +767,9 @@ body > nav {
                 {% else %}
                     <p>No content available.</p>
                 {% endif %}
+                
+                <!-- DEBUG: Show image count from database -->
+                <div style="display:none;" id="debug-image-count">{{ blog.images.count }}</div>
             </article>
 
             <div class="author-card">
@@ -786,18 +825,37 @@ document.addEventListener('DOMContentLoaded', function() {
     const imageCount = document.getElementById('imageCount');
     const scrollPercent = document.getElementById('scrollPercent');
     const progressFill = document.getElementById('progressFill');
+    const debugImageCount = document.getElementById('debug-image-count');
+
+    console.log('Found images:', images.length); // Debug log
+    console.log('Database image count:', debugImageCount ? debugImageCount.textContent : 'N/A'); // Debug log
 
     if (imageCount) {
         imageCount.textContent = images.length;
     }
 
     if (!images.length) {
+        console.log('No images found in article body'); // Debug log
+        
+        // If database has images but we didn't find them, show a message
+        if (debugImageCount && parseInt(debugImageCount.textContent) > 0) {
+            console.log('Images exist in database but not rendered in HTML. Check content processing.');
+            gallery.innerHTML = `
+                <div class="empty-gallery">
+                    <i class="fas fa-camera"></i>
+                    <p>Images exist in database (${debugImageCount.textContent}) but not found in content.</p>
+                    <p style="font-size:12px;margin-top:8px;color:#999;">Make sure you use {{image1}}, {{image2}}, etc. in your blog content.</p>
+                </div>
+            `;
+        }
         return;
     }
 
     gallery.innerHTML = '';
 
     images.forEach((img, index) => {
+        console.log('Processing image:', img.src); // Debug log
+        
         const item = document.createElement('div');
         item.className = 'gallery-item';
         if (index === 0) item.classList.add('active');
@@ -807,36 +865,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const thumb = document.createElement('img');
         thumb.src = img.src;
-        thumb.alt = img.alt || `Content image ${index + 1}`;
+        thumb.alt = img.alt || `Image ${index + 1}`;
         thumb.loading = 'lazy';
         thumbWrap.appendChild(thumb);
 
-        const info = document.createElement('div');
-        info.className = 'gallery-info';
-
-        const label = document.createElement('div');
-        label.className = 'gallery-label';
-        label.innerHTML = `<i class="fas fa-camera"></i> Image ${index + 1}`;
-
-        const text = document.createElement('div');
-        text.className = 'gallery-text';
-
-        let captionText = '';
-        const figure = img.closest('figure');
-        if (figure) {
-            const figcaption = figure.querySelector('figcaption');
-            if (figcaption) {
-                captionText = figcaption.textContent.trim();
-            }
-        }
-
-        text.textContent = captionText || img.alt || 'Click to view this image';
-
-        info.appendChild(label);
-        info.appendChild(text);
-
         item.appendChild(thumbWrap);
-        item.appendChild(info);
 
         item.addEventListener('click', function() {
             document.querySelectorAll('.gallery-item').forEach(el => el.classList.remove('active'));
