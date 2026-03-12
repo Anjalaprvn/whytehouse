@@ -1,4 +1,5 @@
 from rest_framework.routers import DefaultRouter
+from django.urls import path
 from .api_views import (
     BlogViewSet,
     BlogCategoryViewSet,
@@ -15,6 +16,7 @@ from .api_views import (
     VoucherViewSet,
     InvoiceViewSet,
     FeedbackViewSet,
+    validate_package_id,
 )
 
 router = DefaultRouter()
@@ -44,4 +46,7 @@ router.register(r"employees", EmployeeViewSet, basename="employees")
 # Feedback API
 router.register(r"feedback", FeedbackViewSet, basename="feedback")
 
-urlpatterns = router.urls
+# Package ID Validation
+urlpatterns = router.urls + [
+    path('validate-package-id/<str:package_id>/', validate_package_id, name='validate-package-id'),
+]
