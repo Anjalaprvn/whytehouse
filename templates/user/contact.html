@@ -783,12 +783,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isValid) {
             // Show success message
             successMessage.classList.add('show');
+            
+            // Clear form fields
             form.reset();
             
-            // Submit the form to the server after showing message
+            // Submit the form to the server
             setTimeout(() => {
                 form.submit();
-            }, 1500);
+            }, 1000);
         }
     });
 
@@ -800,7 +802,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Phone number - only allow digits
     const phoneInput = form.querySelector('input[name="phone"]');
     phoneInput.addEventListener('input', function() {
-        const value = this.value.replace(/\D/g, '').slice(0, 10);
+        const value = this.value.replace(/\D/g, '');
         this.value = value;
     });
 });
