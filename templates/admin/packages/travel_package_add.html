@@ -59,8 +59,16 @@
         <div class="card">
             <h4>Basic Information</h4>
 
-            <label>Package Title <span class="required-star">*</span></label>
-            <input type="text" name="name" value="{{ package.name|default:'' }}" required class="form-control">
+            <div class="grid-row">
+                <div>
+                    <label>Package ID</label>
+                    <input type="text" name="package_id" value="{{ package.package_id|default:'' }}" class="form-control" placeholder="Auto-generated" readonly style="background-color: #e8e8e8; cursor: not-allowed;">
+                </div>
+                <div>
+                    <label>Package Title <span class="required-star">*</span></label>
+                    <input type="text" name="name" value="{{ package.name|default:'' }}" required class="form-control">
+                </div>
+            </div>
 
             <div class="grid-row">
                 <div>

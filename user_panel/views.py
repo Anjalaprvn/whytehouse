@@ -462,7 +462,16 @@ def domestic_packages(request):
     
     # Apply destination filter
     if destination_id:
-        packages = packages.filter(destination_id=destination_id)
+        try:
+            destination_id = int(destination_id)
+            selected_dest = Destination.objects.get(id=destination_id)
+            # Show packages assigned to this destination OR packages where location matches destination name
+            packages = packages.filter(
+                Q(destination_id=destination_id) |
+                Q(location__icontains=selected_dest.name)
+            )
+        except (ValueError, TypeError, Destination.DoesNotExist):
+            pass
     
     packages = packages.order_by('-created_at')
     
@@ -506,7 +515,16 @@ def international_packages(request):
     
     # Apply destination filter
     if destination_id:
-        packages = packages.filter(destination_id=destination_id)
+        try:
+            destination_id = int(destination_id)
+            selected_dest = Destination.objects.get(id=destination_id)
+            # Show packages assigned to this destination OR packages where location matches destination name
+            packages = packages.filter(
+                Q(destination_id=destination_id) |
+                Q(location__icontains=selected_dest.name)
+            )
+        except (ValueError, TypeError, Destination.DoesNotExist):
+            pass
     
     packages = packages.order_by('-created_at')
     

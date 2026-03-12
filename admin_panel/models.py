@@ -126,6 +126,7 @@ class TravelPackage(models.Model):
         ('International', 'International'),
     )
 
+    package_id = models.CharField(max_length=20, unique=True, blank=True, null=True)
     name = models.CharField(max_length=200)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
 
@@ -155,6 +156,19 @@ class TravelPackage(models.Model):
     story_side_image2 = models.ImageField(upload_to='package_stories/', blank=True, null=True)
 
     created_at = models.DateTimeField(default=timezone.now)
+
+    def save(self, *args, **kwargs):
+        if not self.package_id:
+            last_package = TravelPackage.objects.filter(package_id__startswith='PKG').order_by('-package_id').first()
+            if last_package and last_package.package_id:
+                try:
+                    last_num = int(last_package.package_id[3:])
+                    self.package_id = f'PKG{str(last_num + 1).zfill(3)}'
+                except (ValueError, IndexError):
+                    self.package_id = 'PKG001'
+            else:
+                self.package_id = 'PKG001'
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
