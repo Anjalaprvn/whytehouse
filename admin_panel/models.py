@@ -287,6 +287,7 @@ class Customer(models.Model):
     display_name = models.CharField(max_length=255)
     place = models.CharField(max_length=255, blank=True, null=True)
     contact_number = models.CharField(max_length=20, unique=True)
+    email = models.EmailField(blank=True, null=True)
     same_as_whatsapp = models.BooleanField(default=False)
     whatsapp_number = models.CharField(max_length=20, blank=True, null=True)
     work_number = models.CharField(max_length=20, blank=True, null=True)
