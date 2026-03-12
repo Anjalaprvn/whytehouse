@@ -247,7 +247,7 @@ body{background:#f5f7fb;color:#111}
 
         <div class="field">
           <div class="label">Voucher Number <span class="req">*</span></div>
-          <input class="input" type="text" name="voucher_no" placeholder="e.g., VCH001" value="{{ form.voucher_no.value|default:'' }}" required>
+          <input class="input" type="text" name="voucher_no" id="voucher_no" placeholder="Auto-generated" value="{{ next_voucher_id|default:'' }}" readonly style="background-color: #f3f4f6; cursor: not-allowed;">
         </div>
 
         <div class="field">
@@ -590,5 +590,19 @@ function calculateProfit() {
 if (packagePrice) packagePrice.addEventListener('input', calculateTotal);
 if (resortPrice) resortPrice.addEventListener('input', calculateTotal);
 if (received) received.addEventListener('input', calculatePending);
+
+// Auto-generate Voucher ID on page load
+window.addEventListener('DOMContentLoaded', function() {
+  fetch('/api/get-next-voucher-id/')
+    .then(response => response.json())
+    .then(data => {
+      if (data.next_id) {
+        document.getElementById('voucher_no').value = data.next_id;
+      }
+    })
+    .catch(error => {
+      console.error('Error generating voucher ID:', error);
+    });
+});
 </script>
 {% endblock %}

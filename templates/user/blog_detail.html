@@ -30,7 +30,7 @@ body {
     overflow-x: hidden;
 }
 
-body > nav{
+body > nav {
     position: absolute !important;
     top: 20px;
     left: 0;
@@ -41,7 +41,7 @@ body > nav{
 }
 
 /* ===== HERO SECTION ===== */
-.detail-hero{
+.detail-hero {
     height: 80vh;
     min-height: 600px;
     background:
@@ -68,7 +68,7 @@ body > nav{
     pointer-events: none;
 }
 
-.hero-content{
+.hero-content {
     max-width: 900px;
     position: relative;
     z-index: 2;
@@ -86,7 +86,7 @@ body > nav{
     }
 }
 
-.featured-tag{
+.featured-tag {
     background: var(--brand-gold);
     padding: 8px 20px;
     border-radius: 30px;
@@ -100,7 +100,7 @@ body > nav{
     backdrop-filter: blur(5px);
 }
 
-.hero-content h1{
+.hero-content h1 {
     font-size: 58px;
     font-weight: 800;
     margin-bottom: 20px;
@@ -109,7 +109,7 @@ body > nav{
     max-width: 800px;
 }
 
-.author-meta{
+.author-meta {
     display: flex;
     align-items: center;
     gap: 15px;
@@ -124,7 +124,7 @@ body > nav{
     border: 1px solid rgba(255,255,255,0.2);
 }
 
-.author-img{
+.author-img {
     width: 45px;
     height: 45px;
     border-radius: 50%;
@@ -133,7 +133,7 @@ body > nav{
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
-/* ===== MAIN LAYOUT WITH FIXED SIDEBAR ===== */
+/* ===== PAGE LAYOUT ===== */
 .page-wrapper {
     position: relative;
     min-height: 100vh;
@@ -143,40 +143,40 @@ body > nav{
 .main-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 60px 340px 60px 80px;
+    padding: 60px 80px;
     background: #fff;
-    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 50px;
+    align-items: start;
 }
 
-/* ===== TRULY FIXED SIDEBAR - NEVER MOVES ===== */
+.article-wrapper {
+    min-width: 0;
+}
+
+/* ===== RIGHT SIDEBAR FIXED IN ITS COLUMN ===== */
 .image-sidebar {
-    position: fixed;
-    top: 120px;
-    right: 40px;
-    width: 280px;
-    height: calc(100vh - 180px);
+    position: static !important;
+    top: auto !important;
+    align-self: start;
+    width: 100%;
+    height: 700px;
     background: linear-gradient(145deg, #ffffff 0%, #fcfcfc 100%);
     border-radius: 28px;
     padding: 25px 0 25px 25px;
-    z-index: 999;
+    z-index: 20;
     display: flex;
     flex-direction: column;
-    box-shadow: 
+    box-shadow:
         -20px 20px 40px rgba(0, 0, 0, 0.08),
         0 0 0 1px rgba(212, 163, 115, 0.15);
     border: 1px solid rgba(255,255,255,0.8);
     backdrop-filter: blur(10px);
-    transition: box-shadow 0.3s ease;
+    overflow: hidden;
+    transform: none !important;
 }
 
-/* Ensure it never moves */
-.image-sidebar {
-    transform: translateZ(0);
-    will-change: transform;
-    backface-visibility: hidden;
-}
-
-/* Decorative elements that don't affect positioning */
 .image-sidebar::before {
     content: '';
     position: absolute;
@@ -198,7 +198,6 @@ body > nav{
     background: linear-gradient(90deg, transparent, var(--brand-gold-light), transparent);
 }
 
-/* Sidebar header - fixed part */
 .sidebar-header {
     padding-right: 20px;
     margin-bottom: 20px;
@@ -237,39 +236,22 @@ body > nav{
     gap: 5px;
 }
 
-/* Gallery container - scrollable inside fixed sidebar */
 .image-gallery {
     display: flex;
     flex-direction: column;
     gap: 12px;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-right: 15px;
+    padding-right: 10px;
     flex: 1;
-    scrollbar-width: thin;
-    scrollbar-color: var(--brand-gold) var(--brand-gold-soft);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
-/* Custom scrollbar */
 .image-gallery::-webkit-scrollbar {
-    width: 4px;
+    display: none;
 }
 
-.image-gallery::-webkit-scrollbar-track {
-    background: var(--brand-gold-soft);
-    border-radius: 10px;
-}
-
-.image-gallery::-webkit-scrollbar-thumb {
-    background: var(--brand-gold);
-    border-radius: 10px;
-}
-
-.image-gallery::-webkit-scrollbar-thumb:hover {
-    background: #b88a5f;
-}
-
-/* Gallery items - fixed width, no movement */
 .gallery-item {
     display: flex;
     gap: 15px;
@@ -284,7 +266,6 @@ body > nav{
     box-sizing: border-box;
 }
 
-/* Hover effects that don't change position */
 .gallery-item:hover {
     background: var(--brand-gold-soft);
     border-color: var(--brand-gold-light);
@@ -297,7 +278,6 @@ body > nav{
     box-shadow: 0 8px 20px -12px var(--brand-gold);
 }
 
-/* Image thumbnail - fixed size */
 .gallery-thumb {
     width: 70px;
     height: 70px;
@@ -326,7 +306,6 @@ body > nav{
     transform: scale(1.1);
 }
 
-/* Gallery info - fixed width text */
 .gallery-info {
     min-width: 0;
     flex: 1;
@@ -359,7 +338,6 @@ body > nav{
     word-break: break-word;
 }
 
-/* Empty state */
 .empty-gallery {
     color: #aaa;
     font-size: 14px;
@@ -370,7 +348,7 @@ body > nav{
     background: var(--brand-gold-soft);
     border-radius: 18px;
     border: 2px dashed var(--brand-gold-light);
-    margin-right: 15px;
+    margin-right: 10px;
 }
 
 .empty-gallery i {
@@ -380,7 +358,6 @@ body > nav{
     display: block;
 }
 
-/* Progress indicator - fixed at bottom */
 .sidebar-footer {
     margin-top: 15px;
     padding-right: 20px;
@@ -413,7 +390,7 @@ body > nav{
 }
 
 /* ===== BACK BUTTON ===== */
-.back-btn{
+.back-btn {
     display: inline-flex;
     align-items: center;
     gap: 12px;
@@ -434,14 +411,14 @@ body > nav{
     color: var(--brand-gold);
 }
 
-.back-btn:hover{
+.back-btn:hover {
     transform: translateX(-5px);
     border-color: var(--brand-gold);
     box-shadow: 0 15px 30px -15px var(--brand-gold);
 }
 
 /* ===== ARTICLE CONTENT ===== */
-.article-header{
+.article-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -452,7 +429,7 @@ body > nav{
     border-bottom: 2px solid var(--brand-gold-soft);
 }
 
-.article-header h2{
+.article-header h2 {
     font-size: 32px;
     color: var(--brand-black);
     flex: 1;
@@ -474,13 +451,13 @@ body > nav{
     border-radius: 4px;
 }
 
-.content-tags{
+.content-tags {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
 }
 
-.content-tag{
+.content-tag {
     background: var(--brand-gold-soft);
     color: var(--brand-gold);
     padding: 8px 18px;
@@ -498,7 +475,7 @@ body > nav{
     box-shadow: 0 8px 20px -10px var(--brand-gold);
 }
 
-.article-body{
+.article-body {
     font-size: 17px;
     line-height: 1.8;
     color: var(--text-gray);
@@ -506,7 +483,7 @@ body > nav{
     max-width: 100%;
 }
 
-.article-body p{
+.article-body p {
     margin-bottom: 25px;
 }
 
@@ -567,7 +544,7 @@ body > nav{
     font-style: italic;
 }
 
-.author-card{
+.author-card {
     background: linear-gradient(135deg, var(--brand-gold-soft) 0%, var(--white) 100%);
     padding: 40px;
     border-radius: 30px;
@@ -591,7 +568,7 @@ body > nav{
     background: linear-gradient(90deg, var(--brand-gold), var(--brand-gold-light));
 }
 
-.author-card-img{
+.author-card-img {
     width: 110px;
     height: 110px;
     border-radius: 50%;
@@ -605,7 +582,7 @@ body > nav{
     transform: scale(1.05) rotate(5deg);
 }
 
-.author-info h4{
+.author-info h4 {
     font-size: 24px;
     margin-bottom: 10px;
     color: var(--brand-black);
@@ -615,7 +592,7 @@ body > nav{
     color: var(--brand-gold);
 }
 
-.author-info p{
+.author-info p {
     font-size: 16px;
     color: var(--text-light);
     line-height: 1.6;
@@ -624,22 +601,23 @@ body > nav{
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1300px) {
-    .image-sidebar {
-        width: 260px;
-        right: 20px;
-    }
-    
     .main-container {
-        padding: 60px 300px 60px 40px;
+        padding: 60px 40px;
+        grid-template-columns: minmax(0, 1fr) 260px;
+        gap: 35px;
     }
 }
 
 @media (max-width: 1100px) {
-    .image-sidebar {
-        width: 240px;
-        padding: 20px 0 20px 20px;
+    .main-container {
+        grid-template-columns: minmax(0, 1fr) 240px;
     }
-    
+
+    .image-sidebar {
+        padding: 20px 0 20px 20px;
+        height: 650px;
+    }
+
     .gallery-thumb {
         width: 60px;
         height: 60px;
@@ -647,27 +625,27 @@ body > nav{
 }
 
 @media (max-width: 968px) {
-    /* Sidebar becomes normal on mobile */
-    .image-sidebar {
-        position: relative;
-        top: 0;
-        right: 0;
-        width: 100%;
-        height: auto;
-        margin: 40px 0 0;
-        box-shadow: var(--shadow-md);
-    }
-    
     .main-container {
+        display: block;
         padding: 40px 25px;
     }
-    
+
+    .image-sidebar {
+        position: relative !important;
+        top: 0 !important;
+        width: 100%;
+        height: auto;
+        margin-top: 40px;
+        box-shadow: var(--shadow-md);
+    }
+
     .image-gallery {
         flex-direction: row;
         overflow-x: auto;
+        overflow-y: hidden;
         padding-bottom: 10px;
     }
-    
+
     .gallery-item {
         min-width: 250px;
         flex-shrink: 0;
@@ -680,24 +658,23 @@ body > nav{
         min-height: 400px;
         padding: 0 20px 40px;
     }
-    
+
     .hero-content h1 {
         font-size: 36px;
     }
-    
+
     .author-card {
         padding: 25px;
         flex-direction: column;
         text-align: center;
     }
-    
+
     .article-header h2 {
         font-size: 26px;
     }
 }
 </style>
 
-<!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <header class="detail-hero">
@@ -717,7 +694,7 @@ body > nav{
                 {% if blog.author %}{{ blog.author }} • {% endif %}
                 <i class="far fa-calendar-alt"></i>
                 {{ blog.publish_date|date:"M d, Y" }}
-                {% if blog.reading_time %} 
+                {% if blog.reading_time %}
                     <i class="far fa-clock"></i> {{ blog.reading_time }} min read
                 {% endif %}
             </span>
@@ -772,35 +749,34 @@ body > nav{
                 </div>
             </div>
         </div>
-    </main>
 
-    <!-- TRULY FIXED SIDEBAR - NEVER MOVES -->
-    <aside class="image-sidebar" id="fixedSidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-title">
-                <i class="fas fa-images"></i>
-                Article Gallery
-                <span><i class="far fa-image"></i> <span id="imageCount">0</span></span>
+        <aside class="image-sidebar" id="fixedSidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <i class="fas fa-images"></i>
+                    Article Gallery
+                    <span><i class="far fa-image"></i> <span id="imageCount">0</span></span>
+                </div>
             </div>
-        </div>
-        
-        <div class="image-gallery" id="imageGallery">
-            <div class="empty-gallery">
-                <i class="fas fa-camera"></i>
-                <p>No images in this article</p>
+
+            <div class="image-gallery" id="imageGallery">
+                <div class="empty-gallery">
+                    <i class="fas fa-camera"></i>
+                    <p>No images in this article</p>
+                </div>
             </div>
-        </div>
-        
-        <div class="sidebar-footer">
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
+
+            <div class="sidebar-footer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text">
+                    <span>Scroll progress</span>
+                    <span id="scrollPercent">0%</span>
+                </div>
             </div>
-            <div class="progress-text">
-                <span>Scroll progress</span>
-                <span id="scrollPercent">0%</span>
-            </div>
-        </div>
-    </aside>
+        </aside>
+    </main>
 </div>
 
 <script>
@@ -810,8 +786,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const imageCount = document.getElementById('imageCount');
     const scrollPercent = document.getElementById('scrollPercent');
     const progressFill = document.getElementById('progressFill');
-    
-    // Update image count
+
     if (imageCount) {
         imageCount.textContent = images.length;
     }
@@ -820,7 +795,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // Clear and populate gallery
     gallery.innerHTML = '';
 
     images.forEach((img, index) => {
@@ -847,7 +821,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const text = document.createElement('div');
         text.className = 'gallery-text';
 
-        // Get caption
         let captionText = '';
         const figure = img.closest('figure');
         if (figure) {
@@ -865,7 +838,6 @@ document.addEventListener('DOMContentLoaded', function() {
         item.appendChild(thumbWrap);
         item.appendChild(info);
 
-        // Click handler - scroll to image
         item.addEventListener('click', function() {
             document.querySelectorAll('.gallery-item').forEach(el => el.classList.remove('active'));
             this.classList.add('active');
@@ -874,8 +846,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 behavior: 'smooth',
                 block: 'center'
             });
-            
-            // Highlight effect
+
             img.style.transition = 'box-shadow 0.3s ease';
             img.style.boxShadow = '0 0 0 4px var(--brand-gold)';
             setTimeout(() => {
@@ -886,7 +857,6 @@ document.addEventListener('DOMContentLoaded', function() {
         gallery.appendChild(item);
     });
 
-    // Intersection Observer for active states
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -906,39 +876,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
     images.forEach(img => observer.observe(img));
 
-    // Scroll progress for sidebar
     function updateScrollProgress() {
         const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
         const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const scrolled = (winScroll / height) * 100;
-        
+        const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
+
         if (progressFill) {
             progressFill.style.width = scrolled + '%';
         }
-        
+
         if (scrollPercent) {
             scrollPercent.textContent = Math.round(scrolled) + '%';
         }
     }
-    
+
     window.addEventListener('scroll', updateScrollProgress);
     updateScrollProgress();
 
-    // Update active item based on scroll position
     function updateActiveFromScroll() {
         const galleryItems = document.querySelectorAll('.gallery-item');
         let currentActiveIndex = -1;
-        
+
         images.forEach((img, index) => {
             const rect = img.getBoundingClientRect();
             const windowHeight = window.innerHeight;
-            
-            // Check if image is in viewport
+
             if (rect.top <= windowHeight / 2 && rect.bottom >= windowHeight / 2) {
                 currentActiveIndex = index;
             }
         });
-        
+
         if (currentActiveIndex !== -1) {
             galleryItems.forEach((item, index) => {
                 if (index === currentActiveIndex) {
@@ -949,7 +916,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
-    
+
     window.addEventListener('scroll', updateActiveFromScroll);
     updateActiveFromScroll();
 });

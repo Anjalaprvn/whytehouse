@@ -781,3 +781,45 @@ def validate_package_id(request, package_id):
         'package_id': package_id,
         'exists': exists
     })
+
+
+# ==================== INVOICE ID GENERATION ENDPOINT ====================
+@api_view(['GET'])
+def get_next_invoice_id(request):
+    """
+    Get the next available invoice ID.
+    URL: /api/get-next-invoice-id/
+    """
+    last_invoice = Invoice.objects.filter(invoice_no__startswith='INV').order_by('-invoice_no').first()
+    
+    if last_invoice and last_invoice.invoice_no:
+        try:
+            last_num = int(last_invoice.invoice_no[3:])
+            next_id = f'INV{str(last_num + 1).zfill(3)}'
+        except (ValueError, IndexError):
+            next_id = 'INV001'
+    else:
+        next_id = 'INV001'
+    
+    return Response({'next_id': next_id})
+
+
+# ==================== VOUCHER ID GENERATION ENDPOINT ====================
+@api_view(['GET'])
+def get_next_voucher_id(request):
+    """
+    Get the next available voucher ID.
+    URL: /api/get-next-voucher-id/
+    """
+    last_voucher = Voucher.objects.filter(voucher_no__startswith='VCH').order_by('-voucher_no').first()
+    
+    if last_voucher and last_voucher.voucher_no:
+        try:
+            last_num = int(last_voucher.voucher_no[3:])
+            next_id = f'VCH{str(last_num + 1).zfill(3)}'
+        except (ValueError, IndexError):
+            next_id = 'VCH001'
+    else:
+        next_id = 'VCH001'
+    
+    return Response({'next_id': next_id})

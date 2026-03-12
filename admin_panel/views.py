@@ -296,7 +296,7 @@ def edit_lead(request, id):
         lead.employee_id = employee_id if employee_id else None
         lead.save()
         messages.success(request, "Lead updated successfully!")
-        return redirect('admin_panel:leads')
+        return redirect('admin_panel:view_lead', lead_id=id)
     
     all_employees = Employee.objects.filter(status='Active').order_by('name')
     assigned_employee_ids = set(Lead.objects.exclude(id=id).filter(employee__isnull=False).values_list('employee_id', flat=True))
@@ -1546,6 +1546,18 @@ def add_voucher(request):
     employees = Employee.objects.filter(status='Active')
     meals = Meal.objects.all()
     
+    # Get next voucher ID
+    from .models import Voucher
+    last_voucher = Voucher.objects.filter(voucher_no__startswith='VCH').order_by('-voucher_no').first()
+    if last_voucher and last_voucher.voucher_no:
+        try:
+            last_num = int(last_voucher.voucher_no[3:])
+            next_voucher_id = f'VCH{str(last_num + 1).zfill(3)}'
+        except (ValueError, IndexError):
+            next_voucher_id = 'VCH001'
+    else:
+        next_voucher_id = 'VCH001'
+    
     if request.method == "POST":
         try:
             cus_id = request.POST.get("customer_id")
@@ -1593,7 +1605,8 @@ def add_voucher(request):
             return redirect("sales:voucher_list")
         except Exception as e:
             messages.error(request, f"Error adding voucher: {str(e)}")
-    return render(request, "admin/sales/vouchers/add_vouchers.html", {"customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees, "meals": meals})
+            return render(request, "admin/sales/vouchers/add_vouchers.html", {"customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees, "meals": meals, "next_voucher_id": next_voucher_id})
+    return render(request, "admin/sales/vouchers/add_vouchers.html", {"customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees, "meals": meals, "next_voucher_id": next_voucher_id})
 
 def view_voucher(request, voucher_id):
     try:
@@ -1668,6 +1681,18 @@ def add_invoice(request):
     employees = Employee.objects.filter(status='Active')
     meals = Meal.objects.all()
     
+    # Get next invoice ID
+    from .models import Invoice
+    last_invoice = Invoice.objects.filter(invoice_no__startswith='INV').order_by('-invoice_no').first()
+    if last_invoice and last_invoice.invoice_no:
+        try:
+            last_num = int(last_invoice.invoice_no[3:])
+            next_invoice_id = f'INV{str(last_num + 1).zfill(3)}'
+        except (ValueError, IndexError):
+            next_invoice_id = 'INV001'
+    else:
+        next_invoice_id = 'INV001'
+    
     if request.method == "POST":
         try:
             customer_id = request.POST.get("customer_id")
@@ -1737,8 +1762,8 @@ def add_invoice(request):
             return redirect("sales:invoice_list")
         except Exception as e:
             messages.error(request, f"Error adding invoice: {str(e)}")
-            return render(request, "admin/sales/invoice/add_invoice.html", {"customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees, "meals": meals})
-    return render(request, "admin/sales/invoice/add_invoice.html", {"customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees, "meals": meals})
+            return render(request, "admin/sales/invoice/add_invoice.html", {"customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees, "meals": meals, "next_invoice_id": next_invoice_id})
+    return render(request, "admin/sales/invoice/add_invoice.html", {"customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees, "meals": meals, "next_invoice_id": next_invoice_id})
 
 def view_invoice(request, invoice_id):
     try:

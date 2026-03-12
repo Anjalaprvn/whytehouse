@@ -17,6 +17,8 @@ from .api_views import (
     InvoiceViewSet,
     FeedbackViewSet,
     validate_package_id,
+    get_next_invoice_id,
+    get_next_voucher_id,
 )
 
 router = DefaultRouter()
@@ -49,4 +51,6 @@ router.register(r"feedback", FeedbackViewSet, basename="feedback")
 # Package ID Validation
 urlpatterns = router.urls + [
     path('validate-package-id/<str:package_id>/', validate_package_id, name='validate-package-id'),
+    path('get-next-invoice-id/', get_next_invoice_id, name='get-next-invoice-id'),
+    path('get-next-voucher-id/', get_next_voucher_id, name='get-next-voucher-id'),
 ]
