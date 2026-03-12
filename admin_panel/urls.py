@@ -38,6 +38,7 @@ urlpatterns = [
     path('customer-inquiries/', views.customer_inquiries, name='customer_inquiries'),
     path('customer-inquiries/<int:inquiry_id>/', views.view_inquiry, name='view_inquiry'),
     path('customer-inquiries/<int:inquiry_id>/update-status/', views.update_inquiry_status, name='update_inquiry_status'),
+    path('customer-inquiries/<int:inquiry_id>/delete/', views.delete_inquiry, name='delete_inquiry'),
 ]
 #employee---------------
 employee_patterns = [

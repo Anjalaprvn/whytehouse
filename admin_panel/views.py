@@ -286,6 +286,9 @@ def edit_lead(request, id):
         lead.full_name = request.POST.get('full_name')
         lead.mobile_number = request.POST.get('mobile_number')
         lead.place = request.POST.get('place')
+        lead.email = request.POST.get('email')
+        lead.message = request.POST.get('message')
+        lead.package = request.POST.get('package')
         lead.source = request.POST.get('source')
         lead.enquiry_type = request.POST.get('enquiry_type', 'General')
         lead.status = request.POST.get('status', 'New')
@@ -293,7 +296,7 @@ def edit_lead(request, id):
         lead.employee_id = employee_id if employee_id else None
         lead.save()
         messages.success(request, "Lead updated successfully!")
-        return redirect('admin_panel:leads')
+        return redirect('admin_panel:view_lead', lead_id=id)
     
     all_employees = Employee.objects.filter(status='Active').order_by('name')
     assigned_employee_ids = set(Lead.objects.exclude(id=id).filter(employee__isnull=False).values_list('employee_id', flat=True))
@@ -787,6 +790,15 @@ def update_inquiry_status(request, inquiry_id):
             messages.success(request, f'Inquiry status updated to {new_status}')
             return redirect('admin_panel:view_inquiry', inquiry_id=inquiry_id)
     
+    return redirect('admin_panel:customer_inquiries')
+
+def delete_inquiry(request, inquiry_id):
+    if request.method != 'POST':
+        return redirect('admin_panel:customer_inquiries')
+    
+    inquiry = get_object_or_404(Inquiry, id=inquiry_id)
+    inquiry.delete()
+    messages.success(request, 'Inquiry deleted successfully!')
     return redirect('admin_panel:customer_inquiries')
 
 def blog_list(request):

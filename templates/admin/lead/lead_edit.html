@@ -138,7 +138,7 @@
 
 <div class="lead-form-container">
     <div class="page-header">
-        <a href="{% url 'admin_panel:leads' %}" class="back-btn">
+        <a href="{% url 'admin_panel:view_lead' lead.id %}" class="back-btn">
             <i class="fas fa-arrow-left"></i>
         </a>
         <div class="header-text">
@@ -198,14 +198,24 @@
                     </select>
                 </div>
 
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" value="{{ lead.email|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Package</label>
+                    <input type="text" name="package" value="{{ lead.package|default:'' }}" placeholder="e.g., 7 Days Kerala Tour">
+                </div>
+
                 <div class="form-group full-width">
-                    <label>Remarks</label>
-                    <textarea name="remarks">{{ lead.remarks }}</textarea>
+                    <label>Message</label>
+                    <textarea name="message">{{ lead.message|default:'' }}</textarea>
                 </div>
             </div>
 
             <div class="form-actions">
-                <a href="{% url 'admin_panel:leads' %}" class="cancel-btn">Cancel</a>
+                <a href="{% url 'admin_panel:view_lead' lead.id %}" class="cancel-btn">Cancel</a>
                 <button type="submit" class="submit-btn">Update</button>
             </div>
         </form>
