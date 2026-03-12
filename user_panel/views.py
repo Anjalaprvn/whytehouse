@@ -371,12 +371,18 @@ def contact(request):
                 'first_name': first_name,
                 'last_name': last_name,
                 'display_name': name,
+                'email': email,
                 'whatsapp_number': phone,
                 'same_as_whatsapp': True,
                 'customer_type': 'Individual',
                 'place': ''
             }
         )
+        
+        # Update email if customer already exists
+        if not created and email and not customer.email:
+            customer.email = email
+            customer.save()
 
         # Find existing lead by phone (or create new)
         lead = Lead.objects.filter(mobile_number=phone).first()
@@ -387,11 +393,13 @@ def contact(request):
                 lead.full_name = name
             lead.source = 'Website'
             lead.enquiry_type = subject
+            lead.email = email
             lead.save()
         else:
             lead = Lead.objects.create(
                 full_name=name,
                 mobile_number=phone,
+                email=email,
                 place=None,
                 source='Website',
                 enquiry_type=subject,
@@ -399,17 +407,19 @@ def contact(request):
             )
 
         # Create inquiry with separate fields
-        Inquiry.objects.create(
-            lead=lead,
-            name=name,
-            email=email,
-            phone=phone,
-            package=package or 'General Inquiry',
-            message=message,
-            status='New'
-        )
-
-        messages.success(request, 'Thank you! Your inquiry has been submitted successfully.')
+        try:
+            inquiry = Inquiry.objects.create(
+                lead=lead,
+                name=name,
+                email=email,
+                phone=phone,
+                package=package or 'General Inquiry',
+                message=message,
+                status='New'
+            )
+        except Exception as e:
+            pass
+        
         return redirect('user_panel:contact')
 
     return render(request, 'user/contact.html')

@@ -296,7 +296,7 @@ def edit_lead(request, id):
         lead.employee_id = employee_id if employee_id else None
         lead.save()
         messages.success(request, "Lead updated successfully!")
-        return redirect('admin_panel:view_lead', lead_id=id)
+        return redirect('admin_panel:leads')
     
     all_employees = Employee.objects.filter(status='Active').order_by('name')
     assigned_employee_ids = set(Lead.objects.exclude(id=id).filter(employee__isnull=False).values_list('employee_id', flat=True))
