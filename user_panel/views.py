@@ -665,10 +665,121 @@ def package_detail(request, slug):
         'today': datetime.now()
     })
 
+def hospitality_enquiry(request):
+    if request.method == 'POST':
+        import re
+        
+        name = (request.POST.get('name') or '').strip()
+        email = (request.POST.get('email') or '').strip()
+        phone = (request.POST.get('phone') or '').strip()
+        property_type = (request.POST.get('property_type') or '').strip()
+        checkin_date = (request.POST.get('checkin_date') or '').strip()
+        checkout_date = (request.POST.get('checkout_date') or '').strip()
+        message = (request.POST.get('message') or '').strip()
+
+        # Validation
+        errors = []
+        
+        # Name validation
+        if not name or len(name) < 2:
+            errors.append('Name is required and must be at least 2 characters.')
+        
+        # Email validation
+        email_pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+        if not email or not re.match(email_pattern, email):
+            errors.append('Please enter a valid email address.')
+        
+        # Phone validation
+        phone_digits = re.sub(r'\D', '', phone)
+        
+        if not phone:
+            errors.append('Phone number is required.')
+        elif len(phone_digits) < 10:
+            errors.append('Phone number must be at least 10 digits.')
+        
+        # Message validation
+        if not message or len(message) < 10:
+            errors.append('Message is required and must be at least 10 characters.')
+        
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return redirect('user_panel:hospitality_enquiry')
+
+        # Create Customer record
+        from admin_panel.models import Customer
+        
+        # Split name into first and last
+        name_parts = name.split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+        
+        # Check if customer already exists with this phone number
+        customer, created = Customer.objects.get_or_create(
+            contact_number=phone,
+            defaults={
+                'first_name': first_name,
+                'last_name': last_name,
+                'display_name': name,
+                'email': email,
+                'whatsapp_number': phone,
+                'same_as_whatsapp': True,
+                'customer_type': 'Individual',
+                'place': ''
+            }
+        )
+        
+        # Update email if customer already exists
+        if not created and email and not customer.email:
+            customer.email = email
+            customer.save()
+
+        # Find existing lead by phone (or create new)
+        lead = Lead.objects.filter(mobile_number=phone).first()
+
+        if lead:
+            # Update basic info if needed
+            if lead.full_name != name:
+                lead.full_name = name
+            lead.source = 'Website'
+            lead.enquiry_type = 'Property Management'
+            lead.email = email
+            lead.save()
+        else:
+            lead = Lead.objects.create(
+                full_name=name,
+                mobile_number=phone,
+                email=email,
+                place=None,
+                source='Website',
+                enquiry_type='Property Management',
+                remarks=''
+            )
+
+        # Create inquiry with separate fields
+        try:
+            inquiry = Inquiry.objects.create(
+                lead=lead,
+                name=name,
+                email=email,
+                phone=phone,
+                package=property_type or 'Hospitality Enquiry',
+                message=message,
+                status='New'
+            )
+        except Exception as e:
+            pass
+        
+        return redirect('user_panel:hospitality_enquiry')
+
+    return render(request, 'user/hospitality_enquiry.html')
+
 def hospitality(request):
+    """
+    Display all hospitality properties
+    """
     properties = Property.objects.filter(is_active=True)
-    testimonials = Feedback.objects.filter(feedback_type='Property Management', featured=True).prefetch_related('images')
-    return render(request, 'user/hospitality.html', {'properties': properties, 'testimonials': testimonials})
+    return render(request, 'user/hospitality.html', {'properties': properties})
 
 def hospitality_detail(request, property_id):
     """
@@ -684,6 +795,107 @@ def hospitality_detail(request, property_id):
         'property': property,
         'related_properties': related_properties
     })
+
+def property_enquiry(request, property_id):
+    """
+    Display property enquiry form and handle form submission
+    """
+    property = get_object_or_404(Property, id=property_id)
+    
+    if request.method == 'POST':
+        import re
+        from admin_panel.models import Customer
+        
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        checkin_date = request.POST.get('checkin_date', '').strip()
+        checkout_date = request.POST.get('checkout_date', '').strip()
+        guests = request.POST.get('guests', '1').strip()
+        message = request.POST.get('message', '').strip()
+        
+        errors = []
+        
+        if not name or len(name) < 2:
+            errors.append('Name is required and must be at least 2 characters.')
+        
+        email_pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+        if not email or not re.match(email_pattern, email):
+            errors.append('Please enter a valid email address.')
+        
+        phone_digits = re.sub(r'\D', '', phone)
+        if not phone or len(phone_digits) < 10:
+            errors.append('Phone number must be at least 10 digits.')
+        
+        if not message or len(message) < 10:
+            errors.append('Message is required and must be at least 10 characters.')
+        
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return render(request, 'user/property_enquiry.html', {'property': property})
+        
+        name_parts = name.split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+        
+        customer, created = Customer.objects.get_or_create(
+            contact_number=phone,
+            defaults={
+                'first_name': first_name,
+                'last_name': last_name,
+                'display_name': name,
+                'email': email,
+                'whatsapp_number': phone,
+                'same_as_whatsapp': True,
+                'customer_type': 'Individual',
+                'place': property.location
+            }
+        )
+        
+        if not created and email and not customer.email:
+            customer.email = email
+            customer.save()
+        
+        lead = Lead.objects.filter(mobile_number=phone).first()
+        
+        if lead:
+            if lead.full_name != name:
+                lead.full_name = name
+            lead.source = 'Website'
+            lead.enquiry_type = 'Hospitality'
+            lead.email = email
+            lead.property_name = property.name
+            lead.save()
+        else:
+            lead = Lead.objects.create(
+                full_name=name,
+                mobile_number=phone,
+                email=email,
+                place=property.location,
+                source='Website',
+                enquiry_type='Hospitality',
+                property_name=property.name,
+                remarks=f'Property: {property.name}'
+            )
+        
+        try:
+            inquiry = Inquiry.objects.create(
+                lead=lead,
+                name=name,
+                email=email,
+                phone=phone,
+                package=f'Property: {property.name}',
+                message=message,
+                status='New'
+            )
+        except Exception:
+            pass
+        
+        messages.success(request, 'Thank you! Your inquiry has been submitted. Our team will contact you soon.')
+        return render(request, 'user/property_enquiry.html', {'property': property, 'success': True})
+    
+    return render(request, 'user/property_enquiry.html', {'property': property})
 
 def feedback_form_submit(request):
     """
