@@ -652,8 +652,10 @@ def package_detail(request, slug):
         Lead.objects.create(
             full_name=name,
             mobile_number=phone,
+            email=email,
             source='Website',
             enquiry_type=package.category,  # Use package category (Domestic/International)
+            package_name=package.name,
             remarks=f'Package: {package.name} | Email: {email} | Guests: {guests} | Start Date: {start_date}'
         )
         
@@ -809,9 +811,6 @@ def property_enquiry(request, property_id):
         name = request.POST.get('name', '').strip()
         email = request.POST.get('email', '').strip()
         phone = request.POST.get('phone', '').strip()
-        checkin_date = request.POST.get('checkin_date', '').strip()
-        checkout_date = request.POST.get('checkout_date', '').strip()
-        guests = request.POST.get('guests', '1').strip()
         message = request.POST.get('message', '').strip()
         
         errors = []
@@ -866,6 +865,7 @@ def property_enquiry(request, property_id):
             lead.enquiry_type = 'Hospitality'
             lead.email = email
             lead.property_name = property.name
+            lead.message = message
             lead.save()
         else:
             lead = Lead.objects.create(
@@ -876,6 +876,7 @@ def property_enquiry(request, property_id):
                 source='Website',
                 enquiry_type='Hospitality',
                 property_name=property.name,
+                message=message,
                 remarks=f'Property: {property.name}'
             )
         

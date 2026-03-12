@@ -128,6 +128,8 @@ tbody tr:last-child td{border-bottom:none}
               {% else %}
                 <span style="font-size:13px;color:#999;">-</span>
               {% endif %}
+            {% elif lead.package_name %}
+              <span style="font-size:13px;color:#666;">{{ lead.package_name }}</span>
             {% else %}
               <span style="font-size:13px;color:#999;">-</span>
             {% endif %}

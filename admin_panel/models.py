@@ -50,6 +50,7 @@ class Lead(models.Model):
     email = models.EmailField(blank=True, null=True)
     message = models.TextField(blank=True, null=True)
     package = models.CharField(max_length=200, blank=True, null=True)
+    package_name = models.CharField(max_length=200, blank=True, null=True)
     property_name = models.CharField(max_length=200, blank=True, null=True)
     source = models.CharField(max_length=50, choices=SOURCE_CHOICES, default='Manual')
     enquiry_type = models.CharField(max_length=50, choices=ENQUIRY_TYPE_CHOICES, default='General')

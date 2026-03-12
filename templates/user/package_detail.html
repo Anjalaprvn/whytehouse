@@ -448,7 +448,8 @@
             
             function showError(input, message) {
                 // Remove existing error
-                const existingError = input.parentElement.querySelector('.error-msg');
+                const formGroup = input.closest('.form-group');
+                const existingError = formGroup.querySelector('.error-msg');
                 if (existingError) existingError.remove();
                 
                 // Add error message
@@ -458,14 +459,15 @@
                 errorDiv.style.fontSize = '12px';
                 errorDiv.style.marginTop = '5px';
                 errorDiv.textContent = message;
-                input.parentElement.appendChild(errorDiv);
-                input.style.borderColor = '#dc2626';
+                formGroup.appendChild(errorDiv);
+                input.parentElement.style.borderColor = '#dc2626';
             }
             
             function clearError(input) {
-                const existingError = input.parentElement.querySelector('.error-msg');
+                const formGroup = input.closest('.form-group');
+                const existingError = formGroup.querySelector('.error-msg');
                 if (existingError) existingError.remove();
-                input.style.borderColor = '#F0F0F0';
+                input.parentElement.style.borderColor = '#F0F0F0';
             }
             
             // Real-time validation for name

@@ -98,6 +98,16 @@
             </div>
 
             <div class="info-row">
+                <div class="info-label">Package Name</div>
+                <div class="info-value">{{ lead.package_name|default:"Not specified" }}</div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">Property Name</div>
+                <div class="info-value">{{ lead.property_name|default:"Not specified" }}</div>
+            </div>
+
+            <div class="info-row">
                 <div class="info-label">Created At</div>
                 <div class="info-value">{{ lead.created_at|date:"d M Y, h:i A" }}</div>
             </div>

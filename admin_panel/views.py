@@ -289,8 +289,6 @@ def edit_lead(request, id):
         lead.mobile_number = request.POST.get('mobile_number')
         lead.place = request.POST.get('place')
         lead.email = request.POST.get('email')
-        lead.message = request.POST.get('message')
-        lead.package = request.POST.get('package')
         lead.source = request.POST.get('source')
         lead.enquiry_type = request.POST.get('enquiry_type', 'General')
         lead.status = request.POST.get('status', 'New')
