@@ -37,6 +37,7 @@ tbody tr:last-child td{border-bottom:none}
 .badge-general{background:#eef2ff;color:#4f46e5}
 .badge-international{background:#fef3c7;color:#d97706}
 .badge-domestic{background:#dcfce7;color:#16a34a}
+.badge-hospitality{background:#fce7f3;color:#be185d}
 .badge-assigned{background:#dcfce7;color:#16a34a}
 .badge-unassigned{background:#fee2e2;color:#dc2626}
 </style>
@@ -57,6 +58,9 @@ tbody tr:last-child td{border-bottom:none}
   </a>
   <a href="{% url 'admin_panel:leads' %}?type=Domestic" class="filter-btn {% if selected_type == 'Domestic' %}active{% endif %}">
     Domestic ({{ domestic_count }})
+  </a>
+  <a href="{% url 'admin_panel:leads' %}?type=Hospitality" class="filter-btn {% if selected_type == 'Hospitality' %}active{% endif %}">
+    Hospitality ({{ hospitality_count }})
   </a>
   <a href="{% url 'admin_panel:leads' %}?new=true" class="filter-btn {% if selected_new == 'true' %}active{% endif %}">
     New Leads ({{ new_leads_count }})
@@ -95,6 +99,7 @@ tbody tr:last-child td{border-bottom:none}
           <th>Mobile</th>
           <th>Enquiry Type</th>
           <th>Source</th>
+          <th>Property/Package</th>
           <th>Assigned To</th>
           <th style="min-width:160px;">Actions</th>
         </tr>
@@ -107,7 +112,7 @@ tbody tr:last-child td{border-bottom:none}
           <td>{{ lead.full_name }}</td>
           <td>{{ lead.mobile_number }}</td>
           <td>
-            <span class="badge {% if lead.enquiry_type == 'General' %}badge-general{% elif lead.enquiry_type == 'International' %}badge-international{% elif lead.enquiry_type == 'Domestic' %}badge-domestic{% endif %}">
+            <span class="badge {% if lead.enquiry_type == 'General' %}badge-general{% elif lead.enquiry_type == 'International' %}badge-international{% elif lead.enquiry_type == 'Domestic' %}badge-domestic{% elif lead.enquiry_type == 'Hospitality' %}badge-hospitality{% endif %}">
               {{ lead.get_enquiry_type_display }}
             </span>
           </td>
@@ -115,6 +120,17 @@ tbody tr:last-child td{border-bottom:none}
             <span class="badge badge-general">
               {{ lead.get_source_display }}
             </span>
+          </td>
+          <td>
+            {% if lead.enquiry_type == 'Hospitality' %}
+              {% if lead.property_name %}
+                <span style="font-size:13px;color:#666;">{{ lead.property_name }}</span>
+              {% else %}
+                <span style="font-size:13px;color:#999;">-</span>
+              {% endif %}
+            {% else %}
+              <span style="font-size:13px;color:#999;">-</span>
+            {% endif %}
           </td>
           <td>
             {% if lead.employee %}

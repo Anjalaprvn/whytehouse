@@ -1,0 +1,366 @@
+{% extends 'user/navbar.html' %}
+{% load static %}
+
+{% block title %}Enquire About {{ property.name }} | Whyte House{% endblock %}
+
+{% block content %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body, html {
+        font-family: 'Inter', sans-serif;
+        color: #000;
+        background: #fff;
+    }
+
+    nav {
+        position: relative;
+        z-index: 1000;
+        padding-top: 20px !important;
+        background: transparent !important;
+    }
+
+    /* =========================
+       HERO SECTION
+    ========================= */
+    .enquiry-hero {
+        min-height: 50vh;
+        background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.4)),
+                    url("{% if property.image %}{{ property.image.url }}{% else %}{% static 'images/resort.png' %}{% endif %}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: -120px;
+        padding: 170px 40px 40px;
+    }
+
+    .hero-content {
+        text-align: center;
+        color: #fff;
+        max-width: 600px;
+    }
+
+    .hero-content h1 {
+        font-size: 48px;
+        margin-bottom: 15px;
+        line-height: 1.2;
+    }
+
+    .hero-content p {
+        font-size: 18px;
+        opacity: 0.95;
+    }
+
+    /* =========================
+       FORM SECTION
+    ========================= */
+    .enquiry-container {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 80px 40px;
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+
+    .form-header h2 {
+        font-size: 36px;
+        color: #111;
+        margin-bottom: 10px;
+    }
+
+    .form-header p {
+        color: #666;
+        font-size: 16px;
+    }
+
+    .property-info {
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 40px;
+        border-left: 4px solid #d4a017;
+    }
+
+    .property-info p {
+        margin: 0;
+        color: #555;
+        font-size: 15px;
+    }
+
+    .property-info strong {
+        color: #111;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #333;
+        font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 15px;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #d4a017;
+        box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.1);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 140px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .required {
+        color: #d4a017;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 16px;
+        background: #d4a017;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+    }
+
+    .submit-btn:hover {
+        background: #b88a14;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(212, 160, 23, 0.25);
+    }
+
+    .submit-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .form-message {
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+        font-weight: 500;
+        animation: slideIn 0.3s ease;
+    }
+
+    .form-message.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .form-message.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideOut {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+    }
+
+    .form-message.fade-out {
+        animation: slideOut 0.3s ease forwards;
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-bottom: 30px;
+        color: #d4a017;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+        color: #b88a14;
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+    @media (max-width: 768px) {
+        .enquiry-hero {
+            min-height: 40vh;
+            margin-top: -110px;
+            padding: 150px 20px 30px;
+        }
+
+        .hero-content h1 {
+            font-size: 32px;
+        }
+
+        .hero-content p {
+            font-size: 16px;
+        }
+
+        .enquiry-container {
+            padding: 50px 20px;
+        }
+
+        .form-header h2 {
+            font-size: 28px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- HERO SECTION -->
+<section class="enquiry-hero">
+    <div class="hero-content">
+        <h1>Inquire About {{ property.name }}</h1>
+        <p>Get in touch with us to learn more about this property</p>
+    </div>
+</section>
+
+<!-- FORM SECTION -->
+<section class="enquiry-container">
+    <a href="{% url 'user_panel:hospitality_detail' property.id %}" class="back-link">← Back to Property</a>
+
+    <div class="form-header">
+        <h2>Send Your Inquiry</h2>
+        <p>Fill out the form below and our team will contact you shortly</p>
+    </div>
+
+    <!-- Property Info Box -->
+    <div class="property-info">
+        <p><strong>Property:</strong> {{ property.name }}</p>
+        <p><strong>Location:</strong> {{ property.location }}</p>
+        <p><strong>Type:</strong> {{ property.get_property_type_display }}</p>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="form-message {% if message.tags %}{{ message.tags }}{% endif %}" id="successMessage">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const successMessage = document.getElementById('successMessage');
+            if (successMessage && successMessage.classList.contains('success')) {
+                // Auto-hide after 3 seconds
+                setTimeout(function() {
+                    successMessage.classList.add('fade-out');
+                    setTimeout(function() {
+                        successMessage.style.display = 'none';
+                    }, 300); // Wait for animation to complete
+                }, 3000); // 3 seconds
+            }
+        });
+    </script>
+
+    <!-- Form -->
+    {% if not success %}
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="name">Full Name <span class="required">*</span></label>
+                <input type="text" id="name" name="name" required placeholder="Your full name">
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address <span class="required">*</span></label>
+                <input type="email" id="email" name="email" required placeholder="your@email.com">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="phone">Phone Number <span class="required">*</span></label>
+                <input type="tel" id="phone" name="phone" required placeholder="+91 XXXXX XXXXX">
+            </div>
+            <div class="form-group">
+                <label for="checkin_date">Preferred Check-in Date</label>
+                <input type="date" id="checkin_date" name="checkin_date">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="checkout_date">Preferred Check-out Date</label>
+                <input type="date" id="checkout_date" name="checkout_date">
+            </div>
+            <div class="form-group">
+                <label for="guests">Number of Guests</label>
+                <input type="number" id="guests" name="guests" min="1" placeholder="1">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="message">Message <span class="required">*</span></label>
+            <textarea id="message" name="message" required placeholder="Tell us about your requirements, preferences, or any special requests..."></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn">Submit Inquiry</button>
+    </form>
+    {% endif %}
+</section>
+
+{% endblock %}

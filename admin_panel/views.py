@@ -238,6 +238,7 @@ def lead_management(request):
     general_count = Inquiry.objects.count()
     international_count = Lead.objects.filter(enquiry_type='International').count()
     domestic_count = Lead.objects.filter(enquiry_type='Domestic').count()
+    hospitality_count = Lead.objects.filter(enquiry_type='Hospitality').count()
     new_leads_count = Lead.objects.filter(is_viewed=False).count()
     
     context = {
@@ -249,6 +250,7 @@ def lead_management(request):
         'general_count': general_count,
         'international_count': international_count,
         'domestic_count': domestic_count,
+        'hospitality_count': hospitality_count,
         'new_leads_count': new_leads_count,
     }
     return render(request, 'admin/lead/lead.html', context)
