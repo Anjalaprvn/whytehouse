@@ -138,7 +138,7 @@ def domestic(request):
     gallery_destinations = Destination.objects.filter(category='Domestic').order_by('name')
     
     # Get all properties for hospitality section (show 3 at a time)
-    properties = Property.objects.all()
+    properties = Property.objects.filter(is_active=True)
     
     context = {
         'packages': packages,
@@ -656,7 +656,7 @@ def package_detail(request, slug):
     })
 
 def hospitality(request):
-    properties = Property.objects.all()
+    properties = Property.objects.filter(is_active=True)
     testimonials = Feedback.objects.filter(feedback_type='Property Management', featured=True).prefetch_related('images')
     return render(request, 'user/hospitality.html', {'properties': properties, 'testimonials': testimonials})
 

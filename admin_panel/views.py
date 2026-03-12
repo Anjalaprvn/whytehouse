@@ -349,7 +349,7 @@ def view_lead(request, lead_id):
 # HOSPITALITY
 def hospitality_management(request):
     search_query = request.GET.get('search', '').strip()
-    properties = Property.objects.all()
+    properties = Property.objects.filter(is_active=True)
     
     if search_query:
         properties = properties.filter(
