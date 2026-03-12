@@ -320,41 +320,40 @@ def contact(request):
         name = (request.POST.get('name') or '').strip()
         email = (request.POST.get('email') or '').strip()
         phone = (request.POST.get('phone') or '').strip()
+        country_code = (request.POST.get('country') or '+91').strip()
         package = (request.POST.get('package') or '').strip()
         message = (request.POST.get('message') or '').strip()
-        subject = (request.POST.get('subject') or 'General Enquiry').strip()
+        subject = (request.POST.get('subject') or 'General').strip()
+        
+        # Combine country code with phone number
+        full_phone = f"{country_code}{phone}" if phone else ''
+        
+        # Map contact form dropdown options to Lead model choices
+        subject_mapping = {
+            'Package related': 'General',
+            'Holiday Package': 'General', 
+            'Property Management': 'Hospitality',
+            'General Enquiry': 'General',
+            # Add any other mappings as needed
+        }
+        
+        # Map the subject to the correct enquiry type
+        enquiry_type = subject_mapping.get(subject, 'General')
+        print(f"DEBUG: Contact form subject='{subject}' mapped to enquiry_type='{enquiry_type}'")
 
-        # Validation
-        errors = []
-        
-        # Name validation
-        if not name or len(name) < 2:
-            errors.append('Name is required and must be at least 2 characters.')
-        
-        # Email validation
-        email_pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
-        if not email or not re.match(email_pattern, email):
-            errors.append('Please enter a valid email address.')
-        
-        # Phone validation (international format: 10-15 digits with optional +, -, spaces, parentheses)
-        phone_pattern = r'^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$'
-        phone_digits = re.sub(r'\D', '', phone)  # Extract only digits
-        
-        if not phone:
-            errors.append('Phone number is required.')
-        elif len(phone_digits) < 10:
-            errors.append('Phone number must be at least 10 digits.')
-        elif not re.match(phone_pattern, phone):
-            errors.append('Please enter a valid phone number.')
-        
-        # Message validation
-        if not message or len(message) < 10:
-            errors.append('Message is required and must be at least 10 characters.')
-        
-        if errors:
-            for error in errors:
-                messages.error(request, error)
-            return redirect('user_panel:contact')
+        # Basic validation for essential fields only
+        if not name or not phone:
+            messages.error(request, 'Name and mobile number are required.')
+            return render(request, 'user/contact.html', {
+                'form_data': {
+                    'name': name,
+                    'email': email,
+                    'phone': phone,
+                    'package': package,
+                    'message': message,
+                    'subject': subject
+                }
+            })
 
         # Create Customer record
         from admin_panel.models import Customer
@@ -366,13 +365,13 @@ def contact(request):
         
         # Check if customer already exists with this phone number
         customer, created = Customer.objects.get_or_create(
-            contact_number=phone,
+            contact_number=full_phone,
             defaults={
                 'first_name': first_name,
                 'last_name': last_name,
                 'display_name': name,
                 'email': email,
-                'whatsapp_number': phone,
+                'whatsapp_number': full_phone,
                 'same_as_whatsapp': True,
                 'customer_type': 'Individual',
                 'place': ''
@@ -384,27 +383,33 @@ def contact(request):
             customer.email = email
             customer.save()
 
-        # Find existing lead by phone (or create new)
-        lead = Lead.objects.filter(mobile_number=phone).first()
-
-        if lead:
-            # Update basic info if needed
-            if lead.full_name != name:
-                lead.full_name = name
-            lead.source = 'Website'
-            lead.enquiry_type = subject
-            lead.email = email
-            lead.save()
-        else:
+        # Create Lead record
+        try:
             lead = Lead.objects.create(
                 full_name=name,
-                mobile_number=phone,
+                mobile_number=full_phone,
                 email=email,
                 place=None,
                 source='Website',
-                enquiry_type=subject,
-                remarks=''
+                enquiry_type=enquiry_type,
+                message=message,
+                package=package,
+                remarks=f'Subject: {subject}\nPackage: {package}\nMessage: {message}'
             )
+            print(f"DEBUG: Created new lead {lead.id} with enquiry_type={enquiry_type}")
+        except Exception as e:
+            print(f"DEBUG: Failed to create lead: {str(e)}")
+            messages.error(request, 'There was an error processing your request. Please try again.')
+            return render(request, 'user/contact.html', {
+                'form_data': {
+                    'name': name,
+                    'email': email,
+                    'phone': phone,
+                    'package': package,
+                    'message': message,
+                    'subject': subject
+                }
+            })
 
         # Create inquiry with separate fields
         try:
@@ -412,14 +417,20 @@ def contact(request):
                 lead=lead,
                 name=name,
                 email=email,
-                phone=phone,
+                phone=full_phone,
                 package=package or 'General Inquiry',
                 message=message,
                 status='New'
             )
+            print(f"DEBUG: Created inquiry with ID {inquiry.id} for lead {lead.id}")
         except Exception as e:
-            pass
+            print(f"DEBUG: Failed to create inquiry: {str(e)}")
+            # Don't fail silently - this is important for debugging
+            import traceback
+            traceback.print_exc()
         
+        # If successful, add success message and redirect
+        messages.success(request, 'Thank you! Your message has been sent successfully.')
         return redirect('user_panel:contact')
 
     return render(request, 'user/contact.html')
@@ -744,7 +755,7 @@ def hospitality_enquiry(request):
             if lead.full_name != name:
                 lead.full_name = name
             lead.source = 'Website'
-            lead.enquiry_type = 'Property Management'
+            lead.enquiry_type = 'Hospitality'
             lead.email = email
             lead.save()
         else:
@@ -754,7 +765,7 @@ def hospitality_enquiry(request):
                 email=email,
                 place=None,
                 source='Website',
-                enquiry_type='Property Management',
+                enquiry_type='Hospitality',
                 remarks=''
             )
 

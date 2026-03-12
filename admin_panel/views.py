@@ -210,7 +210,7 @@ def lead_management(request):
     new_leads = request.GET.get('new', '')
     search_query = request.GET.get('search', '').strip()
     
-    # If General enquiry type is selected, redirect to customer inquiries page
+    # Redirect General enquiries to customer inquiries page
     if enquiry_type == 'General':
         return redirect('admin_panel:customer_inquiries')
     
@@ -234,8 +234,8 @@ def lead_management(request):
     
     leads = leads.order_by('-created_at')
     
-    # Count Inquiries for general (not Leads)
-    general_count = Inquiry.objects.count()
+    # Count leads by enquiry type
+    general_count = Lead.objects.filter(enquiry_type='General').count()
     international_count = Lead.objects.filter(enquiry_type='International').count()
     domestic_count = Lead.objects.filter(enquiry_type='Domestic').count()
     hospitality_count = Lead.objects.filter(enquiry_type='Hospitality').count()

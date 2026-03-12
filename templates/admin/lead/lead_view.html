@@ -108,6 +108,11 @@
             </div>
 
             <div class="info-row">
+                <div class="info-label">Remarks</div>
+                <div class="info-value">{{ lead.remarks|default:"No remarks" }}</div>
+            </div>
+
+            <div class="info-row">
                 <div class="info-label">Created At</div>
                 <div class="info-value">{{ lead.created_at|date:"d M Y, h:i A" }}</div>
             </div>

@@ -575,19 +575,19 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="field-label">Full Name</label>
-                        <input type="text" name="name" placeholder="Your full name">
+                        <input type="text" name="name" placeholder="Your full name" value="{{ form_data.name|default:'' }}">
                         <div class="error-message">Please enter your full name</div>
                     </div>
 
                     <div class="form-group">
                         <label class="field-label">Email Address</label>
-                        <input type="email" name="email" placeholder="your@gmail.com">
+                        <input type="email" name="email" placeholder="your@gmail.com" value="{{ form_data.email|default:'' }}">
                         <div class="error-message">Please enter a valid email with @gmail.com</div>
                     </div>
 
                     <div class="form-group">
                         <label class="field-label">Package</label>
-                        <input type="text" name="package" placeholder="Package name or type">
+                        <input type="text" name="package" placeholder="Package name or type" value="{{ form_data.package|default:'' }}">
                     </div>
 
                     <div class="form-group">
@@ -605,7 +605,7 @@
                                 <option value="+34" data-country="Spain">🇪🇸 +34</option>
                                 <option value="+81" data-country="Japan">🇯🇵 +81</option>
                             </select>
-                            <input type="tel" name="phone" placeholder="1234567890" maxlength="10">
+                            <input type="tel" name="phone" placeholder="1234567890" maxlength="10" value="{{ form_data.phone|default:'' }}">
                         </div>
                         <div class="error-message">Please enter exactly 10 digits</div>
                     </div>
@@ -614,17 +614,17 @@
                         <label class="field-label">Enquiry Type</label>
                         <select name="subject">
                             <option value="">Select an option</option>
-                            <option value="Package related">Package related</option>
-                            <option value="Holiday Package">Holiday Package</option>
-                            <option value="Property Management">Property Management</option>
-                            <option value="General Enquiry">General Enquiry</option>
+                            <option value="Package related" {% if form_data.subject == 'Package related' %}selected{% endif %}>Package related</option>
+                            <option value="Holiday Package" {% if form_data.subject == 'Holiday Package' %}selected{% endif %}>Holiday Package</option>
+                            <option value="Property Management" {% if form_data.subject == 'Property Management' %}selected{% endif %}>Property Management</option>
+                            <option value="General Enquiry" {% if form_data.subject == 'General Enquiry' %}selected{% endif %}>General Enquiry</option>
                         </select>
                         <div class="error-message">Please select an enquiry type</div>
                     </div>
 
                     <div class="form-group full-width">
                         <label class="field-label">Your Message</label>
-                        <textarea name="message" rows="4" placeholder="Share your thoughts to us."></textarea>
+                        <textarea name="message" rows="4" placeholder="Share your thoughts to us.">{{ form_data.message|default:'' }}</textarea>
                         <div class="error-message">Please enter your message (minimum 10 characters)</div>
                     </div>
                 </div>
@@ -719,8 +719,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const successMessage = document.getElementById('successMessage');
 
     form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
         // Clear previous errors
         document.querySelectorAll('.form-group').forEach(group => {
             group.classList.remove('error');
@@ -749,49 +747,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Validate email - required and must be Gmail
-        if (!email) {
-            form.querySelector('input[name="email"]').closest('.form-group').classList.add('error');
-            isValid = false;
-        } else {
-            const gmailRegex = /^[^\s@]+@gmail\.com$/;
-            if (!gmailRegex.test(email)) {
-                form.querySelector('input[name="email"]').closest('.form-group').classList.add('error');
-                isValid = false;
-            }
-        }
-
         // Validate phone - required and exactly 10 digits
         if (!phone || phone.length !== 10) {
             form.querySelector('input[name="phone"]').closest('.form-group').classList.add('error');
             isValid = false;
         }
 
-        // Validate subject - required
-        if (!subject) {
-            form.querySelector('select[name="subject"]').closest('.form-group').classList.add('error');
-            isValid = false;
+        // If validation fails, prevent form submission
+        if (!isValid) {
+            e.preventDefault();
+            return false;
         }
 
-        // Validate message - required and minimum 10 characters
-        if (!message || message.length < 10) {
-            form.querySelector('textarea[name="message"]').closest('.form-group').classList.add('error');
-            isValid = false;
-        }
-
-        // If valid, submit the form
-        if (isValid) {
-            // Show success message
-            successMessage.classList.add('show');
-            
-            // Clear form fields
-            form.reset();
-            
-            // Submit the form to the server
-            setTimeout(() => {
-                form.submit();
-            }, 1000);
-        }
+        // If validation passes, allow normal form submission
+        // The form will submit normally to the server
     });
 
     // Prevent numbers in name field
