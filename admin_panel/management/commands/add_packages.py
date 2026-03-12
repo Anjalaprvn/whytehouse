@@ -40,7 +40,7 @@ class Command(BaseCommand):
             )
             
             if created1:
-                self.stdout.write(self.style.SUCCESS(f'✓ Created package: {package1_name}'))
+                self.stdout.write(self.style.SUCCESS(f'Created package: {package1_name}'))
             else:
                 self.stdout.write(self.style.WARNING(f'Package already exists: {package1_name}'))
             
@@ -64,8 +64,8 @@ class Command(BaseCommand):
             )
             
             if created2:
-                self.stdout.write(self.style.SUCCESS(f'✓ Created package: {package2_name}'))
+                self.stdout.write(self.style.SUCCESS(f'Created package: {package2_name}'))
             else:
                 self.stdout.write(self.style.WARNING(f'Package already exists: {package2_name}'))
         
-        self.stdout.write(self.style.SUCCESS('\n✓ Package creation completed!'))
+        self.stdout.write(self.style.SUCCESS('Package creation completed!'))

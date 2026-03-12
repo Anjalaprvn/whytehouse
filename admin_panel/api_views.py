@@ -1,6 +1,6 @@
 from django.db.models import Q, Sum
 from rest_framework import viewsets, status, permissions
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from .models import (
     Blog,
@@ -762,3 +762,22 @@ class FeedbackViewSet(viewsets.ModelViewSet):
         qs = Feedback.objects.filter(featured=True).prefetch_related('images').order_by("-created_at")
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
+
+
+# ==================== PACKAGE ID VALIDATION ENDPOINT ====================
+@api_view(['GET'])
+def validate_package_id(request, package_id):
+    """
+    Validate if a package ID exists in the database.
+    URL: /api/validate-package-id/PKG001/
+    """
+    # Convert to uppercase and strip whitespace
+    package_id = package_id.strip().upper()
+    
+    # Check if package exists
+    exists = TravelPackage.objects.filter(package_id=package_id).exists()
+    
+    return Response({
+        'package_id': package_id,
+        'exists': exists
+    })

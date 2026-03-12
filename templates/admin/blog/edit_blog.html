@@ -349,7 +349,8 @@
           </div>
           <div class="field">
             <div class="label">Link to Package (Optional)</div>
-            <input type="text" name="package_id" placeholder="Package ID" value="{{ blog.package_id }}">
+            <input type="text" name="package_id" id="package_id" placeholder="Package ID (e.g., PKG001)" value="{{ blog.package_id }}">
+            <div id="package-id-error" style="color: #ef4444; font-size: 13px; margin-top: 6px; display: none;"></div>
           </div>
         </div>
 
@@ -701,6 +702,93 @@ document.querySelector('form').addEventListener('submit', function(e) {
     contentImagesArray.forEach(img => dt.items.add(img.file));
     input.files = dt.files;
 });
+
+// Package ID validation
+const packageIdInput = document.getElementById('package_id');
+const packageIdError = document.getElementById('package-id-error');
+let packageValidationTimeout;
+
+if (packageIdInput) {
+    packageIdInput.addEventListener('input', function() {
+        clearTimeout(packageValidationTimeout);
+        const value = this.value.trim();
+        
+        // Clear error if empty
+        if (!value) {
+            packageIdError.style.display = 'none';
+            packageIdError.textContent = '';
+            return;
+        }
+        
+        // Validate format (PKG followed by 3 digits)
+        const formatRegex = /^PKG\d{3}$/i;
+        if (!formatRegex.test(value)) {
+            packageIdError.style.display = 'block';
+            packageIdError.textContent = 'Package ID must be in format PKG followed by 3 digits (e.g., PKG001)';
+            return;
+        }
+        
+        // Format is valid, now check if it exists in database
+        packageIdError.style.display = 'block';
+        packageIdError.textContent = 'Checking...';
+        packageIdError.style.color = '#64748b';
+        
+        packageValidationTimeout = setTimeout(() => {
+            fetch(`/api/validate-package-id/${value.toUpperCase()}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        packageIdError.style.display = 'none';
+                        packageIdError.textContent = '';
+                    } else {
+                        packageIdError.style.display = 'block';
+                        packageIdError.textContent = 'Type valid package ID';
+                        packageIdError.style.color = '#ef4444';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error validating package ID:', error);
+                    packageIdError.style.display = 'block';
+                    packageIdError.textContent = 'Error validating package ID';
+                    packageIdError.style.color = '#ef4444';
+                });
+        }, 500); // Wait 500ms after typing stops
+    });
+    
+    // Validate on blur as well
+    packageIdInput.addEventListener('blur', function() {
+        const value = this.value.trim();
+        if (value) {
+            // Force immediate validation on blur
+            clearTimeout(packageValidationTimeout);
+            const formatRegex = /^PKG\d{3}$/i;
+            if (!formatRegex.test(value)) {
+                packageIdError.style.display = 'block';
+                packageIdError.textContent = 'Package ID must be in format PKG followed by 3 digits (e.g., PKG001)';
+                packageIdError.style.color = '#ef4444';
+            } else {
+                fetch(`/api/validate-package-id/${value.toUpperCase()}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.exists) {
+                            packageIdError.style.display = 'none';
+                            packageIdError.textContent = '';
+                        } else {
+                            packageIdError.style.display = 'block';
+                            packageIdError.textContent = 'Type valid package ID';
+                            packageIdError.style.color = '#ef4444';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error validating package ID:', error);
+                        packageIdError.style.display = 'block';
+                        packageIdError.textContent = 'Error validating package ID';
+                        packageIdError.style.color = '#ef4444';
+                    });
+            }
+        }
+    });
+}
 {% endverbatim %}
 </script>
 {% endblock %}

@@ -603,6 +603,7 @@ def travel_package_add(request):
         
         category = request.POST.get('category')
         TravelPackage.objects.create(
+            package_id=package_id,
             name=name,
             category=category,
             destination=destination,
@@ -1898,6 +1899,22 @@ def add_blog(request):
 
             hashtags_value = (request.POST.get("hashtags") or "").strip()
             category_slug = request.POST.get("category", "")
+            
+            # Validate package ID if provided
+            package_id_value = (request.POST.get("package_id") or "").strip()
+            if package_id_value:
+                # Check format
+                import re
+                if not re.match(r'^PKG\d{3}$', package_id_value.upper()):
+                    messages.error(request, "Package ID must be in format PKG followed by 3 digits (e.g., PKG001).")
+                    return render(request, "admin/blog/add_blog.html", {"categories": categories})
+                
+                # Check if package exists
+                if not TravelPackage.objects.filter(package_id=package_id_value.upper()).exists():
+                    messages.error(request, "Type valid package ID. The entered package ID does not exist.")
+                    return render(request, "admin/blog/add_blog.html", {"categories": categories})
+            else:
+                package_id_value = None
 
             blog = Blog.objects.create(
                 title=title,
@@ -1906,7 +1923,7 @@ def add_blog(request):
                 content=content,
                 status=request.POST.get("status", "draft"),
                 category=category_slug,
-                package_id=(request.POST.get("package_id") or "").strip() or None,
+                package_id=package_id_value,
                 author_name=author_name,
                 author_summary=author_summary,
                 reading_time=reading_time_val,
@@ -1955,13 +1972,29 @@ def edit_blog(request, blog_id):
             # Get category slug from dropdown
             category_slug = request.POST.get("category", "")
             
+            # Validate package ID if provided
+            package_id_value = (request.POST.get("package_id") or "").strip()
+            if package_id_value:
+                # Check format
+                import re
+                if not re.match(r'^PKG\d{3}$', package_id_value.upper()):
+                    messages.error(request, "Package ID must be in format PKG followed by 3 digits (e.g., PKG001).")
+                    return render(request, "admin/blog/edit_blog.html", {"blog": blog, "categories": categories})
+                
+                # Check if package exists
+                if not TravelPackage.objects.filter(package_id=package_id_value.upper()).exists():
+                    messages.error(request, "Type valid package ID. The entered package ID does not exist.")
+                    return render(request, "admin/blog/edit_blog.html", {"blog": blog, "categories": categories})
+            else:
+                package_id_value = None
+            
             blog.title = title
             blog.slug = slug
             blog.excerpt = excerpt
             blog.content = content
             blog.status = request.POST.get("status", "draft")
             blog.category = category_slug
-            blog.package_id = (request.POST.get("package_id") or "").strip() or None
+            blog.package_id = package_id_value
 
             blog.author_name = author_name
             blog.author_summary = author_summary
