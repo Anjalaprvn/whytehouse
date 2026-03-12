@@ -2955,3 +2955,18 @@ def toggle_featured_feedback(request, feedback_id):
     else:
         messages.info(request, 'Feedback unmarked as featured.')
     return redirect('feedback:feedback_list')
+
+def get_next_package_id(request):
+    """API endpoint to get the next package ID"""
+    last_package = TravelPackage.objects.filter(package_id__startswith='PKG').order_by('-package_id').first()
+    
+    if last_package and last_package.package_id:
+        try:
+            last_num = int(last_package.package_id[3:])
+            next_id = f'PKG{str(last_num + 1).zfill(3)}'
+        except (ValueError, IndexError):
+            next_id = 'PKG001'
+    else:
+        next_id = 'PKG001'
+    
+    return JsonResponse({'next_id': next_id})

@@ -62,7 +62,7 @@
             <div class="grid-row">
                 <div>
                     <label>Package ID</label>
-                    <input type="text" name="package_id" value="{{ package.package_id|default:'' }}" class="form-control" placeholder="Auto-generated" readonly style="background-color: #e8e8e8; cursor: not-allowed;">
+                    <input type="text" name="package_id" id="package_id" value="{{ package.package_id|default:'' }}" class="form-control" placeholder="{% if package %}{{ package.package_id }}{% else %}Auto-generated{% endif %}" readonly style="background-color: #e8e8e8; cursor: not-allowed;">
                 </div>
                 <div>
                     <label>Package Title <span class="required-star">*</span></label>
@@ -102,8 +102,8 @@
                 </div>
 
                 <div>
-                    <label>Duration</label>
-                    <input type="text" name="duration" value="{{ package.duration|default:'' }}" class="form-control" placeholder="e.g. 3 Days / 2 Nights">
+                    <label>Duration <span class="required-star">*</span></label>
+                    <input type="text" id="duration" name="duration" value="{{ package.duration|default:'' }}" class="form-control" placeholder="e.g. 7 Days / 6 Nights" onchange="updateItineraryDays()">
                 </div>
             </div>
 
@@ -140,8 +140,8 @@
 
         <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h4 style="margin:0;">Itinerary</h4>
-        <button type="button" onclick="addDay()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer;">+ Add Day</button>
+        <h4 style="margin:0;">Itinerary <span id="day-limit" style="font-size: 0.9rem; color: #6b7280;"></span></h4>
+        <button type="button" id="add-day-btn" onclick="addDay()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer;">+ Add Day</button>
     </div>
 
     <div id="itinerary-container">
@@ -194,8 +194,95 @@
 </div>
 <script>
 let dayCount = 1;
+let maxDays = 0;
+
+// Generate Package ID on page load
+window.addEventListener('DOMContentLoaded', function() {
+    const packageIdField = document.getElementById('package_id');
+    const durationField = document.getElementById('duration');
+    
+    // Only generate if it's a new package (field is empty)
+    if (!packageIdField.value) {
+        generateNextPackageId();
+    }
+    
+    // Initialize itinerary days if duration is already set
+    if (durationField.value) {
+        updateItineraryDays();
+    }
+});
+
+function generateNextPackageId() {
+    fetch('{% url "admin_panel:get_next_package_id" %}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.next_id) {
+                document.getElementById('package_id').value = data.next_id;
+            }
+        })
+        .catch(error => {
+            console.error('Error generating package ID:', error);
+        });
+}
+
+function updateItineraryDays() {
+    const durationField = document.getElementById('duration');
+    const durationValue = durationField.value;
+    
+    // Extract number of days from duration (e.g., "7 Days / 6 Nights" -> 7)
+    const match = durationValue.match(/(\d+)\s*(?:day|days)/i);
+    const extractedDays = match ? parseInt(match[1]) : 0;
+    
+    if (extractedDays > 0) {
+        maxDays = extractedDays;
+        const container = document.getElementById('itinerary-container');
+        const currentDays = container.querySelectorAll('.itinerary-item').length;
+        
+        // Update day limit display
+        document.getElementById('day-limit').textContent = `(Max ${maxDays} days)`;
+        
+        // Add or remove days to match the duration
+        if (currentDays < maxDays) {
+            // Add missing days
+            for (let i = currentDays + 1; i <= maxDays; i++) {
+                const div = document.createElement('div');
+                div.classList.add('itinerary-item');
+                div.innerHTML = `
+                    <label>Day ${i}</label>
+                    <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..."></textarea>
+                `;
+                container.appendChild(div);
+            }
+            dayCount = maxDays;
+        } else if (currentDays > maxDays) {
+            // Remove extra days
+            const items = container.querySelectorAll('.itinerary-item');
+            for (let i = items.length - 1; i >= maxDays; i--) {
+                items[i].remove();
+            }
+            dayCount = maxDays;
+        }
+        
+        // Disable add button if max days reached
+        const addBtn = document.getElementById('add-day-btn');
+        if (dayCount >= maxDays) {
+            addBtn.disabled = true;
+            addBtn.style.opacity = '0.5';
+            addBtn.style.cursor = 'not-allowed';
+        } else {
+            addBtn.disabled = false;
+            addBtn.style.opacity = '1';
+            addBtn.style.cursor = 'pointer';
+        }
+    }
+}
 
 function addDay() {
+    if (maxDays > 0 && dayCount >= maxDays) {
+        alert(`You can only add ${maxDays} days based on the duration.`);
+        return;
+    }
+    
     dayCount++;
     const container = document.getElementById('itinerary-container');
 
@@ -208,6 +295,14 @@ function addDay() {
     `;
 
     container.appendChild(div);
+    
+    // Disable add button if max days reached
+    const addBtn = document.getElementById('add-day-btn');
+    if (maxDays > 0 && dayCount >= maxDays) {
+        addBtn.disabled = true;
+        addBtn.style.opacity = '0.5';
+        addBtn.style.cursor = 'not-allowed';
+    }
 }
 
 function addInclusion() {

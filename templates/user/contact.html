@@ -711,41 +711,7 @@
     </div>
 </main>
 
-<footer class="footer">
-    <div class="footer-grid">
-        <div>
-            <img src="{% static 'images/logo.png' %}" alt="Whyte House Logo" class="footer-logo">
-            <p>Book Your Tour Today. Join us for an unforgettable getaway and adventures.</p>
-        </div>
-
-        <div>
-            <h4>Explore</h4>
-            <ul>
-                <li><a href="#">Home</a></li>
-                <li><a href="#">About Us</a></li>
-                <li><a href="#">Blog</a></li>
-                <li><a href="#">Packages</a></li>
-            </ul>
-        </div>
-
-        <div>
-            <h4>Legal</h4>
-            <ul>
-                <li><a href="#">Privacy Policy</a></li>
-                <li><a href="#">Terms & Conditions</a></li>
-            </ul>
-        </div>
-
-        <div>
-            <h4>Newsletter</h4>
-            <p>Get travel updates and exclusive offers.</p>
-            <div class="newsletter-box">
-                <input type="email" placeholder="Enter your email">
-                <button>Subscribe</button>
-            </div>
-        </div>
-    </div>
-</footer>
+<!--  -->
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -840,3 +806,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
+
+{% block footer %}{% include 'user/footer.html' %}{% endblock %}

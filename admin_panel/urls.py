@@ -28,6 +28,7 @@ urlpatterns = [
     path('travel-packages/edit/<int:package_id>/', views.travel_package_edit, name='travel_package_edit'),
     path('travel-packages/delete/<int:package_id>/', views.travel_package_delete, name='travel_package_delete'),
     path('travel-packages/toggle/<int:package_id>/', views.toggle_package_status, name='toggle_package_status'),
+    path('api/get-next-package-id/', views.get_next_package_id, name='get_next_package_id'),
     # Destinations
     path('destinations/', views.destination_list, name='destinations'),
     path('destinations/add/', views.add_destination, name='add_destination'),

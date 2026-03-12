@@ -57,7 +57,7 @@
 
     {% block content %}{% endblock %}
 
-    {% include 'user/footer.html' %}
+    {% block footer %}{% include 'user/footer.html' %}{% endblock %}
 
 <script>
 // Track and maintain section context (Domestic/International)
