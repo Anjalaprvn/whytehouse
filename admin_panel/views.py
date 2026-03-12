@@ -1246,8 +1246,24 @@ def add_customer(request):
 def view_customer(request, customer_id):
     try:
         customer = Customer.objects.get(id=customer_id)
+        
+        # Get all invoices for this customer
+        invoices = Invoice.objects.filter(customer=customer).order_by('-invoice_date')
+        
+        # Calculate totals
+        total_billed = sum(inv.total for inv in invoices)
+        total_received = sum(inv.received for inv in invoices)
+        due_amount = total_billed - total_received
+        
+        # Get latest due date
+        latest_invoice = invoices.first()
+        due_date = latest_invoice.checkout_date if latest_invoice else None
+        
         return render(request, "admin/sales/customer/view_customer.html", {
-            "customer": customer
+            "customer": customer,
+            "total_billed": round(total_billed, 2),
+            "due_amount": round(due_amount, 2),
+            "due_date": due_date.strftime('%b %d, %Y') if due_date else '-'
         })
     except Customer.DoesNotExist:
         messages.error(request, "Customer not found.")
