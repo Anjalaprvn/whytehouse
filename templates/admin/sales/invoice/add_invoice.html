@@ -282,7 +282,7 @@
 
           <div class="field">
             <label>Invoice No <span class="req">*</span></label>
-            <input type="text" name="invoice_no" placeholder="INV-001" required>
+            <input type="text" name="invoice_no" id="invoice_no" placeholder="Auto-generated" value="{{ next_invoice_id|default:'' }}" readonly style="background-color: #f3f4f6; cursor: not-allowed;">
           </div>
 
           <div class="field">
@@ -745,6 +745,18 @@
       if (invoiceDateInput && !invoiceDateInput.value) {
         invoiceDateInput.value = today;
       }
+      
+      // Auto-generate Invoice ID
+      fetch('/api/get-next-invoice-id/')
+        .then(response => response.json())
+        .then(data => {
+          if (data.next_id) {
+            document.getElementById('invoice_no').value = data.next_id;
+          }
+        })
+        .catch(error => {
+          console.error('Error generating invoice ID:', error);
+        });
     });
   </script>
 {% endblock %}

@@ -356,7 +356,7 @@ class Meal(models.Model):
 class Voucher(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True)
 
-    voucher_no = models.CharField(max_length=50, unique=True)
+    voucher_no = models.CharField(max_length=50, unique=True, blank=True)
     voucher_date = models.DateField(null=True, blank=True)
 
     sales_person = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True)
@@ -399,13 +399,27 @@ class Voucher(models.Model):
     def __str__(self):
         return f"{self.voucher_no} - {self.customer.display_name if self.customer else 'N/A'}"
 
+    def save(self, *args, **kwargs):
+        # Auto-generate voucher number if not provided
+        if not self.voucher_no:
+            last_voucher = Voucher.objects.filter(voucher_no__startswith='VCH').order_by('-voucher_no').first()
+            if last_voucher and last_voucher.voucher_no:
+                try:
+                    last_num = int(last_voucher.voucher_no[3:])
+                    self.voucher_no = f'VCH{str(last_num + 1).zfill(3)}'
+                except (ValueError, IndexError):
+                    self.voucher_no = 'VCH001'
+            else:
+                self.voucher_no = 'VCH001'
+        super().save(*args, **kwargs)
+
     class Meta:
         ordering = ['-created_at']
 
 
 class Invoice(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    invoice_no = models.CharField(max_length=50, unique=True)
+    invoice_no = models.CharField(max_length=50, unique=True, blank=True)
     invoice_date = models.DateField()
     sales_person = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True)
     resort = models.ForeignKey(Resort, on_delete=models.SET_NULL, null=True)
@@ -435,6 +449,20 @@ class Invoice(models.Model):
     
     def __str__(self):
         return f"Invoice #{self.invoice_no} - {self.customer.display_name}"
+    
+    def save(self, *args, **kwargs):
+        # Auto-generate invoice number if not provided
+        if not self.invoice_no:
+            last_invoice = Invoice.objects.filter(invoice_no__startswith='INV').order_by('-invoice_no').first()
+            if last_invoice and last_invoice.invoice_no:
+                try:
+                    last_num = int(last_invoice.invoice_no[3:])
+                    self.invoice_no = f'INV{str(last_num + 1).zfill(3)}'
+                except (ValueError, IndexError):
+                    self.invoice_no = 'INV001'
+            else:
+                self.invoice_no = 'INV001'
+        super().save(*args, **kwargs)
     
     class Meta:
         ordering = ['-created_at']
