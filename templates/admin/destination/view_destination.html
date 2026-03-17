@@ -99,25 +99,30 @@
         display: flex;
         gap: 12px;
         margin-top: 30px;
+        flex-wrap: wrap;
     }
 
+    /* UPDATED GOLD BUTTONS */
     .btn {
         padding: 12px 24px;
-        border-radius: 8px;
+        border-radius: 10px;
         text-decoration: none;
         font-weight: 600;
-        transition: 0.3s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: #d4a017;
+        color: #ffffff;
+        transition: 0.3s ease;
+        border: none;
     }
 
-    .btn-edit {
-        background: #3b82f6;
-        color: white;
+    .btn:hover {
+        background: #bd8e14;
+        color: #ffffff;
     }
 
-    .btn-delete {
-        background: #ef4444;
-        color: white;
-    }
 </style>
 
 <div class="view-container">
@@ -194,13 +199,16 @@
         </div>
 
         <div class="action-buttons">
-            <a href="{% url 'admin_panel:edit_destination' destination.id %}" class="btn btn-edit">
+            <a href="{% url 'admin_panel:edit_destination' destination.id %}" class="btn">
                 <i class="fas fa-edit"></i> Edit Destination
             </a>
-            <a href="{% url 'admin_panel:delete_destination' destination.id %}" class="btn btn-delete" onclick="return confirm('Are you sure you want to delete this destination?')">
+
+            <a href="{% url 'admin_panel:delete_destination' destination.id %}" class="btn"
+               onclick="return confirm('Are you sure you want to delete this destination?')">
                 <i class="fas fa-trash"></i> Delete Destination
             </a>
         </div>
     </div>
 </div>
+
 {% endblock %}

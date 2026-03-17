@@ -99,24 +99,40 @@
         display: flex;
         gap: 12px;
         margin-top: 30px;
+        flex-wrap: wrap;
     }
 
     .btn {
         padding: 12px 24px;
-        border-radius: 8px;
+        border-radius: 10px;
         text-decoration: none;
         font-weight: 600;
         transition: 0.3s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: none;
     }
 
     .btn-edit {
-        background: #3b82f6;
-        color: white;
+        background: #d4a017;
+        color: #ffffff;
+    }
+
+    .btn-edit:hover {
+        background: #bd8e14;
+        color: #ffffff;
     }
 
     .btn-delete {
-        background: #ef4444;
-        color: white;
+        background: #d4a017;
+        color: #ffffff;
+    }
+
+    .btn-delete:hover {
+        background: #bd8e14;
+        color: #ffffff;
     }
 </style>
 
