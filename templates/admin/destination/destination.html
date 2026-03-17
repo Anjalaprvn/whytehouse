@@ -18,6 +18,8 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 30px;
+        gap: 16px;
+        flex-wrap: wrap;
     }
 
     .page-header h2 {
@@ -29,133 +31,48 @@
 
     .add-btn {
         background: #d4a017;
-        color: white;
+        color: #ffffff;
         padding: 12px 24px;
-        border-radius: 8px;
+        border-radius: 10px;
         text-decoration: none;
         font-weight: 600;
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        transition: 0.3s;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(212, 160, 23, 0.18);
     }
 
     .add-btn:hover {
         background: #b8901a;
-        color: white;
-    }
-
-    .destinations-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 24px;
-    }
-
-    .destination-card {
-        background: white;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        border: 1px solid #e2e8f0;
-        transition: 0.3s;
-        cursor: pointer;
-    }
-
-    .destination-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-
-    .dest-image {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-    }
-
-    .card-body {
-        padding: 20px;
-    }
-
-    .card-body h3 {
-        font-size: 18px;
-        font-weight: 600;
-        margin-bottom: 8px;
-        color: #1e293b;
-    }
-
-    .card-body p {
-        color: #64748b;
-        font-size: 14px;
-        margin-bottom: 16px;
-    }
-
-    .card-actions {
-        display: flex;
-        gap: 8px;
-    }
-
-    .btn-edit, .btn-delete {
-        padding: 6px 12px;
-        border-radius: 6px;
-        text-decoration: none;
-        font-size: 12px;
-        font-weight: 500;
-        transition: 0.3s;
-    }
-
-    .btn-edit {
-        background: #3b82f6;
-        color: white;
-    }
-
-    .btn-edit:hover {
-        background: #2563eb;
-        color: white;
-    }
-
-    .btn-delete {
-        background: #ef4444;
-        color: white;
-    }
-
-    .btn-delete:hover {
-        background: #dc2626;
-        color: white;
-    }
-
-    .popular-badge {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        background: #d4a017;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 10px;
-        font-weight: 600;
-    }
-
-    .card-image-container {
-        position: relative;
+        color: #ffffff;
+        transform: translateY(-1px);
     }
 
     .filter-tabs {
         display: flex;
         gap: 12px;
-        margin-bottom: 30px;
+        margin-bottom: 24px;
         border-bottom: 1px solid #e2e8f0;
-        padding-bottom: 10px;
+        padding-bottom: 12px;
+        flex-wrap: wrap;
     }
 
     .filter-tab {
-        padding: 8px 16px;
-        border-radius: 6px;
+        padding: 9px 16px;
+        border-radius: 8px;
         text-decoration: none;
         font-size: 14px;
         font-weight: 500;
         color: #64748b;
-        transition: 0.3s;
+        transition: all 0.3s ease;
         position: relative;
+        background: transparent;
+    }
+
+    .filter-tab:hover {
+        background: #f8fafc;
+        color: #334155;
     }
 
     .filter-tab.active {
@@ -166,50 +83,233 @@
     .filter-tab .count {
         background: #e2e8f0;
         color: #64748b;
-        padding: 2px 6px;
-        border-radius: 10px;
+        padding: 2px 7px;
+        border-radius: 999px;
         font-size: 11px;
         margin-left: 6px;
+        font-weight: 600;
     }
 
     .filter-tab.active .count {
         background: #d4a017;
-        color: white;
+        color: #ffffff;
+    }
+
+    .search-box {
+        margin-bottom: 24px;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 13px 18px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        font-size: 14px;
+        outline: none;
+        transition: all 0.3s ease;
+    }
+
+    .search-box input:focus {
+        border-color: #d4a017;
+        background: #ffffff;
+        box-shadow: 0 0 0 4px rgba(212, 160, 23, 0.08);
+    }
+
+    .destinations-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
+    }
+
+    .destination-card {
+        background: #ffffff;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        border: 1px solid #edf2f7;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .destination-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.10);
+    }
+
+    .card-image-container {
+        position: relative;
+    }
+
+    .dest-image {
+        width: 100%;
+        height: 210px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .image-placeholder {
+        width: 100%;
+        height: 210px;
+        background: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        font-size: 28px;
+    }
+
+    .popular-badge {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        background: #d4a017;
+        color: #ffffff;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
     }
 
     .category-badge {
         position: absolute;
-        top: 12px;
-        left: 12px;
+        top: 14px;
+        left: 14px;
         background: #3b82f6;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
+        color: #ffffff;
+        padding: 6px 10px;
+        border-radius: 999px;
         font-size: 10px;
-        font-weight: 600;
+        font-weight: 700;
+        letter-spacing: 0.3px;
     }
 
     .category-badge.international {
         background: #10b981;
     }
 
-    .search-box {
-        margin-bottom: 20px;
+    .card-body {
+        padding: 20px;
     }
 
-    .search-box input {
-        width: 100%;
-        padding: 12px 18px;
-        border-radius: 10px;
-        border: 1px solid #e2e8f0;
-        background: #f8fafc;
+    .card-body h3 {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0 0 8px;
+        color: #111827;
+        line-height: 1.35;
+    }
+
+    .country-text {
+        color: #64748b;
         font-size: 14px;
-        outline: none;
+        margin-bottom: 10px;
     }
 
-    .search-box input:focus {
-        border-color: #d4a017;
-        background: #fff;
+    .desc-text {
+        color: #64748b;
+        font-size: 13px;
+        line-height: 1.6;
+        margin-bottom: 0;
+    }
+
+    .card-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid #edf0f3;
+    }
+
+    .btn-edit {
+        flex: 1;
+        height: 46px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #ffffff;
+        color: #111827;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.25s ease;
+    }
+
+    .btn-edit:hover {
+        background: #f9fafb;
+        border-color: #d1d5db;
+        color: #111827;
+    }
+
+    .btn-delete {
+        width: 46px;
+        height: 46px;
+        min-width: 46px;
+        border: 1px solid #f5d0d0;
+        border-radius: 12px;
+        background: #ffffff;
+        color: #ff5a5f;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.25s ease;
+    }
+
+    .btn-delete:hover {
+        background: #fff5f5;
+        border-color: #f1b5b5;
+        color: #ef4444;
+    }
+
+    .empty-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 70px 20px;
+        color: #64748b;
+        background: #ffffff;
+        border: 1px dashed #dbe2ea;
+        border-radius: 20px;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 15px;
+    }
+
+    .empty-state a {
+        color: #d4a017;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .empty-state a:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+        .destinations-container {
+            padding: 16px;
+        }
+
+        .page-header h2 {
+            font-size: 22px;
+        }
+
+        .destinations-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 
@@ -234,7 +334,13 @@
 
     <div class="search-box">
         <form method="GET" action="{% url 'admin_panel:destinations' %}" id="searchForm">
-            <input type="text" name="search" placeholder="Search destinations..." value="{{ search_query }}" id="searchInput">
+            <input
+                type="text"
+                name="search"
+                placeholder="Search destinations..."
+                value="{{ search_query }}"
+                id="searchInput"
+            >
             <input type="hidden" name="cat" value="{{ selected_category }}">
         </form>
     </div>
@@ -246,51 +352,71 @@
                 {% if destination.image %}
                     <img src="{{ destination.image.url }}" alt="{{ destination.name }}" class="dest-image">
                 {% else %}
-                    <div class="dest-image" style="background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #64748b;">
-                        <i class="fas fa-image" style="font-size: 24px;"></i>
+                    <div class="image-placeholder">
+                        <i class="fas fa-image"></i>
                     </div>
                 {% endif %}
+
                 {% if destination.is_popular %}
                     <div class="popular-badge">Popular</div>
                 {% endif %}
+
                 <div class="category-badge {% if destination.category == 'International' %}international{% endif %}">
                     {{ destination.category }}
                 </div>
             </div>
+
             <div class="card-body">
                 <h3>{{ destination.name }}</h3>
+
                 {% if destination.country and destination.country|lower != 'none' %}
-                <p>{{ destination.country }}</p>
+                    <p class="country-text">{{ destination.country }}</p>
                 {% endif %}
+
                 {% if destination.description and destination.description|lower != 'none' %}
-                    <p style="color: #64748b; font-size: 13px;">{{ destination.description|truncatewords:15 }}</p>
+                    <p class="desc-text">{{ destination.description|truncatewords:15 }}</p>
                 {% endif %}
+
                 <div class="card-actions">
-                    <a href="{% url 'admin_panel:edit_destination' destination.id %}" class="btn-edit" onclick="event.stopPropagation()">
-                        <i class="fas fa-edit"></i> Edit
+                    <a href="{% url 'admin_panel:edit_destination' destination.id %}"
+                       class="btn-edit"
+                       onclick="event.stopPropagation()">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span>Edit</span>
                     </a>
-                    <a href="{% url 'admin_panel:delete_destination' destination.id %}" class="btn-delete" onclick="event.stopPropagation(); return confirm('Are you sure you want to delete this destination?')">
-                        <i class="fas fa-trash"></i> Delete
+
+                    <a href="{% url 'admin_panel:delete_destination' destination.id %}"
+                       class="btn-delete"
+                       onclick="event.stopPropagation(); return confirm('Are you sure you want to delete this destination?')">
+                        <i class="fas fa-trash"></i>
                     </a>
                 </div>
             </div>
         </div>
         {% empty %}
-        <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #64748b;">
-            <i class="fas fa-map-marker-alt" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
-            <p>No destinations found. <a href="{% url 'admin_panel:add_destination' %}" style="color: #d4a017;">Add your first destination</a></p>
+        <div class="empty-state">
+            <i class="fas fa-map-marker-alt"></i>
+            <p>
+                No destinations found.
+                <a href="{% url 'admin_panel:add_destination' %}">Add your first destination</a>
+            </p>
         </div>
         {% endfor %}
     </div>
 </div>
 
 <script>
-let searchTimeout;
-document.getElementById('searchInput').addEventListener('input', function() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        document.getElementById('searchForm').submit();
-    }, 500);
-});
+    let searchTimeout;
+    const searchInput = document.getElementById('searchInput');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                document.getElementById('searchForm').submit();
+            }, 500);
+        });
+    }
 </script>
+
 {% endblock %}
