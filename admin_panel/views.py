@@ -385,7 +385,7 @@ def view_lead(request, lead_id):
 # HOSPITALITY
 def hospitality_management(request):
     search_query = request.GET.get('search', '').strip()
-    properties = Property.objects.filter(is_active=True)
+    properties = Property.objects.all()  # Show all properties in admin, regardless of is_active status
     
     if search_query:
         properties = properties.filter(
