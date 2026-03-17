@@ -449,7 +449,7 @@
         </div>
 
         <p class="upload-hint" style="margin-top:10px">
-          Upload images to use in your blog content. Reference them using <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image1}}</code>, <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image2}}</code>, etc. in your content. For positioning, use <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image1-left}}</code>, <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image1-right}}</code>, or <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image1-center}}</code>.
+          {% verbatim %}Upload images to use in your blog content. Reference them using <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image1}}</code>, <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image2}}</code>, etc. in your content. For positioning, use <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image1-left}}</code>, <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image1-right}}</code>, or <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image1-center}}</code>.{% endverbatim %}
         </p>
 
         <!-- Existing Images -->
@@ -459,7 +459,7 @@
           <div class="image-card" data-image-id="{{ img.id }}">
             <img src="{{ img.image.url }}" alt="Content image {{ forloop.counter }}">
             <div class="image-card-footer">
-              <span class="image-tag" onclick="copyToClipboard('{{image{{ forloop.counter }}}}')" title="Click to copy">{{image{{ forloop.counter }}}}</span>
+              <span class="image-tag" onclick="copyToClipboard('{% verbatim %}{{{% endverbatim %}image{{ forloop.counter }}{% verbatim %}}}{% endverbatim %}')" title="Click to copy">{% verbatim %}{{{% endverbatim %}image{{ forloop.counter }}{% verbatim %}}}{% endverbatim %}</span>
               <button type="button" class="remove-image-btn" onclick="removeExistingImage({{ img.id }})" title="Remove image">✕</button>
             </div>
           </div>
