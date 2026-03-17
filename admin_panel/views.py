@@ -1939,6 +1939,8 @@ def add_blog(request):
 
     if request.method == "POST":
         try:
+            import re  
+            
             title = (request.POST.get("title") or "").strip()
             slug = (request.POST.get("slug") or "").strip()
             excerpt = (request.POST.get("excerpt") or "").strip()
@@ -1948,64 +1950,97 @@ def add_blog(request):
             reading_time = request.POST.get("reading_time")
             publish_date = request.POST.get("publish_date")
 
-            if not title or not slug or not excerpt or not content or not author_name or not author_summary or not reading_time or not publish_date:
-                messages.error(request, "Please fill in all required fields.")
-                return render(request, "admin/blog/add_blog.html", {"categories": categories})
+            # Prepare form data for re-rendering
+            form_data = {
+                'title': title,
+                'slug': slug,
+                'excerpt': excerpt,
+                'content': content,
+                'author_name': author_name,
+                'author_summary': author_summary,
+                'reading_time': reading_time,
+                'publish_date': publish_date,
+                'status': request.POST.get("status", "draft"),
+                'category': request.POST.get("category", ""),
+                'package_id': (request.POST.get("package_id") or "").strip(),
+                'featured_image_url': (request.POST.get("featured_image_url") or "").strip(),
+                'hashtags': (request.POST.get("hashtags") or "").strip(),
+            }
 
-            import re
-            if not re.match(r'^[a-z0-9-]+$', slug):
-                messages.error(request, "Slug must contain only lowercase letters, numbers, and hyphens.")
-                return render(request, "admin/blog/add_blog.html", {"categories": categories})
+            # Validation errors dictionary
+            errors = {}
 
-            if Blog.objects.filter(slug=slug).exists():
-                messages.error(request, "A blog with this slug already exists.")
-                return render(request, "admin/blog/add_blog.html", {"categories": categories})
+            if not title:
+                errors['title'] = "Blog title is required."
 
-            try:
-                reading_time_val = int(reading_time)
-                if reading_time_val < 1 or reading_time_val > 120:
-                    messages.error(request, "Reading time must be between 1 and 120 minutes.")
-                    return render(request, "admin/blog/add_blog.html", {"categories": categories})
-            except ValueError:
-                messages.error(request, "Invalid reading time format.")
-                return render(request, "admin/blog/add_blog.html", {"categories": categories})
+            if not slug:
+                errors['slug'] = "URL slug is required."
+            elif not re.match(r'^[a-z0-9-]+$', slug):
+                errors['slug'] = "Slug must contain only lowercase letters, numbers, and hyphens."
+            elif Blog.objects.filter(slug=slug).exists():
+                errors['slug'] = "A blog with this slug already exists."
 
-            if len(excerpt) < 50 or len(excerpt) > 300:
-                messages.error(request, "Excerpt must be between 50 and 300 characters.")
-                return render(request, "admin/blog/add_blog.html", {"categories": categories})
+            if not excerpt:
+                errors['excerpt'] = "Excerpt is required."
+            elif len(excerpt) < 50 or len(excerpt) > 300:
+                errors['excerpt'] = "Excerpt must be between 50 and 300 characters."
 
-            hashtags_value = (request.POST.get("hashtags") or "").strip()
-            category_slug = request.POST.get("category", "")
-            
+            if not content:
+                errors['content'] = "Content is required."
+
+            if not author_name:
+                errors['author_name'] = "Author name is required."
+
+            if not author_summary:
+                errors['author_summary'] = "Author summary is required."
+
+            if not reading_time:
+                errors['reading_time'] = "Reading time is required."
+            else:
+                try:
+                    reading_time_val = int(reading_time)
+                    if reading_time_val < 1 or reading_time_val > 120:
+                        errors['reading_time'] = "Reading time must be between 1 and 120 minutes."
+                except ValueError:
+                    errors['reading_time'] = "Invalid reading time format."
+
+            if not publish_date:
+                errors['publish_date'] = "Publish date is required."
+
             # Validate package ID if provided
             package_id_value = (request.POST.get("package_id") or "").strip()
             if package_id_value:
                 # Check format
-                import re
                 if not re.match(r'^PKG\d{3}$', package_id_value.upper()):
-                    messages.error(request, "Package ID must be in format PKG followed by 3 digits (e.g., PKG001).")
-                    return render(request, "admin/blog/add_blog.html", {"categories": categories})
-                
+                    errors['package_id'] = "Package ID must be in format PKG followed by 3 digits (e.g., PKG001)."
                 # Check if package exists
-                if not TravelPackage.objects.filter(package_id=package_id_value.upper()).exists():
-                    messages.error(request, "Type valid package ID. The entered package ID does not exist.")
-                    return render(request, "admin/blog/add_blog.html", {"categories": categories})
-            else:
-                package_id_value = None
+                elif not TravelPackage.objects.filter(package_id=package_id_value.upper()).exists():
+                    errors['package_id'] = "Type valid package ID. The entered package ID does not exist."
+                else:
+                    form_data['package_id'] = package_id_value.upper()
 
+            # If there are validation errors, return with form data and errors
+            if errors:
+                return render(request, "admin/blog/add_blog.html", {
+                    "categories": categories,
+                    "form_data": form_data,
+                    "errors": errors
+                })
+
+            # If no errors, proceed with creation
             blog = Blog.objects.create(
                 title=title,
                 slug=slug,
                 excerpt=excerpt,
                 content=content,
                 status=request.POST.get("status", "draft"),
-                category=category_slug,
-                package_id=package_id_value,
+                category=request.POST.get("category", ""),
+                package_id=package_id_value.upper() if package_id_value else None,
                 author_name=author_name,
                 author_summary=author_summary,
                 reading_time=reading_time_val,
                 publish_date=publish_date,
-                tags=hashtags_value,
+                tags=form_data['hashtags'],
             )
 
             if request.FILES.get("featured_image"):

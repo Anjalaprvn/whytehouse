@@ -97,6 +97,34 @@
       box-shadow:0 0 0 3px rgba(215,170,60,.15);
     }
 
+    /* Error styles */
+    .field.error input,
+    .field.error select,
+    .field.error textarea,
+    .field.error input[type="date"] {
+      border-color: #ef4444;
+      background: #fef2f2;
+    }
+    .field.error input:focus,
+    .field.error select:focus,
+    .field.error textarea:focus,
+    .field.error input[type="date"]:focus {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+    }
+    .error-message {
+      color: #ef4444;
+      font-size: 13px;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .error-message::before {
+      content: '⚠';
+      font-size: 14px;
+    }
+
     .row-2{
       display:grid;
       grid-template-columns:1fr 1fr;
@@ -316,20 +344,23 @@
         <h2>Basic Information</h2>
 
         <div class="grid">
-          <div class="field">
+          <div class="field{% if errors.title %} error{% endif %}">
             <div class="label">Blog Title <span class="req">*</span></div>
-            <input type="text" name="title" placeholder="Top 10 Beaches to Visit in Goa" value="{% if blog %}{{ blog.title }}{% endif %}" required>
+            <input type="text" name="title" placeholder="Top 10 Beaches to Visit in Goa" value="{% if form_data %}{{ form_data.title }}{% endif %}" required>
+            {% if errors.title %}<div class="error-message">{{ errors.title }}</div>{% endif %}
           </div>
 
-          <div class="field">
+          <div class="field{% if errors.slug %} error{% endif %}">
             <div class="label">URL Slug <span class="req">*</span></div>
-            <input type="text" name="slug" placeholder="top-10-beaches-goa" value="{% if blog %}{{ blog.slug }}{% endif %}" required>
+            <input type="text" name="slug" placeholder="top-10-beaches-goa" value="{% if form_data %}{{ form_data.slug }}{% endif %}" required>
             <div class="help">URL: <span style="color:#475569">/blog/your-slug-here</span></div>
+            {% if errors.slug %}<div class="error-message">{{ errors.slug }}</div>{% endif %}
           </div>
 
-          <div class="field" style="grid-column:1/-1">
+          <div class="field{% if errors.excerpt %} error{% endif %}" style="grid-column:1/-1">
             <div class="label">Excerpt <span class="req">*</span></div>
-            <textarea name="excerpt" placeholder="Brief description for preview..." required>{% if blog %}{{ blog.excerpt }}{% endif %}</textarea>
+            <textarea name="excerpt" placeholder="Brief description for preview..." required>{% if form_data %}{{ form_data.excerpt }}{% endif %}</textarea>
+            {% if errors.excerpt %}<div class="error-message">{{ errors.excerpt }}</div>{% endif %}
           </div>
         </div>
 
@@ -337,16 +368,16 @@
           <div class="field">
             <div class="label">Status</div>
             <select name="status">
-              <option value="draft" {% if blog and blog.status == 'draft' %}selected{% endif %}>Draft</option>
-              <option value="published" {% if blog and blog.status == 'published' %}selected{% endif %}>Published</option>
+              <option value="draft" {% if form_data and form_data.status == 'draft' %}selected{% endif %}>Draft</option>
+              <option value="published" {% if form_data and form_data.status == 'published' %}selected{% endif %}>Published</option>
               
             </select>
           </div>
            <div class="row-2">
-          <div class="field">
+          <div class="field{% if errors.package_id %} error{% endif %}">
             <div class="label">Link to Package (Optional)</div>
-            <input type="text" name="package_id" id="package_id" placeholder="Package ID (e.g., PKG001)" value="{% if blog %}{{ blog.package_id }}{% endif %}" pattern="PKG\d{3}" title="Package ID must be in format PKG followed by 3 digits (e.g., PKG001)">
-            <div id="package-id-error" style="color: #ef4444; font-size: 13px; margin-top: 6px; display: none;"></div>
+            <input type="text" name="package_id" id="package_id" placeholder="Package ID (e.g., PKG001)" value="{% if form_data %}{{ form_data.package_id }}{% endif %}" pattern="PKG\d{3}" title="Package ID must be in format PKG followed by 3 digits (e.g., PKG001)">
+            {% if errors.package_id %}<div class="error-message">{{ errors.package_id }}</div>{% endif %}
           </div>
         </div>
       </div>
@@ -355,12 +386,13 @@
           <div class="field">
            <label for="category">Category</label>
         <select id="category" name="category" required
-        style="width:50%;padding:10px;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;background:#f9fafb;">
+        style="width:50%;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:14px;background:var(--input);{% if errors.category %}border-color:#ef4444;background:#fef2f2;{% endif %}">
        <option value="">Select Category</option>
          {% for c in categories %}
-     <option value="{{ c.slug }}">{{ c.name }}</option>
+     <option value="{{ c.slug }}" {% if form_data and form_data.category == c.slug %}selected{% endif %}>{{ c.name }}</option>
   {% endfor %}
 </select>
+{% if errors.category %}<div class="error-message">{{ errors.category }}</div>{% endif %}
 
        
       <!-- AUTHOR & META INFORMATION -->
@@ -368,24 +400,28 @@
         <h2>Author &amp; Meta Information</h2>
 
         <div class="grid">
-          <div class="field" style="grid-column:1/-1">
+          <div class="field{% if errors.author_name %} error{% endif %}" style="grid-column:1/-1">
             <div class="label">Author Name <span class="req">*</span></div>
-            <input type="text" name="author_name" placeholder="John Doe" value="{% if blog %}{{ blog.author_name }}{% endif %}" required>
+            <input type="text" name="author_name" placeholder="John Doe" value="{% if form_data %}{{ form_data.author_name }}{% endif %}" required>
+            {% if errors.author_name %}<div class="error-message">{{ errors.author_name }}</div>{% endif %}
           </div>
 
-          <div class="field" style="grid-column:1/-1">
+          <div class="field{% if errors.author_summary %} error{% endif %}" style="grid-column:1/-1">
             <div class="label">Author Summary <span class="req">*</span></div>
-            <textarea name="author_summary" placeholder="Brief description about the author..." required>{% if blog %}{{ blog.author_summary }}{% endif %}</textarea>
+            <textarea name="author_summary" placeholder="Brief description about the author..." required>{% if form_data %}{{ form_data.author_summary }}{% endif %}</textarea>
+            {% if errors.author_summary %}<div class="error-message">{{ errors.author_summary }}</div>{% endif %}
           </div>
 
-          <div class="field">
+          <div class="field{% if errors.reading_time %} error{% endif %}">
             <div class="label">Reading Time (minutes) <span class="req">*</span></div>
-            <input type="number" name="reading_time" min="1" placeholder="5" value="{% if blog %}{{ blog.reading_time }}{% endif %}" required>
+            <input type="number" name="reading_time" min="1" placeholder="5" value="{% if form_data %}{{ form_data.reading_time }}{% endif %}" required>
+            {% if errors.reading_time %}<div class="error-message">{{ errors.reading_time }}</div>{% endif %}
           </div>
 
-          <div class="field">
+          <div class="field{% if errors.publish_date %} error{% endif %}">
             <div class="label">Publish Date <span class="req">*</span></div>
-            <input type="date" name="publish_date" value="{% if blog %}{{ blog.publish_date }}{% endif %}" required>
+            <input type="date" name="publish_date" value="{% if form_data %}{{ form_data.publish_date }}{% endif %}" required>
+            {% if errors.publish_date %}<div class="error-message">{{ errors.publish_date }}</div>{% endif %}
           </div>
         </div>
       </div>
@@ -396,7 +432,7 @@
 
         <div class="field">
           <div class="label">Image URL or Upload</div>
-          <input type="text" name="featured_image_url" placeholder="https://example.com/image.jpg" value="{% if blog %}{{ blog.featured_image_url }}{% endif %}">
+          <input type="text" name="featured_image_url" placeholder="https://example.com/image.jpg" value="{% if form_data %}{{ form_data.featured_image_url }}{% endif %}">
         </div>
 
         <div class="upload-line" style="margin-top:12px">
@@ -480,7 +516,7 @@
         </div>
 
         <div id="hashtags-container" style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;"></div>
-        <input type="hidden" id="hashtags-hidden" name="hashtags" value="{% if blog %}{{ blog.hashtags }}{% endif %}">
+        <input type="hidden" id="hashtags-hidden" name="hashtags" value="{% if form_data %}{{ form_data.hashtags }}{% endif %}">
 
         <p class="help" style="margin-top:10px">Add individual hashtags using the "#add" button or enter comma-separated tags</p>
       </div>
@@ -489,8 +525,9 @@
       <div class="card">
         <h2>Content <span class="req">*</span></h2>
 
-        <div class="field">
-          <textarea name="content" rows="9" placeholder="Write your blog content here..." required>{% if blog %}{{ blog.content }}{% endif %}</textarea>
+        <div class="field{% if errors.content %} error{% endif %}">
+          <textarea name="content" rows="9" placeholder="Write your blog content here..." required>{% if form_data %}{{ form_data.content }}{% endif %}</textarea>
+          {% if errors.content %}<div class="error-message">{{ errors.content }}</div>{% endif %}
           <div class="help" style="margin-top: 10px; padding: 12px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px;">
             <strong>📷 How to add images:</strong> After uploading content images above, use <span style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{"{"}}image1{{"}"}}</span>, <span style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{"{"}}image2{{"}"}}</span>, etc. in your content where you want images to appear.
           </div>

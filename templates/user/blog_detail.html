@@ -133,6 +133,18 @@ body > nav {
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
+.author-initial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--brand-gold);
+    background: var(--brand-gold-soft);
+    border: 3px solid var(--brand-gold);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
 /* ===== PAGE LAYOUT ===== */
 .page-wrapper {
     position: relative;
@@ -253,43 +265,39 @@ body > nav {
 }
 
 .gallery-item {
-    display: flex;
-    gap: 15px;
-    align-items: flex-start;
-    cursor: pointer;
-    padding: 12px;
+    width: 100%;
+    height: 180px;
     border-radius: 18px;
+    overflow: hidden;
+    cursor: pointer;
     transition: all 0.2s ease;
     background: var(--white);
-    border: 1px solid transparent;
-    width: 100%;
+    border: 2px solid transparent;
     box-sizing: border-box;
+    position: relative;
+    padding: 0;
+    display: block;
 }
 
 .gallery-item:hover {
-    background: var(--brand-gold-soft);
-    border-color: var(--brand-gold-light);
+    border-color: var(--brand-gold);
     box-shadow: 0 8px 20px -12px var(--brand-gold);
 }
 
 .gallery-item.active {
-    background: linear-gradient(135deg, var(--brand-gold-soft) 0%, #fff 100%);
     border-color: var(--brand-gold);
     box-shadow: 0 8px 20px -12px var(--brand-gold);
 }
 
 .gallery-thumb {
-    width: 100px;
-    height: 100px;
-    border-radius: 14px;
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
     overflow: hidden;
-    flex-shrink: 0;
     background: #eee;
     box-shadow: 0 4px 10px -5px rgba(0,0,0,0.2);
-    border: 2px solid var(--white);
-    transition: border-color 0.2s ease;
+    border: none;
 }
-
 .gallery-item:hover .gallery-thumb {
     border-color: var(--brand-gold);
 }
@@ -301,7 +309,6 @@ body > nav {
     display: block;
     transition: transform 0.3s ease;
 }
-
 .gallery-item:hover .gallery-thumb img {
     transform: scale(1.1);
 }
@@ -613,7 +620,21 @@ body > nav {
     transition: var(--transition);
 }
 
-.author-card:hover .author-card-img {
+.author-card .author-initial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--brand-gold);
+    background: var(--brand-gold-soft);
+    border: 4px solid var(--brand-gold);
+    box-shadow: 0 10px 25px -10px var(--brand-gold);
+    transition: var(--transition);
+}
+
+.author-card:hover .author-card-img,
+.author-card:hover .author-initial {
     transform: scale(1.05) rotate(5deg);
 }
 
@@ -723,15 +744,15 @@ body > nav {
         <h1>{{ blog.title }}</h1>
 
         <div class="author-meta">
-            <img src="{% static 'images/person.png' %}" class="author-img" alt="Author">
-            <span>
-                <i class="fas fa-pen-fancy"></i>
-                {% if blog.author %}{{ blog.author }} • {% endif %}
-                <i class="far fa-calendar-alt"></i>
-                {{ blog.publish_date|date:"M d, Y" }}
-                {% if blog.reading_time %}
-                    <i class="far fa-clock"></i> {{ blog.reading_time }} min read
+            <div class="author-img author-initial">
+                {% if blog.author_name %}
+                    {{ blog.author_name|first|upper }}
+                {% else %}
+                    W
                 {% endif %}
+            </div>
+            <span>
+                {% if blog.author_name %}{{ blog.author_name }}{% else %}Whyte House{% endif %}
             </span>
         </div>
     </div>
@@ -773,14 +794,20 @@ body > nav {
             </article>
 
             <div class="author-card">
-                <img src="{% static 'images/person.png' %}" class="author-card-img" alt="Author">
+                <div class="author-card-img author-initial">
+                    {% if blog.author_name %}
+                        {{ blog.author_name|first|upper }}
+                    {% else %}
+                        W
+                    {% endif %}
+                </div>
                 <div class="author-info">
                     <h4>
-                        About <b>{% if blog.author %}{{ blog.author }}{% else %}Whyte House{% endif %}</b>
+                        About <b>{% if blog.author_name %}{{ blog.author_name }}{% else %}Whyte House{% endif %}</b>
                     </h4>
                     <p>
-                        {% if blog.author_bio %}
-                            {{ blog.author_bio }}
+                        {% if blog.author_summary %}
+                            {{ blog.author_summary }}
                         {% else %}
                             Travel stories and curated insights from Whyte House. Join us on a journey through the most beautiful destinations and hidden gems around the world.
                         {% endif %}
@@ -805,15 +832,7 @@ body > nav {
                 </div>
             </div>
 
-            <div class="sidebar-footer">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <div class="progress-text">
-                    <span>Scroll progress</span>
-                    <span id="scrollPercent">0%</span>
-                </div>
-            </div>
+            
         </aside>
     </main>
 </div>
@@ -836,6 +855,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!images.length) {
         console.log('No images found in article body'); // Debug log
+        
+        // Hide the sidebar if no images
+        const sidebar = document.getElementById('fixedSidebar');
+        if (sidebar) {
+            sidebar.style.display = 'none';
+        }
         
         // If database has images but we didn't find them, show a message
         if (debugImageCount && parseInt(debugImageCount.textContent) > 0) {
