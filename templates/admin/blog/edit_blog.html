@@ -459,7 +459,7 @@
           <div class="image-card" data-image-id="{{ img.id }}">
             <img src="{{ img.image.url }}" alt="Content image {{ forloop.counter }}">
             <div class="image-card-footer">
-              <span class="image-tag" onclick="copyToClipboard('{% verbatim %}{{{% endverbatim %}image{{ forloop.counter }}{% verbatim %}}}{% endverbatim %}')" title="Click to copy">{% verbatim %}{{{% endverbatim %}image{{ forloop.counter }}{% verbatim %}}}{% endverbatim %}</span>
+              <span class="image-tag" onclick="copyImageTag('image{{ forloop.counter }}')" title="Click to copy">image{{ forloop.counter }}</span>
               <button type="button" class="remove-image-btn" onclick="removeExistingImage({{ img.id }})" title="Remove image">✕</button>
             </div>
           </div>
@@ -590,11 +590,11 @@ function updateContentImagesPreview() {
         const imageNumber = existingImagesCount + index + 1;
         const card = document.createElement('div');
         card.className = 'image-card';
-        const imageTag = '{{image' + imageNumber + '}}';
+        const imageLabel = 'image' + imageNumber;
         card.innerHTML = `
             <img src="${img.dataUrl}" alt="${img.name}">
             <div class="image-card-footer">
-                <span class="image-tag" onclick="copyToClipboard('${imageTag}')" title="Click to copy">${imageTag}</span>
+                <span class="image-tag" onclick="copyImageTag('${imageLabel}')" title="Click to copy">${imageLabel}</span>
                 <button type="button" class="remove-image-btn" onclick="removeContentImage(${index})" title="Remove image">✕</button>
             </div>
         `;
@@ -634,6 +634,22 @@ function removeExistingImage(imageId) {
 
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.style.background = '#dcfce7';
+        btn.style.color = '#166534';
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.background = '';
+            btn.style.color = '';
+        }, 1500);
+    });
+}
+
+function copyImageTag(imageNum) {
+    const tagText = '{{' + imageNum + '}}';
+    navigator.clipboard.writeText(tagText).then(() => {
         const btn = event.target;
         const originalText = btn.textContent;
         btn.textContent = 'Copied!';
