@@ -792,7 +792,14 @@ def hospitality(request):
     Display all hospitality properties
     """
     properties = Property.objects.filter(is_active=True)
-    return render(request, 'user/hospitality.html', {'properties': properties})
+    
+    # Get featured testimonials for the testimonial section
+    testimonials = Feedback.objects.filter(featured=True).order_by('-created_at')[:6]
+    
+    return render(request, 'user/hospitality.html', {
+        'properties': properties,
+        'testimonials': testimonials
+    })
 
 def hospitality_detail(request, property_id):
     """

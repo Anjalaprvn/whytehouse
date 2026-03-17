@@ -206,6 +206,7 @@ def dashboard(request):
     total_blogs = Blog.objects.count()
     international_packages = TravelPackage.objects.filter(category='International').count()
     domestic_packages = TravelPackage.objects.filter(category='Domestic').count()
+    total_properties = Property.objects.count()
     
     # Upcoming bookings (vouchers with future check-in dates)
     upcoming_bookings = Voucher.objects.filter(checkin_date__gte=datetime.now()).order_by('checkin_date')[:3]
@@ -226,6 +227,7 @@ def dashboard(request):
         'total_blogs': total_blogs,
         'international_packages': international_packages,
         'domestic_packages': domestic_packages,
+        'total_properties': total_properties,
         'upcoming_bookings': upcoming_bookings,
         'recent_invoices': recent_invoices,
         'recent_leads': recent_leads,

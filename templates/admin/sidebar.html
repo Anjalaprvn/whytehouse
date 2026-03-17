@@ -15,7 +15,23 @@
   margin:0;
   padding:0;
   box-sizing:border-box;
-  font-family: "Poppins", sans-serif;
+  font-family:"Poppins",sans-serif;
+}
+
+:root{
+  --sidebar-width:280px;
+  --sidebar-collapsed:70px;
+  --sidebar-dark:#0f0f0f;
+  --sidebar-dark-2:#1a1a1a;
+  --active-gold:#d4a847;
+  --content-bg:#f5f7fb;
+  --text-muted:#666;
+}
+
+html, body{
+  width:100%;
+  min-height:100%;
+  overflow-x:hidden;
 }
 
 body{
@@ -30,9 +46,9 @@ body{
 
 /* Sidebar */
 .sidebar{
-  width:280px;
+  width:var(--sidebar-width);
   height:100vh;
-  background: linear-gradient(180deg, #0f0f0f, #1a1a1a);
+  background:linear-gradient(180deg, var(--sidebar-dark), var(--sidebar-dark-2));
   color:#fff;
   display:flex;
   flex-direction:column;
@@ -41,43 +57,75 @@ body{
   top:0;
   transition:0.3s ease;
   z-index:1000;
+  overflow:hidden;
 }
 
-/* Collapsed State */
+/* Desktop collapsed state */
 #toggle-sidebar:checked ~ .sidebar{
-  width:70px;
+  width:var(--sidebar-collapsed);
 }
 
 /* Main Content */
 .main-content{
   flex:1;
-  margin-left:280px;
+  margin-left:var(--sidebar-width);
   transition:0.3s ease;
   min-height:100vh;
+  position:relative;
+  width:calc(100% - var(--sidebar-width));
 }
 
 #toggle-sidebar:checked ~ .main-content{
-  margin-left:70px;
+  margin-left:var(--sidebar-collapsed);
+  width:calc(100% - var(--sidebar-collapsed));
 }
 
-/* Logo */
+/* Logo Area */
 .logo{
   padding:20px;
   display:flex;
   align-items:center;
-  justify-content:space-between;
+  justify-content:flex-start;
   border-bottom:1px solid rgba(255,255,255,0.08);
+  min-height:80px;
+  flex-shrink:0;
 }
 
 .logo img{
   height:40px;
+  width:auto;
 }
 
-/* Toggle Button */
+/* Outside top toggle button */
+.toggle-btn-wrapper{
+  position:fixed;
+  left:290px;
+  top:20px;
+  z-index:1100;
+  transition:0.3s ease;
+}
+
+#toggle-sidebar:checked ~ .toggle-btn-wrapper{
+  left:80px;
+}
+
 .toggle-btn{
-  font-size:20px;
+  font-size:22px;
   cursor:pointer;
-  color:#fff;
+  color:#222;
+  background:#fff;
+  width:42px;
+  height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.08);
+  transition:0.3s ease;
+}
+
+.toggle-btn:hover{
+  background:#f4f4f4;
 }
 
 /* Menu */
@@ -85,6 +133,23 @@ body{
   flex:1;
   padding:20px 10px;
   overflow-y:auto;
+  overflow-x:hidden;
+}
+
+/* Scrollbar */
+.menu::-webkit-scrollbar{
+  width:6px;
+}
+.menu::-webkit-scrollbar-track{
+  background:rgba(255,255,255,0.04);
+}
+.menu::-webkit-scrollbar-thumb{
+  background:rgba(255,255,255,0.18);
+  border-radius:10px;
+}
+.menu{
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,0.18) rgba(255,255,255,0.04);
 }
 
 .menu a,
@@ -100,9 +165,9 @@ body{
   transition:0.3s;
   font-size:16px;
   cursor:pointer;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
 .menu a:hover,
@@ -110,8 +175,9 @@ body{
   background:rgba(255,255,255,0.08);
 }
 
-.menu a.active{
-  background:#d4a847;
+.menu a.active,
+.menu label.active{
+  background:var(--active-gold);
   color:#000;
   font-weight:600;
 }
@@ -121,18 +187,7 @@ body{
   width:22px;
   height:22px;
   stroke:currentColor;
-}
-
-/* Hide text when collapsed */
-#toggle-sidebar:checked ~ .sidebar .menu a,
-#toggle-sidebar:checked ~ .sidebar .menu label{
-  justify-content:center;
-}
-
-#toggle-sidebar:checked ~ .sidebar .menu a span,
-#toggle-sidebar:checked ~ .sidebar .menu label span,
-#toggle-sidebar:checked ~ .sidebar .bottom-user .info{
-  display:none;
+  stroke-width:2;
 }
 
 /* Accordion */
@@ -160,13 +215,13 @@ body{
 }
 
 .submenu a.active{
-  background:#d4a847;
+  background:var(--active-gold);
   color:#000;
   font-weight:600;
 }
 
 .accordion input:checked ~ .submenu{
-  max-height:400px;
+  max-height:500px;
 }
 
 .arrow{
@@ -185,6 +240,7 @@ body{
   display:flex;
   align-items:center;
   justify-content:space-between;
+  flex-shrink:0;
 }
 
 .bottom-user .info strong{
@@ -203,6 +259,9 @@ body{
   font-size:20px;
   padding:6px 10px;
   border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 .logout:hover{
@@ -212,7 +271,8 @@ body{
 /* Content Styles */
 .content-wrapper{
   padding:30px;
-  background:#f5f7fb;
+  padding-top:80px;
+  background:var(--content-bg);
   min-height:100vh;
   position:relative;
 }
@@ -222,17 +282,98 @@ body{
   top:30px;
   right:30px;
   font-size:14px;
-  color:#666;
+  color:var(--text-muted);
   font-weight:500;
 }
 
-/* Responsive */
+/* Collapsed desktop sidebar content */
+#toggle-sidebar:checked ~ .sidebar .menu a,
+#toggle-sidebar:checked ~ .sidebar .menu label{
+  justify-content:center;
+  padding:14px 0;
+  gap:0;
+}
+
+#toggle-sidebar:checked ~ .sidebar .menu a span,
+#toggle-sidebar:checked ~ .sidebar .menu label span,
+#toggle-sidebar:checked ~ .sidebar .submenu,
+#toggle-sidebar:checked ~ .sidebar .bottom-user .info{
+  display:none !important;
+}
+
+#toggle-sidebar:checked ~ .sidebar .logo{
+  justify-content:center;
+  padding:20px 0;
+}
+
+#toggle-sidebar:checked ~ .sidebar .logo img{
+  height:34px;
+}
+
+#toggle-sidebar:checked ~ .sidebar .bottom-user{
+  justify-content:center;
+  padding:16px 0;
+}
+
+/* Responsive mobile */
 @media(max-width:768px){
   .sidebar{
-    width:70px;
+    left:-280px;
+    width:280px;
   }
+
+  #toggle-sidebar:checked ~ .sidebar{
+    left:0;
+    width:280px;
+  }
+
   .main-content{
-    margin-left:70px;
+    margin-left:0;
+    width:100%;
+  }
+
+  #toggle-sidebar:checked ~ .main-content{
+    margin-left:0;
+    width:100%;
+  }
+
+  .toggle-btn-wrapper{
+    left:20px;
+  }
+
+  #toggle-sidebar:checked ~ .toggle-btn-wrapper{
+    left:290px;
+  }
+
+  #toggle-sidebar:checked ~ .sidebar .menu a,
+  #toggle-sidebar:checked ~ .sidebar .menu label{
+    justify-content:flex-start;
+    padding:14px 16px;
+    gap:12px;
+  }
+
+  #toggle-sidebar:checked ~ .sidebar .menu a span,
+  #toggle-sidebar:checked ~ .sidebar .menu label span,
+  #toggle-sidebar:checked ~ .sidebar .bottom-user .info{
+    display:block !important;
+  }
+
+  #toggle-sidebar:checked ~ .sidebar .submenu{
+    display:block !important;
+  }
+
+  #toggle-sidebar:checked ~ .sidebar .logo{
+    justify-content:flex-start;
+    padding:20px;
+  }
+
+  #toggle-sidebar:checked ~ .sidebar .logo img{
+    height:40px;
+  }
+
+  #toggle-sidebar:checked ~ .sidebar .bottom-user{
+    justify-content:space-between;
+    padding:16px 18px;
   }
 }
 </style>
@@ -240,25 +381,25 @@ body{
 
 <body>
 
-<!-- Hidden Toggle Checkbox -->
 <input type="checkbox" id="toggle-sidebar">
+
+<div class="toggle-btn-wrapper">
+  <label for="toggle-sidebar" class="toggle-btn">☰</label>
+</div>
 
 <div class="sidebar">
 
   <div class="logo">
     <img src="{% static 'images/logo.png' %}" alt="Whyte House">
-    <label for="toggle-sidebar" class="toggle-btn">☰</label>
   </div>
 
   <div class="menu">
-    
 
     <a href="{% url 'admin_panel:dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}>
       <svg fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
       <span>Dashboard</span>
     </a>
 
-    <!-- Sales Accordion -->
     <div class="accordion">
       <input type="checkbox" id="sales-toggle" {% if request.resolver_match.namespace == 'sales' and request.resolver_match.url_name != 'invoice_report' and request.resolver_match.url_name != 'voucher_report' and request.resolver_match.url_name != 'leads_report' and request.resolver_match.url_name != 'profit_report' and request.resolver_match.url_name != 'customer_report' %}checked{% endif %}>
       <label for="sales-toggle" {% if request.resolver_match.namespace == 'sales' and request.resolver_match.url_name != 'invoice_report' and request.resolver_match.url_name != 'voucher_report' and request.resolver_match.url_name != 'leads_report' and request.resolver_match.url_name != 'profit_report' and request.resolver_match.url_name != 'customer_report' %}class="active"{% endif %}>
@@ -329,11 +470,11 @@ body{
       <svg fill="none" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h6"/></svg>
       <span>Blog Management</span>
     </a>
+
     <a href="{% url 'feedback:feedback_list' %}" {% if request.resolver_match.namespace == 'feedback' %}class="active"{% endif %}>
       <svg fill="none" viewBox="0 0 24 24"><path d="M12 15l-5-5h10l-5 5z"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
       <span>Feedback Management</span>
     </a>
-
 
   </div>
 
@@ -343,7 +484,7 @@ body{
       <span>admin@whytehouse.com</span>
     </div>
     <a href="{% url 'admin_panel:logout' %}" class="logout" title="Logout">
-      <svg fill="none" viewBox="0 0 24 24" style="width:22px; height:22px; stroke:currentColor; stroke-width:2;">
+      <svg fill="none" viewBox="0 0 24 24" style="width:22px;height:22px;stroke:currentColor;stroke-width:2;">
         <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
         <polyline points="16 17 21 12 16 7"/>
         <line x1="21" y1="12" x2="9" y2="12"/>
@@ -355,37 +496,42 @@ body{
 
 <div class="main-content">
   <div class="content-wrapper">
+    <div class="date-display" id="current-date"></div>
+
     {% if messages %}
       <div class="alert-container" style="margin-bottom:20px;">
         {% for message in messages %}
-          <div class="alert alert-{{ message.tags }}" {% if message.tags == 'success' %}style="padding:12px 18px; border-radius:8px; margin-bottom:6px; background:#d1e7dd; color:#0f5132;"{% else %}style="padding:12px 18px; border-radius:8px; margin-bottom:6px; background:#f8d7da; color:#842029;"{% endif %}>
+          <div class="alert alert-{{ message.tags }}"
+               {% if message.tags == 'success' %}
+               style="padding:12px 18px;border-radius:8px;margin-bottom:6px;background:#d1e7dd;color:#0f5132;"
+               {% else %}
+               style="padding:12px 18px;border-radius:8px;margin-bottom:6px;background:#f8d7da;color:#842029;"
+               {% endif %}>
             {{ message }}
           </div>
         {% endfor %}
       </div>
     {% endif %}
-    <div class="date-display" id="current-date"></div>
+
     {% block content %}
-    <!-- Default content will go here -->
     {% endblock %}
   </div>
 </div>
 
 <script>
-  // Display current date
-  const dateDisplay = document.getElementById('current-date');
-  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  const today = new Date();
-  dateDisplay.textContent = today.toLocaleDateString('en-US', options);
+const dateDisplay = document.getElementById('current-date');
+const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+const today = new Date();
+dateDisplay.textContent = today.toLocaleDateString('en-US', options);
 
-  setTimeout(function() {
-    const alerts = document.querySelectorAll('.alert-success, .alert, [class*="alert-"]');
-    alerts.forEach(alert => {
-      alert.style.transition = 'opacity 0.5s ease';
-      alert.style.opacity = '0';
-      setTimeout(() => alert.remove(), 500);
-    });
-  }, 3000);
+setTimeout(function() {
+  const alerts = document.querySelectorAll('.alert-success, .alert, [class*="alert-"]');
+  alerts.forEach(alert => {
+    alert.style.transition = 'opacity 0.5s ease';
+    alert.style.opacity = '0';
+    setTimeout(() => alert.remove(), 500);
+  });
+}, 3000);
 </script>
 
 {% block extra_js %}{% endblock %}
