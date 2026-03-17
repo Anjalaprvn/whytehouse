@@ -638,6 +638,7 @@ def travel_package_add(request):
                 pass
         
         category = request.POST.get('category')
+        package_id = request.POST.get('package_id')
         TravelPackage.objects.create(
             package_id=package_id,
             name=name,
@@ -2007,17 +2008,8 @@ def add_blog(request):
             if not publish_date:
                 errors['publish_date'] = "Publish date is required."
 
-            # Validate package ID if provided
-            package_id_value = (request.POST.get("package_id") or "").strip()
-            if package_id_value:
-                # Check format
-                if not re.match(r'^PKG\d{3}$', package_id_value.upper()):
-                    errors['package_id'] = "Package ID must be in format PKG followed by 3 digits (e.g., PKG001)."
-                # Check if package exists
-                elif not TravelPackage.objects.filter(package_id=package_id_value.upper()).exists():
-                    errors['package_id'] = "Type valid package ID. The entered package ID does not exist."
-                else:
-                    form_data['package_id'] = package_id_value.upper()
+            # Package ID is optional
+            package_id_value = (request.POST.get("package_id") or "").strip() or None
 
             # If there are validation errors, return with form data and errors
             if errors:
@@ -2035,7 +2027,7 @@ def add_blog(request):
                 content=content,
                 status=request.POST.get("status", "draft"),
                 category=request.POST.get("category", ""),
-                package_id=package_id_value.upper() if package_id_value else None,
+                package_id=package_id_value,
                 author_name=author_name,
                 author_summary=author_summary,
                 reading_time=reading_time_val,
@@ -2084,21 +2076,8 @@ def edit_blog(request, blog_id):
             # Get category slug from dropdown
             category_slug = request.POST.get("category", "")
             
-            # Validate package ID if provided
-            package_id_value = (request.POST.get("package_id") or "").strip()
-            if package_id_value:
-                # Check format
-                import re
-                if not re.match(r'^PKG\d{3}$', package_id_value.upper()):
-                    messages.error(request, "Package ID must be in format PKG followed by 3 digits (e.g., PKG001).")
-                    return render(request, "admin/blog/edit_blog.html", {"blog": blog, "categories": categories})
-                
-                # Check if package exists
-                if not TravelPackage.objects.filter(package_id=package_id_value.upper()).exists():
-                    messages.error(request, "Type valid package ID. The entered package ID does not exist.")
-                    return render(request, "admin/blog/edit_blog.html", {"blog": blog, "categories": categories})
-            else:
-                package_id_value = None
+            # Package ID is optional
+            package_id_value = (request.POST.get("package_id") or "").strip() or None
             
             blog.title = title
             blog.slug = slug
