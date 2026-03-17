@@ -256,12 +256,25 @@ body > nav {
     overflow-x: hidden;
     padding-right: 10px;
     flex: 1;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    scrollbar-width: thin;
+    scrollbar-color: var(--brand-gold-light) transparent;
 }
 
 .image-gallery::-webkit-scrollbar {
-    display: none;
+    width: 6px;
+}
+
+.image-gallery::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.image-gallery::-webkit-scrollbar-thumb {
+    background: var(--brand-gold-light);
+    border-radius: 3px;
+}
+
+.image-gallery::-webkit-scrollbar-thumb:hover {
+    background: var(--brand-gold);
 }
 
 .gallery-item {
@@ -277,6 +290,7 @@ body > nav {
     position: relative;
     padding: 0;
     display: block;
+    flex-shrink: 0;
 }
 
 .gallery-item:hover {
