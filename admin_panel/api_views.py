@@ -1,7 +1,8 @@
 from django.db.models import Q, Sum
-from rest_framework import viewsets, status, permissions
+from rest_framework import viewsets, permissions
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
+
 from .models import (
     Blog,
     BlogCategory,
@@ -16,8 +17,10 @@ from .models import (
     Employee,
     Resort,
     Voucher,
-    Invoice,Feedback,
+    Invoice,
+    Feedback,
 )
+
 from .serializers import (
     BlogSerializer,
     BlogListSerializer,
@@ -38,11 +41,11 @@ from .serializers import (
     FeedbackSerializer,
 )
 
+
 # ==================== BLOG CATEGORY VIEWSET ====================
 class BlogCategoryViewSet(viewsets.ModelViewSet):
-
     serializer_class = BlogCategorySerializer
-    queryset = BlogCategory.objects.all().order_by('order', 'name')
+    queryset = BlogCategory.objects.all().order_by("order", "name")
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -64,32 +67,34 @@ class BlogCategoryViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def active(self, request):
-        """Get all active categories"""
         categories = self.get_queryset().filter(is_active=True)
         serializer = self.get_serializer(categories, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=["get"])
     def blogs(self, request, pk=None):
-        """Get all blogs for a specific category"""
         category = self.get_object()
-        blogs = Blog.objects.filter(status="published", category=category.slug).order_by("-publish_date")
+        blogs = Blog.objects.filter(
+            status="published",
+            category=category.slug
+        ).order_by("-publish_date")
         serializer = BlogListSerializer(blogs, many=True, context={"request": request})
         return Response(serializer.data)
 
 
 # ==================== BLOG VIEWSET ====================
 class BlogViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for Blogs
-    Filters: search, status, category
-    """
     queryset = Blog.objects.all().order_by("-created_at")
 
     def get_serializer_class(self):
         if self.action == "list":
             return BlogListSerializer
         return BlogSerializer
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx["request"] = self.request
+        return ctx
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -100,7 +105,8 @@ class BlogViewSet(viewsets.ModelViewSet):
                 Q(title__icontains=search_query) |
                 Q(author_name__icontains=search_query) |
                 Q(slug__icontains=search_query) |
-                Q(content__icontains=search_query)
+                Q(content__icontains=search_query) |
+                Q(excerpt__icontains=search_query)
             )
 
         status_filter = (self.request.query_params.get("status") or "").strip()
@@ -111,20 +117,26 @@ class BlogViewSet(viewsets.ModelViewSet):
         if category_filter:
             qs = qs.filter(category=category_filter)
 
+        package_id = (self.request.query_params.get("package_id") or "").strip()
+        if package_id:
+            qs = qs.filter(package_id=package_id)
+
         return qs
 
     def perform_create(self, serializer):
         hashtags_value = (self.request.data.get("hashtags") or "").strip()
+        tags_value = (self.request.data.get("tags") or "").strip()
         serializer.save(
             hashtags=hashtags_value,
-            tags=hashtags_value or serializer.validated_data.get("tags", "")
+            tags=tags_value or hashtags_value
         )
 
     def perform_update(self, serializer):
         hashtags_value = (self.request.data.get("hashtags") or "").strip()
+        tags_value = (self.request.data.get("tags") or "").strip()
         serializer.save(
             hashtags=hashtags_value,
-            tags=hashtags_value or serializer.validated_data.get("tags", "")
+            tags=tags_value or hashtags_value
         )
 
     @action(detail=False, methods=["get"])
@@ -133,33 +145,38 @@ class BlogViewSet(viewsets.ModelViewSet):
         return Response({
             "published_count": qs.filter(status="published").count(),
             "draft_count": qs.filter(status="draft").count(),
+            "scheduled_count": qs.filter(status="scheduled").count(),
             "total": qs.count(),
         })
 
     @action(detail=False, methods=["get"])
     def published(self, request):
-        """Get all published blogs"""
         blogs = self.get_queryset().filter(status="published").order_by("-publish_date")
         serializer = self.get_serializer(blogs, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=["get"])
     def by_category(self, request):
-        """Get blogs grouped by category"""
-        categories = BlogCategory.objects.filter(is_active=True).order_by('order', 'name')
+        categories = BlogCategory.objects.filter(is_active=True).order_by("order", "name")
         result = {}
+
         for cat in categories:
-            blogs = Blog.objects.filter(status="published", category=cat.slug).order_by("-publish_date")[:6]
-            result[cat.slug] = BlogListSerializer(blogs, many=True, context={"request": request}).data
+            blogs = Blog.objects.filter(
+                status="published",
+                category=cat.slug
+            ).order_by("-publish_date")[:6]
+
+            result[cat.slug] = BlogListSerializer(
+                blogs,
+                many=True,
+                context={"request": request}
+            ).data
+
         return Response(result)
 
 
 # ==================== LEAD VIEWSET ====================
 class LeadViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for Leads
-    Filters: type, source, new, search
-    """
     serializer_class = LeadSerializer
     queryset = Lead.objects.all().order_by("-created_at")
 
@@ -168,6 +185,7 @@ class LeadViewSet(viewsets.ModelViewSet):
 
         enquiry_type = (self.request.query_params.get("type") or "").strip()
         source_filter = (self.request.query_params.get("source") or "").strip()
+        status_filter = (self.request.query_params.get("status") or "").strip()
         new_leads = (self.request.query_params.get("new") or "").strip().lower()
         search_query = (self.request.query_params.get("search") or "").strip()
 
@@ -177,6 +195,9 @@ class LeadViewSet(viewsets.ModelViewSet):
         if source_filter:
             qs = qs.filter(source=source_filter)
 
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+
         if new_leads == "true":
             qs = qs.filter(source="Enquire Now")
 
@@ -185,6 +206,10 @@ class LeadViewSet(viewsets.ModelViewSet):
                 Q(full_name__icontains=search_query) |
                 Q(mobile_number__icontains=search_query) |
                 Q(place__icontains=search_query) |
+                Q(email__icontains=search_query) |
+                Q(package__icontains=search_query) |
+                Q(package_name__icontains=search_query) |
+                Q(property_name__icontains=search_query) |
                 Q(remarks__icontains=search_query)
             )
 
@@ -196,6 +221,7 @@ class LeadViewSet(viewsets.ModelViewSet):
             "general_count": Lead.objects.filter(enquiry_type="General").count(),
             "international_count": Lead.objects.filter(enquiry_type="International").count(),
             "domestic_count": Lead.objects.filter(enquiry_type="Domestic").count(),
+            "hospitality_count": Lead.objects.filter(enquiry_type="Hospitality").count(),
             "new_leads_count": Lead.objects.filter(source="Enquire Now").count(),
             "total": Lead.objects.count(),
         })
@@ -203,10 +229,6 @@ class LeadViewSet(viewsets.ModelViewSet):
 
 # ==================== PROPERTY VIEWSET ====================
 class PropertyViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for Properties
-    Filters: property_type, location, search
-    """
     queryset = Property.objects.all().order_by("-created_at")
     serializer_class = PropertySerializer
 
@@ -220,6 +242,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
         ptype = (self.request.query_params.get("property_type") or "").strip()
         location = (self.request.query_params.get("location") or "").strip()
+        is_active = (self.request.query_params.get("is_active") or "").strip().lower()
         search = (self.request.query_params.get("search") or "").strip()
 
         if ptype:
@@ -228,26 +251,33 @@ class PropertyViewSet(viewsets.ModelViewSet):
         if location:
             qs = qs.filter(location__icontains=location)
 
+        if is_active == "true":
+            qs = qs.filter(is_active=True)
+        elif is_active == "false":
+            qs = qs.filter(is_active=False)
+
         if search:
             qs = qs.filter(
-                Q(name__icontains=search)
-                | Q(location__icontains=search)
-                | Q(address__icontains=search)
-                | Q(summary__icontains=search)
-                | Q(owner_name__icontains=search)
-                | Q(owner_contact__icontains=search)
-                | Q(amenities__icontains=search)
+                Q(name__icontains=search) |
+                Q(location__icontains=search) |
+                Q(address__icontains=search) |
+                Q(summary__icontains=search) |
+                Q(owner_name__icontains=search) |
+                Q(owner_contact__icontains=search) |
+                Q(amenities__icontains=search)
             )
 
         return qs
 
+    @action(detail=False, methods=["get"])
+    def active(self, request):
+        properties = self.get_queryset().filter(is_active=True)
+        serializer = self.get_serializer(properties, many=True)
+        return Response(serializer.data)
+
 
 # ==================== DESTINATION VIEWSET ====================
 class DestinationViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for Destinations
-    Filters: category, is_popular, search
-    """
     queryset = Destination.objects.all().order_by("-created_at")
     serializer_class = DestinationSerializer
 
@@ -266,13 +296,15 @@ class DestinationViewSet(viewsets.ModelViewSet):
         is_popular = (self.request.query_params.get("is_popular") or "").strip().lower()
         if is_popular == "true":
             qs = qs.filter(is_popular=True)
+        elif is_popular == "false":
+            qs = qs.filter(is_popular=False)
 
         search = (self.request.query_params.get("search") or "").strip()
         if search:
             qs = qs.filter(
-                Q(name__icontains=search)
-                | Q(country__icontains=search)
-                | Q(description__icontains=search)
+                Q(name__icontains=search) |
+                Q(country__icontains=search) |
+                Q(description__icontains=search)
             )
 
         return qs
@@ -299,10 +331,6 @@ class DestinationViewSet(viewsets.ModelViewSet):
 
 # ==================== TRAVEL PACKAGE VIEWSET ====================
 class TravelPackageViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for Travel Packages
-    Filters: category, active, destination, country, min_price, max_price, search
-    """
     queryset = TravelPackage.objects.all().order_by("-created_at")
 
     def get_serializer_class(self):
@@ -336,13 +364,19 @@ class TravelPackageViewSet(viewsets.ModelViewSet):
         if country:
             qs = qs.filter(country__icontains=country)
 
+        package_id = (self.request.query_params.get("package_id") or "").strip()
+        if package_id:
+            qs = qs.filter(package_id=package_id)
+
         min_price = (self.request.query_params.get("min_price") or "").strip()
         max_price = (self.request.query_params.get("max_price") or "").strip()
+
         if min_price:
             try:
                 qs = qs.filter(price__gte=float(min_price))
             except ValueError:
                 pass
+
         if max_price:
             try:
                 qs = qs.filter(price__lte=float(max_price))
@@ -352,11 +386,12 @@ class TravelPackageViewSet(viewsets.ModelViewSet):
         search = (self.request.query_params.get("search") or "").strip()
         if search:
             qs = qs.filter(
-                Q(name__icontains=search)
-                | Q(location__icontains=search)
-                | Q(country__icontains=search)
-                | Q(description__icontains=search)
-                | Q(itinerary__icontains=search)
+                Q(name__icontains=search) |
+                Q(package_id__icontains=search) |
+                Q(location__icontains=search) |
+                Q(country__icontains=search) |
+                Q(description__icontains=search) |
+                Q(itinerary__icontains=search)
             )
 
         return qs
@@ -382,7 +417,7 @@ class TravelPackageViewSet(viewsets.ModelViewSet):
     def by_category(self, request):
         domestic = self.get_queryset().filter(category="Domestic", active=True)[:6]
         international = self.get_queryset().filter(category="International", active=True)[:6]
-        
+
         return Response({
             "domestic": TravelPackageListSerializer(
                 domestic, many=True, context={"request": request}
@@ -395,10 +430,6 @@ class TravelPackageViewSet(viewsets.ModelViewSet):
 
 # ==================== CUSTOMER VIEWSET ====================
 class CustomerViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for Customers
-    Filters: customer_type, search
-    """
     queryset = Customer.objects.all().order_by("-created_at")
     serializer_class = CustomerSerializer
 
@@ -412,11 +443,12 @@ class CustomerViewSet(viewsets.ModelViewSet):
         search = (self.request.query_params.get("search") or "").strip()
         if search:
             qs = qs.filter(
-                Q(first_name__icontains=search)
-                | Q(last_name__icontains=search)
-                | Q(display_name__icontains=search)
-                | Q(contact_number__icontains=search)
-                | Q(place__icontains=search)
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(display_name__icontains=search) |
+                Q(contact_number__icontains=search) |
+                Q(email__icontains=search) |
+                Q(place__icontains=search)
             )
 
         return qs
@@ -434,10 +466,6 @@ class CustomerViewSet(viewsets.ModelViewSet):
 
 # ==================== MEAL VIEWSET ====================
 class MealViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for Meals
-    Filters: status, search
-    """
     queryset = Meal.objects.all().order_by("-created_at")
     serializer_class = MealSerializer
 
@@ -451,8 +479,9 @@ class MealViewSet(viewsets.ModelViewSet):
         search = (self.request.query_params.get("search") or "").strip()
         if search:
             qs = qs.filter(
-                Q(name__icontains=search)
-                | Q(description__icontains=search)
+                Q(name__icontains=search) |
+                Q(description__icontains=search) |
+                Q(included_meals__icontains=search)
             )
 
         return qs
@@ -469,10 +498,6 @@ class MealViewSet(viewsets.ModelViewSet):
 
 # ==================== ACCOUNT VIEWSET ====================
 class AccountViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for Accounts
-    Filters: account_type, search
-    """
     queryset = Account.objects.all().order_by("-created_at")
     serializer_class = AccountSerializer
 
@@ -486,9 +511,10 @@ class AccountViewSet(viewsets.ModelViewSet):
         search = (self.request.query_params.get("search") or "").strip()
         if search:
             qs = qs.filter(
-                Q(account_name__icontains=search)
-                | Q(bank_name__icontains=search)
-                | Q(account_number__icontains=search)
+                Q(account_name__icontains=search) |
+                Q(bank_name__icontains=search) |
+                Q(account_number__icontains=search) |
+                Q(ifsc_code__icontains=search)
             )
 
         return qs
@@ -503,10 +529,6 @@ class AccountViewSet(viewsets.ModelViewSet):
 
 # ==================== INQUIRY VIEWSET ====================
 class InquiryViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for Inquiries
-    Filters: status, search
-    """
     queryset = Inquiry.objects.all().order_by("-created_at")
     serializer_class = InquirySerializer
 
@@ -520,10 +542,11 @@ class InquiryViewSet(viewsets.ModelViewSet):
         search = (self.request.query_params.get("search") or "").strip()
         if search:
             qs = qs.filter(
-                Q(name__icontains=search)
-                | Q(email__icontains=search)
-                | Q(phone__icontains=search)
-                | Q(package__icontains=search)
+                Q(name__icontains=search) |
+                Q(email__icontains=search) |
+                Q(phone__icontains=search) |
+                Q(package__icontains=search) |
+                Q(message__icontains=search)
             )
 
         return qs
@@ -542,10 +565,6 @@ class InquiryViewSet(viewsets.ModelViewSet):
 
 # ==================== EMPLOYEE VIEWSET ====================
 class EmployeeViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for Employees
-    Filters: status, role, search
-    """
     queryset = Employee.objects.all().order_by("-created_at")
     serializer_class = EmployeeSerializer
 
@@ -565,13 +584,18 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         if role:
             qs = qs.filter(role__icontains=role)
 
+        department = (self.request.query_params.get("department") or "").strip()
+        if department:
+            qs = qs.filter(department__icontains=department)
+
         search = (self.request.query_params.get("search") or "").strip()
         if search:
             qs = qs.filter(
-                Q(name__icontains=search)
-                | Q(email__icontains=search)
-                | Q(phone__icontains=search)
-                | Q(role__icontains=search)
+                Q(name__icontains=search) |
+                Q(email__icontains=search) |
+                Q(phone__icontains=search) |
+                Q(role__icontains=search) |
+                Q(department__icontains=search)
             )
 
         return qs
@@ -583,15 +607,12 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             "total": qs.count(),
             "active_count": qs.filter(status="Active").count(),
             "inactive_count": qs.filter(status="Inactive").count(),
+            "on_leave_count": qs.filter(status="On Leave").count(),
         })
 
 
 # ==================== RESORT VIEWSET ====================
 class ResortViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for Resorts
-    Filters: status, location, search
-    """
     queryset = Resort.objects.all().order_by("-created_at")
     serializer_class = ResortSerializer
 
@@ -609,9 +630,11 @@ class ResortViewSet(viewsets.ModelViewSet):
         search = (self.request.query_params.get("search") or "").strip()
         if search:
             qs = qs.filter(
-                Q(resort_name__icontains=search)
-                | Q(location__icontains=search)
-                | Q(contact_person__icontains=search)
+                Q(resort_name__icontains=search) |
+                Q(location__icontains=search) |
+                Q(contact_person__icontains=search) |
+                Q(email__icontains=search) |
+                Q(address__icontains=search)
             )
 
         return qs
@@ -628,10 +651,6 @@ class ResortViewSet(viewsets.ModelViewSet):
 
 # ==================== VOUCHER VIEWSET ====================
 class VoucherViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for Vouchers
-    Filters: customer, resort, check_in_date, check_out_date, search
-    """
     queryset = Voucher.objects.all().order_by("-created_at")
     serializer_class = VoucherSerializer
 
@@ -646,6 +665,10 @@ class VoucherViewSet(viewsets.ModelViewSet):
         if resort_id:
             qs = qs.filter(resort_id=resort_id)
 
+        sales_person_id = (self.request.query_params.get("sales_person") or "").strip()
+        if sales_person_id:
+            qs = qs.filter(sales_person_id=sales_person_id)
+
         check_in = (self.request.query_params.get("checkin_date") or "").strip()
         if check_in:
             qs = qs.filter(checkin_date__gte=check_in)
@@ -657,9 +680,11 @@ class VoucherViewSet(viewsets.ModelViewSet):
         search = (self.request.query_params.get("search") or "").strip()
         if search:
             qs = qs.filter(
-                Q(voucher_no__icontains=search)
-                | Q(customer__display_name__icontains=search)
-                | Q(resort__resort_name__icontains=search)
+                Q(voucher_no__icontains=search) |
+                Q(customer__display_name__icontains=search) |
+                Q(resort__resort_name__icontains=search) |
+                Q(sales_person__name__icontains=search) |
+                Q(room_type__icontains=search)
             )
 
         return qs
@@ -667,19 +692,22 @@ class VoucherViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"])
     def summary(self, request):
         qs = self.get_queryset()
-        total_amount = qs.aggregate(total=Sum('total_amount'))['total'] or 0
+        total_amount = qs.aggregate(total=Sum("total_amount"))["total"] or 0
+        received_amount = qs.aggregate(total=Sum("received"))["total"] or 0
+        pending_amount = qs.aggregate(total=Sum("pending"))["total"] or 0
+        profit_amount = qs.aggregate(total=Sum("profit"))["total"] or 0
+
         return Response({
             "total": qs.count(),
             "total_amount": float(total_amount),
+            "received_amount": float(received_amount),
+            "pending_amount": float(pending_amount),
+            "profit_amount": float(profit_amount),
         })
 
 
 # ==================== INVOICE VIEWSET ====================
 class InvoiceViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for Invoices
-    Filters: customer, resort, sales_person, payment_mode, date_from, date_to, search
-    """
     queryset = Invoice.objects.all().order_by("-created_at")
     serializer_class = InvoiceSerializer
 
@@ -698,21 +726,22 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         if sales_person_id:
             qs = qs.filter(sales_person_id=sales_person_id)
 
-        # invoice model has no payment_mode field
         date_from = (self.request.query_params.get("date_from") or "").strip()
         if date_from:
-            qs = qs.filter(created_at__gte=date_from)
+            qs = qs.filter(invoice_date__gte=date_from)
 
         date_to = (self.request.query_params.get("date_to") or "").strip()
         if date_to:
-            qs = qs.filter(created_at__lte=date_to)
+            qs = qs.filter(invoice_date__lte=date_to)
 
         search = (self.request.query_params.get("search") or "").strip()
         if search:
             qs = qs.filter(
-                Q(invoice_no__icontains=search)
-                | Q(customer__display_name__icontains=search)
-                | Q(resort__resort_name__icontains=search)
+                Q(invoice_no__icontains=search) |
+                Q(customer__display_name__icontains=search) |
+                Q(resort__resort_name__icontains=search) |
+                Q(sales_person__name__icontains=search) |
+                Q(room_type__icontains=search)
             )
 
         return qs
@@ -720,30 +749,35 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"])
     def summary(self, request):
         qs = self.get_queryset()
-        total_val = qs.aggregate(total=Sum('total'))['total'] or 0
-        paid_val = qs.aggregate(total=Sum('received'))['total'] or 0
-        pending_val = qs.aggregate(total=Sum('pending'))['total'] or 0
-        
+        total_val = qs.aggregate(total=Sum("total"))["total"] or 0
+        paid_val = qs.aggregate(total=Sum("received"))["total"] or 0
+        pending_val = qs.aggregate(total=Sum("pending"))["total"] or 0
+        profit_val = qs.aggregate(total=Sum("profit"))["total"] or 0
+
         return Response({
             "total": qs.count(),
             "total_amount": float(total_val),
             "received_amount": float(paid_val),
             "pending_amount": float(pending_val),
+            "profit_amount": float(profit_val),
         })
 
     @action(detail=False, methods=["get"])
     def pending(self, request):
-        """Get invoices with pending amount"""
         invoices = self.get_queryset().filter(pending__gt=0)
         serializer = self.get_serializer(invoices, many=True)
         return Response(serializer.data)
 
 
-
-
+# ==================== FEEDBACK VIEWSET ====================
 class FeedbackViewSet(viewsets.ModelViewSet):
     serializer_class = FeedbackSerializer
-    queryset = Feedback.objects.all().prefetch_related('images').order_by("-created_at")
+    queryset = Feedback.objects.all().prefetch_related("images").order_by("-created_at")
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx["request"] = self.request
+        return ctx
 
     def get_permissions(self):
         if self.action in ["create", "list", "retrieve", "featured"]:
@@ -752,74 +786,83 @@ class FeedbackViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+
         feedback_type = (self.request.query_params.get("feedback_type") or "").strip()
         if feedback_type:
             qs = qs.filter(feedback_type=feedback_type)
+
+        featured = (self.request.query_params.get("featured") or "").strip().lower()
+        if featured == "true":
+            qs = qs.filter(featured=True)
+        elif featured == "false":
+            qs = qs.filter(featured=False)
+
+        rating = (self.request.query_params.get("rating") or "").strip()
+        if rating:
+            try:
+                qs = qs.filter(rating=int(rating))
+            except ValueError:
+                pass
+
         return qs
 
     @action(detail=False, methods=["get"], url_path="featured", permission_classes=[permissions.AllowAny])
     def featured(self, request):
-        qs = Feedback.objects.filter(featured=True).prefetch_related('images').order_by("-created_at")
+        qs = Feedback.objects.filter(featured=True).prefetch_related("images").order_by("-created_at")
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 
+    @action(detail=False, methods=["get"])
+    def summary(self, request):
+        qs = self.get_queryset()
+        return Response({
+            "total": qs.count(),
+            "featured_count": qs.filter(featured=True).count(),
+            "five_star_count": qs.filter(rating=5).count(),
+        })
+
 
 # ==================== PACKAGE ID VALIDATION ENDPOINT ====================
-@api_view(['GET'])
+@api_view(["GET"])
 def validate_package_id(request, package_id):
-    """
-    Validate if a package ID exists in the database.
-    URL: /api/validate-package-id/PKG001/
-    """
-    # Convert to uppercase and strip whitespace
     package_id = package_id.strip().upper()
-    
-    # Check if package exists
     exists = TravelPackage.objects.filter(package_id=package_id).exists()
-    
+
     return Response({
-        'package_id': package_id,
-        'exists': exists
+        "package_id": package_id,
+        "exists": exists
     })
 
 
 # ==================== INVOICE ID GENERATION ENDPOINT ====================
-@api_view(['GET'])
+@api_view(["GET"])
 def get_next_invoice_id(request):
-    """
-    Get the next available invoice ID.
-    URL: /api/get-next-invoice-id/
-    """
-    last_invoice = Invoice.objects.filter(invoice_no__startswith='INV').order_by('-invoice_no').first()
-    
+    last_invoice = Invoice.objects.filter(invoice_no__startswith="INV").order_by("-invoice_no").first()
+
     if last_invoice and last_invoice.invoice_no:
         try:
             last_num = int(last_invoice.invoice_no[3:])
-            next_id = f'INV{str(last_num + 1).zfill(3)}'
+            next_id = f"INV{str(last_num + 1).zfill(3)}"
         except (ValueError, IndexError):
-            next_id = 'INV001'
+            next_id = "INV001"
     else:
-        next_id = 'INV001'
-    
-    return Response({'next_id': next_id})
+        next_id = "INV001"
+
+    return Response({"next_id": next_id})
 
 
 # ==================== VOUCHER ID GENERATION ENDPOINT ====================
-@api_view(['GET'])
+@api_view(["GET"])
 def get_next_voucher_id(request):
-    """
-    Get the next available voucher ID.
-    URL: /api/get-next-voucher-id/
-    """
-    last_voucher = Voucher.objects.filter(voucher_no__startswith='VCH').order_by('-voucher_no').first()
-    
+    last_voucher = Voucher.objects.filter(voucher_no__startswith="VCH").order_by("-voucher_no").first()
+
     if last_voucher and last_voucher.voucher_no:
         try:
             last_num = int(last_voucher.voucher_no[3:])
-            next_id = f'VCH{str(last_num + 1).zfill(3)}'
+            next_id = f"VCH{str(last_num + 1).zfill(3)}"
         except (ValueError, IndexError):
-            next_id = 'VCH001'
+            next_id = "VCH001"
     else:
-        next_id = 'VCH001'
-    
-    return Response({'next_id': next_id})
+        next_id = "VCH001"
+
+    return Response({"next_id": next_id})

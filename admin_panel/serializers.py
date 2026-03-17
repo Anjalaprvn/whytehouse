@@ -17,6 +17,7 @@ from .models import (
     Voucher,
     Invoice,
     Feedback,
+    FeedbackImage,
 )
 
 
@@ -47,8 +48,8 @@ class BlogImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BlogImage
-        fields = ["id", "image", "image_url", "order", "tag"]
-        read_only_fields = ["id", "image_url", "tag"]
+        fields = ["id", "image", "image_url", "order"]
+        read_only_fields = ["id", "image_url"]
 
     def get_image_url(self, obj):
         request = self.context.get("request")
@@ -58,10 +59,9 @@ class BlogImageSerializer(serializers.ModelSerializer):
 
 
 # ==================== BLOG SERIALIZER ====================
-
 class BlogSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField(read_only=True)
-    content_images = BlogImageSerializer(many=True, read_only=True)
+    content_images = BlogImageSerializer(source="images", many=True, read_only=True)
     category_name = serializers.SerializerMethodField()
     tag_list = serializers.SerializerMethodField()
 
@@ -91,10 +91,23 @@ class BlogSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "image_url", "category_name", "tag_list", "content_images"]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "updated_at",
+            "image_url",
+            "category_name",
+            "tag_list",
+            "content_images",
+        ]
 
     def get_image_url(self, obj):
-        return obj.image_url
+        request = self.context.get("request")
+        if obj.featured_image and request:
+            return request.build_absolute_uri(obj.featured_image.url)
+        if obj.featured_image_url:
+            return obj.featured_image_url
+        return None
 
     def get_category_name(self, obj):
         if obj.category:
@@ -108,7 +121,6 @@ class BlogSerializer(serializers.ModelSerializer):
 
 
 class BlogListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for blog list views"""
     image_url = serializers.SerializerMethodField()
     category_name = serializers.SerializerMethodField()
 
@@ -131,7 +143,12 @@ class BlogListSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "image_url", "category_name"]
 
     def get_image_url(self, obj):
-        return obj.image_url
+        request = self.context.get("request")
+        if obj.featured_image and request:
+            return request.build_absolute_uri(obj.featured_image.url)
+        if obj.featured_image_url:
+            return obj.featured_image_url
+        return None
 
     def get_category_name(self, obj):
         if obj.category:
@@ -142,6 +159,8 @@ class BlogListSerializer(serializers.ModelSerializer):
 
 # ==================== LEAD SERIALIZER ====================
 class LeadSerializer(serializers.ModelSerializer):
+    employee_name = serializers.CharField(source="employee.name", read_only=True)
+
     class Meta:
         model = Lead
         fields = [
@@ -149,13 +168,22 @@ class LeadSerializer(serializers.ModelSerializer):
             "full_name",
             "mobile_number",
             "place",
+            "email",
+            "message",
+            "package",
+            "package_name",
+            "property_name",
             "source",
             "enquiry_type",
+            "status",
+            "is_viewed",
             "remarks",
+            "employee",
+            "employee_name",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_at", "updated_at", "employee_name"]
 
 
 # ==================== PROPERTY SERIALIZER ====================
@@ -179,8 +207,10 @@ class PropertySerializer(serializers.ModelSerializer):
             "amenity_list",
             "image",
             "image_url",
+            "is_active",
             "created_at",
         ]
+        read_only_fields = ["id", "image_url", "amenity_list", "created_at"]
 
     def get_image_url(self, obj):
         request = self.context.get("request")
@@ -192,6 +222,7 @@ class PropertySerializer(serializers.ModelSerializer):
 # ==================== DESTINATION SERIALIZER ====================
 class DestinationSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
+    map_image_url = serializers.SerializerMethodField()
     package_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -202,18 +233,33 @@ class DestinationSerializer(serializers.ModelSerializer):
             "country",
             "category",
             "description",
+            "packages_start_from",
             "image",
             "image_url",
+            "map_image",
+            "map_image_url",
             "is_popular",
             "created_at",
             "package_count",
         ]
-        read_only_fields = ["id", "created_at", "image_url", "package_count"]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "image_url",
+            "map_image_url",
+            "package_count",
+        ]
 
     def get_image_url(self, obj):
         request = self.context.get("request")
         if obj.image and request:
             return request.build_absolute_uri(obj.image.url)
+        return None
+
+    def get_map_image_url(self, obj):
+        request = self.context.get("request")
+        if obj.map_image and request:
+            return request.build_absolute_uri(obj.map_image.url)
         return None
 
     def get_package_count(self, obj):
@@ -226,12 +272,13 @@ class TravelPackageSerializer(serializers.ModelSerializer):
     story_main_image_url = serializers.SerializerMethodField()
     story_side_image1_url = serializers.SerializerMethodField()
     story_side_image2_url = serializers.SerializerMethodField()
-    destination_details = DestinationSerializer(source='destination', read_only=True)
+    destination_details = DestinationSerializer(source="destination", read_only=True)
 
     class Meta:
         model = TravelPackage
         fields = [
             "id",
+            "package_id",
             "name",
             "category",
             "destination",
@@ -259,6 +306,7 @@ class TravelPackageSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "id",
+            "package_id",
             "created_at",
             "image_url",
             "story_main_image_url",
@@ -293,16 +341,17 @@ class TravelPackageSerializer(serializers.ModelSerializer):
 
 
 class TravelPackageListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for list views"""
     image_url = serializers.SerializerMethodField()
-    destination_name = serializers.CharField(source='destination.name', read_only=True)
+    destination_name = serializers.CharField(source="destination.name", read_only=True)
 
     class Meta:
         model = TravelPackage
         fields = [
             "id",
+            "package_id",
             "name",
             "category",
+            "destination",
             "destination_name",
             "location",
             "country",
@@ -313,7 +362,7 @@ class TravelPackageListSerializer(serializers.ModelSerializer):
             "active",
             "created_at",
         ]
-        read_only_fields = ["id", "created_at", "image_url", "destination_name"]
+        read_only_fields = ["id", "package_id", "created_at", "image_url", "destination_name"]
 
     def get_image_url(self, obj):
         request = self.context.get("request")
@@ -335,6 +384,7 @@ class CustomerSerializer(serializers.ModelSerializer):
             "display_name",
             "place",
             "contact_number",
+            "email",
             "same_as_whatsapp",
             "whatsapp_number",
             "work_number",
@@ -351,9 +401,9 @@ class MealSerializer(serializers.ModelSerializer):
         model = Meal
         fields = [
             "id",
-            "meal_plan",
+            "name",
             "description",
-            "price_per_person",
+            "included_meals",
             "status",
             "created_at",
             "updated_at",
@@ -368,13 +418,10 @@ class AccountSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "account_name",
-            "account_type",
-            "bank_name",
-            "branch",
             "account_number",
+            "bank_name",
             "ifsc_code",
-            "balance",
-            "status",
+            "account_type",
             "created_at",
             "updated_at",
         ]
@@ -383,10 +430,14 @@ class AccountSerializer(serializers.ModelSerializer):
 
 # ==================== INQUIRY SERIALIZER ====================
 class InquirySerializer(serializers.ModelSerializer):
+    lead_name = serializers.CharField(source="lead.full_name", read_only=True)
+
     class Meta:
         model = Inquiry
         fields = [
             "id",
+            "lead",
+            "lead_name",
             "name",
             "email",
             "phone",
@@ -394,9 +445,8 @@ class InquirySerializer(serializers.ModelSerializer):
             "message",
             "status",
             "created_at",
-            "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_at", "lead_name"]
 
 
 # ==================== EMPLOYEE SERIALIZER ====================
@@ -408,14 +458,14 @@ class EmployeeSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
-            "role",
             "email",
             "phone",
-            "address",
-            "date_of_joining",
+            "role",
+            "department",
+            "join_date",
             "salary",
             "status",
-            "image",
+            "profile_picture",
             "image_url",
             "created_at",
             "updated_at",
@@ -424,8 +474,8 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
     def get_image_url(self, obj):
         request = self.context.get("request")
-        if obj.image and request:
-            return request.build_absolute_uri(obj.image.url)
+        if obj.profile_picture and request:
+            return request.build_absolute_uri(obj.profile_picture.url)
         return None
 
 
@@ -440,8 +490,7 @@ class ResortSerializer(serializers.ModelSerializer):
             "contact_person",
             "contact_number",
             "email",
-            "price_per_night",
-            "amenities",
+            "address",
             "status",
             "created_at",
             "updated_at",
@@ -451,9 +500,11 @@ class ResortSerializer(serializers.ModelSerializer):
 
 # ==================== VOUCHER SERIALIZER ====================
 class VoucherSerializer(serializers.ModelSerializer):
-    customer_name = serializers.CharField(source='customer.display_name', read_only=True)
-    resort_name = serializers.CharField(source='resort.resort_name', read_only=True)
-    meal_plan_name = serializers.CharField(source='meal.meal_plan', read_only=True)
+    customer_name = serializers.CharField(source="customer.display_name", read_only=True)
+    sales_person_name = serializers.CharField(source="sales_person.name", read_only=True)
+    resort_name = serializers.CharField(source="resort.resort_name", read_only=True)
+    meals_plan_name = serializers.CharField(source="meals_plan.name", read_only=True)
+    bank_account_name = serializers.CharField(source="bank_account.account_name", read_only=True)
 
     class Meta:
         model = Voucher
@@ -462,31 +513,56 @@ class VoucherSerializer(serializers.ModelSerializer):
             "customer",
             "customer_name",
             "voucher_no",
+            "voucher_date",
+            "sales_person",
+            "sales_person_name",
             "resort",
             "resort_name",
-            "check_in_date",
-            "check_out_date",
-            "number_of_nights",
-            "number_of_adults",
-            "number_of_children",
-            "meal",
-            "meal_plan_name",
+            "checkin_date",
+            "checkout_date",
+            "checkin_time",
+            "checkout_time",
+            "adults",
+            "children",
+            "nights",
+            "pax_notes",
             "room_type",
-            "special_requests",
+            "no_of_rooms",
+            "meals_plan",
+            "meals_plan_name",
+            "bank_account",
+            "bank_account_name",
+            "package_price",
+            "resort_price",
             "total_amount",
+            "received",
+            "pending",
+            "from_whytehouse",
+            "profit",
+            "note_for_resort",
+            "note_for_guest",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "customer_name", "resort_name", "meal_plan_name"]
+        read_only_fields = [
+            "id",
+            "voucher_no",
+            "created_at",
+            "updated_at",
+            "customer_name",
+            "sales_person_name",
+            "resort_name",
+            "meals_plan_name",
+            "bank_account_name",
+        ]
 
 
 # ==================== INVOICE SERIALIZER ====================
 class InvoiceSerializer(serializers.ModelSerializer):
-    customer_name = serializers.CharField(source='customer.display_name', read_only=True)
-    resort_name = serializers.CharField(source='resort.resort_name', read_only=True)
-    meal_plan_name = serializers.CharField(source='meal.meal_plan', read_only=True)
-    account_name = serializers.CharField(source='account.account_name', read_only=True)
-    sales_person_name = serializers.CharField(source='sales_person.name', read_only=True)
+    customer_name = serializers.CharField(source="customer.display_name", read_only=True)
+    resort_name = serializers.CharField(source="resort.resort_name", read_only=True)
+    sales_person_name = serializers.CharField(source="sales_person.name", read_only=True)
+    account_name = serializers.CharField(source="bank_account.account_name", read_only=True)
 
     class Meta:
         model = Invoice
@@ -495,43 +571,68 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "customer",
             "customer_name",
             "invoice_no",
-            "resort",
-            "resort_name",
-            "check_in_date",
-            "check_out_date",
-            "number_of_nights",
-            "number_of_adults",
-            "number_of_children",
-            "meal",
-            "meal_plan_name",
-            "room_type",
-            "room_rate",
-            "meal_cost",
-            "other_charges",
-            "discount",
-            "total_amount",
-            "paid_amount",
-            "pending_amount",
-            "payment_mode",
-            "account",
-            "account_name",
+            "invoice_date",
             "sales_person",
             "sales_person_name",
-            "remarks",
+            "resort",
+            "resort_name",
+            "checkin_date",
+            "checkout_date",
+            "checkin_time",
+            "checkout_time",
+            "adults",
+            "children",
+            "pax_total",
+            "pax_notes",
+            "nights",
+            "room_type",
+            "rooms",
+            "meals_plan",
+            "bank_account",
+            "account_name",
+            "package_price",
+            "tax",
+            "resort_price",
+            "total",
+            "received",
+            "pending",
+            "profit",
+            "notes",
             "created_at",
             "updated_at",
         ]
         read_only_fields = [
             "id",
+            "invoice_no",
             "created_at",
             "updated_at",
             "customer_name",
             "resort_name",
-            "meal_plan_name",
-            "account_name",
             "sales_person_name",
+            "account_name",
         ]
+
+
+# ==================== FEEDBACK IMAGE SERIALIZER ====================
+class FeedbackImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FeedbackImage
+        fields = ["id", "image", "image_url", "uploaded_at"]
+        read_only_fields = ["id", "image_url", "uploaded_at"]
+
+    def get_image_url(self, obj):
+        request = self.context.get("request")
+        if obj.image and request:
+            return request.build_absolute_uri(obj.image.url)
+        return None
+
+
+# ==================== FEEDBACK SERIALIZER ====================
 class FeedbackSerializer(serializers.ModelSerializer):
+    images = FeedbackImageSerializer(many=True, read_only=True)
+
     class Meta:
         model = Feedback
         fields = [
@@ -539,9 +640,11 @@ class FeedbackSerializer(serializers.ModelSerializer):
             "name",
             "email",
             "mobile_number",
+            "feedback_type",
             "rating",
             "feedback",
             "featured",
             "created_at",
+            "images",
         ]
-        read_only_fields = ["id", "created_at"]
+        read_only_fields = ["id", "created_at", "images"]
