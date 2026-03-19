@@ -7,244 +7,326 @@
 <style>
 :root {
     --gold: #d4a017;
+    --gold-light: #fef3c7;
     --bg: #f6f8fb;
     --card: #ffffff;
     --text: #1f2937;
     --muted: #6b7280;
     --line: #e5e7eb;
-    --shadow: 0 8px 24px rgba(15,23,42,.06);
-    --radius: 16px;
+    --shadow: 0 4px 20px rgba(15,23,42,.07);
+    --radius: 14px;
 }
 body { background: var(--bg) !important; font-family: 'Inter', sans-serif; }
 
-.view-container { max-width: 900px; margin: 0 auto; padding: 10px 0 40px; }
+.page-wrap { max-width: 960px; margin: 0 auto; padding: 10px 0 50px; }
 
-.page-header { display: flex; align-items: center; gap: 15px; margin-bottom: 28px; }
+/* ── Header ── */
+.page-header { display: flex; align-items: center; gap: 14px; margin-bottom: 26px; }
 .back-btn {
     width: 40px; height: 40px; border-radius: 10px;
     border: 1px solid var(--line); background: #fff;
     display: flex; align-items: center; justify-content: center;
-    text-decoration: none; color: #374151;
-    box-shadow: 0 2px 6px rgba(0,0,0,.05); transition: .2s; flex-shrink: 0;
+    text-decoration: none; color: #374151; flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06); transition: .18s;
 }
 .back-btn:hover { background: #f1f5f9; }
-.header-text h2 { font-size: 22px; font-weight: 700; margin: 0; color: #111; }
-.header-text p  { font-size: 13px; color: var(--muted); margin: 3px 0 0; }
+.page-header h2 { font-size: 21px; font-weight: 700; margin: 0; color: #111; }
+.page-header p  { font-size: 13px; color: var(--muted); margin: 2px 0 0; }
 
-.detail-card {
-    background: var(--card); border-radius: var(--radius);
-    border: 1px solid var(--line); box-shadow: var(--shadow); overflow: hidden;
+/* ── Card shell ── */
+.fb-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 20px;
 }
-.card-section { padding: 28px 32px; border-bottom: 1px solid #f1f5f9; }
-.section-title {
+
+/* ── Section header ── */
+.sec-head {
+    padding: 16px 28px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex; align-items: center; gap: 10px;
+}
+.sec-head .sec-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--gold-light);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gold); font-size: 14px; flex-shrink: 0;
+}
+.sec-head .sec-title { font-size: 13px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: .5px; }
+
+/* ── Info grid ── */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+}
+.info-cell {
+    padding: 18px 28px;
+    border-bottom: 1px solid #f8fafc;
+    border-right: 1px solid #f8fafc;
+}
+.info-cell:nth-child(even) { border-right: none; }
+.info-cell .lbl {
     font-size: 11px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: .7px; color: #9ca3af; margin: 0 0 20px;
+    letter-spacing: .5px; color: #9ca3af; margin-bottom: 6px;
+}
+.info-cell .val { font-size: 14px; font-weight: 500; color: var(--text); }
+
+/* ── Badges ── */
+.badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600;
+}
+.badge-type  { background: #eff6ff; color: #1d4ed8; }
+.badge-feat  { background: #dcfce7; color: #16a34a; }
+.badge-nofeat{ background: #f1f5f9; color: #94a3b8; }
+
+/* ── Stars ── */
+.stars-row { display: flex; align-items: center; gap: 3px; }
+.stars-row i { font-size: 16px; color: var(--gold); }
+.stars-row i.empty { color: #e5e7eb; }
+.stars-row .rating-txt { margin-left: 8px; font-size: 13px; font-weight: 600; color: var(--muted); }
+
+/* ── Message box ── */
+.msg-body { padding: 20px 28px; }
+.msg-box {
+    background: #f8fafc;
+    border-left: 4px solid var(--gold);
+    border-radius: 0 10px 10px 0;
+    padding: 16px 20px;
+    font-size: 14px; color: var(--text);
+    line-height: 1.75; white-space: pre-wrap;
 }
 
-.info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px 32px; }
-.info-item { display: flex; flex-direction: column; gap: 5px; }
-.info-item .lbl { font-size: 12px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: .4px; }
-.info-item .val { font-size: 15px; font-weight: 500; color: var(--text); }
-
-.stars { display: flex; gap: 4px; align-items: center; }
-.stars i { font-size: 18px; color: var(--gold); }
-.stars i.empty { color: #e5e7eb; }
-.rating-label { margin-left: 8px; font-size: 13px; font-weight: 600; color: var(--muted); }
-
-.type-badge {
-    display: inline-block; padding: 4px 12px; border-radius: 999px;
-    font-size: 12px; font-weight: 600; background: #f1f5f9; color: #475569;
-}
-.featured-badge {
-    display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px;
-    border-radius: 999px; font-size: 12px; font-weight: 600;
-    background: #dcfce7; color: #16a34a;
-}
-.not-featured { background: #f1f5f9; color: #94a3b8; }
-
-.message-box {
-    background: #f8fafc; border-left: 4px solid var(--gold);
-    border-radius: 0 8px 8px 0; padding: 18px 20px;
-    font-size: 15px; color: var(--text); line-height: 1.7; white-space: pre-wrap;
-}
-
+/* ── Image gallery ── */
+.gallery-body { padding: 20px 28px; }
 .gallery-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 14px; margin-top: 4px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
 }
-.gallery-thumb {
-    border-radius: 10px; overflow: hidden; border: 1px solid var(--line);
-    background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.05);
-    transition: transform .2s, box-shadow .2s; display: block;
+.gallery-item {
+    border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--line); background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    transition: transform .2s, box-shadow .2s;
+    display: block; text-decoration: none;
 }
-.gallery-thumb:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.1); }
-.gallery-thumb img { width: 100%; height: 120px; object-fit: cover; display: block; }
-.no-images { font-size: 14px; color: #94a3b8; }
+.gallery-item:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.1); }
+.gallery-item img { width: 100%; height: 115px; object-fit: cover; display: block; }
+.gallery-item .img-label {
+    padding: 6px 10px; font-size: 11px; color: #64748b;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    border-top: 1px solid var(--line);
+}
+.no-images {
+    display: flex; align-items: center; gap: 10px;
+    padding: 18px 20px; border-radius: 10px;
+    background: #f8fafc; border: 1px dashed #cbd5e1;
+    color: #94a3b8; font-size: 14px;
+}
 
-.meta-row { display: flex; gap: 28px; flex-wrap: wrap; }
-.meta-item { display: flex; flex-direction: column; gap: 4px; }
-.meta-item .lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #9ca3af; }
-.meta-item .val { font-size: 14px; font-weight: 500; color: var(--text); }
+/* ── Meta strip ── */
+.meta-strip {
+    display: flex; gap: 32px; flex-wrap: wrap;
+    padding: 18px 28px;
+    background: #fafbfc;
+    border-top: 1px solid var(--line);
+}
+.meta-item .lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #9ca3af; margin-bottom: 4px; }
+.meta-item .val { font-size: 13px; font-weight: 500; color: var(--text); }
 
-.card-actions {
-    padding: 22px 32px; display: flex; gap: 12px; align-items: center;
-    background: #fafbfc; border-top: 1px solid var(--line);
+/* ── Action bar ── */
+.action-bar {
+    display: flex; gap: 10px; align-items: center;
+    padding: 20px 28px;
+    background: #fafbfc;
+    border-top: 1px solid var(--line);
+    border-radius: 0 0 var(--radius) var(--radius);
 }
-.btn-back {
-    padding: 10px 22px; border-radius: 10px; border: 1px solid var(--line);
-    background: #fff; color: #64748b; font-weight: 600; font-size: 14px;
-    text-decoration: none; transition: .2s;
+.btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px; border-radius: 10px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: .18s; text-decoration: none; border: none;
 }
+.btn-back   { background: #fff; border: 1px solid var(--line); color: #64748b; }
 .btn-back:hover { background: #f1f5f9; }
-.btn-delete {
-    padding: 10px 22px; border-radius: 10px; border: 1px solid #fecaca;
-    background: #fee2e2; color: #dc2626; font-weight: 600; font-size: 14px;
-    cursor: pointer; transition: .2s;
-}
-.btn-delete:hover { background: #fecaca; }
-.btn-featured {
-    padding: 10px 22px; border-radius: 10px; border: 1px solid #bbf7d0;
-    background: #dcfce7; color: #16a34a; font-weight: 600; font-size: 14px;
-    cursor: pointer; transition: .2s;
-}
-.btn-featured.off { border-color: var(--line); background: #fff; color: #64748b; }
-.btn-featured:hover { opacity: .85; }
+.btn-feat   { background: #dcfce7; border: 1px solid #bbf7d0; color: #16a34a; }
+.btn-unfeat { background: #fff; border: 1px solid var(--line); color: #64748b; }
+.btn-feat:hover, .btn-unfeat:hover { opacity: .85; }
+.btn-del    { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; }
+.btn-del:hover { background: #fecaca; }
 
-@media (max-width: 640px) {
+@media (max-width: 600px) {
     .info-grid { grid-template-columns: 1fr; }
-    .card-section { padding: 22px 20px; }
-    .card-actions { padding: 18px 20px; flex-wrap: wrap; }
+    .info-cell { border-right: none; }
+    .sec-head, .msg-body, .gallery-body, .meta-strip, .action-bar { padding-left: 18px; padding-right: 18px; }
 }
 </style>
 
-<div class="view-container">
+<div class="page-wrap">
 
+    <!-- Header -->
     <div class="page-header">
         <a href="{% url 'feedback:feedback_list' %}" class="back-btn">
             <i class="fas fa-arrow-left"></i>
         </a>
-        <div class="header-text">
+        <div>
             <h2>Feedback Details</h2>
             <p>Submitted on {{ feedback.created_at|date:"F d, Y \a\t g:i A" }}</p>
         </div>
     </div>
 
-    <div class="detail-card">
-
-        <div class="card-section">
-            <div class="section-title">Customer Information</div>
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="lbl">Full Name</span>
-                    <span class="val">{{ feedback.name }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="lbl">Email Address</span>
-                    <span class="val">{{ feedback.email }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="lbl">Mobile Number</span>
-                    <span class="val">{{ feedback.mobile_number|default:"—" }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="lbl">Feedback Type</span>
-                    <span class="val"><span class="type-badge">{{ feedback.get_feedback_type_display }}</span></span>
-                </div>
-            </div>
+    <!-- Customer & Feedback Info -->
+    <div class="fb-card">
+        <div class="sec-head">
+            <div class="sec-icon"><i class="fas fa-user"></i></div>
+            <span class="sec-title">Customer Information</span>
         </div>
 
-        <div class="card-section">
-            <div class="section-title">Rating</div>
-            <div class="stars">
-                {% for i in "12345" %}
-                    {% if forloop.counter <= feedback.rating %}
-                        <i class="fas fa-star"></i>
+        <div class="info-grid">
+            <div class="info-cell">
+                <div class="lbl">Full Name</div>
+                <div class="val">{{ feedback.name }}</div>
+            </div>
+            <div class="info-cell">
+                <div class="lbl">Email Address</div>
+                <div class="val">{{ feedback.email }}</div>
+            </div>
+            <div class="info-cell">
+                <div class="lbl">Mobile Number</div>
+                <div class="val">{{ feedback.mobile_number|default:"—" }}</div>
+            </div>
+            <div class="info-cell">
+                <div class="lbl">Feedback Type</div>
+                <div class="val">
+                    <span class="badge badge-type">{{ feedback.get_feedback_type_display }}</span>
+                </div>
+            </div>
+            <div class="info-cell">
+                <div class="lbl">Rating</div>
+                <div class="val">
+                    <div class="stars-row">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= feedback.rating %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="fas fa-star empty"></i>
+                            {% endif %}
+                        {% endfor %}
+                        <span class="rating-txt">
+                            {{ feedback.rating }}/5 —
+                            {% if feedback.rating == 5 %}Excellent
+                            {% elif feedback.rating == 4 %}Very Good
+                            {% elif feedback.rating == 3 %}Good
+                            {% elif feedback.rating == 2 %}Fair
+                            {% else %}Poor{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="info-cell">
+                <div class="lbl">Featured</div>
+                <div class="val">
+                    {% if feedback.featured %}
+                        <span class="badge badge-feat"><i class="fas fa-check-circle"></i> Yes — shown on homepage</span>
                     {% else %}
-                        <i class="fas fa-star empty"></i>
+                        <span class="badge badge-nofeat"><i class="fas fa-times-circle"></i> Not featured</span>
                     {% endif %}
-                {% endfor %}
-                <span class="rating-label">
-                    {{ feedback.rating }} / 5 &nbsp;—&nbsp;
-                    {% if feedback.rating == 5 %}Excellent
-                    {% elif feedback.rating == 4 %}Very Good
-                    {% elif feedback.rating == 3 %}Good
-                    {% elif feedback.rating == 2 %}Fair
-                    {% else %}Poor
-                    {% endif %}
-                </span>
+                </div>
             </div>
         </div>
 
-        <div class="card-section">
-            <div class="section-title">Feedback Message</div>
-            <div class="message-box">{{ feedback.feedback }}</div>
+        <!-- Message -->
+        <div class="sec-head" style="border-top:1px solid #f1f5f9;">
+            <div class="sec-icon"><i class="fas fa-comment-alt"></i></div>
+            <span class="sec-title">Feedback Message</span>
+        </div>
+        <div class="msg-body">
+            <div class="msg-box">{{ feedback.feedback }}</div>
         </div>
 
-        <div class="card-section">
-            <div class="section-title">Uploaded Images</div>
+        <!-- Meta -->
+        <div class="meta-strip">
+            <div class="meta-item">
+                <div class="lbl">Submitted On</div>
+                <div class="val">{{ feedback.created_at|date:"d M Y" }}</div>
+            </div>
+            <div class="meta-item">
+                <div class="lbl">Time</div>
+                <div class="val">{{ feedback.created_at|date:"g:i A" }}</div>
+            </div>
+            <div class="meta-item">
+                <div class="lbl">Feedback ID</div>
+                <div class="val">#{{ feedback.id }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Images -->
+    <div class="fb-card">
+        <div class="sec-head">
+            <div class="sec-icon"><i class="fas fa-images"></i></div>
+            <span class="sec-title">
+                Uploaded Images
+                {% with cnt=feedback.images.count %}
+                    {% if cnt %}<span style="margin-left:6px;background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:999px;font-size:11px;">{{ cnt }}</span>{% endif %}
+                {% endwith %}
+            </span>
+        </div>
+        <div class="gallery-body">
             {% if feedback.images.all %}
                 <div class="gallery-grid">
                     {% for img in feedback.images.all %}
-                    <a href="{{ img.image.url }}" target="_blank" class="gallery-thumb">
-                        <img src="{{ img.image.url }}" alt="Feedback image {{ forloop.counter }}">
+                    <a href="{{ img.image.url }}" target="_blank" class="gallery-item">
+                        <img src="{{ img.image.url }}" alt="Image {{ forloop.counter }}">
+                        <div class="img-label">Image {{ forloop.counter }}</div>
                     </a>
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="no-images"><i class="fas fa-image" style="margin-right:6px;opacity:.4"></i>No images uploaded</div>
+                <div class="no-images">
+                    <i class="fas fa-image" style="font-size:20px;opacity:.35"></i>
+                    No images were uploaded with this feedback.
+                </div>
             {% endif %}
         </div>
+    </div>
 
-        <div class="card-section">
-            <div class="section-title">Additional Info</div>
-            <div class="meta-row">
-                <div class="meta-item">
-                    <span class="lbl">Submitted On</span>
-                    <span class="val">{{ feedback.created_at|date:"F d, Y" }}</span>
-                </div>
-                <div class="meta-item">
-                    <span class="lbl">Time</span>
-                    <span class="val">{{ feedback.created_at|date:"g:i A" }}</span>
-                </div>
-                <div class="meta-item">
-                    <span class="lbl">Featured</span>
-                    <span class="val">
-                        {% if feedback.featured %}
-                            <span class="featured-badge"><i class="fas fa-check-circle"></i> Yes</span>
-                        {% else %}
-                            <span class="featured-badge not-featured"><i class="fas fa-times-circle"></i> No</span>
-                        {% endif %}
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <div class="card-actions">
-            <a href="{% url 'feedback:feedback_list' %}" class="btn-back">
+    <!-- Actions -->
+    <div class="fb-card">
+        <div class="action-bar">
+            <a href="{% url 'feedback:feedback_list' %}" class="btn btn-back">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
 
-            <form method="POST" action="{% url 'feedback:toggle_featured_feedback' feedback.id %}" style="display:inline">
+            <form method="POST" action="{% url 'feedback:toggle_featured_feedback' feedback.id %}" style="display:inline;margin:0">
                 {% csrf_token %}
-                <button type="submit" class="btn-featured {% if not feedback.featured %}off{% endif %}">
-                    {% if feedback.featured %}
+                {% if feedback.featured %}
+                    <button type="submit" class="btn btn-unfeat">
                         <i class="fas fa-star"></i> Unfeature
-                    {% else %}
+                    </button>
+                {% else %}
+                    <button type="submit" class="btn btn-feat">
                         <i class="far fa-star"></i> Mark as Featured
-                    {% endif %}
-                </button>
+                    </button>
+                {% endif %}
             </form>
 
-            <form method="POST" action="{% url 'feedback:delete_feedback' feedback.id %}" style="display:inline"
-                  onsubmit="return confirm('Are you sure you want to delete this feedback?')">
+            <form method="POST" action="{% url 'feedback:delete_feedback' feedback.id %}" style="display:inline;margin:0"
+                  onsubmit="return confirm('Delete this feedback? This cannot be undone.')">
                 {% csrf_token %}
-                <button type="submit" class="btn-delete">
+                <button type="submit" class="btn btn-del">
                     <i class="fas fa-trash"></i> Delete
                 </button>
             </form>
         </div>
-
     </div>
-</div>
 
+</div>
 {% endblock %}

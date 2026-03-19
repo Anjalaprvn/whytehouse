@@ -3259,6 +3259,12 @@ def get_next_package_id(request):
     return JsonResponse({'next_id': next_id})
 
 
+def check_account_number(request):
+    number = (request.GET.get('number') or '').strip()
+    exists = Account.objects.filter(account_number=number).exists() if number else False
+    return JsonResponse({'exists': exists})
+
+
 def check_package_name(request):
     name = (request.GET.get('name') or '').strip()
     category = (request.GET.get('category') or '').strip()

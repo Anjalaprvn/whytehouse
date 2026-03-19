@@ -259,11 +259,11 @@
     input.classList.toggle('invalid', !!msg);
   }
 
-  // Only fires while user is typing — never shows "required" error live
-  function liveTextOnly(id, label) {
+  // letters + spaces only (no digits, no special chars)
+  function liveLettersOnly(id, label) {
     const val = document.getElementById(id).value.trim();
     if (!val) { showErr(id, ''); return; }
-    if (/\d/.test(val)) showErr(id, label + ' must not contain numbers.');
+    if (!/^[A-Za-z\s]+$/.test(val)) showErr(id, label + ' must contain letters only.');
     else showErr(id, '');
   }
 
@@ -283,34 +283,53 @@
     else showErr(id, '');
   }
 
-  document.getElementById('account_name').addEventListener('input', () => liveTextOnly('account_name', 'Account Name'));
-  document.getElementById('account_number').addEventListener('input', () => liveNumberOnly('account_number', 'Account Number'));
+  // AJAX duplicate check for account number
+  let dupTimer = null;
+  let accountNumberDuplicate = false;
+  document.getElementById('account_number').addEventListener('input', function() {
+    liveNumberOnly('account_number', 'Account Number');
+    accountNumberDuplicate = false;
+    clearTimeout(dupTimer);
+    const val = this.value.trim();
+    if (!val || !/^\d+$/.test(val)) return;
+    dupTimer = setTimeout(() => {
+      fetch('{% url "sales:check_account_number" %}?number=' + encodeURIComponent(val))
+        .then(r => r.json())
+        .then(data => {
+          accountNumberDuplicate = data.exists;
+          if (data.exists) showErr('account_number', 'This account number already exists.');
+          else showErr('account_number', '');
+        });
+    }, 400);
+  });
+
+  document.getElementById('account_name').addEventListener('input', () => liveLettersOnly('account_name', 'Account Name'));
   document.getElementById('ifsc_code').addEventListener('input', () => liveIFSC('ifsc_code'));
-  document.getElementById('bank_name').addEventListener('input', () => liveTextOnly('bank_name', 'Bank Name'));
-  document.getElementById('branch_name').addEventListener('input', () => liveTextOnly('branch_name', 'Branch Name'));
+  document.getElementById('bank_name').addEventListener('input', () => liveLettersOnly('bank_name', 'Bank Name'));
+  document.getElementById('branch_name').addEventListener('input', () => liveLettersOnly('branch_name', 'Branch Name'));
   document.getElementById('account_type').addEventListener('change', () => showErr('account_type', ''));
 
-  // On submit: check required + format, then show errors only for actual problems
   document.getElementById('accountForm').addEventListener('submit', function(e) {
     let valid = true;
 
     const name = document.getElementById('account_name').value.trim();
     if (!name) { showErr('account_name', 'Account Name is required.'); valid = false; }
-    else if (/\d/.test(name)) { showErr('account_name', 'Account Name must not contain numbers.'); valid = false; }
+    else if (!/^[A-Za-z\s]+$/.test(name)) { showErr('account_name', 'Account Name must contain letters only.'); valid = false; }
 
     const num = document.getElementById('account_number').value.trim();
     if (!num) { showErr('account_number', 'Account Number is required.'); valid = false; }
     else if (!/^\d+$/.test(num)) { showErr('account_number', 'Account Number must contain digits only.'); valid = false; }
+    else if (accountNumberDuplicate) { showErr('account_number', 'This account number already exists.'); valid = false; }
 
     const ifsc = document.getElementById('ifsc_code').value.trim();
     if (ifsc && !/^[A-Z0-9]+$/.test(ifsc)) { showErr('ifsc_code', 'IFSC Code must be alphanumeric only.'); valid = false; }
 
     const bank = document.getElementById('bank_name').value.trim();
     if (!bank) { showErr('bank_name', 'Bank Name is required.'); valid = false; }
-    else if (/\d/.test(bank)) { showErr('bank_name', 'Bank Name must not contain numbers.'); valid = false; }
+    else if (!/^[A-Za-z\s]+$/.test(bank)) { showErr('bank_name', 'Bank Name must contain letters only.'); valid = false; }
 
     const branch = document.getElementById('branch_name').value.trim();
-    if (branch && /\d/.test(branch)) { showErr('branch_name', 'Branch Name must not contain numbers.'); valid = false; }
+    if (branch && !/^[A-Za-z\s]+$/.test(branch)) { showErr('branch_name', 'Branch Name must contain letters only.'); valid = false; }
 
     const type = document.getElementById('account_type').value;
     if (!type) { showErr('account_type', 'Please select an Account Type.'); valid = false; }

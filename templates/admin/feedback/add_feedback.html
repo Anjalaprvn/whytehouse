@@ -406,15 +406,7 @@
                 <div class="form-group full-width">
                     <label>Upload Images <span style="font-weight:400;color:#71717a">(optional)</span></label>
                     <div class="image-upload-area">
-                        <div class="image-upload-top">
-                            <label class="add-images-btn">
-                                <i class="fas fa-plus"></i> Add Images
-                                <input type="file" id="image-input" name="images" accept="image/*" multiple style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;">
-                            </label>
-                            <span class="upload-hint-sm">JPG, PNG, WEBP supported</span>
-                        </div>
-                        <div class="image-preview-grid" id="image-preview-grid" style="display:none"></div>
-                    </div>
+                        <div id="image-inputs-holder"></div><div class="image-upload-top"><label class="add-images-btn" id="add-images-label"><i class="fas fa-plus"></i> Add Images</label><span class="upload-hint-sm">JPG PNG WEBP supported</span></div><div class="image-preview-grid" id="image-preview-grid" style="display:none"></div>
                 </div>
 
                 <div class="form-group full-width">
@@ -437,47 +429,51 @@
 
 <script>
 {% verbatim %}
-let imageFiles = [];
+const holder = document.getElementById('image-inputs-holder');
+const addBtn = document.getElementById('add-images-label');
+const previewGrid = document.getElementById('image-preview-grid');
+let inputCounter = 0;
 
-document.getElementById('image-input').addEventListener('change', function() {
-    Array.from(this.files).forEach(f => imageFiles.push(f));
-    this.value = '';
-    renderPreviews();
-});
-
-function renderPreviews() {
-    const grid = document.getElementById('image-preview-grid');
-    grid.innerHTML = '';
-    if (!imageFiles.length) {
-        grid.style.display = 'none';
-        return;
-    }
-    grid.style.display = 'grid';
-
-    imageFiles.forEach((file, i) => {
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-            const thumb = document.createElement('div');
-            thumb.className = 'img-thumb';
-            thumb.innerHTML =
-                '<img src="' + ev.target.result + '" alt="' + file.name + '">' +
-                '<div class="img-thumb-name">' + file.name + '</div>' +
-                '<button type="button" class="img-remove-btn" onclick="removeImage(' + i + ')">&#x2715;</button>';
-            grid.appendChild(thumb);
-        };
-        reader.readAsDataURL(file);
+function createFileInput() {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.name = 'images'; inp.accept = 'image/*'; inp.multiple = true; inp.style.display = 'none';
+    const idx = inputCounter++;
+    inp.dataset.idx = idx;
+    inp.addEventListener('change', function() {
+        const self = this;
+        Array.from(this.files).forEach(function(file) {
+            const reader = new FileReader();
+            reader.onload = function(ev) { addThumb(ev.target.result, file.name, self.dataset.idx); };
+            reader.readAsDataURL(file);
+        });
     });
+    holder.appendChild(inp);
+    return inp;
 }
 
-function removeImage(i) {
-    imageFiles.splice(i, 1);
-    renderPreviews();
-    const dt = new DataTransfer();
-    imageFiles.forEach(f => dt.items.add(f));
-    document.getElementById('image-input').files = dt.files;
+function addThumb(src, name, inputIdx) {
+    previewGrid.style.display = 'grid';
+    const thumb = document.createElement('div');
+    thumb.className = 'img-thumb';
+    thumb.dataset.inputIdx = inputIdx;
+    thumb.innerHTML = '<img src="' + src + '" alt="' + name + '"><div class="img-thumb-name">' + name + '</div><button type="button" class="img-remove-btn" onclick="removeThumb(this)">&#x2715;</button>';
+    previewGrid.appendChild(thumb);
 }
 
-function showErr(id, msg) {
+function removeThumb(btn) {
+    const thumb = btn.closest('.img-thumb');
+    const idx = thumb.dataset.inputIdx;
+    const inp = holder.querySelector('[data-idx="' + idx + '"]');
+    if (inp) inp.disabled = true;
+    thumb.remove();
+    if (!previewGrid.querySelectorAll('.img-thumb').length) previewGrid.style.display = 'none';
+}
+
+addBtn.addEventListener('click', function() { createFileInput().click(); });
+
+
+
+
     const el = document.getElementById(id);
     el.textContent = msg;
     el.style.display = 'block';
@@ -649,9 +645,9 @@ form.addEventListener('submit', function(e) {
         return;
     }
 
-    const dt = new DataTransfer();
-    imageFiles.forEach(f => dt.items.add(f));
-    document.getElementById('image-input').files = dt.files;
+
+
+
 });
 {% endverbatim %}
 </script>

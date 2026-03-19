@@ -61,6 +61,7 @@ sales_patterns = [
     path('accounts/<int:account_id>/', views.view_account, name='view_account'),
     path('accounts/<int:account_id>/edit/', views.edit_account, name='edit_account'),
     path('accounts/<int:account_id>/delete/', views.delete_account, name='delete_account'),
+    path('accounts/check-number/', views.check_account_number, name='check_account_number'),
     #CUSTOMER URLS---------------------------------
     path('customers/', views.customer_list, name='customer_list'),
     path('customers/add/', views.add_customer, name='add_customer'),
