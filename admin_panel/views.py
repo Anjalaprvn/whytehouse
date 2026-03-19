@@ -3057,7 +3057,7 @@ def edit_destination(request, destination_id):
         destination.name = name
         destination.country = country
         destination.category = category
-        destination.description = request.POST.get('description')
+        destination.description = request.POST.get('description', '').strip() or None
         destination.is_popular = request.POST.get('is_popular') == 'on'
         packages_start_from = request.POST.get('packages_start_from', '').strip()
         destination.packages_start_from = packages_start_from if packages_start_from else None

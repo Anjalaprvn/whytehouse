@@ -209,8 +209,8 @@
             <div class="form-group">
                 <label>Location <span>*</span></label>
                 <input type="text" id="edit_prop_location" name="location" class="form-control"
-                       value="{{ property.location }}" required oninput="validateLetters(this, 'location-error')">
-                <div class="field-error" id="location-error">Only letters and spaces are allowed.</div>
+                       value="{{ property.location }}" required oninput="validateLocation(this)">
+                <div class="field-error" id="location-error">Only letters, spaces, and commas are allowed.</div>
             </div>
 
             <!-- Owner Name -->
@@ -273,19 +273,16 @@
             <div class="form-group">
                 <label>Cover Image</label>
 
-                {% if property.image %}
-                    <div style="margin-bottom: 15px;">
-                        <p>Current Image:</p>
-                        <img src="{{ property.image.url }}"
-                             style="max-width:200px;border-radius:8px;border:1px solid #e2e8f0;">
-                    </div>
-                {% endif %}
+                <div id="img-preview-wrapper" style="display:{% if property.image %}block{% else %}none{% endif %}; position:relative; width:fit-content; margin-bottom:10px;">
+                    <img id="image-preview" src="{% if property.image %}{{ property.image.url }}{% endif %}" style="max-width:200px; border-radius:8px; border:1px solid #e2e8f0; display:block;" alt="Preview">
+                    <button type="button" id="remove-img-btn" style="position:absolute; top:-8px; right:-8px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:22px; height:22px; font-size:13px; cursor:pointer; line-height:1;">&times;</button>
+                </div>
 
-                <div class="upload-box" onclick="document.getElementById('file-upload').click();">
+                <div id="upload-box" class="upload-box" style="{% if property.image %}display:none;{% endif %}" onclick="document.getElementById('file-upload').click();">
                     <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
                     <div class="upload-text">Click to upload new image</div>
-                    <input type="file" id="file-upload" name="image" style="display:none;" accept="image/*">
                 </div>
+                <input type="file" id="file-upload" name="image" style="display:none;" accept="image/*">
             </div>
 
             <!-- Footer -->
@@ -333,6 +330,12 @@ function addNewAmenity() {
     container.appendChild(input);
 }
 
+function validateLocation(input) {
+    const valid = /^[a-zA-Z\s,]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    document.getElementById('location-error').style.display = valid ? 'none' : 'block';
+}
+
 function validateSummary(input) {
     const valid = /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
     input.classList.toggle('invalid', !valid);
@@ -363,7 +366,7 @@ document.querySelector('form').addEventListener('submit', function(e) {
     let valid = true;
     const fields = [
         { id: 'edit_prop_name', errId: 'prop-name-error', pattern: /^[a-zA-Z\s]+$/ },
-        { id: 'edit_prop_location', errId: 'location-error', pattern: /^[a-zA-Z\s]+$/ },
+        { id: 'edit_prop_location', errId: 'location-error', pattern: /^[a-zA-Z\s,]+$/ },
         { id: 'edit_prop_address', errId: 'address-error', pattern: /^[a-zA-Z0-9\s,\.]+$/ },
         { id: 'edit_prop_summary', errId: 'summary-error', pattern: /^[a-zA-Z0-9\s!.,&]+$/ },
     ];
@@ -397,6 +400,26 @@ document.querySelector('form').addEventListener('submit', function(e) {
         }
     });
     if (!valid) e.preventDefault();
+});
+
+document.getElementById('file-upload').addEventListener('change', function() {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('image-preview').src = e.target.result;
+            document.getElementById('img-preview-wrapper').style.display = 'block';
+            document.getElementById('upload-box').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('remove-img-btn').addEventListener('click', function() {
+    document.getElementById('file-upload').value = '';
+    document.getElementById('image-preview').src = '';
+    document.getElementById('img-preview-wrapper').style.display = 'none';
+    document.getElementById('upload-box').style.display = 'block';
 });
 </script>
 

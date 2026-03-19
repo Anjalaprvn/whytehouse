@@ -100,7 +100,7 @@
             <div class="grid-row">
                 <div>
                     <label>Price <span class="required-star">*</span></label>
-                    <input type="number" name="price" value="{{ package.price }}" required class="form-control">
+                    <input type="text" name="price" value="{{ package.price }}" required class="form-control" onkeydown="return /[\d.]/.test(event.key)||event.key==='Backspace'||event.key==='Delete'||event.key==='ArrowLeft'||event.key==='ArrowRight'||event.key==='Tab'" oninput="this.value=this.value.replace(/[^\d.]/g,'').replace(/(\..*)\./g,'$1')">
                 </div>
 
                 <div>
