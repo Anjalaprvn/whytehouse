@@ -2,6 +2,39 @@ from django.db.models import Q, Sum
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
+from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
+
+
+class CustomerBrowsableAPIRenderer(BrowsableAPIRenderer):
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        ret = super().render(data, accepted_media_type, renderer_context)
+        if isinstance(ret, bytes):
+            ret = ret.decode('utf-8')
+        script = """
+        <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var contact = document.querySelector('input[name="contact_number"]');
+            var whatsapp = document.querySelector('input[name="whatsapp_number"]');
+            var checkbox = document.querySelector('input[name="same_as_whatsapp"]');
+            if (!contact || !whatsapp || !checkbox) return;
+            function sync() {
+                if (checkbox.checked) {
+                    whatsapp.value = contact.value;
+                    whatsapp.setAttribute('readonly', 'readonly');
+                    whatsapp.style.opacity = '0.6';
+                } else {
+                    whatsapp.removeAttribute('readonly');
+                    whatsapp.style.opacity = '1';
+                }
+            }
+            checkbox.addEventListener('change', sync);
+            contact.addEventListener('input', function () {
+                if (checkbox.checked) whatsapp.value = contact.value;
+            });
+        });
+        </script>
+        """
+        return (ret + script).encode('utf-8')
 
 from .models import (
     Blog,
@@ -424,6 +457,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put", "delete", "head", "options"]
     queryset = Customer.objects.all().order_by("-created_at")
     serializer_class = CustomerSerializer
+    renderer_classes = [JSONRenderer, CustomerBrowsableAPIRenderer]
 
     def get_queryset(self):
         qs = super().get_queryset()

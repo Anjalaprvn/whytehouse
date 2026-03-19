@@ -269,8 +269,7 @@ class Account(models.Model):
 class Customer(models.Model):
     CUSTOMER_TYPE_CHOICES = [
         ('Individual', 'Individual'),
-        ('Corporate', 'Corporate'),
-        ('Government', 'Government'),
+        ('Business', 'Business'),
     ]
     
     SALUTATION_CHOICES = [

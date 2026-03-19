@@ -1268,10 +1268,9 @@ def customer_list(request):
     })
 
 def add_customer(request):
-    context = {"form": {}}
-
     if request.method == "POST":
         try:
+            import re
             same_as_whatsapp = request.POST.get("same_as_whatsapp") == "on"
 
             customer_type = (request.POST.get("customer_type") or "Individual").strip()
@@ -1285,122 +1284,97 @@ def add_customer(request):
             work_number = (request.POST.get("work_number") or "").strip()
             gst_number = (request.POST.get("gst_number") or "").strip()
 
-            # Keep values in template if error
-            context["form"] = {
-                "customer_type": customer_type,
-                "salutation": salutation,
-                "first_name": first_name,
-                "last_name": last_name,
-                "display_name": display_name,
-                "place": place,
-                "contact_number": contact_number,
-                "same_as_whatsapp": same_as_whatsapp,
-                "whatsapp_number": whatsapp_number,
-                "work_number": work_number,
-                "gst_number": gst_number,
-            }
+            errors = {}
 
-            # Required validation
-            if not first_name or not display_name or not contact_number:
-                context["error"] = "First Name, Display Name, and Contact Number are required."
-                return render(request, "admin/sales/customer/add_customer.html", context)
-            
-            # First name validation
-            if len(first_name) < 2 or len(first_name) > 50:
-                context["error"] = "First Name must be between 2 and 50 characters."
-                return render(request, "admin/sales/customer/add_customer.html", context)
-            
-            # Display name validation
-            if len(display_name) < 2 or len(display_name) > 100:
-                context["error"] = "Display Name must be between 2 and 100 characters."
-                return render(request, "admin/sales/customer/add_customer.html", context)
-            
-            # Contact number validation
-            import re
-            if not contact_number.isdigit():
-                context["error"] = "Contact Number must contain only digits."
-                return render(request, "admin/sales/customer/add_customer.html", context)
-            
-            if len(contact_number) < 10 or len(contact_number) > 15:
-                context["error"] = "Contact Number must be between 10 and 15 digits."
-                return render(request, "admin/sales/customer/add_customer.html", context)
+            if not first_name:
+                errors["first_name"] = "First Name is required."
+            elif any(c.isdigit() for c in first_name):
+                errors["first_name"] = "First Name must not contain numbers."
 
-            # NO-JS WhatsApp logic
+            if last_name and any(c.isdigit() for c in last_name):
+                errors["last_name"] = "Last Name must not contain numbers."
+
+            if not display_name:
+                errors["display_name"] = "Display Name is required."
+            elif any(c.isdigit() for c in display_name):
+                errors["display_name"] = "Display Name must not contain numbers."
+
+            if place and any(c.isdigit() for c in place):
+                errors["place"] = "Customer Place must not contain numbers."
+
+            if not contact_number:
+                errors["contact_number"] = "Contact Number is required."
+            elif not contact_number.isdigit():
+                errors["contact_number"] = "Contact Number must contain digits only."
+            elif len(contact_number) < 10 or len(contact_number) > 15:
+                errors["contact_number"] = "Contact Number must be 10–15 digits."
+
             if same_as_whatsapp:
                 whatsapp_number = contact_number
-
-            # IMPORTANT fallback:
-            # If whatsapp_number is empty, set it to contact_number (prevents NOT NULL issues)
             if not whatsapp_number:
                 whatsapp_number = contact_number
-            
-            # WhatsApp number validation if different from contact
+
             if whatsapp_number != contact_number:
                 if not whatsapp_number.isdigit():
-                    context["error"] = "WhatsApp Number must contain only digits."
-                    return render(request, "admin/sales/customer/add_customer.html", context)
-                
-                if len(whatsapp_number) < 10 or len(whatsapp_number) > 15:
-                    context["error"] = "WhatsApp Number must be between 10 and 15 digits."
-                    return render(request, "admin/sales/customer/add_customer.html", context)
-            
-            # Work number validation (optional)
+                    errors["whatsapp_number"] = "WhatsApp Number must contain digits only."
+                elif len(whatsapp_number) < 10 or len(whatsapp_number) > 15:
+                    errors["whatsapp_number"] = "WhatsApp Number must be 10–15 digits."
+
             if work_number:
                 if not work_number.isdigit():
-                    context["error"] = "Work Number must contain only digits."
-                    return render(request, "admin/sales/customer/add_customer.html", context)
-                
-                if len(work_number) < 10 or len(work_number) > 15:
-                    context["error"] = "Work Number must be between 10 and 15 digits."
-                    return render(request, "admin/sales/customer/add_customer.html", context)
-            
-            # GST number validation (optional)
+                    errors["work_number"] = "Work Number must contain digits only."
+                elif len(work_number) < 10 or len(work_number) > 15:
+                    errors["work_number"] = "Work Number must be 10–15 digits."
+
             if gst_number:
                 gst_pattern = r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$'
                 if not re.match(gst_pattern, gst_number.upper()):
-                    context["error"] = "Invalid GST Number format. Must be 15 characters (e.g., 22AAAAA0000A1Z5)."
-                    return render(request, "admin/sales/customer/add_customer.html", context)
-                gst_number = gst_number.upper()
-            
-            # Place validation (optional)
-            if place and len(place) > 100:
-                context["error"] = "Place must not exceed 100 characters."
-                return render(request, "admin/sales/customer/add_customer.html", context)
+                    errors["gst_number"] = "Invalid GST Number format (e.g. 22AAAAA0000A1Z5)."
+                else:
+                    gst_number = gst_number.upper()
 
-            # Optional: prevent duplicates if contact_number is unique
-            if Customer.objects.filter(contact_number=contact_number).exists():
-                context["error"] = "This Contact Number already exists."
-                return render(request, "admin/sales/customer/add_customer.html", context)
+            if not errors and Customer.objects.filter(contact_number=contact_number).exists():
+                errors["contact_number"] = "This Contact Number already exists."
+
+            if errors:
+                request.session["_add_customer_form"] = {
+                    "customer_type": customer_type, "salutation": salutation,
+                    "first_name": first_name, "last_name": last_name,
+                    "display_name": display_name, "place": place,
+                    "contact_number": contact_number, "same_as_whatsapp": same_as_whatsapp,
+                    "whatsapp_number": whatsapp_number, "work_number": work_number,
+                    "gst_number": gst_number,
+                }
+                request.session["_add_customer_errors"] = errors
+                return redirect("sales:add_customer")
 
             Customer.objects.create(
-                customer_type=customer_type,
-                salutation=salutation,
-                first_name=first_name,
-                last_name=last_name,
-                display_name=display_name,
-                place=place,
-                contact_number=contact_number,
-                same_as_whatsapp=same_as_whatsapp,
-                whatsapp_number=whatsapp_number,
-                work_number=work_number,
+                customer_type=customer_type, salutation=salutation,
+                first_name=first_name, last_name=last_name,
+                display_name=display_name, place=place,
+                contact_number=contact_number, same_as_whatsapp=same_as_whatsapp,
+                whatsapp_number=whatsapp_number, work_number=work_number,
                 gst_number=gst_number,
             )
 
             messages.success(request, f"Customer '{display_name}' added successfully!")
             return redirect("sales:customer_list")
 
-        except IntegrityError as e:
-            print("INTEGRITY ERROR:", str(e))
-            context["error"] = f"Database error: {str(e)}"
-            return render(request, "admin/sales/customer/add_customer.html", context)
+        except IntegrityError:
+            request.session["_add_customer_errors"] = {"contact_number": "This Contact Number already exists."}
+            return redirect("sales:add_customer")
 
         except Exception as e:
             import traceback
             traceback.print_exc()
-            context["error"] = f"Error saving customer: {str(e)}"
-            return render(request, "admin/sales/customer/add_customer.html", context)
+            request.session["_add_customer_errors"] = {}
+            request.session["_add_customer_error"] = f"Error saving customer: {str(e)}"
+            return redirect("sales:add_customer")
 
-    return render(request, "admin/sales/customer/add_customer.html", context)
+    form = request.session.pop("_add_customer_form", {})
+    errors = request.session.pop("_add_customer_errors", {})
+    error = request.session.pop("_add_customer_error", "")
+    return render(request, "admin/sales/customer/add_customer.html", {"form": form, "errors": errors, "error": error})
 def view_customer(request, customer_id):
     try:
         customer = Customer.objects.get(id=customer_id)

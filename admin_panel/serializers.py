@@ -399,6 +399,13 @@ class TravelPackageListSerializer(serializers.ModelSerializer):
 
 # ==================== CUSTOMER SERIALIZER ====================
 class CustomerSerializer(serializers.ModelSerializer):
+    customer_type = serializers.ChoiceField(choices=['Individual', 'Business'])
+    salutation = serializers.ChoiceField(
+        choices=[('Mr.', 'Mr.'), ('Ms.', 'Ms.'), ('Mrs.', 'Mrs.'), ('Dr.', 'Dr.')],
+        required=False,
+        allow_blank=True,
+    )
+
     class Meta:
         model = Customer
         fields = [
@@ -425,28 +432,74 @@ class CustomerSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"{field} must not contain numbers.")
         return value
 
-    def _digits_only(self, value, field):
-        if value and not value.strip().lstrip('+').isdigit():
+    def _phone(self, value, field):
+        if not value:
+            return value
+        digits = value.strip().lstrip('+')
+        if not digits.isdigit():
             raise serializers.ValidationError(f"{field} must contain digits only.")
+        if not (10 <= len(digits) <= 15):
+            raise serializers.ValidationError(f"{field} must be 10–15 digits.")
         return value
 
     def validate_first_name(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError("First name is required.")
         return self._no_digits(value, "First name")
 
     def validate_last_name(self, value):
         return self._no_digits(value, "Last name")
 
     def validate_display_name(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError("Display name is required.")
         return self._no_digits(value, "Display name")
 
+    def validate_place(self, value):
+        return self._no_digits(value, "Customer Place")
+
     def validate_contact_number(self, value):
-        return self._digits_only(value, "Contact number")
+        if not value or not value.strip():
+            raise serializers.ValidationError("Contact number is required.")
+        self._phone(value, "Contact number")
+        instance = getattr(self, 'instance', None)
+        qs = Customer.objects.filter(contact_number=value)
+        if instance:
+            qs = qs.exclude(pk=instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("A customer with this contact number already exists.")
+        return value
+
+    def validate_email(self, value):
+        if not value or not value.strip():
+            return value
+        instance = getattr(self, 'instance', None)
+        qs = Customer.objects.filter(email=value)
+        if instance:
+            qs = qs.exclude(pk=instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("A customer with this email already exists.")
+        return value
 
     def validate_whatsapp_number(self, value):
-        return self._digits_only(value, "WhatsApp number")
+        return self._phone(value, "WhatsApp number")
 
     def validate_work_number(self, value):
-        return self._digits_only(value, "Work number")
+        return self._phone(value, "Work number")
+
+    def validate(self, data):
+        if data.get('same_as_whatsapp'):
+            contact = data.get('contact_number') or (self.instance.contact_number if self.instance else '')
+            data['whatsapp_number'] = contact
+        return data
+
+    def validate_gst_number(self, value):
+        import re
+        if not value:
+            return value
+        if not re.match(r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$', value.strip().upper()):
+            raise serializers.ValidationError("Invalid GST number format (e.g. 22AAAAA0000A1Z5).")
+        return value.strip().upper()
 
 
 # ==================== MEAL SERIALIZER ====================

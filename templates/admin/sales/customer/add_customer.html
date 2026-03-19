@@ -77,7 +77,6 @@
       width:18px;height:18px;opacity:.65;pointer-events:none;
     }
 
-    /* ===== TOGGLE (NO JS) ===== */
     .toggle-row{
       display:flex;
       align-items:center;
@@ -85,14 +84,13 @@
       margin-top:8px;
     }
 
-    /* hide the real checkbox, keep it in DOM (important for CSS sibling selector) */
     .css-toggle{
-  position:absolute;
-  left:-9999px;
-  width:1px;
-  height:1px;
-  opacity:0;
-}
+      position:absolute;
+      left:-9999px;
+      width:1px;
+      height:1px;
+      opacity:0;
+    }
 
     .switch{
       position:relative;
@@ -121,16 +119,14 @@
       transition:.2s ease;
     }
 
-    /* when checkbox checked -> slider ON */
-   /* when checkbox checked -> slider ON (works even with wrapper div) */
-#sameAsWhatsapp:checked ~ .field .toggle-ui .slider{
-  background: var(--accent);
-  border-color: var(--accent);
-}
+    .switch.on .slider{
+      background: var(--accent);
+      border-color: var(--accent);
+    }
 
-#sameAsWhatsapp:checked ~ .field .toggle-ui .slider:before{
-  transform: translate(24px,-50%);
-}
+    .switch.on .slider:before{
+      transform: translate(24px,-50%);
+    }
 
     .toggle-text{
       font-weight:600;color:#111;font-size:15px;
@@ -143,20 +139,9 @@
       line-height:1.35;
     }
 
-    /* ✅ FIX: checkbox is now a sibling BEFORE wa-wrap, so this works */
-    #sameAsWhatsapp:checked ~ .wa-wrap input{
+    #whatsappNumber[readonly]{
       opacity:.6;
       background:#eceef3;
-    }
-    #sameAsWhatsapp:checked ~ .wa-wrap{
-      position:relative;
-    }
-    #sameAsWhatsapp:checked ~ .wa-wrap::after{
-      content:"";
-      position:absolute;
-      inset:28px 0 0 0;
-      border-radius:12px;
-      pointer-events:none;
     }
 
     .btn-row{display:flex;gap:14px;margin-top:24px}
@@ -182,6 +167,17 @@
       cursor:pointer;
     }
     .help-fab span{font-weight:700;color:#2a2d36}
+
+    .err-msg{
+      display:none;
+      color:#d13b3b;
+      font-size:12px;
+      margin-top:5px;
+    }
+    input.invalid, select.invalid{
+      border-color:#d13b3b !important;
+      background:#fff5f5;
+    }
 
     @media (max-width: 980px){
       .grid{grid-template-columns:1fr 1fr}
@@ -226,7 +222,6 @@
 
         <div class="grid">
 
-          <!-- Customer Type -->
           <div class="field span-3">
             <label>Customer Type <span class="req">*</span></label>
             <div class="select-wrap">
@@ -240,7 +235,6 @@
             </div>
           </div>
 
-          <!-- Salutation -->
           <div class="field">
             <label>Salutation</label>
             <div class="select-wrap">
@@ -257,37 +251,36 @@
             </div>
           </div>
 
-          <!-- First Name -->
           <div class="field">
             <label>First Name <span class="req">*</span></label>
-            <input type="text" name="first_name" required value="{{ form.first_name|default:'' }}" />
+            <input type="text" id="first_name" name="first_name" value="{{ form.first_name|default:'' }}" />
+            <span class="err-msg" id="err_first_name">{% if errors.first_name %}{{ errors.first_name }}{% endif %}</span>
           </div>
 
-          <!-- Last Name -->
           <div class="field">
             <label>Last Name</label>
-            <input type="text" name="last_name" value="{{ form.last_name|default:'' }}" />
+            <input type="text" id="last_name" name="last_name" value="{{ form.last_name|default:'' }}" />
+            <span class="err-msg" id="err_last_name">{% if errors.last_name %}{{ errors.last_name }}{% endif %}</span>
           </div>
 
-          <!-- Display Name -->
           <div class="field span-3">
             <label>Customer Display Name <span class="req">*</span></label>
-            <input type="text" name="display_name" required value="{{ form.display_name|default:'' }}" />
+            <input type="text" id="display_name" name="display_name" value="{{ form.display_name|default:'' }}" />
+            <span class="err-msg" id="err_display_name">{% if errors.display_name %}{{ errors.display_name }}{% endif %}</span>
           </div>
 
-          <!-- Place -->
           <div class="field span-3">
             <label>Customer Place</label>
-            <input type="text" name="place" value="{{ form.place|default:'' }}" />
+            <input type="text" id="place" name="place" value="{{ form.place|default:'' }}" />
+            <span class="err-msg" id="err_place">{% if errors.place %}{{ errors.place }}{% endif %}</span>
           </div>
 
-          <!-- Contact Number -->
           <div class="field span-3">
             <label>Contact Number <span class="req">*</span></label>
-            <input type="text" id="contactNumber" name="contact_number" placeholder="+91 9876543210" required value="{{ form.contact_number|default:'' }}" />
+            <input type="text" id="contactNumber" name="contact_number" placeholder="+91 9876543210" value="{{ form.contact_number|default:'' }}" />
+            <span class="err-msg" id="err_contact_number">{% if errors.contact_number %}{{ errors.contact_number }}{% endif %}</span>
           </div>
 
-          <!-- ✅ REAL checkbox placed here so CSS can target later siblings -->
           <input
             class="css-toggle"
             type="checkbox"
@@ -296,7 +289,6 @@
             {% if form.same_as_whatsapp %}checked{% endif %}
           />
 
-          <!-- Toggle UI -->
           <div class="field span-3">
             <div class="toggle-row">
              <label class="switch toggle-ui" for="sameAsWhatsapp" tabindex="-1">
@@ -305,29 +297,29 @@
               <label class="toggle-text" for="sameAsWhatsapp">Same as WhatsApp number</label>
             </div>
             <small class="hint">
-              If enabled, WhatsApp number will automatically match Contact Number.
+              Enter Contact Number.
             </small>
           </div>
 
-          <!-- WhatsApp Number -->
           <div class="field span-3 wa-wrap">
             <label>WhatsApp Number</label>
             <input type="text" id="whatsappNumber" name="whatsapp_number" placeholder="+91 9876543210" value="{{ form.whatsapp_number|default:'' }}" />
+            <span class="err-msg" id="err_whatsapp_number">{% if errors.whatsapp_number %}{{ errors.whatsapp_number }}{% endif %}</span>
             <small class="hint">
               If the toggle is ON, this field will auto-fill from Contact Number.
             </small>
           </div>
 
-          <!-- Work Number -->
           <div class="field span-3">
             <label>Work Number</label>
-            <input type="text" name="work_number" value="{{ form.work_number|default:'' }}" />
+            <input type="text" id="work_number" name="work_number" value="{{ form.work_number|default:'' }}" />
+            <span class="err-msg" id="err_work_number">{% if errors.work_number %}{{ errors.work_number }}{% endif %}</span>
           </div>
 
-          <!-- GST Number -->
           <div class="field span-3">
             <label>GST Number</label>
-            <input type="text" name="gst_number" value="{{ form.gst_number|default:'' }}" />
+            <input type="text" id="gst_number" name="gst_number" value="{{ form.gst_number|default:'' }}" placeholder="e.g. 22AAAAA0000A1Z5" />
+            <span class="err-msg" id="err_gst_number">{% if errors.gst_number %}{{ errors.gst_number }}{% endif %}</span>
           </div>
 
         </div>
@@ -344,20 +336,96 @@
   <button class="help-fab" type="button"><span>?</span></button>
 
   <script>
-    const toggle = document.getElementById('sameAsWhatsapp');
+    const toggleCheckbox = document.getElementById('sameAsWhatsapp');
+    const toggleSwitch = document.querySelector('.switch.toggle-ui');
     const contactInput = document.getElementById('contactNumber');
     const whatsappInput = document.getElementById('whatsappNumber');
 
-    toggle.addEventListener('change', function() {
-      if (this.checked) {
-        whatsappInput.value = contactInput.value;
+    function applyToggleState() {
+      if (toggleCheckbox.checked) {
+        whatsappInput.value = contactInput.value.trim();
+        whatsappInput.readOnly = true;
+        toggleSwitch.classList.add('on');
+      } else {
+        whatsappInput.readOnly = false;
+        whatsappInput.value = '';
+        toggleSwitch.classList.remove('on');
       }
+    }
+
+    toggleSwitch.addEventListener('click', function() {
+      const hasContact = contactInput.value.trim().length > 0;
+      if (!hasContact && !toggleCheckbox.checked) return;
+      toggleCheckbox.checked = !toggleCheckbox.checked;
+      applyToggleState();
     });
 
     contactInput.addEventListener('input', function() {
-      if (toggle.checked) {
-        whatsappInput.value = this.value;
+      const val = this.value.trim();
+
+      if (toggleCheckbox.checked) {
+        whatsappInput.value = val;
       }
+
+      if (!val) {
+        toggleCheckbox.checked = false;
+        applyToggleState();
+        showErr('contact_number', '');
+        return;
+      }
+
+      if (!/^\+?\d+$/.test(val)) {
+        showErr('contact_number', 'Contact number must contain digits only.');
+      } else if (val.replace('+','').length < 10 || val.replace('+','').length > 15) {
+        showErr('contact_number', 'Contact number must be 10–15 digits.');
+      } else {
+        showErr('contact_number', '');
+      }
+    });
+
+    function showErr(id, msg) {
+      const el = document.getElementById('err_' + id);
+      const input = document.getElementById(id);
+      if (!el) return;
+      el.textContent = msg;
+      el.style.display = msg ? 'block' : 'none';
+      if (input) input.classList.toggle('invalid', !!msg);
+    }
+
+    function liveTextOnly(id, label) {
+      const val = document.getElementById(id).value.trim();
+      if (!val) { showErr(id, ''); return; }
+      if (/\d/.test(val)) showErr(id, label + ' must not contain numbers.');
+      else showErr(id, '');
+    }
+
+    function liveDigitsOnly(inputId, errId, label) {
+      const val = document.getElementById(inputId).value.trim();
+      if (!val) { showErr(errId, ''); return; }
+      if (!/^\+?\d+$/.test(val)) showErr(errId, label + ' must contain digits only.');
+      else showErr(errId, '');
+    }
+
+    function liveGST(id) {
+      const val = document.getElementById(id).value.trim();
+      if (!val) { showErr(id, ''); return; }
+      if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i.test(val))
+        showErr(id, 'Invalid GST format (e.g. 22AAAAA0000A1Z5).');
+      else showErr(id, '');
+    }
+
+    document.getElementById('first_name').addEventListener('input', () => liveTextOnly('first_name', 'First name'));
+    document.getElementById('last_name').addEventListener('input', () => liveTextOnly('last_name', 'Last name'));
+    document.getElementById('display_name').addEventListener('input', () => liveTextOnly('display_name', 'Display name'));
+    document.getElementById('place').addEventListener('input', () => liveTextOnly('place', 'Customer Place'));
+    document.getElementById('whatsappNumber').addEventListener('input', () => liveDigitsOnly('whatsappNumber', 'whatsapp_number', 'WhatsApp number'));
+    document.getElementById('work_number').addEventListener('input', () => liveDigitsOnly('work_number', 'work_number', 'Work number'));
+    document.getElementById('gst_number').addEventListener('input', () => liveGST('gst_number'));
+
+    applyToggleState();
+
+    document.querySelectorAll('.err-msg').forEach(el => {
+      if (el.textContent.trim()) el.style.display = 'block';
     });
   </script>
 {% endblock %}
