@@ -19,18 +19,9 @@
     *{box-sizing:border-box;margin:0;padding:0;font-family:"Poppins",sans-serif}
     body{background:var(--bg);color:var(--text)}
 
-    .main{
-      
-      padding:34px 40px 70px;
-    }
+    .main{padding:34px 40px 70px;}
 
-    /* ===== Header ===== */
-    .page-top{
-      display:flex;
-      align-items:flex-start;
-      gap:14px;
-      margin-bottom:18px;
-    }
+    .page-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px;}
 
     .back-btn{
       width:44px;height:44px;
@@ -45,19 +36,9 @@
     }
     .back-btn svg{width:20px;height:20px}
 
-    .titles h1{
-      font-size:38px;
-      font-weight:600;
-      line-height:1.15;
-      margin-top:2px;
-    }
-    .titles p{
-      color:var(--muted);
-      font-size:16px;
-      margin-top:6px;
-    }
+    .titles h1{font-size:38px;font-weight:600;line-height:1.15;margin-top:2px;}
+    .titles p{color:var(--muted);font-size:16px;margin-top:6px;}
 
-    /* ===== Card ===== */
     .card{
       background:var(--card);
       border:1px solid var(--border);
@@ -66,25 +47,13 @@
       padding:24px;
       max-width:1200px;
     }
+    .card-title{font-size:18px;font-weight:600;margin-bottom:18px;}
 
-    .card-title{
-      font-size:18px;
-      font-weight:600;
-      margin-bottom:18px;
-    }
-
-    /* ===== Profile Upload ===== */
-    .profile-row{
-      display:flex;
-      align-items:center;
-      gap:22px;
-      margin-bottom:18px;
-      flex-wrap:wrap;
-    }
+    /* Profile Upload */
+    .profile-row{display:flex;align-items:center;gap:22px;margin-bottom:18px;flex-wrap:wrap;}
 
     .avatar{
-      width:120px;
-      height:120px;
+      width:120px;height:120px;
       border-radius:50%;
       background:#f3ead6;
       border:2px dashed #e6d7b3;
@@ -92,27 +61,25 @@
       place-items:center;
       position:relative;
       overflow:hidden;
+      flex:0 0 auto;
     }
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+    .avatar svg{width:36px;height:36px;opacity:.6;}
 
-    .avatar img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
+    .avatar-delete{
+      position:absolute;
+      inset:0;
+      background:rgba(0,0,0,.45);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      border-radius:50%;
+      cursor:pointer;
     }
+    .avatar:hover .avatar-delete{display:flex;}
+    .avatar-delete svg{width:26px;height:26px;color:#fff;}
 
-    .avatar svg{
-      width:36px;
-      height:36px;
-      opacity:.6;
-    }
-
-    .upload-box{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
-
+    .upload-box{display:flex;flex-direction:column;gap:6px;}
     .upload-btn{
       display:inline-block;
       padding:10px 16px;
@@ -123,39 +90,16 @@
       cursor:pointer;
       width:max-content;
     }
+    .upload-note{font-size:13px;color:var(--muted);}
+    input[type="file"]{display:none;}
 
-    .upload-note{
-      font-size:13px;
-      color:var(--muted);
-    }
+    /* Form Grid */
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 22px;margin-top:6px;}
 
-    input[type="file"]{
-      display:none;
-    }
+    .field label{display:block;font-size:14px;font-weight:600;margin-bottom:6px;}
+    .req{color:var(--danger);margin-left:4px;font-weight:700;}
 
-    /* ===== Form Grid ===== */
-    .form-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:18px 22px;
-      margin-top:6px;
-    }
-
-    .field label{
-      display:block;
-      font-size:14px;
-      font-weight:600;
-      margin-bottom:6px;
-    }
-
-    .req{
-      color:var(--danger);
-      margin-left:4px;
-      font-weight:700;
-    }
-
-    .input,
-    .select{
+    .input,.select{
       width:100%;
       border:1px solid transparent;
       background:var(--input);
@@ -165,21 +109,30 @@
       outline:none;
       transition:.2s ease;
     }
-
-    .input:focus,
-    .select:focus{
+    .input:focus,.select:focus{
       background:#fff;
       border-color:#d9dbe4;
       box-shadow:0 0 0 4px rgba(212,164,47,.12);
     }
-
-    /* ===== Buttons ===== */
-    .btn-row{
-      display:flex;
-      gap:14px;
-      margin-top:24px;
+    .field.error .input,
+    .field.error .select{
+      border-color:var(--danger) !important;
+      background:#fff5f7;
     }
 
+    .error-msg{
+      color:var(--danger);
+      font-size:13px;
+      margin-top:5px;
+      display:none;
+      align-items:center;
+      gap:5px;
+    }
+    .error-msg::before{content:'⚠';font-size:13px;}
+    .error-msg.show{display:flex;}
+
+    /* Buttons */
+    .btn-row{display:flex;gap:14px;margin-top:24px;}
     .btn{
       border-radius:14px;
       padding:12px 20px;
@@ -194,25 +147,18 @@
       justify-content:center;
       min-width:120px;
     }
-
     .btn-primary{
       background:var(--accent);
       border-color:transparent;
       color:#111;
       box-shadow:0 10px 18px rgba(212,164,47,.22);
     }
-
     .btn:active{transform:translateY(1px)}
 
-    /* ===== Responsive ===== */
     @media (max-width:900px){
       .form-grid{grid-template-columns:1fr}
       .titles h1{font-size:32px}
       .main{padding:26px 18px 60px}
-    }
-
-    @media (max-width:720px){
-      .main{margin-left:0}
     }
 </style>
 {% endblock %}
@@ -226,7 +172,6 @@
           <path d="M15 18L9 12L15 6" stroke="#111" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </a>
-
       <div class="titles">
         <h1>Add New Employee</h1>
         <p>Enter employee details</p>
@@ -236,17 +181,24 @@
     <section class="card">
       <div class="card-title">Employee Information</div>
 
-      <form method="POST" enctype="multipart/form-data">
+      <form id="emp-form" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
+        <input type="hidden" id="remove_picture" name="remove_picture" value="0">
 
         <!-- Profile Upload -->
         <div class="profile-row">
-          <div class="avatar" id="avatarPreview">
+          <div class="avatar" id="avatarWrap">
             <svg id="uploadIcon" viewBox="0 0 24 24" fill="none">
               <path d="M12 16V4" stroke="#6b7280" stroke-width="2" stroke-linecap="round"/>
               <path d="M7 9L12 4L17 9" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M5 20H19" stroke="#6b7280" stroke-width="2" stroke-linecap="round"/>
             </svg>
+            <img id="avatarImg" src="" alt="Preview" style="display:none;">
+            <div class="avatar-delete" id="avatarDelete" title="Remove photo">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+            </div>
           </div>
 
           <div class="upload-box">
@@ -254,39 +206,42 @@
               Upload Picture
               <input type="file" name="profile_picture" accept="image/*" id="profilePicture">
             </label>
-            <div class="upload-note">
-              Recommended: Square image, at least 200x200px
-            </div>
+            <div class="upload-note">Recommended: Square image, at least 200×200px</div>
           </div>
         </div>
 
         <!-- Form Fields -->
         <div class="form-grid">
 
-          <div class="field">
+          <div class="field{% if errors.name %} error{% endif %}" id="field-name">
             <label>Name <span class="req">*</span></label>
-            <input class="input" type="text" name="name" placeholder="John Doe" required>
+            <input class="input" type="text" name="name" id="name" placeholder="John Doe" value="{% if form_data %}{{ form_data.name }}{% endif %}">
+            <div class="error-msg{% if errors.name %} show{% endif %}" id="err-name">{% if errors.name %}{{ errors.name }}{% endif %}</div>
           </div>
 
-          <div class="field">
+          <div class="field{% if errors.email %} error{% endif %}" id="field-email">
             <label>Email <span class="req">*</span></label>
-            <input class="input" type="email" name="email" placeholder="john@whitehouse.com" required>
+            <input class="input" type="text" name="email" id="email" placeholder="john@example.com" value="{% if form_data %}{{ form_data.email }}{% endif %}">
+            <div class="error-msg{% if errors.email %} show{% endif %}" id="err-email">{% if errors.email %}{{ errors.email }}{% endif %}</div>
+            <div class="duplicate-alert" id="dup-email" style="display:none;background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:8px 12px;margin-top:6px;color:#dc2626;font-size:13px;font-weight:500;display:none;align-items:center;gap:6px;">&#9888; This email is already registered to another employee.</div>
           </div>
 
-          <div class="field">
+          <div class="field{% if errors.phone %} error{% endif %}" id="field-phone">
             <label>Phone <span class="req">*</span></label>
-            <input class="input" type="tel" name="phone" placeholder="+91 9876543210" required>
+            <input class="input" type="text" name="phone" id="phone" placeholder="9876543210" maxlength="10" value="{% if form_data %}{{ form_data.phone }}{% endif %}">
+            <div class="error-msg{% if errors.phone %} show{% endif %}" id="err-phone">{% if errors.phone %}{{ errors.phone }}{% endif %}</div>
+            <div class="duplicate-alert" id="dup-phone" style="display:none;background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:8px 12px;margin-top:6px;color:#dc2626;font-size:13px;font-weight:500;display:none;align-items:center;gap:6px;">&#9888; This phone number is already registered to another employee.</div>
           </div>
 
           <div class="field">
             <label>Role</label>
             <select class="select" name="role">
               <option value="">Select role</option>
-              <option>Manager</option>
-              <option>Sales Executive</option>
-              <option>Tour Guide</option>
-              <option>Operations</option>
-              <option> Customer Support</option>
+              <option {% if form_data.role == "Manager" %}selected{% endif %}>Manager</option>
+              <option {% if form_data.role == "Sales Executive" %}selected{% endif %}>Sales Executive</option>
+              <option {% if form_data.role == "Tour Guide" %}selected{% endif %}>Tour Guide</option>
+              <option {% if form_data.role == "Operations" %}selected{% endif %}>Operations</option>
+              <option {% if form_data.role == "Customer Support" %}selected{% endif %}>Customer Support</option>
             </select>
           </div>
 
@@ -294,30 +249,31 @@
             <label>Department</label>
             <select class="select" name="department">
               <option value="">Select department</option>
-              <option>Sales</option>
-              <option>Operations</option>
-              <option>Marketing</option>
-              <opytion>Finance</option>
-              <option>HR</option>
+              <option {% if form_data.department == "Sales" %}selected{% endif %}>Sales</option>
+              <option {% if form_data.department == "Operations" %}selected{% endif %}>Operations</option>
+              <option {% if form_data.department == "Marketing" %}selected{% endif %}>Marketing</option>
+              <option {% if form_data.department == "Finance" %}selected{% endif %}>Finance</option>
+              <option {% if form_data.department == "HR" %}selected{% endif %}>HR</option>
             </select>
           </div>
 
           <div class="field">
             <label>Join Date</label>
-            <input class="input" type="date" name="join_date">
+            <input class="input" type="date" name="join_date" id="join_date" value="{% if form_data %}{{ form_data.join_date }}{% endif %}">
           </div>
 
-          <div class="field">
+          <div class="field{% if errors.salary %} error{% endif %}" id="field-salary">
             <label>Salary</label>
-            <input class="input" type="number" name="salary" placeholder="₹50,000">
+            <input class="input" type="number" name="salary" id="salary" placeholder="50000" min="0" value="{% if form_data %}{{ form_data.salary }}{% endif %}">
+            <div class="error-msg{% if errors.salary %} show{% endif %}" id="err-salary">{% if errors.salary %}{{ errors.salary }}{% endif %}</div>
           </div>
 
           <div class="field">
             <label>Status</label>
             <select class="select" name="status">
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-              <option value="On Leave">On Leave</option>
+              <option value="Active" {% if form_data.status == "Active" %}selected{% endif %}>Active</option>
+              <option value="Inactive" {% if form_data.status == "Inactive" %}selected{% endif %}>Inactive</option>
+              <option value="On Leave" {% if form_data.status == "On Leave" %}selected{% endif %}>On Leave</option>
             </select>
           </div>
 
@@ -334,16 +290,185 @@
 </main>
 
 <script>
-  document.getElementById('profilePicture').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        const avatarDiv = document.getElementById('avatarPreview');
-        avatarDiv.innerHTML = '<img src="' + event.target.result + '" alt="Preview">';
-      };
-      reader.readAsDataURL(file);
+// =====================
+// Avatar preview + delete
+// =====================
+const profileInput = document.getElementById('profilePicture');
+const avatarImg = document.getElementById('avatarImg');
+const uploadIcon = document.getElementById('uploadIcon');
+const avatarDelete = document.getElementById('avatarDelete');
+const removePic = document.getElementById('remove_picture');
+
+profileInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        avatarImg.src = e.target.result;
+        avatarImg.style.display = 'block';
+        uploadIcon.style.display = 'none';
+        removePic.value = '0';
+    };
+    reader.readAsDataURL(file);
+});
+
+avatarDelete.addEventListener('click', function(e) {
+    e.stopPropagation();
+    avatarImg.src = '';
+    avatarImg.style.display = 'none';
+    uploadIcon.style.display = '';
+    profileInput.value = '';
+    removePic.value = '1';
+});
+
+// =====================
+// Validation helpers
+// =====================
+function showErr(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.classList.add('show');
+}
+
+function hideErr(id) {
+    const el = document.getElementById(id);
+    el.textContent = '';
+    el.classList.remove('show');
+}
+
+function setFieldError(fieldId, errId, msg) {
+    document.getElementById(fieldId).classList.add('error');
+    showErr(errId, msg);
+}
+
+function clearFieldError(fieldId, errId) {
+    document.getElementById(fieldId).classList.remove('error');
+    hideErr(errId);
+}
+
+function validateName() {
+    const val = document.getElementById('name').value.trim();
+    if (!val) {
+        setFieldError('field-name', 'err-name', 'Name is required.');
+        return false;
     }
-  });
+    if (!/^[A-Za-z\s]+$/.test(val)) {
+        setFieldError('field-name', 'err-name', 'Name should contain letters only.');
+        return false;
+    }
+    clearFieldError('field-name', 'err-name');
+    return true;
+}
+
+function validateEmail() {
+    const val = document.getElementById('email').value.trim();
+    if (!val) {
+        setFieldError('field-email', 'err-email', 'Email is required.');
+        return false;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+        setFieldError('field-email', 'err-email', 'Enter a valid email address.');
+        return false;
+    }
+    clearFieldError('field-email', 'err-email');
+    return true;
+}
+
+function validatePhone() {
+    const val = document.getElementById('phone').value.trim();
+    if (!val) {
+        setFieldError('field-phone', 'err-phone', 'Phone is required.');
+        return false;
+    }
+    if (!/^\d{10}$/.test(val)) {
+        setFieldError('field-phone', 'err-phone', 'Phone must be exactly 10 digits.');
+        return false;
+    }
+    clearFieldError('field-phone', 'err-phone');
+    return true;
+}
+
+function validateSalary() {
+    const val = document.getElementById('salary').value.trim();
+    if (!val) {
+        clearFieldError('field-salary', 'err-salary');
+        return true;
+    }
+    if (isNaN(val) || parseFloat(val) < 0) {
+        setFieldError('field-salary', 'err-salary', 'Salary must be a positive number.');
+        return false;
+    }
+    clearFieldError('field-salary', 'err-salary');
+    return true;
+}
+
+// =====================
+// Input restrictions
+// =====================
+document.getElementById('phone').addEventListener('input', function () {
+    this.value = this.value.replace(/\D/g, '').slice(0, 10);
+    validatePhone();
+});
+
+// Real-time validation
+document.getElementById('name').addEventListener('input', validateName);
+document.getElementById('name').addEventListener('blur', validateName);
+
+document.getElementById('email').addEventListener('input', validateEmail);
+document.getElementById('email').addEventListener('blur', validateEmail);
+
+document.getElementById('phone').addEventListener('blur', validatePhone);
+
+document.getElementById('salary').addEventListener('input', validateSalary);
+document.getElementById('salary').addEventListener('blur', validateSalary);
+
+// Submit
+document.getElementById('emp-form').addEventListener('submit', function(e) {
+    const ok = [validateName(), validateEmail(), validatePhone(), validateSalary()].every(Boolean);
+    if (!ok) e.preventDefault();
+});
+
+// =====================
+// Duplicate checks (AJAX)
+// =====================
+const CHECK_URL = "{% url 'employee:check_employee_duplicate' %}";
+
+function checkDuplicate(field, value, alertId, fieldId) {
+    const alert = document.getElementById(alertId);
+    if (!value) { alert.style.display = 'none'; return; }
+    fetch(`${CHECK_URL}?field=${field}&value=${encodeURIComponent(value)}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.exists) {
+                alert.style.display = 'flex';
+                document.getElementById(fieldId).classList.add('error');
+            } else {
+                alert.style.display = 'none';
+            }
+        });
+}
+
+document.getElementById('email').addEventListener('blur', function() {
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value.trim())) {
+        checkDuplicate('email', this.value.trim(), 'dup-email', 'field-email');
+    } else {
+        document.getElementById('dup-email').style.display = 'none';
+    }
+});
+document.getElementById('email').addEventListener('input', function() {
+    document.getElementById('dup-email').style.display = 'none';
+});
+
+document.getElementById('phone').addEventListener('blur', function() {
+    if (/^\d{10}$/.test(this.value.trim())) {
+        checkDuplicate('phone', this.value.trim(), 'dup-phone', 'field-phone');
+    } else {
+        document.getElementById('dup-phone').style.display = 'none';
+    }
+});
+document.getElementById('phone').addEventListener('input', function() {
+    document.getElementById('dup-phone').style.display = 'none';
+});
 </script>
 {% endblock %}

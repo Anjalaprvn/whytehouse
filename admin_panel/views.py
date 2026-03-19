@@ -997,15 +997,46 @@ def employee_list(request):
 
 def add_employee(request):
     if request.method == 'POST':
-        try:
-            # basic required validation
-            name = request.POST.get('name', '').strip()
-            email = request.POST.get('email', '').strip()
-            phone = request.POST.get('phone', '').strip()
-            if not name or not email or not phone:
-                messages.error(request, "Name, email and phone are required.")
-                return render(request, "admin/employee/add_employee.html")
+        import re
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        salary = request.POST.get('salary', '').strip()
 
+        errors = {}
+        if not name:
+            errors['name'] = 'Name is required.'
+        elif not re.match(r'^[A-Za-z\s]+$', name):
+            errors['name'] = 'Name should contain letters only.'
+
+        if not email:
+            errors['email'] = 'Email is required.'
+        elif not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
+            errors['email'] = 'Enter a valid email address.'
+        elif Employee.objects.filter(email__iexact=email).exists():
+            errors['email'] = 'An employee with this email already exists.'
+
+        if not phone:
+            errors['phone'] = 'Phone is required.'
+        elif not phone.isdigit():
+            errors['phone'] = 'Phone must contain digits only.'
+        elif len(phone) < 10 or len(phone) > 15:
+            errors['phone'] = 'Phone must be 10–15 digits.'
+        elif Employee.objects.filter(phone=phone).exists():
+            errors['phone'] = 'An employee with this phone number already exists.'
+
+        if salary:
+            try:
+                if float(salary) < 0:
+                    errors['salary'] = 'Salary must be a positive number.'
+            except ValueError:
+                errors['salary'] = 'Salary must be a valid number.'
+
+        if errors:
+            messages.error(request, 'Please fix the errors below.')
+            return render(request, 'admin/employee/add_employee.html', {'errors': errors, 'form_data': request.POST})
+
+        try:
             employee = Employee.objects.create(
                 name=name,
                 email=email,
@@ -1013,14 +1044,12 @@ def add_employee(request):
                 role=request.POST.get('role', ''),
                 department=request.POST.get('department', ''),
                 join_date=request.POST.get('join_date') or None,
-                salary=request.POST.get('salary') or None,
+                salary=salary or None,
                 status=request.POST.get('status', 'Active'),
             )
-            
             if request.FILES.get('profile_picture'):
                 employee.profile_picture = request.FILES['profile_picture']
                 employee.save()
-            
             messages.success(request, f'Employee {employee.name} added successfully!')
             return redirect('employee:employee_list')
         except Exception as e:
@@ -3245,4 +3274,16 @@ def check_resort_duplicate(request):
     if exclude_id:
         qs = qs.exclude(id=exclude_id)
     exists = qs.exists() if name and place else False
+    return JsonResponse({'exists': exists})
+
+
+def check_employee_duplicate(request):
+    field = request.GET.get('field', '')
+    value = (request.GET.get('value') or '').strip()
+    if field == 'email' and value:
+        exists = Employee.objects.filter(email__iexact=value).exists()
+    elif field == 'phone' and value:
+        exists = Employee.objects.filter(phone=value).exists()
+    else:
+        exists = False
     return JsonResponse({'exists': exists})

@@ -913,15 +913,25 @@ class FeedbackImageViewSet(viewsets.ModelViewSet):
 @api_view(["GET"])
 def validate_blog_title(request):
     title = (request.query_params.get("title") or "").strip()
-    exists = Blog.objects.filter(title__iexact=title).exists() if title else False
-    return Response({"exists": exists})
+    exclude_id = (request.query_params.get("exclude_id") or "").strip()
+    if not title:
+        return Response({"exists": False})
+    qs = Blog.objects.filter(title__iexact=title)
+    if exclude_id:
+        qs = qs.exclude(id=exclude_id)
+    return Response({"exists": qs.exists()})
 
 
 @api_view(["GET"])
 def validate_blog_slug(request):
     slug = (request.query_params.get("slug") or "").strip()
-    exists = Blog.objects.filter(slug=slug).exists() if slug else False
-    return Response({"exists": exists})
+    exclude_id = (request.query_params.get("exclude_id") or "").strip()
+    if not slug:
+        return Response({"exists": False})
+    qs = Blog.objects.filter(slug=slug)
+    if exclude_id:
+        qs = qs.exclude(id=exclude_id)
+    return Response({"exists": qs.exists()})
 
 
 # ==================== PACKAGE ID VALIDATION ENDPOINT ====================

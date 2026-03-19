@@ -6,13 +6,23 @@
 .page-title{font-size:32px;font-weight:600;margin-bottom:8px;color:#111}
 .page-sub{color:#666;font-size:15px;margin-bottom:24px}
 .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.05);max-width:800px}
-.field{display:flex;gap:12px;margin-bottom:20px}
-.field input{flex:1;padding:12px;border:1px solid #e5e7eb;border-radius:10px;font-size:14px}
+.field{display:flex;gap:12px;margin-bottom:20px;align-items:flex-start}
+.field input{flex:1;padding:12px;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none}
+.field input:focus{border-color:#d4a017;box-shadow:0 0 0 3px rgba(212,160,23,0.12)}
+.field input.error{border-color:#dc2626;background:#fef2f2}
 .btn-add{display:inline-flex;align-items:center;gap:8px;background:#d4a017;color:#000;border:none;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer;font-size:14px}
+.btn-add:hover{background:#c39514}
 .category-list{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
 .category-item{display:flex;align-items:center;gap:8px;padding:8px 16px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:20px}
 .delete-btn{background:#fee2e2;border:none;color:#dc2626;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
 .delete-btn:hover{background:#fecaca}
+.error-message{
+  margin-top:-8px;
+  margin-bottom:14px;
+  color:#dc2626;
+  font-size:13px;
+  display:none;
+}
 </style>
 {% endblock %}
 
@@ -24,13 +34,23 @@
 <p class="page-sub">Add and manage blog categories</p>
 
 <section class="card">
-  <form method="POST">
+  <form method="POST" id="categoryForm">
     {% csrf_token %}
     <div class="field">
-      <input type="text" name="name" placeholder="Enter category name" required>
+      <input type="text" id="categoryName" name="name" placeholder="Enter category name" required>
       <button type="submit" class="btn-add">Add Category</button>
     </div>
+    <div id="categoryError" class="error-message"></div>
   </form>
+
+  <!-- existing category names for JS validation -->
+  <script type="application/json" id="existingCategoriesData">
+    [
+      {% for category in categories %}
+        "{{ category.name|escapejs }}"{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]
+  </script>
 
   <div class="category-list">
     {% for category in categories %}
@@ -46,4 +66,61 @@
     {% endfor %}
   </div>
 </section>
+
+<script>
+  const categoryForm = document.getElementById('categoryForm');
+  const categoryInput = document.getElementById('categoryName');
+  const categoryError = document.getElementById('categoryError');
+
+  const existingCategories = JSON.parse(
+    document.getElementById('existingCategoriesData').textContent
+  ).map(name => name.trim().toLowerCase());
+
+  function normalizeSpaces(value) {
+    return value.replace(/\s+/g, ' ').trim();
+  }
+
+  function showError(message) {
+    categoryError.style.display = 'block';
+    categoryError.textContent = message;
+    categoryInput.classList.add('error');
+  }
+
+  function clearError() {
+    categoryError.style.display = 'none';
+    categoryError.textContent = '';
+    categoryInput.classList.remove('error');
+  }
+
+  function validateCategory() {
+    let value = normalizeSpaces(categoryInput.value);
+    categoryInput.value = value;
+
+    if (!value) {
+      showError('Category name is required.');
+      return false;
+    }
+
+    if (!/^[A-Za-z ]+$/.test(value)) {
+      showError('Category name must contain letters only.');
+      return false;
+    }
+
+    if (existingCategories.includes(value.toLowerCase())) {
+      showError('This category already exists.');
+      return false;
+    }
+
+    clearError();
+    return true;
+  }
+
+  categoryInput.addEventListener('input', validateCategory);
+
+  categoryForm.addEventListener('submit', function(e) {
+    if (!validateCategory()) {
+      e.preventDefault();
+    }
+  });
+</script>
 {% endblock %}

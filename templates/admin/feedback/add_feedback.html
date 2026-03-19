@@ -215,6 +215,115 @@
         border: 1px solid #fecaca;
         transition: opacity 0.5s ease;
     }
+
+    .field-error {
+        color: #ef4444;
+        font-size: 12px;
+        margin-top: 5px;
+        display: none;
+    }
+
+    .field-error::before {
+        content: '⚠ ';
+    }
+
+    .input-error {
+        border-color: #ef4444 !important;
+        background: #fef2f2 !important;
+    }
+
+    .image-upload-area {
+        border: 2px dashed #e2e8f0;
+        border-radius: 10px;
+        padding: 16px;
+        background: #f8fafc;
+    }
+
+    .image-upload-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .add-images-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+        cursor: pointer;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        transition: 0.2s;
+    }
+
+    .add-images-btn:hover {
+        background: #f1f5f9;
+    }
+
+    .upload-hint-sm {
+        font-size: 12px;
+        color: #94a3b8;
+    }
+
+    .image-preview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 12px;
+        margin-top: 14px;
+    }
+
+    .img-thumb {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+    }
+
+    .img-thumb img {
+        width: 100%;
+        height: 100px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .img-thumb-name {
+        font-size: 11px;
+        color: #64748b;
+        padding: 4px 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .img-remove-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #ef4444;
+        color: #fff;
+        border: none;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+
+    .img-remove-btn:hover {
+        background: #dc2626;
+    }
 </style>
 
 <script>
@@ -243,24 +352,27 @@
     <div class="form-card">
         <h3>Feedback Information</h3>
 
-        <form method="POST" enctype="multipart/form-data">
+        <form method="POST" enctype="multipart/form-data" id="feedback-form">
             {% csrf_token %}
 
             <div class="form-grid">
                 <div class="form-group">
                     <label>Full Name <span>*</span></label>
-                    <input type="text" name="name" placeholder="John Doe" value="{{ request.POST.name }}" required>
+                    <input id="name-input" type="text" name="name" placeholder="John Doe" value="{{ request.POST.name }}" required>
+                    <div class="field-error" id="name-error"></div>
                 </div>
 
                 <div class="form-group">
                     <label>Email Address <span>*</span></label>
-                    <input type="email" name="email" placeholder="john@example.com" value="{{ request.POST.email }}" required>
+                    <input id="email-input" type="email" name="email" placeholder="john@example.com" value="{{ request.POST.email }}" required>
+                    <div class="field-error" id="email-error"></div>
                 </div>
 
                 <div class="form-group">
                     <label>Mobile Number <span>*</span></label>
-                    <input type="tel" name="mobile_number" placeholder="9876543210" value="{{ request.POST.mobile_number }}" required 
+                    <input id="mobile-input" type="tel" name="mobile_number" placeholder="9876543210" value="{{ request.POST.mobile_number }}" required
                            maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                    <div class="field-error" id="mobile-error"></div>
                 </div>
 
                 <div class="form-group">
@@ -287,15 +399,24 @@
 
                 <div class="form-group full-width">
                     <label>Feedback Message <span>*</span></label>
-                    <textarea name="feedback" placeholder="Enter customer feedback..." required>{{ request.POST.feedback }}</textarea>
+                    <textarea id="feedback-input" name="feedback" placeholder="Enter customer feedback..." required>{{ request.POST.feedback }}</textarea>
+                    <div class="field-error" id="feedback-error"></div>
                 </div>
 
                 <div class="form-group full-width">
                     <label>Upload Images <span style="font-weight:400;color:#71717a">(optional)</span></label>
-                    <input type="file" name="images" accept="image/*" multiple>
+                    <div class="image-upload-area">
+                        <div class="image-upload-top">
+                            <label class="add-images-btn">
+                                <i class="fas fa-plus"></i> Add Images
+                                <input type="file" id="image-input" name="images" accept="image/*" multiple style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;">
+                            </label>
+                            <span class="upload-hint-sm">JPG, PNG, WEBP supported</span>
+                        </div>
+                        <div class="image-preview-grid" id="image-preview-grid" style="display:none"></div>
+                    </div>
                 </div>
-                
-                <!-- checkbox for marking feedback as featured on homepage -->
+
                 <div class="form-group full-width">
                     <label>
                         <input type="checkbox" name="featured" value="1" {% if request.POST.featured %}checked{% endif %}>
@@ -313,5 +434,226 @@
         </form>
     </div>
 </div>
+
+<script>
+{% verbatim %}
+let imageFiles = [];
+
+document.getElementById('image-input').addEventListener('change', function() {
+    Array.from(this.files).forEach(f => imageFiles.push(f));
+    this.value = '';
+    renderPreviews();
+});
+
+function renderPreviews() {
+    const grid = document.getElementById('image-preview-grid');
+    grid.innerHTML = '';
+    if (!imageFiles.length) {
+        grid.style.display = 'none';
+        return;
+    }
+    grid.style.display = 'grid';
+
+    imageFiles.forEach((file, i) => {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const thumb = document.createElement('div');
+            thumb.className = 'img-thumb';
+            thumb.innerHTML =
+                '<img src="' + ev.target.result + '" alt="' + file.name + '">' +
+                '<div class="img-thumb-name">' + file.name + '</div>' +
+                '<button type="button" class="img-remove-btn" onclick="removeImage(' + i + ')">&#x2715;</button>';
+            grid.appendChild(thumb);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function removeImage(i) {
+    imageFiles.splice(i, 1);
+    renderPreviews();
+    const dt = new DataTransfer();
+    imageFiles.forEach(f => dt.items.add(f));
+    document.getElementById('image-input').files = dt.files;
+}
+
+function showErr(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.style.display = 'block';
+}
+
+function hideErr(id) {
+    const el = document.getElementById(id);
+    el.textContent = '';
+    el.style.display = 'none';
+}
+
+const form = document.getElementById('feedback-form');
+
+const nameInput = document.getElementById('name-input');
+const emailInput = document.getElementById('email-input');
+const mobileInput = document.getElementById('mobile-input');
+const fbInput = document.getElementById('feedback-input');
+
+const touched = {
+    name: false,
+    email: false,
+    mobile: false,
+    feedback: false
+};
+
+function validateName(force = false) {
+    const v = nameInput.value.trim();
+
+    if (!force && !touched.name) return true;
+
+    if (!v) {
+        if (force || touched.name) {
+            nameInput.classList.add('input-error');
+            showErr('name-error', 'Full name is required.');
+        }
+        return false;
+    }
+
+    if (!/^[A-Za-z\s]+$/.test(v)) {
+        nameInput.classList.add('input-error');
+        showErr('name-error', 'Name should contain letters only, no numbers or special characters.');
+        return false;
+    }
+
+    nameInput.classList.remove('input-error');
+    hideErr('name-error');
+    return true;
+}
+
+function validateEmail(force = false) {
+    const v = emailInput.value.trim();
+
+    if (!force && !touched.email) return true;
+
+    if (!v) {
+        if (force || touched.email) {
+            emailInput.classList.add('input-error');
+            showErr('email-error', 'Email address is required.');
+        }
+        return false;
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(v)) {
+        emailInput.classList.add('input-error');
+        showErr('email-error', 'Please enter a valid email address.');
+        return false;
+    }
+
+    emailInput.classList.remove('input-error');
+    hideErr('email-error');
+    return true;
+}
+
+function validateMobile(force = false) {
+    const v = mobileInput.value.trim();
+
+    if (!force && !touched.mobile) return true;
+
+    if (!v) {
+        if (force || touched.mobile) {
+            mobileInput.classList.add('input-error');
+            showErr('mobile-error', 'Mobile number is required.');
+        }
+        return false;
+    }
+
+    if (!/^\d{10}$/.test(v)) {
+        mobileInput.classList.add('input-error');
+        showErr('mobile-error', 'Mobile number must be exactly 10 digits.');
+        return false;
+    }
+
+    mobileInput.classList.remove('input-error');
+    hideErr('mobile-error');
+    return true;
+}
+
+function validateFeedback(force = false) {
+    const v = fbInput.value.trim();
+
+    if (!force && !touched.feedback) return true;
+
+    if (!v) {
+        if (force || touched.feedback) {
+            fbInput.classList.add('input-error');
+            showErr('feedback-error', 'Feedback message is required.');
+        }
+        return false;
+    }
+
+    if (!/^[A-Za-z0-9\s,\.&!]+$/.test(v)) {
+        fbInput.classList.add('input-error');
+        showErr('feedback-error', 'Please provide a valid feedback message.');
+        return false;
+    }
+
+    fbInput.classList.remove('input-error');
+    hideErr('feedback-error');
+    return true;
+}
+
+nameInput.addEventListener('blur', function() {
+    touched.name = true;
+    validateName();
+});
+nameInput.addEventListener('input', function() {
+    if (touched.name) validateName();
+});
+
+emailInput.addEventListener('blur', function() {
+    touched.email = true;
+    validateEmail();
+});
+emailInput.addEventListener('input', function() {
+    if (touched.email) validateEmail();
+});
+
+mobileInput.addEventListener('blur', function() {
+    touched.mobile = true;
+    validateMobile();
+});
+mobileInput.addEventListener('input', function() {
+    if (touched.mobile) validateMobile();
+});
+
+fbInput.addEventListener('blur', function() {
+    touched.feedback = true;
+    validateFeedback();
+});
+fbInput.addEventListener('input', function() {
+    if (touched.feedback) validateFeedback();
+});
+
+form.addEventListener('submit', function(e) {
+    touched.name = true;
+    touched.email = true;
+    touched.mobile = true;
+    touched.feedback = true;
+
+    const ok =
+        validateName(true) &&
+        validateEmail(true) &&
+        validateMobile(true) &&
+        validateFeedback(true);
+
+    if (!ok) {
+        e.preventDefault();
+        return;
+    }
+
+    const dt = new DataTransfer();
+    imageFiles.forEach(f => dt.items.add(f));
+    document.getElementById('image-input').files = dt.files;
+});
+{% endverbatim %}
+</script>
 
 {% endblock %}
