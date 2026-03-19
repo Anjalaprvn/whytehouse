@@ -96,38 +96,6 @@ body{
   width:auto;
 }
 
-/* Outside top toggle button */
-.toggle-btn-wrapper{
-  position:fixed;
-  left:290px;
-  top:20px;
-  z-index:1100;
-  transition:0.3s ease;
-}
-
-#toggle-sidebar:checked ~ .toggle-btn-wrapper{
-  left:80px;
-}
-
-.toggle-btn{
-  font-size:22px;
-  cursor:pointer;
-  color:#222;
-  background:#fff;
-  width:42px;
-  height:42px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:10px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.08);
-  transition:0.3s ease;
-}
-
-.toggle-btn:hover{
-  background:#f4f4f4;
-}
-
 /* Menu */
 .menu{
   flex:1;
@@ -271,19 +239,10 @@ body{
 /* Content Styles */
 .content-wrapper{
   padding:30px;
-  padding-top:80px;
+  padding-top:30px;
   background:var(--content-bg);
-  min-height:100vh;
+  min-height:calc(100vh - 76px);
   position:relative;
-}
-
-.date-display{
-  position:absolute;
-  top:30px;
-  right:30px;
-  font-size:14px;
-  color:var(--text-muted);
-  font-weight:500;
 }
 
 /* Collapsed desktop sidebar content */
@@ -382,10 +341,6 @@ body{
 <body>
 
 <input type="checkbox" id="toggle-sidebar">
-
-<div class="toggle-btn-wrapper">
-  <label for="toggle-sidebar" class="toggle-btn">☰</label>
-</div>
 
 <div class="sidebar">
 
@@ -495,8 +450,8 @@ body{
 </div>
 
 <div class="main-content">
+  {% include 'admin/header.html' %}
   <div class="content-wrapper">
-    <div class="date-display" id="current-date"></div>
     {% if messages %}
       <div class="alert-container" style="margin-bottom:20px;">
         {% for message in messages %}
@@ -518,11 +473,6 @@ body{
 </div>
 
 <script>
-const dateDisplay = document.getElementById('current-date');
-const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-const today = new Date();
-dateDisplay.textContent = today.toLocaleDateString('en-US', options);
-
 setTimeout(function() {
   const alerts = document.querySelectorAll('.alert-success, .alert, [class*="alert-"]');
   alerts.forEach(alert => {
