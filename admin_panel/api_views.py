@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from .models import (
     Blog,
     BlogCategory,
+    BlogImage,
     Lead,
     Property,
     TravelPackage,
@@ -19,12 +20,14 @@ from .models import (
     Voucher,
     Invoice,
     Feedback,
+    FeedbackImage,
 )
 
 from .serializers import (
     BlogSerializer,
     BlogListSerializer,
     BlogCategorySerializer,
+    BlogImageSerializer,
     LeadSerializer,
     PropertySerializer,
     TravelPackageSerializer,
@@ -39,11 +42,13 @@ from .serializers import (
     VoucherSerializer,
     InvoiceSerializer,
     FeedbackSerializer,
+    FeedbackImageSerializer,
 )
 
 
 # ==================== BLOG CATEGORY VIEWSET ====================
 class BlogCategoryViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete", "head", "options"]
     serializer_class = BlogCategorySerializer
     queryset = BlogCategory.objects.all().order_by("order", "name")
 
@@ -84,6 +89,7 @@ class BlogCategoryViewSet(viewsets.ModelViewSet):
 
 # ==================== BLOG VIEWSET ====================
 class BlogViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete", "head", "options"]
     queryset = Blog.objects.all().order_by("-created_at")
 
     def get_serializer_class(self):
@@ -177,6 +183,7 @@ class BlogViewSet(viewsets.ModelViewSet):
 
 # ==================== LEAD VIEWSET ====================
 class LeadViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete", "head", "options"]
     serializer_class = LeadSerializer
     queryset = Lead.objects.all().order_by("-created_at")
 
@@ -229,6 +236,7 @@ class LeadViewSet(viewsets.ModelViewSet):
 
 # ==================== PROPERTY VIEWSET ====================
 class PropertyViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete", "head", "options"]
     queryset = Property.objects.all().order_by("-created_at")
     serializer_class = PropertySerializer
 
@@ -278,6 +286,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
 # ==================== DESTINATION VIEWSET ====================
 class DestinationViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete", "head", "options"]
     queryset = Destination.objects.all().order_by("-created_at")
     serializer_class = DestinationSerializer
 
@@ -331,6 +340,7 @@ class DestinationViewSet(viewsets.ModelViewSet):
 
 # ==================== TRAVEL PACKAGE VIEWSET ====================
 class TravelPackageViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete", "head", "options"]
     queryset = TravelPackage.objects.all().order_by("-created_at")
 
     def get_serializer_class(self):
@@ -430,6 +440,7 @@ class TravelPackageViewSet(viewsets.ModelViewSet):
 
 # ==================== CUSTOMER VIEWSET ====================
 class CustomerViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete", "head", "options"]
     queryset = Customer.objects.all().order_by("-created_at")
     serializer_class = CustomerSerializer
 
@@ -466,6 +477,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
 
 # ==================== MEAL VIEWSET ====================
 class MealViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete", "head", "options"]
     queryset = Meal.objects.all().order_by("-created_at")
     serializer_class = MealSerializer
 
@@ -498,6 +510,7 @@ class MealViewSet(viewsets.ModelViewSet):
 
 # ==================== ACCOUNT VIEWSET ====================
 class AccountViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete", "head", "options"]
     queryset = Account.objects.all().order_by("-created_at")
     serializer_class = AccountSerializer
 
@@ -529,6 +542,7 @@ class AccountViewSet(viewsets.ModelViewSet):
 
 # ==================== INQUIRY VIEWSET ====================
 class InquiryViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete", "head", "options"]
     queryset = Inquiry.objects.all().order_by("-created_at")
     serializer_class = InquirySerializer
 
@@ -565,6 +579,7 @@ class InquiryViewSet(viewsets.ModelViewSet):
 
 # ==================== EMPLOYEE VIEWSET ====================
 class EmployeeViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete", "head", "options"]
     queryset = Employee.objects.all().order_by("-created_at")
     serializer_class = EmployeeSerializer
 
@@ -613,6 +628,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 
 # ==================== RESORT VIEWSET ====================
 class ResortViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete", "head", "options"]
     queryset = Resort.objects.all().order_by("-created_at")
     serializer_class = ResortSerializer
 
@@ -651,6 +667,7 @@ class ResortViewSet(viewsets.ModelViewSet):
 
 # ==================== VOUCHER VIEWSET ====================
 class VoucherViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete", "head", "options"]
     queryset = Voucher.objects.all().order_by("-created_at")
     serializer_class = VoucherSerializer
 
@@ -708,6 +725,7 @@ class VoucherViewSet(viewsets.ModelViewSet):
 
 # ==================== INVOICE VIEWSET ====================
 class InvoiceViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete", "head", "options"]
     queryset = Invoice.objects.all().order_by("-created_at")
     serializer_class = InvoiceSerializer
 
@@ -771,6 +789,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
 # ==================== FEEDBACK VIEWSET ====================
 class FeedbackViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete", "head", "options"]
     serializer_class = FeedbackSerializer
     queryset = Feedback.objects.all().prefetch_related("images").order_by("-created_at")
 
@@ -820,6 +839,34 @@ class FeedbackViewSet(viewsets.ModelViewSet):
             "featured_count": qs.filter(featured=True).count(),
             "five_star_count": qs.filter(rating=5).count(),
         })
+
+
+# ==================== BLOG IMAGE VIEWSET ====================
+class BlogImageViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete", "head", "options"]
+    queryset = BlogImage.objects.all().order_by("order")
+    serializer_class = BlogImageSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        blog_id = (self.request.query_params.get("blog") or "").strip()
+        if blog_id:
+            qs = qs.filter(blog_id=blog_id)
+        return qs
+
+
+# ==================== FEEDBACK IMAGE VIEWSET ====================
+class FeedbackImageViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete", "head", "options"]
+    queryset = FeedbackImage.objects.all().order_by("-uploaded_at")
+    serializer_class = FeedbackImageSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        feedback_id = (self.request.query_params.get("feedback") or "").strip()
+        if feedback_id:
+            qs = qs.filter(feedback_id=feedback_id)
+        return qs
 
 
 # ==================== PACKAGE ID VALIDATION ENDPOINT ====================
