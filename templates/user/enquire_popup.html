@@ -187,6 +187,24 @@ function closeEnquirePopup() {
     clearAllErrors();
 }
 
+// Place - letters and spaces only
+document.addEventListener('DOMContentLoaded', function() {
+    const placeInput = document.querySelector('#enquireForm input[name="place"]');
+    if (placeInput) {
+        placeInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
+        });
+    }
+
+    // Message - letters, numbers, spaces, commas, and & only
+    const messageInput = document.querySelector('#enquireForm textarea[name="message"]');
+    if (messageInput) {
+        messageInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^a-zA-Z0-9 ,&]/g, '');
+        });
+    }
+});
+
 function showError(input, message) {
     // Remove existing error
     const existingError = input.parentElement.querySelector('.error-msg');
@@ -222,9 +240,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Validation patterns
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     
-    // Real-time validation for name
+    // Real-time validation for name - letters and spaces only
     if (nameInput) {
         nameInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
             if (this.value.trim().length < 2 && this.value.length > 0) {
                 showError(this, 'Name must be at least 2 characters');
             } else {
@@ -270,8 +289,8 @@ document.addEventListener('DOMContentLoaded', function() {
         let isValid = true;
         
         // Validate name
-        if (nameInput.value.trim().length < 2) {
-            showError(nameInput, 'Name is required (minimum 2 characters)');
+        if (nameInput.value.trim().length < 2 || !/^[a-zA-Z\s]+$/.test(nameInput.value.trim())) {
+            showError(nameInput, 'Name is required (letters only, minimum 2 characters)');
             isValid = false;
         }
         

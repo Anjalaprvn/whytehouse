@@ -563,17 +563,9 @@ def edit_property(request, property_id):
         prop.owner_name = request.POST.get("owner_name") or None
         prop.owner_contact = request.POST.get("owner_contact") or None
 
-        # Get existing amenities from checkboxes
-        selected_amenities = request.POST.getlist("amenities")
-        # Get new amenity from text input
-        new_amenity = request.POST.get("new_amenity", "").strip()
-        
-        # Combine all amenities
-        all_amenities = list(selected_amenities)
-        if new_amenity:
-            all_amenities.append(new_amenity)
-        
-        prop.amenities = ", ".join([a.strip() for a in all_amenities if a.strip()])
+        # Get amenities from individual inputs
+        new_amenities = request.POST.getlist("new_amenities[]")
+        prop.amenities = ", ".join([a.strip() for a in new_amenities if a.strip()])
 
         if request.FILES.get("image"):
             prop.image = request.FILES.get("image")
@@ -814,9 +806,9 @@ def travel_package_edit(request, package_id):
         package.location = request.POST.get('location')
         package.country = request.POST.get('country')
         package.description = request.POST.get('description')
-        package.itinerary = request.POST.get('itinerary')
-        package.inclusions = request.POST.get('inclusions')
-        package.exclusions = request.POST.get('exclusions')
+        package.itinerary = '\n'.join(filter(None, [i.strip() for i in request.POST.getlist('itinerary[]')]))
+        package.inclusions = '\n'.join(filter(None, [i.strip() for i in request.POST.getlist('inclusions[]')]))
+        package.exclusions = '\n'.join(filter(None, [i.strip() for i in request.POST.getlist('exclusions[]')]))
         package.meta_title = request.POST.get('meta_title')
         package.meta_description = request.POST.get('meta_description')
         package.active = request.POST.get('active') == 'on'
@@ -3094,7 +3086,7 @@ def edit_destination(request, destination_id):
         destination.name = name
         destination.country = country
         destination.category = category
-        destination.description = request.POST.get('description')
+        destination.description = request.POST.get('description', '').strip() or None
         destination.is_popular = request.POST.get('is_popular') == 'on'
         packages_start_from = request.POST.get('packages_start_from', '').strip()
         destination.packages_start_from = packages_start_from if packages_start_from else None

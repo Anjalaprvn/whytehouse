@@ -151,6 +151,19 @@
         text-decoration: none;
         text-align: center;
     }
+
+    .field-error {
+        color: #ef4444;
+        font-size: 12px;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        display: none;
+    }
+
+    .form-control.invalid {
+        border-color: #ef4444;
+        background: #fff5f5;
+    }
 </style>
 
 <div class="hospitality-add-container">
@@ -174,8 +187,9 @@
             <!-- Property Name -->
             <div class="form-group">
                 <label>Property Name <span>*</span></label>
-                <input type="text" name="name" class="form-control"
-                       value="{{ property.name }}" required>
+                <input type="text" id="edit_prop_name" name="name" class="form-control"
+                       value="{{ property.name }}" required oninput="validateLetters(this, 'prop-name-error')">
+                <div class="field-error" id="prop-name-error">Only letters and spaces are allowed.</div>
             </div>
 
             <!-- Property Type -->
@@ -194,58 +208,64 @@
             <!-- Location -->
             <div class="form-group">
                 <label>Location <span>*</span></label>
-                <input type="text" name="location" class="form-control"
-                       value="{{ property.location }}" required>
+                <input type="text" id="edit_prop_location" name="location" class="form-control"
+                       value="{{ property.location }}" required oninput="validateLocation(this)">
+                <div class="field-error" id="location-error">Only letters, spaces, and commas are allowed.</div>
             </div>
 
             <!-- Owner Name -->
             <div class="form-group">
                 <label>Property Owner Name (POC)</label>
-                <input type="text" name="owner_name" class="form-control"
-                       value="{{ property.owner_name }}">
+                <input type="text" id="edit_owner_name" name="owner_name" class="form-control"
+                       value="{{ property.owner_name }}" oninput="validateLetters(this, 'owner-name-error')">
+                <div class="field-error" id="owner-name-error">Only letters and spaces are allowed.</div>
             </div>
 
             <!-- Owner Contact -->
             <div class="form-group">
                 <label>Property Owner Contact Number (PON)</label>
-                <input type="text" name="owner_contact" class="form-control"
-                       value="{{ property.owner_contact }}">
+                <input type="text" id="edit_owner_contact" name="owner_contact" class="form-control"
+                       value="{{ property.owner_contact }}" oninput="validateContact(this)" maxlength="10">
+                <div class="field-error" id="contact-error">Enter a valid 10-digit contact number.</div>
             </div>
 
             <!-- Website -->
             <div class="form-group">
                 <label>Website URL</label>
-                <input type="url" name="website" class="form-control"
-                       value="{{ property.website }}">
+                <input type="text" id="edit_website" name="website" class="form-control"
+                       value="{{ property.website }}" oninput="validateURL(this)">
+                <div class="field-error" id="website-error">Enter a valid URL (e.g., https://example.com).</div>
             </div>
 
             <!-- Address -->
             <div class="form-group">
                 <label>Address <span>*</span></label>
-                <input type="text" name="address" class="form-control"
-                       value="{{ property.address }}" required>
+                <input type="text" id="edit_prop_address" name="address" class="form-control"
+                       value="{{ property.address }}" required oninput="validateAddress(this)">
+                <div class="field-error" id="address-error">Only letters, spaces, commas, and periods are allowed.</div>
             </div>
 
             <!-- Summary -->
             <div class="form-group">
                 <label>Summary <span>*</span></label>
-                <textarea name="summary" class="form-control" style="height: 100px;" required>{{ property.summary }}</textarea>
+                <textarea id="edit_prop_summary" name="summary" class="form-control" style="height: 100px;" required oninput="validateSummary(this)">{{ property.summary }}</textarea>
+                <div class="field-error" id="summary-error">Only letters, numbers, !, ., , and &amp; are allowed.</div>
             </div>
 
             <!-- Amenities -->
             <div class="form-group">
-                <label>Amenities</label>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px;">
-                    {% for amenity in property.amenity_list %}
-                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 400; cursor: pointer;">
-                        <input type="checkbox" name="amenities" value="{{ amenity }}" checked style="width: auto;">
-                        <span>{{ amenity }}</span>
-                    </label>
-                    {% endfor %}
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <label style="margin:0;">Amenities</label>
+                    <button type="button" onclick="addNewAmenity()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer; font-size: 12px;">+ Add Amenity</button>
                 </div>
-                <div style="margin-top: 15px;">
-                    <label style="font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">Add New Amenity</label>
-                    <input type="text" name="new_amenity" class="form-control" placeholder="Enter new amenity name">
+                <div id="new-amenities-container">
+                    {% if property.amenities %}
+                        {% for amenity in property.amenity_list %}
+                        <input type="text" name="new_amenities[]" class="form-control" value="{{ amenity }}" style="margin-bottom: 10px;" oninput="validateAmenityDuplicate(this)">
+                        {% endfor %}
+                    {% else %}
+                        <input type="text" name="new_amenities[]" class="form-control" placeholder="Enter amenity name" style="margin-bottom: 10px;" oninput="validateLetters(this, null)">
+                    {% endif %}
                 </div>
             </div>
 
@@ -253,19 +273,16 @@
             <div class="form-group">
                 <label>Cover Image</label>
 
-                {% if property.image %}
-                    <div style="margin-bottom: 15px;">
-                        <p>Current Image:</p>
-                        <img src="{{ property.image.url }}"
-                             style="max-width:200px;border-radius:8px;border:1px solid #e2e8f0;">
-                    </div>
-                {% endif %}
+                <div id="img-preview-wrapper" style="display:{% if property.image %}block{% else %}none{% endif %}; position:relative; width:fit-content; margin-bottom:10px;">
+                    <img id="image-preview" src="{% if property.image %}{{ property.image.url }}{% endif %}" style="max-width:200px; border-radius:8px; border:1px solid #e2e8f0; display:block;" alt="Preview">
+                    <button type="button" id="remove-img-btn" style="position:absolute; top:-8px; right:-8px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:22px; height:22px; font-size:13px; cursor:pointer; line-height:1;">&times;</button>
+                </div>
 
-                <div class="upload-box" onclick="document.getElementById('file-upload').click();">
+                <div id="upload-box" class="upload-box" style="{% if property.image %}display:none;{% endif %}" onclick="document.getElementById('file-upload').click();">
                     <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
                     <div class="upload-text">Click to upload new image</div>
-                    <input type="file" id="file-upload" name="image" style="display:none;" accept="image/*">
                 </div>
+                <input type="file" id="file-upload" name="image" style="display:none;" accept="image/*">
             </div>
 
             <!-- Footer -->
@@ -278,5 +295,162 @@
     </form>
 
 </div>
+
+<script>
+function validateLetters(input, errorId) {
+    const valid = /^[a-zA-Z\s]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    if (errorId) {
+        document.getElementById(errorId).style.display = valid ? 'none' : 'block';
+    } else {
+        let msg = input.nextElementSibling;
+        if (!valid) {
+            if (!msg || !msg.classList.contains('inline-err')) {
+                msg = document.createElement('div');
+                msg.className = 'inline-err field-error';
+                msg.textContent = 'Only letters and spaces are allowed.';
+                msg.style.display = 'block';
+                input.insertAdjacentElement('afterend', msg);
+            }
+        } else if (msg && msg.classList.contains('inline-err')) {
+            msg.remove();
+        }
+    }
+}
+
+function validateAmenityDuplicate(input) {
+    validateLetters(input, null);
+    const val = input.value.trim().toLowerCase();
+    const all = Array.from(document.querySelectorAll('#new-amenities-container input')).filter(i => i !== input).map(i => i.value.trim().toLowerCase());
+    const isDup = val !== '' && all.includes(val);
+    if (isDup) {
+        input.classList.add('invalid');
+        let msg = input.nextElementSibling;
+        if (!msg || !msg.classList.contains('inline-err')) {
+            msg = document.createElement('div');
+            msg.className = 'inline-err field-error';
+            input.insertAdjacentElement('afterend', msg);
+        }
+        msg.textContent = 'This amenity already exists.';
+        msg.style.display = 'block';
+    }
+}
+
+function addNewAmenity() {
+    const container = document.getElementById('new-amenities-container');
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.name = 'new_amenities[]';
+    input.className = 'form-control';
+    input.placeholder = 'Enter new amenity name';
+    input.style.marginBottom = '10px';
+    input.addEventListener('input', function() { validateAmenityDuplicate(this); });
+    container.appendChild(input);
+}
+
+function validateLocation(input) {
+    const valid = /^[a-zA-Z\s,]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    document.getElementById('location-error').style.display = valid ? 'none' : 'block';
+}
+
+function validateSummary(input) {
+    const valid = /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    document.getElementById('summary-error').style.display = valid ? 'none' : 'block';
+}
+
+function validateAddress(input) {
+    const valid = /^[a-zA-Z0-9\s,\.]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    document.getElementById('address-error').style.display = valid ? 'none' : 'block';
+}
+
+function validateContact(input) {
+    input.value = input.value.replace(/[^0-9]/g, '');
+    const valid = input.value === '' || input.value.length === 10;
+    input.classList.toggle('invalid', !valid);
+    document.getElementById('contact-error').style.display = valid ? 'none' : 'block';
+}
+
+function validateURL(input) {
+    const val = input.value.trim();
+    const valid = val === '' || /^(https?:\/\/)[^\s$.?#].[^\s]*$/.test(val);
+    input.classList.toggle('invalid', !valid);
+    document.getElementById('website-error').style.display = valid ? 'none' : 'block';
+}
+
+document.querySelector('form').addEventListener('submit', function(e) {
+    let valid = true;
+    const fields = [
+        { id: 'edit_prop_name', errId: 'prop-name-error', pattern: /^[a-zA-Z\s]+$/ },
+        { id: 'edit_prop_location', errId: 'location-error', pattern: /^[a-zA-Z\s,]+$/ },
+        { id: 'edit_prop_address', errId: 'address-error', pattern: /^[a-zA-Z0-9\s,\.]+$/ },
+        { id: 'edit_prop_summary', errId: 'summary-error', pattern: /^[a-zA-Z0-9\s!.,&]+$/ },
+    ];
+    fields.forEach(function(f) {
+        const el = document.getElementById(f.id);
+        if (!el.value.trim() || !f.pattern.test(el.value)) {
+            el.classList.add('invalid');
+            document.getElementById(f.errId).style.display = 'block';
+            valid = false;
+        }
+    });
+    const contact = document.getElementById('edit_owner_contact');
+    if (contact.value && contact.value.length !== 10) {
+        contact.classList.add('invalid');
+        document.getElementById('contact-error').style.display = 'block';
+        valid = false;
+    }
+    const website = document.getElementById('edit_website');
+    if (website.value.trim() && !/^(https?:\/\/)[^\s$.?#].[^\s]*$/.test(website.value.trim())) {
+        website.classList.add('invalid');
+        document.getElementById('website-error').style.display = 'block';
+        valid = false;
+    }
+    if (!valid) e.preventDefault();
+
+    const amenityInputs = document.querySelectorAll('#new-amenities-container input');
+    const seen = [];
+    amenityInputs.forEach(function(inp) {
+        const val = inp.value.trim().toLowerCase();
+        if (val && seen.includes(val)) {
+            inp.classList.add('invalid');
+            let msg = inp.nextElementSibling;
+            if (!msg || !msg.classList.contains('inline-err')) {
+                msg = document.createElement('div');
+                msg.className = 'inline-err field-error';
+                inp.insertAdjacentElement('afterend', msg);
+            }
+            msg.textContent = 'This amenity already exists.';
+            msg.style.display = 'block';
+            valid = false;
+        } else if (val) {
+            seen.push(val);
+        }
+    });
+    if (!valid) e.preventDefault();
+});
+
+document.getElementById('file-upload').addEventListener('change', function() {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('image-preview').src = e.target.result;
+            document.getElementById('img-preview-wrapper').style.display = 'block';
+            document.getElementById('upload-box').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('remove-img-btn').addEventListener('click', function() {
+    document.getElementById('file-upload').value = '';
+    document.getElementById('image-preview').src = '';
+    document.getElementById('img-preview-wrapper').style.display = 'none';
+    document.getElementById('upload-box').style.display = 'block';
+});
+</script>
 
 {% endblock %}

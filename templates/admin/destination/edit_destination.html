@@ -159,6 +159,23 @@
         border-radius: 8px;
         border: 1px solid #e2e8f0;
     }
+
+    .field-error {
+        color: #ef4444;
+        font-size: 12px;
+        margin-top: 5px;
+        display: none;
+    }
+
+    .field-hint {
+        color: #64748b;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+
+    .form-control.invalid {
+        border-color: #ef4444;
+    }
 </style>
 
 <div class="form-container">
@@ -177,12 +194,14 @@
         <div class="form-card">
             <div class="form-group">
                 <label>Destination Name <span>*</span></label>
-                <input type="text" name="name" class="form-control" value="{{ destination.name }}" required>
+                <input type="text" id="edit_name" name="name" class="form-control" value="{{ destination.name }}" required oninput="validateLettersOnly(this, 'name-error')">
+                <div class="field-error" id="name-error">Only letters and spaces are allowed.</div>
             </div>
 
             <div class="form-group">
                 <label>Country <span>*</span></label>
-                <input type="text" name="country" class="form-control" value="{{ destination.country }}" required>
+                <input type="text" id="edit_country" name="country" class="form-control" value="{{ destination.country }}" required oninput="validateLettersOnly(this, 'country-error')">
+                <div class="field-error" id="country-error">Only letters and spaces are allowed.</div>
             </div>
 
             <div class="form-group">
@@ -196,12 +215,13 @@
 
             <div class="form-group">
                 <label>Description</label>
-                <textarea name="description" class="form-control" style="height: 100px;">{{ destination.description }}</textarea>
+                <textarea id="edit_description" name="description" class="form-control" style="height: 100px;" oninput="validateDescription(this)">{{ destination.description|default:'' }}</textarea>
+                <div class="field-error" id="description-error">Only letters, numbers, !, &amp;, , and &gt; are allowed.</div>
             </div>
 
             <div class="form-group">
                 <label>Packages Start From (₹)</label>
-                <input type="number" name="packages_start_from" class="form-control" value="{{ destination.packages_start_from }}" placeholder="e.g., 15000" step="0.01">
+                <input type="text" id="packages_start_from" name="packages_start_from" class="form-control" value="{{ destination.packages_start_from|default:'' }}" placeholder="e.g., 15000" onkeydown="return /[\d.]/.test(event.key) || event.key==='Backspace'||event.key==='Delete'||event.key==='ArrowLeft'||event.key==='ArrowRight'||event.key==='Tab'" oninput="this.value=this.value.replace(/[^\d.]/g,'').replace(/(\..*)\./g,'$1')">
             </div>
 
             <div class="form-group">
@@ -213,21 +233,17 @@
 
             <div class="form-group">
                 <label>Destination Image</label>
-                
-                <div class="current-image" id="image-preview-container">
-                    {% if destination.image %}
-                        <p>Current Image:</p>
-                        <img id="image-preview" src="{{ destination.image.url }}" alt="{{ destination.name }}">
-                    {% else %}
-                        <img id="image-preview" src="" alt="Preview" style="display:none; max-width: 200px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                    {% endif %}
+
+                <div id="img-preview-wrapper" style="display:{% if destination.image %}block{% else %}none{% endif %}; position:relative; width:fit-content; margin-bottom:10px;">
+                    <img id="image-preview" src="{% if destination.image %}{{ destination.image.url }}{% endif %}" style="max-width:200px; border-radius:8px; border:1px solid #e2e8f0; display:block;" alt="Preview">
+                    <button type="button" id="remove-img-btn" style="position:absolute; top:-8px; right:-8px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:22px; height:22px; font-size:13px; cursor:pointer; line-height:1;">&times;</button>
                 </div>
 
-                <div class="upload-box" onclick="document.getElementById('file-upload').click();">
+                <div id="upload-box" class="upload-box" style="{% if destination.image %}display:none;{% endif %}" onclick="document.getElementById('file-upload').click();">
                     <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
                     <div class="upload-text">Click to upload new image</div>
-                    <input type="file" id="file-upload" name="image" style="display:none;" accept="image/*">
                 </div>
+                <input type="file" id="file-upload" name="image" style="display:none;" accept="image/*">
             </div>
 
             <div class="form-footer">
@@ -239,21 +255,62 @@
 </div>
 
 <script>
+function validateLettersOnly(input, errorId) {
+    const valid = /^[a-zA-Z\s]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    document.getElementById(errorId).style.display = valid ? 'none' : 'block';
+}
+
+function validateDescription(input) {
+    const valid = input.value === '' || /^[a-zA-Z0-9\s!&,>]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    document.getElementById('description-error').style.display = valid ? 'none' : 'block';
+}
+
+document.querySelector('form').addEventListener('submit', function(e) {
+    let valid = true;
+    const name = document.getElementById('edit_name');
+    const country = document.getElementById('edit_country');
+    const desc = document.getElementById('edit_description');
+    if (!name.value.trim() || !/^[a-zA-Z\s]+$/.test(name.value)) {
+        name.classList.add('invalid');
+        document.getElementById('name-error').style.display = 'block';
+        valid = false;
+    }
+    if (!country.value.trim() || !/^[a-zA-Z\s]+$/.test(country.value)) {
+        country.classList.add('invalid');
+        document.getElementById('country-error').style.display = 'block';
+        valid = false;
+    }
+    if (desc.value && !/^[a-zA-Z0-9\s!&,>]*$/.test(desc.value)) {
+        desc.classList.add('invalid');
+        document.getElementById('description-error').style.display = 'block';
+        valid = false;
+    }
+    if (!valid) e.preventDefault();
+});
+
 document.getElementById('file-upload').addEventListener('change', function(e) {
     const file = e.target.files[0];
     const preview = document.getElementById('image-preview');
-    
+    const wrapper = document.getElementById('img-preview-wrapper');
+    const uploadBox = document.getElementById('upload-box');
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
             preview.src = e.target.result;
-            preview.style.display = 'block';
-            preview.style.maxWidth = '200px';
-            preview.style.borderRadius = '8px';
-            preview.style.border = '1px solid #e2e8f0';
-        }
+            wrapper.style.display = 'block';
+            uploadBox.style.display = 'none';
+        };
         reader.readAsDataURL(file);
     }
+});
+
+document.getElementById('remove-img-btn').addEventListener('click', function() {
+    document.getElementById('file-upload').value = '';
+    document.getElementById('image-preview').src = '';
+    document.getElementById('img-preview-wrapper').style.display = 'none';
+    document.getElementById('upload-box').style.display = 'block';
 });
 </script>
 {% endblock %}

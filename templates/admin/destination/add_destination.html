@@ -199,7 +199,7 @@
             <div class="form-group">
                 <label>Description</label>
                 <textarea id="description" name="description" class="form-control" style="height: 100px;" placeholder="Brief description of the destination..."></textarea>
-                <div class="field-error" id="description-error">Description must contain only letters and spaces.</div>
+                <div class="field-error" id="description-error">Only letters, numbers, !, ., , and &amp; are allowed.</div>
             </div>
 
             <div class="form-group">
@@ -255,7 +255,7 @@
 
         function validateDescription() {
             const val = descriptionInput.value;
-            const valid = val === '' || /^[a-zA-Z\s]+$/.test(val);
+            const valid = val === '' || /^[a-zA-Z0-9\s!.,&]+$/.test(val);
             descriptionInput.classList.toggle('invalid', !valid);
             document.getElementById('description-error').style.display = valid ? 'none' : 'block';
             return valid;

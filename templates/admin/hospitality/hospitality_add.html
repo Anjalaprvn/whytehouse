@@ -255,8 +255,8 @@
             <!-- Summary -->
             <div class="form-group">
                 <label>Summary <span>*</span></label>
-                <textarea id="prop_summary" name="summary" class="form-control" style="height: 100px;" oninput="validateLetters(this, 'summary-error')">{{ property.summary|default:'' }}</textarea>
-                <div class="field-error" id="summary-error">Only letters and spaces are allowed.</div>
+                <textarea id="prop_summary" name="summary" class="form-control" style="height: 100px;" oninput="validateSummary(this)">{{ property.summary|default:'' }}</textarea>
+                <div class="field-error" id="summary-error">Only letters, numbers, !, ., , and &amp; are allowed.</div>
             </div>
 
             <!-- Amenities -->
@@ -269,7 +269,7 @@
                 <div id="new-amenities-container">
                     {% if property.amenities %}
                         {% for amenity in property.amenities.splitlines %}
-                        <input type="text" name="new_amenities[]" class="form-control" value="{{ amenity }}" style="margin-bottom: 10px;" oninput="validateLetters(this, null)">
+                        <input type="text" name="new_amenities[]" class="form-control" value="{{ amenity }}" style="margin-bottom: 10px;" oninput="validateAmenityDuplicate(this)">
                         {% endfor %}
                     {% else %}
                         <input type="text" name="new_amenities[]" class="form-control" placeholder="Enter amenity name" style="margin-bottom: 10px;" oninput="validateLetters(this, null)">
@@ -327,8 +327,14 @@ document.getElementById('remove-img').addEventListener('click', function() {
     document.getElementById('upload-box').style.display = 'block';
 });
 
+function validateSummary(input) {
+    const valid = /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    document.getElementById('summary-error').style.display = valid ? 'none' : 'block';
+}
+
 function validateAddress(input) {
-    const valid = /^[a-zA-Z\s,\.]*$/.test(input.value);
+    const valid = /^[a-zA-Z0-9\s,\.]*$/.test(input.value);
     input.classList.toggle('invalid', !valid);
     document.getElementById('address-error').style.display = valid ? 'none' : 'block';
 }
@@ -368,6 +374,28 @@ function validateURL(input) {
     document.getElementById('website-error').style.display = valid ? 'none' : 'block';
 }
 
+function getAmenityValues() {
+    return Array.from(document.querySelectorAll('#new-amenities-container input')).map(i => i.value.trim().toLowerCase());
+}
+
+function validateAmenityDuplicate(input) {
+    validateLetters(input, null);
+    const val = input.value.trim().toLowerCase();
+    const all = Array.from(document.querySelectorAll('#new-amenities-container input')).filter(i => i !== input).map(i => i.value.trim().toLowerCase());
+    const isDup = val !== '' && all.includes(val);
+    if (isDup) {
+        input.classList.add('invalid');
+        let msg = input.nextElementSibling;
+        if (!msg || !msg.classList.contains('inline-err')) {
+            msg = document.createElement('div');
+            msg.className = 'inline-err field-error';
+            input.insertAdjacentElement('afterend', msg);
+        }
+        msg.textContent = 'This amenity already exists.';
+        msg.style.display = 'block';
+    }
+}
+
 function addNewAmenity() {
     const container = document.getElementById('new-amenities-container');
     const input = document.createElement('input');
@@ -376,7 +404,7 @@ function addNewAmenity() {
     input.className = 'form-control';
     input.placeholder = 'Enter new amenity name';
     input.style.marginBottom = '10px';
-    input.addEventListener('input', function() { validateLetters(this, null); });
+    input.addEventListener('input', function() { validateAmenityDuplicate(this); });
     container.appendChild(input);
 }
 
@@ -385,12 +413,12 @@ document.querySelector('form').addEventListener('submit', function(e) {
         { id: 'prop_name', errId: 'prop-name-error' },
         { id: 'prop_location', errId: 'location-error' },
         { id: 'prop_address', errId: 'address-error', fn: (v) => /^[a-zA-Z\s,\.]+$/.test(v) },
-        { id: 'prop_summary', errId: 'summary-error' },
+        { id: 'prop_summary', errId: 'summary-error', fn: (v) => /^[a-zA-Z0-9\s!.,]+$/.test(v) },
     ];
     let valid = true;
     required.forEach(function(f) {
         const el = document.getElementById(f.id);
-        const pattern = f.id === 'prop_address' ? /^[a-zA-Z\s,\.]+$/ : /^[a-zA-Z\s]+$/;
+        const pattern = f.id === 'prop_address' ? /^[a-zA-Z0-9\s,\.]+$/ : f.id === 'prop_summary' ? /^[a-zA-Z0-9\s!.,&]+$/ : /^[a-zA-Z\s]+$/;
         if (!el.value.trim() || !pattern.test(el.value)) {
             el.classList.add('invalid');
             document.getElementById(f.errId).style.display = 'block';
@@ -409,6 +437,25 @@ document.querySelector('form').addEventListener('submit', function(e) {
         document.getElementById('website-error').style.display = 'block';
         valid = false;
     }
+    const amenityInputs = document.querySelectorAll('#new-amenities-container input');
+    const seen = [];
+    amenityInputs.forEach(function(inp) {
+        const val = inp.value.trim().toLowerCase();
+        if (val && seen.includes(val)) {
+            inp.classList.add('invalid');
+            let msg = inp.nextElementSibling;
+            if (!msg || !msg.classList.contains('inline-err')) {
+                msg = document.createElement('div');
+                msg.className = 'inline-err field-error';
+                inp.insertAdjacentElement('afterend', msg);
+            }
+            msg.textContent = 'This amenity already exists.';
+            msg.style.display = 'block';
+            valid = false;
+        } else if (val) {
+            seen.push(val);
+        }
+    });
     if (!valid) e.preventDefault();
 });
 </script>
