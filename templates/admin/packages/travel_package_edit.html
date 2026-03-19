@@ -41,6 +41,9 @@
     
     .img-preview { width: 150px; height: 100px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; }
     .story-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+
+    .field-error { color: #ef4444; font-size: 12px; margin-top: -14px; margin-bottom: 10px; display: none; }
+    .form-control.invalid { border: 1.5px solid #ef4444; background: #fff5f5; }
 </style>
 
 <div class="form-container">
@@ -66,7 +69,8 @@
                 </div>
                 <div>
                     <label>Package Title <span class="required-star">*</span></label>
-                    <input type="text" name="name" value="{{ package.name }}" required class="form-control">
+                    <input type="text" id="edit_pkg_name" name="name" value="{{ package.name }}" required class="form-control" oninput="validateLettersField(this, 'title-error')">
+                    <div id="title-error" class="field-error">Only letters, spaces, &amp;, and commas are allowed.</div>
                 </div>
             </div>
 
@@ -101,30 +105,39 @@
 
                 <div>
                     <label>Duration</label>
-                    <input type="text" name="duration" value="{{ package.duration|default:'' }}" class="form-control" placeholder="e.g. 3 Days / 2 Nights">
+                    <input type="text" id="edit_duration" name="duration" value="{{ package.duration|default:'' }}" class="form-control" placeholder="e.g. 3 Days / 2 Nights" oninput="validateDuration(this)" onchange="updateItineraryDays()">
+                    <div id="duration-error" class="field-error">Format must be like: 5 Days / 4 Nights</div>
                 </div>
             </div>
 
             <div class="grid-row">
                 <div>
                     <label>Location <span class="required-star">*</span></label>
-                    <input type="text" name="location" value="{{ package.location }}" required class="form-control" placeholder="e.g. Wayanad, Kerala">
+                    <input type="text" id="edit_location" name="location" value="{{ package.location }}" required class="form-control" placeholder="e.g. Wayanad, Kerala" oninput="validateLettersOnly(this, 'location-error')">
+                    <div id="location-error" class="field-error">Only letters, spaces, and commas are allowed.</div>
                 </div>
 
                 <div>
                     <label>Country <span class="required-star">*</span></label>
-                    <input type="text" name="country" value="{{ package.country|default:'' }}" required class="form-control" placeholder="e.g. India">
+                    <input type="text" id="edit_country" name="country" value="{{ package.country|default:'' }}" required class="form-control" placeholder="e.g. India" oninput="validateLettersOnly(this, 'country-error')">
+                    <div id="country-error" class="field-error">Only letters, spaces, and commas are allowed.</div>
                 </div>
             </div>
 
             <label>Description</label>
-            <textarea name="description" class="form-control">{{ package.description|default:'' }}</textarea>
+            <textarea id="edit_description" name="description" class="form-control" oninput="validateDescField(this)">{{ package.description|default:'' }}</textarea>
+            <div id="desc-error" class="field-error">Only letters, numbers, !, ., , and &amp; are allowed.</div>
 
             <label>Package Image</label>
-            {% if package.image %}
-                <img src="{{ package.image.url }}" class="img-preview">
-            {% endif %}
-            <input type="file" name="image" accept="image/*" class="form-control">
+            <div id="pkg-preview-wrapper" style="display:{% if package.image %}block{% else %}none{% endif %}; position:relative; width:fit-content; margin-bottom:10px;">
+                <img id="pkg-preview-img" src="{% if package.image %}{{ package.image.url }}{% endif %}" class="img-preview" style="display:block; margin-bottom:0;">
+                <button type="button" id="pkg-remove-img" style="position:absolute; top:-8px; right:-8px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:22px; height:22px; font-size:13px; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+            <div id="pkg-upload-box" style="{% if package.image %}display:none;{% endif %}border:2px dashed #e2e8f0; border-radius:12px; padding:30px; text-align:center; background:#fff; cursor:pointer; margin-bottom:20px;" onclick="document.getElementById('pkg-file-upload').click()">
+                <div style="font-size:28px; color:#94a3b8;"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                <div style="font-size:14px; color:#64748b; margin-top:8px;">Click to upload package image</div>
+            </div>
+            <input type="file" id="pkg-file-upload" name="image" accept="image/*" style="display:none;">
 
             <div style="margin-top: 10px; display: flex; align-items: center;">
                 <label class="switch">
@@ -142,42 +155,102 @@
             <div class="story-grid">
                 <div>
                     <label>Main Story Image (Large)</label>
-                    {% if package.story_main_image %}
-                        <img src="{{ package.story_main_image.url }}" class="img-preview" style="width: 100%; height: 200px;">
-                    {% endif %}
-                    <input type="file" name="story_main_image" accept="image/*" class="form-control">
+                    <div id="main-preview-wrapper" style="display:{% if package.story_main_image %}block{% else %}none{% endif %}; position:relative; width:fit-content; margin-bottom:10px;">
+                        <img id="main-preview-img" src="{% if package.story_main_image %}{{ package.story_main_image.url }}{% endif %}" class="img-preview" style="display:block; width:100%; height:200px; margin-bottom:0;">
+                        <button type="button" id="main-remove-img" style="position:absolute; top:-8px; right:-8px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:22px; height:22px; font-size:13px; cursor:pointer; line-height:1;">&times;</button>
+                    </div>
+                    <div id="main-upload-box" style="{% if package.story_main_image %}display:none;{% endif %}border:2px dashed #e2e8f0; border-radius:12px; padding:30px; text-align:center; background:#fff; cursor:pointer; margin-bottom:20px;" onclick="document.getElementById('main-file-upload').click()">
+                        <div style="font-size:28px; color:#94a3b8;"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                        <div style="font-size:14px; color:#64748b; margin-top:8px;">Click to upload main story image</div>
+                    </div>
+                    <input type="file" id="main-file-upload" name="story_main_image" accept="image/*" style="display:none;">
                 </div>
 
                 <div>
                     <label>Side Image 1</label>
-                    {% if package.story_side_image1 %}
-                        <img src="{{ package.story_side_image1.url }}" class="img-preview">
-                    {% endif %}
-                    <input type="file" name="story_side_image1" accept="image/*" class="form-control">
+                    <div id="side1-preview-wrapper" style="display:{% if package.story_side_image1 %}block{% else %}none{% endif %}; position:relative; width:fit-content; margin-bottom:10px;">
+                        <img id="side1-preview-img" src="{% if package.story_side_image1 %}{{ package.story_side_image1.url }}{% endif %}" class="img-preview" style="display:block; margin-bottom:0;">
+                        <button type="button" id="side1-remove-img" style="position:absolute; top:-8px; right:-8px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:22px; height:22px; font-size:13px; cursor:pointer; line-height:1;">&times;</button>
+                    </div>
+                    <div id="side1-upload-box" style="{% if package.story_side_image1 %}display:none;{% endif %}border:2px dashed #e2e8f0; border-radius:12px; padding:20px; text-align:center; background:#fff; cursor:pointer; margin-bottom:20px;" onclick="document.getElementById('side1-file-upload').click()">
+                        <div style="font-size:24px; color:#94a3b8;"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                        <div style="font-size:13px; color:#64748b; margin-top:6px;">Click to upload</div>
+                    </div>
+                    <input type="file" id="side1-file-upload" name="story_side_image1" accept="image/*" style="display:none;">
 
                     <label>Side Image 2</label>
-                    {% if package.story_side_image2 %}
-                        <img src="{{ package.story_side_image2.url }}" class="img-preview">
-                    {% endif %}
-                    <input type="file" name="story_side_image2" accept="image/*" class="form-control">
+                    <div id="side2-preview-wrapper" style="display:{% if package.story_side_image2 %}block{% else %}none{% endif %}; position:relative; width:fit-content; margin-bottom:10px;">
+                        <img id="side2-preview-img" src="{% if package.story_side_image2 %}{{ package.story_side_image2.url }}{% endif %}" class="img-preview" style="display:block; margin-bottom:0;">
+                        <button type="button" id="side2-remove-img" style="position:absolute; top:-8px; right:-8px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:22px; height:22px; font-size:13px; cursor:pointer; line-height:1;">&times;</button>
+                    </div>
+                    <div id="side2-upload-box" style="{% if package.story_side_image2 %}display:none;{% endif %}border:2px dashed #e2e8f0; border-radius:12px; padding:20px; text-align:center; background:#fff; cursor:pointer; margin-bottom:20px;" onclick="document.getElementById('side2-file-upload').click()">
+                        <div style="font-size:24px; color:#94a3b8;"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                        <div style="font-size:13px; color:#64748b; margin-top:6px;">Click to upload</div>
+                    </div>
+                    <input type="file" id="side2-file-upload" name="story_side_image2" accept="image/*" style="display:none;">
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <h4>Itinerary</h4>
-            <textarea name="itinerary" class="form-control" rows="8" placeholder="Enter itinerary (one day per line)">{{ package.itinerary|default:'' }}</textarea>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h4 style="margin:0;">Itinerary <span id="day-limit" style="font-size:0.9rem; color:#6b7280;"></span></h4>
+        <button type="button" id="add-day-btn" onclick="addDay()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer;">+ Add Day</button>
+    </div>
+    <div id="itinerary-container">
+        {% if package.itinerary %}
+            {% for item in package.itinerary.splitlines %}
+                {% if item.strip %}
+                <div class="itinerary-item">
+                    <label>Day {{ forloop.counter }}</label>
+                    <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateItineraryField(this)">{{ item }}</textarea>
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+        <div class="itinerary-item">
+            <label>Day 1</label>
+            <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateItineraryField(this)"></textarea>
         </div>
+        {% endif %}
+    </div>
+</div>
 
         <div class="card">
-            <h4>Inclusions</h4>
-            <textarea name="inclusions" class="form-control" rows="6" placeholder="Enter inclusions (one per line)">{{ package.inclusions|default:'' }}</textarea>
-        </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h4 style="margin:0;">Inclusions</h4>
+        <button type="button" onclick="addInclusion()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer;">+ Add Inclusion</button>
+    </div>
+    <div id="inclusion-container">
+        {% if package.inclusions %}
+            {% for item in package.inclusions.splitlines %}
+                {% if item.strip %}
+                <input type="text" name="inclusions[]" class="form-control" value="{{ item }}" oninput="validateLettersField(this, null); checkDuplicate(this, 'inclusion')">
+                {% endif %}
+            {% endfor %}
+        {% else %}
+        <input type="text" name="inclusions[]" class="form-control" placeholder="e.g., Hotel accommodation" oninput="validateLettersField(this, null); checkDuplicate(this, 'inclusion')">
+        {% endif %}
+    </div>
+</div>
 
         <div class="card">
-            <h4>Exclusions</h4>
-            <textarea name="exclusions" class="form-control" rows="6" placeholder="Enter exclusions (one per line)">{{ package.exclusions|default:'' }}</textarea>
-        </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h4 style="margin:0;">Exclusions</h4>
+        <button type="button" onclick="addExclusion()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer;">+ Add Exclusion</button>
+    </div>
+    <div id="exclusion-container">
+        {% if package.exclusions %}
+            {% for item in package.exclusions.splitlines %}
+                {% if item.strip %}
+                <input type="text" name="exclusions[]" class="form-control" value="{{ item }}" oninput="validateLettersField(this, null); checkDuplicate(this, 'exclusion')">
+                {% endif %}
+            {% endfor %}
+        {% else %}
+        <input type="text" name="exclusions[]" class="form-control" placeholder="e.g., Flight tickets" oninput="validateLettersField(this, null); checkDuplicate(this, 'exclusion')">
+        {% endif %}
+    </div>
+</div>
 
         <div class="card">
             <h4>SEO Settings</h4>
@@ -198,6 +271,169 @@
 </div>
 
 <script>
+function validateLettersField(input, errorId) {
+    const valid = errorId === 'title-error'
+        ? /^[a-zA-Z\s&,]*$/.test(input.value)
+        : /^[a-zA-Z\s]*$/.test(input.value);
+    if (!valid) {
+        if (!errorId) {
+            let msg = input.nextElementSibling;
+            if (!msg || !msg.classList.contains('letters-msg')) {
+                msg = document.createElement('div');
+                msg.className = 'letters-msg field-error';
+                msg.textContent = 'Only letters and spaces are allowed.';
+                msg.style.display = 'block';
+                input.insertAdjacentElement('afterend', msg);
+            }
+        } else {
+            document.getElementById(errorId).style.display = 'block';
+        }
+    } else {
+        if (!errorId) {
+            let msg = input.nextElementSibling;
+            if (msg && msg.classList.contains('letters-msg')) msg.remove();
+        } else {
+            document.getElementById(errorId).style.display = 'none';
+        }
+    }
+}
+
+function validateLettersOnly(input, errorId) {
+    const valid = /^[a-zA-Z\s,]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    document.getElementById(errorId).style.display = valid ? 'none' : 'block';
+}
+
+function validateDescField(input) {
+    const valid = /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    document.getElementById('desc-error').style.display = valid ? 'none' : 'block';
+}
+
+function validateItineraryField(input) {
+    const valid = /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    let msg = input.nextElementSibling;
+    if (!valid) {
+        if (!msg || !msg.classList.contains('itin-err')) {
+            msg = document.createElement('div');
+            msg.className = 'itin-err field-error';
+            msg.style.display = 'block';
+            msg.textContent = 'Only letters, numbers, !, ., , and & are allowed.';
+            input.insertAdjacentElement('afterend', msg);
+        }
+    } else if (msg && msg.classList.contains('itin-err')) {
+        msg.remove();
+    }
+}
+
+let maxDays = 0;
+
+function updateItineraryDays() {
+    const durationVal = document.getElementById('edit_duration').value;
+    const match = durationVal.match(/(\d+)\s*(?:day|days)/i);
+    const extracted = match ? parseInt(match[1]) : 0;
+    if (extracted <= 0) return;
+    maxDays = extracted;
+    const container = document.getElementById('itinerary-container');
+    const current = container.querySelectorAll('.itinerary-item').length;
+    document.getElementById('day-limit').textContent = `(Max ${maxDays} days)`;
+    if (current < maxDays) {
+        for (let i = current + 1; i <= maxDays; i++) {
+            const div = document.createElement('div');
+            div.classList.add('itinerary-item');
+            div.innerHTML = `<label>Day ${i}</label><textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateItineraryField(this)"></textarea>`;
+            container.appendChild(div);
+        }
+    } else if (current > maxDays) {
+        const items = container.querySelectorAll('.itinerary-item');
+        for (let i = items.length - 1; i >= maxDays; i--) items[i].remove();
+    }
+    syncAddDayBtn();
+}
+
+function syncAddDayBtn() {
+    const btn = document.getElementById('add-day-btn');
+    const current = document.getElementById('itinerary-container').querySelectorAll('.itinerary-item').length;
+    const disabled = maxDays > 0 && current >= maxDays;
+    btn.disabled = disabled;
+    btn.style.opacity = disabled ? '0.5' : '1';
+    btn.style.cursor = disabled ? 'not-allowed' : 'pointer';
+}
+
+function addDay() {
+    const container = document.getElementById('itinerary-container');
+    const current = container.querySelectorAll('.itinerary-item').length;
+    if (maxDays > 0 && current >= maxDays) {
+        alert(`You can only add ${maxDays} days based on the duration.`);
+        return;
+    }
+    const div = document.createElement('div');
+    div.classList.add('itinerary-item');
+    div.innerHTML = `<label>Day ${current + 1}</label><textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateItineraryField(this)"></textarea>`;
+    container.appendChild(div);
+    syncAddDayBtn();
+}
+
+function validateItinerary(input) {
+    const valid = /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    document.getElementById('itinerary-error').style.display = valid ? 'none' : 'block';
+}
+
+function validateDuration(input) {
+    const pattern = /^\d+\s+Days\s+\/\s+\d+\s+Nights$/i;
+    const valid = input.value.trim() === '' || pattern.test(input.value.trim());
+    input.classList.toggle('invalid', !valid);
+    document.getElementById('duration-error').style.display = valid ? 'none' : 'block';
+}
+
+function addInclusion() {
+    const container = document.getElementById('inclusion-container');
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.name = 'inclusions[]';
+    input.className = 'form-control';
+    input.placeholder = 'e.g., Breakfast included';
+    input.addEventListener('input', function() { validateLettersField(this, null); checkDuplicate(this, 'inclusion'); });
+    container.appendChild(input);
+}
+
+function addExclusion() {
+    const container = document.getElementById('exclusion-container');
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.name = 'exclusions[]';
+    input.className = 'form-control';
+    input.placeholder = 'e.g., Personal expenses';
+    input.addEventListener('input', function() { validateLettersField(this, null); checkDuplicate(this, 'exclusion'); });
+    container.appendChild(input);
+}
+
+function checkDuplicate(input, type) {
+    const containerId = type === 'inclusion' ? 'inclusion-container' : 'exclusion-container';
+    const val = input.value.trim().toLowerCase();
+    const allInputs = document.querySelectorAll(`#${containerId} input`);
+    let isDuplicate = false;
+    if (val) {
+        allInputs.forEach(function(other) {
+            if (other !== input && other.value.trim().toLowerCase() === val) isDuplicate = true;
+        });
+    }
+    let msg = input.nextElementSibling;
+    if (isDuplicate) {
+        if (!msg || !msg.classList.contains('dup-msg')) {
+            msg = document.createElement('div');
+            msg.className = 'dup-msg field-error';
+            msg.style.display = 'block';
+            msg.textContent = type === 'inclusion' ? 'Inclusion already exists.' : 'Exclusion already exists.';
+            input.insertAdjacentElement('afterend', msg);
+        }
+    } else {
+        if (msg && msg.classList.contains('dup-msg')) msg.remove();
+    }
+}
+
 function filterDestinations() {
     const category = document.getElementById('category').value;
     const destinationSelect = document.getElementById('destination');
@@ -227,6 +463,102 @@ function filterDestinations() {
 // Run on page load to filter destinations based on current category
 document.addEventListener('DOMContentLoaded', function() {
     filterDestinations();
+
+    // Init itinerary day limit from existing duration
+    const durField = document.getElementById('edit_duration');
+    if (durField.value) updateItineraryDays();
+    syncAddDayBtn();
+
+    const pkgFileInput = document.getElementById('pkg-file-upload');
+    const pkgPreviewImg = document.getElementById('pkg-preview-img');
+    const pkgPreviewWrapper = document.getElementById('pkg-preview-wrapper');
+    const pkgUploadBox = document.getElementById('pkg-upload-box');
+
+    pkgFileInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                pkgPreviewImg.src = e.target.result;
+                pkgPreviewWrapper.style.display = 'block';
+                pkgUploadBox.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.getElementById('pkg-remove-img').addEventListener('click', function() {
+        pkgFileInput.value = '';
+        pkgPreviewImg.src = '';
+        pkgPreviewWrapper.style.display = 'none';
+        pkgUploadBox.style.display = 'block';
+    });
+
+    // Story images
+    [['main', 'block'], ['side1', 'block'], ['side2', 'block']].forEach(function([key]) {
+        const fileInput = document.getElementById(key + '-file-upload');
+        const previewImg = document.getElementById(key + '-preview-img');
+        const previewWrapper = document.getElementById(key + '-preview-wrapper');
+        const uploadBox = document.getElementById(key + '-upload-box');
+        const removeBtn = document.getElementById(key + '-remove-img');
+
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewWrapper.style.display = 'block';
+                    uploadBox.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        removeBtn.addEventListener('click', function() {
+            fileInput.value = '';
+            previewImg.src = '';
+            previewWrapper.style.display = 'none';
+            uploadBox.style.display = 'block';
+        });
+    });
+
+    document.querySelector('form').addEventListener('submit', function(e) {
+        let valid = true;
+        const checks = [
+            { id: 'edit_pkg_name', errId: 'title-error', pattern: /^[a-zA-Z\s&,]+$/ },
+            { id: 'edit_location', errId: 'location-error', pattern: /^[a-zA-Z\s,]+$/ },
+            { id: 'edit_country', errId: 'country-error', pattern: /^[a-zA-Z\s,]+$/ },
+        ];
+        checks.forEach(function(f) {
+            const el = document.getElementById(f.id);
+            if (!el.value.trim() || !f.pattern.test(el.value)) {
+                el.classList.add('invalid');
+                document.getElementById(f.errId).style.display = 'block';
+                valid = false;
+            }
+        });
+        const dur = document.getElementById('edit_duration');
+        if (dur.value.trim() && !/^\d+\s+Days\s+\/\s+\d+\s+Nights$/i.test(dur.value.trim())) {
+            dur.classList.add('invalid');
+            document.getElementById('duration-error').style.display = 'block';
+            valid = false;
+        }
+        const desc = document.getElementById('edit_description');
+        if (desc.value && !/^[a-zA-Z0-9\s!.,&]*$/.test(desc.value)) {
+            desc.classList.add('invalid');
+            document.getElementById('desc-error').style.display = 'block';
+            valid = false;
+        }
+        const itin = document.querySelectorAll('#itinerary-container textarea');
+        itin.forEach(function(t) {
+            if (t.value && !/^[a-zA-Z0-9\s!.,&]*$/.test(t.value)) {
+                t.classList.add('invalid');
+                valid = false;
+            }
+        });
+        if (!valid) e.preventDefault();
+    });
 });
 </script>
 

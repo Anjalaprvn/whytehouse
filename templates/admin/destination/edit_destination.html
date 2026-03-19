@@ -159,6 +159,17 @@
         border-radius: 8px;
         border: 1px solid #e2e8f0;
     }
+
+    .field-error {
+        color: #ef4444;
+        font-size: 12px;
+        margin-top: 5px;
+        display: none;
+    }
+
+    .form-control.invalid {
+        border-color: #ef4444;
+    }
 </style>
 
 <div class="form-container">
@@ -177,12 +188,14 @@
         <div class="form-card">
             <div class="form-group">
                 <label>Destination Name <span>*</span></label>
-                <input type="text" name="name" class="form-control" value="{{ destination.name }}" required>
+                <input type="text" id="edit_name" name="name" class="form-control" value="{{ destination.name }}" required oninput="validateLettersOnly(this, 'name-error')">
+                <div class="field-error" id="name-error">Only letters and spaces are allowed.</div>
             </div>
 
             <div class="form-group">
                 <label>Country <span>*</span></label>
-                <input type="text" name="country" class="form-control" value="{{ destination.country }}" required>
+                <input type="text" id="edit_country" name="country" class="form-control" value="{{ destination.country }}" required oninput="validateLettersOnly(this, 'country-error')">
+                <div class="field-error" id="country-error">Only letters and spaces are allowed.</div>
             </div>
 
             <div class="form-group">
@@ -196,7 +209,8 @@
 
             <div class="form-group">
                 <label>Description</label>
-                <textarea name="description" class="form-control" style="height: 100px;">{{ destination.description }}</textarea>
+                <textarea id="edit_description" name="description" class="form-control" style="height: 100px;" oninput="validateDescription(this)">{{ destination.description }}</textarea>
+                <div class="field-error" id="description-error">Only letters, numbers, !, ., , and &amp; are allowed.</div>
             </div>
 
             <div class="form-group">
@@ -239,6 +253,41 @@
 </div>
 
 <script>
+function validateLettersOnly(input, errorId) {
+    const valid = /^[a-zA-Z\s]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    document.getElementById(errorId).style.display = valid ? 'none' : 'block';
+}
+
+function validateDescription(input) {
+    const valid = input.value === '' || /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    document.getElementById('description-error').style.display = valid ? 'none' : 'block';
+}
+
+document.querySelector('form').addEventListener('submit', function(e) {
+    let valid = true;
+    const name = document.getElementById('edit_name');
+    const country = document.getElementById('edit_country');
+    const desc = document.getElementById('edit_description');
+    if (!name.value.trim() || !/^[a-zA-Z\s]+$/.test(name.value)) {
+        name.classList.add('invalid');
+        document.getElementById('name-error').style.display = 'block';
+        valid = false;
+    }
+    if (!country.value.trim() || !/^[a-zA-Z\s]+$/.test(country.value)) {
+        country.classList.add('invalid');
+        document.getElementById('country-error').style.display = 'block';
+        valid = false;
+    }
+    if (desc.value && !/^[a-zA-Z0-9\s!.,&]*$/.test(desc.value)) {
+        desc.classList.add('invalid');
+        document.getElementById('description-error').style.display = 'block';
+        valid = false;
+    }
+    if (!valid) e.preventDefault();
+});
+
 document.getElementById('file-upload').addEventListener('change', function(e) {
     const file = e.target.files[0];
     const preview = document.getElementById('image-preview');
