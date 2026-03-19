@@ -20,7 +20,6 @@
     body{background:var(--bg);color:var(--text)}
     a{text-decoration:none;color:inherit}
 
-    /* Header */
     .top{
       display:flex;
       align-items:center;
@@ -45,7 +44,6 @@
     .title-wrap h1{font-size:34px;line-height:1.15;font-weight:600;letter-spacing:-.3px}
     .title-wrap p{color:var(--muted);font-size:14px}
 
-    /* Card */
     .card{
       background:var(--card);
       border:1px solid var(--line);
@@ -97,6 +95,33 @@
       box-shadow:0 0 0 3px rgba(215,170,60,.15);
     }
 
+    .field.error input,
+    .field.error select,
+    .field.error textarea,
+    .field.error input[type="date"] {
+      border-color: #ef4444;
+      background: #fef2f2;
+    }
+    .field.error input:focus,
+    .field.error select:focus,
+    .field.error textarea:focus,
+    .field.error input[type="date"]:focus {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+    }
+    .error-message {
+      color: #ef4444;
+      font-size: 13px;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .error-message::before {
+      content: '⚠';
+      font-size: 14px;
+    }
+
     .row-2{
       display:grid;
       grid-template-columns:1fr 1fr;
@@ -104,7 +129,6 @@
       margin-top:12px;
     }
 
-    /* Upload */
     .upload-line{
       display:flex;
       gap:12px;
@@ -142,7 +166,6 @@
     }
     .dropzone svg{width:44px;height:44px;opacity:.65}
 
-    /* Hashtags */
     .tag-row{
       display:flex;
       gap:12px;
@@ -170,8 +193,7 @@
       font-weight:700;
       background:#f8fafc;
     }
-    
-    /* Hashtag display styles */
+
     .tag-display {
       display:inline-flex;
       align-items:center;
@@ -204,7 +226,6 @@
       color:#64748b;
     }
 
-    /* Footer buttons */
     .actions{
       display:flex;
       gap:14px;
@@ -230,14 +251,12 @@
     .btn.primary:hover{background:var(--btnHover)}
     .btn:active{transform:translateY(1px)}
 
-    /* Responsive */
     @media(max-width:860px){
       .grid{grid-template-columns:1fr}
       .row-2{grid-template-columns:1fr}
       .title-wrap h1{font-size:28px}
     }
 
-    /* Content Image Preview Cards */
     .image-card {
       border:1px solid var(--line);
       border-radius:12px;
@@ -296,276 +315,372 @@
       gap:14px;
       margin-top:16px;
     }
+
+    .featured-preview-wrap{
+      position:relative;
+      display:inline-block;
+      margin-top:8px;
+    }
+    .featured-remove-btn{
+      position:absolute;
+      top:-10px;
+      right:-10px;
+      width:30px;
+      height:30px;
+      border:none;
+      border-radius:50%;
+      background:#ef4444;
+      color:#fff;
+      font-size:16px;
+      font-weight:700;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 6px 16px rgba(239,68,68,.25);
+      z-index:2;
+    }
+    .featured-remove-btn:hover{
+      background:#dc2626;
+    }
+
+    .hidden{display:none !important;}
   </style>
 {% endblock %}
 
 {% block content %}
 
-    <div class="top">
-      <a class="back-btn" href="{% url 'blog:blog_list' %}" aria-label="Back">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M15 18l-6-6 6-6" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </a>
+<div class="top">
+  <a class="back-btn" href="{% url 'blog:blog_list' %}" aria-label="Back">
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M15 18l-6-6 6-6" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
 
-      <div class="title-wrap">
-        <h1>Edit Blog Post</h1>
-        <p>Update blog details</p>
+  <div class="title-wrap">
+    <h1>Edit Blog Post</h1>
+    <p>Update blog details</p>
+  </div>
+</div>
+
+<form id="blog-form" method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <input type="hidden" name="remove_featured_image" id="remove_featured_image" value="0">
+  <input type="hidden" id="deleted-images" name="deleted_images" value="">
+
+  <!-- BASIC INFORMATION -->
+  <div class="card">
+    <h2>Basic Information</h2>
+
+    <div class="grid">
+      <div class="field">
+        <div class="label">Blog Title <span class="req">*</span></div>
+        <input id="title" type="text" name="title" placeholder="Top Beaches To Visit In Goa" value="{{ blog.title }}" required>
+        <div class="error-message hidden" id="title-client-error"></div>
+      </div>
+
+      <div class="field">
+        <div class="label">URL Slug <span class="req">*</span></div>
+        <input id="slug" type="text" name="slug" placeholder="top-10-beaches-goa" value="{{ blog.slug }}" required>
+        <div class="help">URL: <span style="color:#475569">/blog/{{ blog.slug }}</span></div>
+        <div class="error-message hidden" id="slug-client-error"></div>
+      </div>
+
+      <div class="field" style="grid-column:1/-1">
+        <div class="label">Excerpt <span class="req">*</span></div>
+        <textarea id="excerpt" name="excerpt" placeholder="Brief description for preview..." required>{{ blog.excerpt }}</textarea>
+        <div class="error-message hidden" id="excerpt-client-error"></div>
       </div>
     </div>
 
-    <form method="POST" enctype="multipart/form-data">
-      {% csrf_token %}
-
-      <!-- BASIC INFORMATION -->
-      <div class="card">
-        <h2>Basic Information</h2>
-
-        <div class="grid">
-          <div class="field">
-            <div class="label">Blog Title <span class="req">*</span></div>
-            <input type="text" name="title" placeholder="Top 10 Beaches to Visit in Goa" value="{{ blog.title }}" required>
-          </div>
-
-          <div class="field">
-            <div class="label">URL Slug <span class="req">*</span></div>
-            <input type="text" name="slug" placeholder="top-10-beaches-goa" value="{{ blog.slug }}" required>
-            <div class="help">URL: <span style="color:#475569">/blog/{{ blog.slug }}</span></div>
-          </div>
-
-          <div class="field" style="grid-column:1/-1">
-            <div class="label">Excerpt <span class="req">*</span></div>
-            <textarea name="excerpt" placeholder="Brief description for preview..." required>{{ blog.excerpt }}</textarea>
-          </div>
-        </div>
-
-        <div class="row-2">
-          <div class="field">
-            <div class="label">Status</div>
-            <select name="status">
-              <option value="draft" {% if blog.status == 'draft' %}selected{% endif %}>Draft</option>
-              <option value="published" {% if blog.status == 'published' %}selected{% endif %}>Published</option>
-            </select>
-          </div>
-          <div class="field">
-            <div class="label">Link to Package (Optional)</div>
-            <input type="text" name="package_id" id="package_id" placeholder="Package ID (e.g., PKG001)" value="{{ blog.package_id }}">
-            <div id="package-id-error" style="color: #ef4444; font-size: 13px; margin-top: 6px; display: none;"></div>
-          </div>
-        </div>
-
-        <div class="field" style="margin-top:12px">
-          <div class="label">Category</div>
-          <select id="category" name="category" required style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;background:#f9fafb;">
-            <option value="">Select Category</option>
-            {% for c in categories %}
-              <option value="{{ c.slug }}" {% if blog.category == c.slug %}selected{% endif %}>{{ c.name }}</option>
-            {% endfor %}
-          </select>
-        </div>
+    <div class="row-2">
+      <div class="field">
+        <div class="label">Status</div>
+        <select name="status">
+          <option value="draft" {% if blog.status == 'draft' %}selected{% endif %}>Draft</option>
+          <option value="published" {% if blog.status == 'published' %}selected{% endif %}>Published</option>
+        </select>
       </div>
 
-      <!-- AUTHOR & META INFORMATION -->
-      <div class="card">
-        <h2>Author &amp; Meta Information</h2>
+      <div class="field">
+        <div class="label">Link to Package (Optional)</div>
+        <input type="text" name="package_id" id="package_id" placeholder="Package ID (e.g., PKG001)" value="{{ blog.package_id }}" pattern="PKG\d{3}" title="Package ID must be in format PKG followed by 3 digits (e.g., PKG001)">
+        <div class="error-message hidden" id="package-id-error"></div>
+      </div>
+    </div>
 
-        <div class="grid">
-          <div class="field" style="grid-column:1/-1">
-            <div class="label">Author Name <span class="req">*</span></div>
-            <input type="text" name="author_name" placeholder="John Doe" value="{{ blog.author_name }}" required>
-          </div>
+    <br>
 
-          <div class="field" style="grid-column:1/-1">
-            <div class="label">Author Summary <span class="req">*</span></div>
-            <textarea name="author_summary" placeholder="Brief description about the author..." required>{{ blog.author_summary }}</textarea>
-          </div>
+    <div class="field">
+      <label for="category" class="label">Category <span class="req">*</span></label>
+      <select id="category" name="category" required
+        style="width:50%;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:14px;background:var(--input);">
+        <option value="">Select Category</option>
+        {% for c in categories %}
+          <option value="{{ c.slug }}" {% if blog.category == c.slug %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+      <div class="error-message hidden" id="category-client-error"></div>
+    </div>
+  </div>
 
-          <div class="field">
-            <div class="label">Reading Time (minutes) <span class="req">*</span></div>
-            <input type="number" name="reading_time" min="1" placeholder="5" value="{{ blog.reading_time }}" required>
-          </div>
+  <!-- AUTHOR & META INFORMATION -->
+  <div class="card">
+    <h2>Author &amp; Meta Information</h2>
 
-          <div class="field">
-            <div class="label">Publish Date <span class="req">*</span></div>
-            <input type="date" name="publish_date" value="{{ blog.publish_date|date:'Y-m-d' }}" required>
-          </div>
-        </div>
+    <div class="grid">
+      <div class="field" style="grid-column:1/-1">
+        <div class="label">Author Name <span class="req">*</span></div>
+        <input id="author_name" type="text" name="author_name" placeholder="John Doe" value="{{ blog.author_name }}" required>
+        <div class="error-message hidden" id="author-client-error"></div>
       </div>
 
-      <!-- FEATURED IMAGE -->
-      <div class="card">
-        <h2>Featured Image</h2>
-
-        <div class="field">
-          <div class="label">Image URL or Upload</div>
-          <input type="text" name="featured_image_url" placeholder="https://example.com/image.jpg" value="{{ blog.featured_image_url }}">
-        </div>
-
-        <div class="upload-line" style="margin-top:12px">
-          <label class="upload-btn">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 16V4" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
-              <path d="M7 9l5-5 5 5" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            Upload Image
-            <input id="featured_image_input" type="file" name="featured_image" accept="image/*" hidden>
-          </label>
-
-          <div class="upload-hint">
-            You can either paste an image URL or upload an image file.
-          </div>
-        </div>
-        <div style="margin-top:12px">
-          <div id="image-name" style="margin-bottom:10px; font-size:14px; color:#666;"></div>
-          <div id="image-preview-container" style="margin-top:10px;">
-            {% if blog.featured_image %}
-              <img id="image-preview" src="{{ blog.featured_image.url }}" alt="Preview" style="max-width:320px; max-height:200px; display:block; object-fit:cover; border-radius:8px; border:1px solid #ddd; padding:4px;">
-              <div style="margin-top:8px; font-size:13px; color:#666;">Current image: {{ blog.featured_image.name|default:"No file name" }}</div>
-            {% elif blog.featured_image_url %}
-              <img id="image-preview" src="{{ blog.featured_image_url }}" alt="Preview" style="max-width:320px; max-height:200px; display:block; object-fit:cover; border-radius:8px; border:1px solid #ddd; padding:4px;">
-              <div style="margin-top:8px; font-size:13px; color:#666;">Current image from URL</div>
-            {% else %}
-              <img id="image-preview" src="" alt="Preview" style="max-width:320px; max-height:200px; display:none; object-fit:cover; border-radius:8px; border:1px solid #ddd; padding:4px;">
-            {% endif %}
-          </div>
-        </div>
+      <div class="field" style="grid-column:1/-1">
+        <div class="label">Author Summary <span class="req">*</span></div>
+        <textarea id="author_summary" name="author_summary" placeholder="Brief description about the author..." required>{{ blog.author_summary }}</textarea>
+        <div class="error-message hidden" id="author-summary-client-error"></div>
       </div>
 
-      <!-- CONTENT IMAGES -->
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
-          <h2 style="margin:0">Content Images</h2>
+      <div class="field">
+        <div class="label">Reading Time (minutes) <span class="req">*</span></div>
+        <input id="reading_time" type="number" name="reading_time" min="1" max="120" placeholder="5" value="{{ blog.reading_time }}" required>
+        <div class="error-message hidden" id="reading-time-client-error"></div>
+      </div>
 
-          <label class="upload-btn" id="content-images-btn">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 16V4" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
-              <path d="M7 9l5-5 5 5" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            Add Images
-            <input type="file" id="content-images-input" name="content_images" accept="image/*" multiple hidden>
-          </label>
-        </div>
+      <div class="field">
+        <div class="label">Publish Date <span class="req">*</span></div>
+        <input id="publish_date" type="date" name="publish_date" value="{{ blog.publish_date|date:'Y-m-d' }}" required>
+        <div class="error-message hidden" id="publish-date-client-error"></div>
+      </div>
+    </div>
+  </div>
 
-        <p class="upload-hint" style="margin-top:10px">
-          {% verbatim %}Upload images to use in your blog content. Reference them using <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image1}}</code>, <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image2}}</code>, etc. in your content. For positioning, use <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image1-left}}</code>, <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image1-right}}</code>, or <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image1-center}}</code>.{% endverbatim %}
-        </p>
+  <!-- FEATURED IMAGE -->
+  <div class="card">
+    <h2>Featured Image</h2>
 
-        <!-- Existing Images -->
-        {% if blog.images.all %}
-        <div class="image-preview-grid" id="existing-images">
-          {% for img in blog.images.all %}
-          <div class="image-card" data-image-id="{{ img.id }}">
-            <img src="{{ img.image.url }}" alt="Content image {{ forloop.counter }}">
-            <div class="image-card-footer">
-              <span class="image-tag" onclick="copyImageTag('image{{ forloop.counter }}')" title="Click to copy">image{{ forloop.counter }}</span>
-              <button type="button" class="remove-image-btn" onclick="removeExistingImage({{ img.id }})" title="Remove image">✕</button>
-            </div>
+    <div class="field">
+      <div class="label">Image URL or Upload</div>
+      <input type="text" name="featured_image_url" id="featured_image_url" placeholder="https://example.com/image.jpg" value="{{ blog.featured_image_url }}">
+    </div>
+
+    <div class="upload-line" style="margin-top:12px">
+      <label class="upload-btn">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 16V4" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
+          <path d="M7 9l5-5 5 5" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Upload Image
+        <input id="featured_image_input" type="file" name="featured_image" accept="image/*" hidden>
+      </label>
+
+      <div class="upload-hint">
+        You can either paste an image URL or upload an image file.
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <div id="image-name" style="margin-bottom:10px; font-size:14px; color:#666;"></div>
+
+      <div id="image-preview-container" style="margin-top:10px;">
+        {% if blog.featured_image %}
+          <div class="featured-preview-wrap" id="featured-preview-wrap">
+            <button type="button" class="featured-remove-btn" id="remove-featured-btn" title="Remove featured image">✕</button>
+            <img id="image-preview" src="{{ blog.featured_image.url }}" alt="Preview" style="max-width:320px; max-height:200px; display:block; object-fit:cover; border-radius:8px; border:1px solid #ddd; padding:4px;">
           </div>
-          {% endfor %}
-        </div>
+          <div id="featured-image-note" style="margin-top:8px; font-size:13px; color:#666;">Current image: {{ blog.featured_image.name|default:"No file name" }}</div>
+        {% elif blog.featured_image_url %}
+          <div class="featured-preview-wrap" id="featured-preview-wrap">
+            <button type="button" class="featured-remove-btn" id="remove-featured-btn" title="Remove featured image">✕</button>
+            <img id="image-preview" src="{{ blog.featured_image_url }}" alt="Preview" style="max-width:320px; max-height:200px; display:block; object-fit:cover; border-radius:8px; border:1px solid #ddd; padding:4px;">
+          </div>
+          <div id="featured-image-note" style="margin-top:8px; font-size:13px; color:#666;">Current image from URL</div>
+        {% else %}
+          <div class="featured-preview-wrap hidden" id="featured-preview-wrap">
+            <button type="button" class="featured-remove-btn" id="remove-featured-btn" title="Remove featured image">✕</button>
+            <img id="image-preview" src="" alt="Preview" style="max-width:320px; max-height:200px; display:block; object-fit:cover; border-radius:8px; border:1px solid #ddd; padding:4px;">
+          </div>
+          <div id="featured-image-note" style="margin-top:8px; font-size:13px; color:#666;"></div>
         {% endif %}
-
-        <!-- New Images Preview -->
-        <div id="content-images-preview" style="display:none;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:16px;">
-          <!-- Image previews will be added here -->
-        </div>
-
-        <div id="content-images-empty" class="dropzone" style="margin-top:14px;{% if blog.images.all %}display:none{% endif %}">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
-            <path d="M7 10l5-5 5 5" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M12 5v12" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          <div>
-            <div style="font-weight:600;color:#475569;margin-bottom:4px">No images uploaded</div>
-            <div style="font-size:13px">Click "Add Images" to upload content images</div>
-          </div>
-        </div>
-
-        <!-- Hidden field to track deleted images -->
-        <input type="hidden" id="deleted-images" name="deleted_images" value="">
       </div>
+    </div>
+  </div>
 
-      <!-- HASHTAGS -->
-      <div class="card">
-        <h2>Hashtags</h2>
+  <!-- CONTENT IMAGES -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <h2 style="margin:0">Content Images</h2>
 
-        <div class="tag-row">
-          <input id="hashtag-input" class="tag-input" type="text" placeholder="Enter a hashtag" onkeypress="if(event.key==='Enter'){event.preventDefault();addHashtag();}">
-          <button type="button" class="tag-add" onclick="addHashtag()">
-            <span class="hash">#</span>
-            Add
-          </button>
-        </div>
+      <label class="upload-btn" id="content-images-btn">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 16V4" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
+          <path d="M7 9l5-5 5 5" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Add Images
+        <input type="file" id="content-images-input" name="content_images" accept="image/*" multiple hidden>
+      </label>
+    </div>
 
-        <div id="hashtags-container" style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;"></div>
-        <input type="hidden" id="hashtags-hidden" name="hashtags" value="{{ blog.hashtags }}">
+    <p class="upload-hint" style="margin-top:10px">
+      Upload images to use in your blog content. Reference them using <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image1}}</code>, <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">{{image2}}</code>, etc. in your content.
+    </p>
 
-        <p class="help" style="margin-top:10px">Add individual hashtags using the "#add" button or enter comma-separated tags</p>
-      </div>
-
-      <!-- CONTENT -->
-      <div class="card">
-        <h2>Content <span class="req">*</span></h2>
-
-        <div class="field">
-          <textarea name="content" rows="9" placeholder="Write your blog content here..." required>{{ blog.content }}</textarea>
-          <div class="help" style="margin-top: 10px; padding: 12px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px;">
-            <strong>📷 How to add images:</strong> Use <span style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{"{"}}image1{{"}"}}</span>, <span style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{"{"}}image2{{"}"}}</span>, etc. in your content where you want images to appear. You have {{ blog.images.count }} image(s) uploaded.
-          </div>
-        </div>
-
-        <div class="actions">
-          <a class="btn" href="{% url 'blog:blog_list' %}">Cancel</a>
-          <button class="btn primary" type="submit">Save Changes</button>
+    {% if blog.images.all %}
+    <div class="image-preview-grid" id="existing-images">
+      {% for img in blog.images.all %}
+      <div class="image-card" data-image-id="{{ img.id }}">
+        <img src="{{ img.image.url }}" alt="Content image {{ forloop.counter }}">
+        <div class="image-card-footer">
+          <span class="image-tag" data-tag="image{{ forloop.counter }}" onclick="copyToClipboard(this.dataset.tag, this)" title="Click to copy">&#123;&#123;image{{ forloop.counter }}&#125;&#125;</span>
+          <button type="button" class="remove-image-btn" onclick="removeExistingImage({{ img.id }})" title="Remove image">✕</button>
         </div>
       </div>
+      {% endfor %}
+    </div>
+    {% endif %}
 
+    <div id="content-images-preview" style="margin-top:16px;display:none;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;"></div>
+
+    <div id="content-images-empty" class="dropzone" style="margin-top:14px;{% if blog.images.all %}display:none{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
+        <path d="M7 10l5-5 5 5" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 5v12" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div style="font-weight:600;color:#475569;margin-bottom:4px">No images uploaded</div>
+        <div style="font-size:13px">Click "Add Images" to upload content images</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HASHTAGS -->
+  <div class="card">
+    <h2>Hashtags</h2>
+
+    <div class="tag-row">
+      <input id="hashtag-input" class="tag-input" type="text" placeholder="Enter a hashtag" onkeypress="if(event.key==='Enter'){event.preventDefault();addHashtag();}">
+      <button type="button" class="tag-add" onclick="addHashtag()">
+        <span class="hash">#</span>
+        Add
+      </button>
+    </div>
+
+    <div class="error-message hidden" id="hashtag-client-error"></div>
+    <div id="hashtags-container" style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;"></div>
+    <input type="hidden" id="hashtags-hidden" name="hashtags" value="{{ blog.hashtags }}">
+
+    <p class="help" style="margin-top:10px">Add hashtags using letters only</p>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="card">
+    <h2>Content <span class="req">*</span></h2>
+
+    <div class="field">
+      <textarea id="content" name="content" rows="9" placeholder="Write your blog content here..." required>{{ blog.content }}</textarea>
+      <div class="error-message hidden" id="content-client-error"></div>
+      <div class="help" style="margin-top: 10px; padding: 12px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px;">
+        <strong>📷 How to add images:</strong> Use <span style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{"{"}}image1{{"}"}}</span>, <span style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{"{"}}image2{{"}"}}</span>, etc. in your content where you want images to appear. You have {{ blog.images.count }} image(s) uploaded.
+      </div>
+    </div>
+
+    <div class="actions">
+      <a class="btn" href="{% url 'blog:blog_list' %}">Cancel</a>
+      <button class="btn primary" type="submit">Save Changes</button>
+    </div>
+  </div>
 </form>
 
 <script>
 {% verbatim %}
-// Image preview functionality
-document.getElementById('featured_image_input').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    const preview = document.getElementById('image-preview');
-    const imageName = document.getElementById('image-name');
-    const previewContainer = document.getElementById('image-preview-container');
-    
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            preview.src = e.target.result;
-            preview.style.display = 'block';
-            imageName.textContent = 'Selected file: ' + file.name;
-        }
-        reader.readAsDataURL(file);
-    } else {
-        preview.style.display = 'none';
-        imageName.textContent = '';
-    }
-});
+// =====================
+// Featured image preview + remove
+// =====================
+const featuredInput = document.getElementById('featured_image_input');
+const featuredUrlInput = document.getElementById('featured_image_url');
+const preview = document.getElementById('image-preview');
+const imageName = document.getElementById('image-name');
+const previewWrap = document.getElementById('featured-preview-wrap');
+const featuredNote = document.getElementById('featured-image-note');
+const removeFeaturedBtn = document.getElementById('remove-featured-btn');
+const removeFeaturedInput = document.getElementById('remove_featured_image');
 
+function showFeaturedPreview(src, noteText = '') {
+    preview.src = src;
+    previewWrap.classList.remove('hidden');
+    featuredNote.textContent = noteText;
+}
+
+function clearFeaturedPreview() {
+    preview.src = '';
+    previewWrap.classList.add('hidden');
+    imageName.textContent = '';
+    featuredNote.textContent = '';
+    featuredInput.value = '';
+    featuredUrlInput.value = '';
+    removeFeaturedInput.value = '1';
+}
+
+if (featuredInput) {
+    featuredInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+
+        if (file) {
+            removeFeaturedInput.value = '0';
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                showFeaturedPreview(ev.target.result, 'Selected file: ' + file.name);
+                imageName.textContent = 'Selected file: ' + file.name;
+                featuredUrlInput.value = '';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+
+if (featuredUrlInput) {
+    featuredUrlInput.addEventListener('input', function() {
+        const value = this.value.trim();
+        if (value) {
+            removeFeaturedInput.value = '0';
+            showFeaturedPreview(value, 'Preview from URL');
+            imageName.textContent = '';
+            featuredInput.value = '';
+        } else if (!featuredInput.value && removeFeaturedInput.value === '0' && preview.src) {
+            // keep current existing image unless removed
+        }
+    });
+}
+
+if (removeFeaturedBtn) {
+    removeFeaturedBtn.addEventListener('click', function() {
+        clearFeaturedPreview();
+    });
+}
+
+// =====================
 // Content Images functionality
+// =====================
 let contentImagesArray = [];
 let deletedImageIds = [];
-let existingImagesCount = document.querySelectorAll('#existing-images .image-card').length;
+let existingImagesCount = document.querySelectorAll('#existing-images .image-card').length || 0;
 
 document.getElementById('content-images-input').addEventListener('change', function(e) {
     const files = Array.from(e.target.files);
-    
-    files.forEach((file, index) => {
+
+    files.forEach((file) => {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function(ev) {
             contentImagesArray.push({
                 file: file,
-                dataUrl: e.target.result,
+                dataUrl: ev.target.result,
                 name: file.name
             });
             updateContentImagesPreview();
-        }
+        };
         reader.readAsDataURL(file);
     });
 });
@@ -573,28 +688,29 @@ document.getElementById('content-images-input').addEventListener('change', funct
 function updateContentImagesPreview() {
     const previewContainer = document.getElementById('content-images-preview');
     const emptyState = document.getElementById('content-images-empty');
-    
+    const currentExistingCount = document.querySelectorAll('#existing-images .image-card').length || 0;
+
     if (contentImagesArray.length === 0) {
         previewContainer.style.display = 'none';
-        if (!document.querySelectorAll('#existing-images .image-card').length) {
+        if (currentExistingCount === 0) {
             emptyState.style.display = 'flex';
         }
         return;
     }
-    
+
     previewContainer.style.display = 'grid';
     emptyState.style.display = 'none';
     previewContainer.innerHTML = '';
-    
+
     contentImagesArray.forEach((img, index) => {
-        const imageNumber = existingImagesCount + index + 1;
+        const imageNumber = currentExistingCount + index + 1;
         const card = document.createElement('div');
         card.className = 'image-card';
-        const imageLabel = 'image' + imageNumber;
+        const imageTag = 'image' + imageNumber;
         card.innerHTML = `
             <img src="${img.dataUrl}" alt="${img.name}">
             <div class="image-card-footer">
-                <span class="image-tag" onclick="copyImageTag('${imageLabel}')" title="Click to copy">${imageLabel}</span>
+                <span class="image-tag" data-tag="${imageTag}" onclick="copyToClipboard(this.dataset.tag, this)" title="Click to copy">{{${imageTag}}}</span>
                 <button type="button" class="remove-image-btn" onclick="removeContentImage(${index})" title="Remove image">✕</button>
             </div>
         `;
@@ -605,8 +721,7 @@ function updateContentImagesPreview() {
 function removeContentImage(index) {
     contentImagesArray.splice(index, 1);
     updateContentImagesPreview();
-    
-    // Update the file input
+
     const input = document.getElementById('content-images-input');
     const dt = new DataTransfer();
     contentImagesArray.forEach(img => dt.items.add(img.file));
@@ -614,63 +729,60 @@ function removeContentImage(index) {
 }
 
 function removeExistingImage(imageId) {
-    if (confirm('Are you sure you want to remove this image?')) {
-        deletedImageIds.push(imageId);
-        document.getElementById('deleted-images').value = deletedImageIds.join(',');
-        
-        const card = document.querySelector(`[data-image-id="${imageId}"]`);
-        if (card) {
-            card.remove();
-        }
-        
-        existingImagesCount = document.querySelectorAll('#existing-images .image-card').length;
-        updateContentImagesPreview();
-        
-        if (existingImagesCount === 0 && contentImagesArray.length === 0) {
-            document.getElementById('content-images-empty').style.display = 'flex';
-        }
+    deletedImageIds.push(imageId);
+    document.getElementById('deleted-images').value = deletedImageIds.join(',');
+
+    const card = document.querySelector(`[data-image-id="${imageId}"]`);
+    if (card) {
+        card.remove();
+    }
+
+    existingImagesCount = document.querySelectorAll('#existing-images .image-card').length || 0;
+    updateContentImagesPreview();
+
+    if (existingImagesCount === 0 && contentImagesArray.length === 0) {
+        document.getElementById('content-images-empty').style.display = 'flex';
     }
 }
 
-function copyToClipboard(text) {
+function copyToClipboard(tag, element) {
+    const text = '{{' + tag + '}}';
     navigator.clipboard.writeText(text).then(() => {
-        const btn = event.target;
-        const originalText = btn.textContent;
-        btn.textContent = 'Copied!';
-        btn.style.background = '#dcfce7';
-        btn.style.color = '#166534';
+        const originalText = element.textContent;
+        element.textContent = 'Copied!';
+        element.style.background = '#dcfce7';
+        element.style.color = '#166534';
         setTimeout(() => {
-            btn.textContent = originalText;
-            btn.style.background = '';
-            btn.style.color = '';
+            element.textContent = originalText;
+            element.style.background = '';
+            element.style.color = '';
         }, 1500);
     });
 }
 
-function copyImageTag(imageNum) {
-    const tagText = '{{' + imageNum + '}}';
-    navigator.clipboard.writeText(tagText).then(() => {
-        const btn = event.target;
-        const originalText = btn.textContent;
-        btn.textContent = 'Copied!';
-        btn.style.background = '#dcfce7';
-        btn.style.color = '#166534';
-        setTimeout(() => {
-            btn.textContent = originalText;
-            btn.style.background = '';
-            btn.style.color = '';
-        }, 1500);
-    });
-}
-
+// =====================
 // Hashtag functionality
+// =====================
 let hashtags = [];
 
 function addHashtag() {
     const hashtagInput = document.getElementById('hashtag-input');
-    const tag = hashtagInput.value.trim();
-    
-    if (tag && !hashtags.includes(tag)) {
+    let tag = hashtagInput.value.trim();
+
+    if (!tag) return;
+
+    tag = tag.replace(/^#/, '');
+
+    const hashtagRegex = /^[A-Za-z\s]+$/;
+
+    if (!hashtagRegex.test(tag)) {
+        showClientError('hashtag-client-error', 'Hashtag should contain letters only.');
+        return;
+    }
+
+    hideClientError('hashtag-client-error');
+
+    if (!hashtags.includes(tag)) {
         hashtags.push(tag);
         updateHashtagsDisplay();
         hashtagInput.value = '';
@@ -687,7 +799,7 @@ function removeHashtag(index) {
 function updateHashtagsDisplay() {
     const container = document.getElementById('hashtags-container');
     container.innerHTML = '';
-    
+
     hashtags.forEach((tag, index) => {
         const tagElement = document.createElement('div');
         tagElement.className = 'tag-display';
@@ -704,24 +816,199 @@ function updateHiddenInput() {
     hiddenInput.value = hashtags.join(',');
 }
 
-// Initialize hashtags from existing value
-window.addEventListener('DOMContentLoaded', function() {
-    const existingHashtags = document.getElementById('hashtags-hidden').value;
-    if (existingHashtags) {
-        hashtags = existingHashtags.split(',').map(tag => tag.trim()).filter(tag => tag);
-        updateHashtagsDisplay();
+// =====================
+// Validation helpers
+// =====================
+function showClientError(id, message) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = message;
+    el.classList.remove('hidden');
+}
+
+function hideClientError(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = '';
+    el.classList.add('hidden');
+}
+
+function validateLettersOnly(value) {
+    return /^[A-Za-z\s]+$/.test(value.trim());
+}
+
+function validateRichText(value) {
+    return /^[A-Za-z0-9\s&,\.]+$/.test(value.trim());
+}
+
+function validateFieldRichText(inputId, errorId, fieldName) {
+    const input = document.getElementById(inputId);
+    if (!input) return true;
+    const value = input.value.trim();
+    if (!value) { showClientError(errorId, fieldName + ' is required.'); return false; }
+    if (!validateRichText(value)) { showClientError(errorId, fieldName + ' should contain only letters, numbers, spaces, &, comma, or period.'); return false; }
+    hideClientError(errorId);
+    return true;
+}
+
+function validateFieldLettersOnly(inputId, errorId, fieldName) {
+    const input = document.getElementById(inputId);
+    if (!input) return true;
+
+    const value = input.value.trim();
+    if (!value) {
+        showClientError(errorId, fieldName + ' is required.');
+        return false;
     }
+
+    if (!validateLettersOnly(value)) {
+        showClientError(errorId, fieldName + ' should contain letters only.');
+        return false;
+    }
+
+    hideClientError(errorId);
+    return true;
+}
+
+function validateFieldNotEmpty(inputId, errorId, fieldName) {
+    const input = document.getElementById(inputId);
+    if (!input) return true;
+    const value = input.value.trim();
+    if (!value) {
+        showClientError(errorId, fieldName + ' is required.');
+        return false;
+    }
+    hideClientError(errorId);
+    return true;
+}
+
+// =====================
+// Async duplicate check helpers
+// =====================
+let titleCheckTimeout, slugCheckTimeout;
+const currentBlogId = "{{ blog.id }}";
+
+function checkDuplicateTitle(value) {
+    clearTimeout(titleCheckTimeout);
+    if (!value) return;
+
+    titleCheckTimeout = setTimeout(() => {
+        fetch(`/api/validate-blog-title/?title=${encodeURIComponent(value)}&exclude_id=${currentBlogId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.exists) showClientError('title-client-error', 'A blog with this title already exists.');
+                else hideClientError('title-client-error');
+            })
+            .catch(() => {});
+    }, 500);
+}
+
+function checkDuplicateSlug(value) {
+    clearTimeout(slugCheckTimeout);
+    if (!value) return;
+    const slugRegex = /^[a-z0-9-]+$/;
+    if (!slugRegex.test(value)) {
+        showClientError('slug-client-error', 'Slug must contain only lowercase letters, numbers, and hyphens.');
+        return;
+    }
+    slugCheckTimeout = setTimeout(() => {
+        fetch(`/api/validate-blog-slug/?slug=${encodeURIComponent(value)}&exclude_id=${currentBlogId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.exists) showClientError('slug-client-error', 'A blog with this slug already exists.');
+                else hideClientError('slug-client-error');
+            })
+            .catch(() => {});
+    }, 500);
+}
+
+// =====================
+// Real-time validation
+// =====================
+function validateTitle() {
+    const value = document.getElementById('title').value.trim();
+    if (!value) { showClientError('title-client-error', 'Blog title is required.'); return; }
+    if (/\d/.test(value)) { showClientError('title-client-error', 'Blog title should not contain numbers.'); return; }
+    hideClientError('title-client-error');
+    checkDuplicateTitle(value);
+}
+document.getElementById('title').addEventListener('input', validateTitle);
+document.getElementById('title').addEventListener('blur', validateTitle);
+
+function validateSlug() {
+    const value = document.getElementById('slug').value.trim();
+    if (!value) { showClientError('slug-client-error', 'URL slug is required.'); return; }
+    checkDuplicateSlug(value);
+}
+document.getElementById('slug').addEventListener('input', validateSlug);
+document.getElementById('slug').addEventListener('blur', validateSlug);
+
+document.getElementById('author_name').addEventListener('input', function() {
+    validateFieldLettersOnly('author_name', 'author-client-error', 'Author name');
+});
+document.getElementById('author_name').addEventListener('blur', function() {
+    validateFieldLettersOnly('author_name', 'author-client-error', 'Author name');
 });
 
-// Before form submission, ensure all files are in the input
-document.querySelector('form').addEventListener('submit', function(e) {
-    const input = document.getElementById('content-images-input');
-    const dt = new DataTransfer();
-    contentImagesArray.forEach(img => dt.items.add(img.file));
-    input.files = dt.files;
+document.getElementById('author_summary').addEventListener('input', function() {
+    validateFieldRichText('author_summary', 'author-summary-client-error', 'Author summary');
+});
+document.getElementById('author_summary').addEventListener('blur', function() {
+    validateFieldRichText('author_summary', 'author-summary-client-error', 'Author summary');
 });
 
+function validateExcerpt() {
+    const value = document.getElementById('excerpt').value.trim();
+    if (!value) { showClientError('excerpt-client-error', 'Excerpt is required.'); return; }
+    if (!validateRichText(value)) { showClientError('excerpt-client-error', 'Excerpt should contain only letters, numbers, spaces, &, comma, or period.'); return; }
+    if (value.length < 50 || value.length > 300) {
+        showClientError('excerpt-client-error', 'Excerpt must be between 50 and 300 characters.');
+    } else {
+        hideClientError('excerpt-client-error');
+    }
+}
+document.getElementById('excerpt').addEventListener('input', validateExcerpt);
+document.getElementById('excerpt').addEventListener('blur', validateExcerpt);
+
+function validateReadingTime() {
+    const el = document.getElementById('reading_time');
+    const value = parseInt(el.value);
+    if (!el.value) { showClientError('reading-time-client-error', 'Reading time is required.'); return; }
+    if (isNaN(value) || value < 1 || value > 120) {
+        showClientError('reading-time-client-error', 'Reading time must be between 1 and 120 minutes.');
+    } else {
+        hideClientError('reading-time-client-error');
+    }
+}
+document.getElementById('reading_time').addEventListener('input', validateReadingTime);
+document.getElementById('reading_time').addEventListener('blur', validateReadingTime);
+
+document.getElementById('publish_date').addEventListener('change', function() {
+    validateFieldNotEmpty('publish_date', 'publish-date-client-error', 'Publish date');
+});
+document.getElementById('publish_date').addEventListener('blur', function() {
+    validateFieldNotEmpty('publish_date', 'publish-date-client-error', 'Publish date');
+});
+
+document.getElementById('category').addEventListener('change', function() {
+    validateFieldNotEmpty('category', 'category-client-error', 'Category');
+});
+document.getElementById('category').addEventListener('blur', function() {
+    validateFieldNotEmpty('category', 'category-client-error', 'Category');
+});
+
+function validateContent() {
+    const value = document.getElementById('content').value.trim();
+    if (!value) { showClientError('content-client-error', 'Content is required.'); return; }
+    if (!validateRichText(value)) { showClientError('content-client-error', 'Content should contain only letters, numbers, spaces, &, comma, or period.'); return; }
+    hideClientError('content-client-error');
+}
+document.getElementById('content').addEventListener('input', validateContent);
+document.getElementById('content').addEventListener('blur', validateContent);
+
+// =====================
 // Package ID validation
+// =====================
 const packageIdInput = document.getElementById('package_id');
 const packageIdError = document.getElementById('package-id-error');
 let packageValidationTimeout;
@@ -730,83 +1017,180 @@ if (packageIdInput) {
     packageIdInput.addEventListener('input', function() {
         clearTimeout(packageValidationTimeout);
         const value = this.value.trim();
-        
-        // Clear error if empty
+
         if (!value) {
-            packageIdError.style.display = 'none';
-            packageIdError.textContent = '';
+            hideClientError('package-id-error');
             return;
         }
-        
-        // Validate format (PKG followed by 3 digits)
+
         const formatRegex = /^PKG\d{3}$/i;
         if (!formatRegex.test(value)) {
-            packageIdError.style.display = 'block';
-            packageIdError.textContent = 'Package ID must be in format PKG followed by 3 digits (e.g., PKG001)';
+            showClientError('package-id-error', 'Package ID must be in format PKG followed by 3 digits (e.g., PKG001)');
             return;
         }
-        
-        // Format is valid, now check if it exists in database
-        packageIdError.style.display = 'block';
-        packageIdError.textContent = 'Checking...';
+
+        showClientError('package-id-error', 'Checking...');
         packageIdError.style.color = '#64748b';
-        
+
         packageValidationTimeout = setTimeout(() => {
             fetch(`/api/validate-package-id/${value.toUpperCase()}/`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.exists) {
-                        packageIdError.style.display = 'none';
-                        packageIdError.textContent = '';
+                        hideClientError('package-id-error');
+                        packageIdError.style.color = '#ef4444';
                     } else {
-                        packageIdError.style.display = 'block';
-                        packageIdError.textContent = 'Type valid package ID';
+                        showClientError('package-id-error', 'Type valid package ID');
                         packageIdError.style.color = '#ef4444';
                     }
                 })
                 .catch(error => {
                     console.error('Error validating package ID:', error);
-                    packageIdError.style.display = 'block';
-                    packageIdError.textContent = 'Error validating package ID';
+                    showClientError('package-id-error', 'Error validating package ID');
                     packageIdError.style.color = '#ef4444';
                 });
-        }, 500); // Wait 500ms after typing stops
+        }, 500);
     });
-    
-    // Validate on blur as well
+
     packageIdInput.addEventListener('blur', function() {
         const value = this.value.trim();
         if (value) {
-            // Force immediate validation on blur
             clearTimeout(packageValidationTimeout);
             const formatRegex = /^PKG\d{3}$/i;
             if (!formatRegex.test(value)) {
-                packageIdError.style.display = 'block';
-                packageIdError.textContent = 'Package ID must be in format PKG followed by 3 digits (e.g., PKG001)';
+                showClientError('package-id-error', 'Package ID must be in format PKG followed by 3 digits (e.g., PKG001)');
                 packageIdError.style.color = '#ef4444';
             } else {
                 fetch(`/api/validate-package-id/${value.toUpperCase()}/`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.exists) {
-                            packageIdError.style.display = 'none';
-                            packageIdError.textContent = '';
+                            hideClientError('package-id-error');
                         } else {
-                            packageIdError.style.display = 'block';
-                            packageIdError.textContent = 'Type valid package ID';
+                            showClientError('package-id-error', 'Type valid package ID');
                             packageIdError.style.color = '#ef4444';
                         }
                     })
                     .catch(error => {
                         console.error('Error validating package ID:', error);
-                        packageIdError.style.display = 'block';
-                        packageIdError.textContent = 'Error validating package ID';
+                        showClientError('package-id-error', 'Error validating package ID');
                         packageIdError.style.color = '#ef4444';
                     });
             }
         }
     });
 }
+
+// =====================
+// Form submit validation
+// =====================
+document.getElementById('blog-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = this;
+
+    let isValid = true;
+
+    const title = document.getElementById('title').value.trim();
+    if (!title) { showClientError('title-client-error', 'Blog title is required.'); isValid = false; }
+    else if (/\d/.test(title)) { showClientError('title-client-error', 'Blog title should not contain numbers.'); isValid = false; }
+    else hideClientError('title-client-error');
+
+    const slug = document.getElementById('slug').value.trim();
+    if (!slug) { showClientError('slug-client-error', 'URL slug is required.'); isValid = false; }
+    else if (!/^[a-z0-9-]+$/.test(slug)) { showClientError('slug-client-error', 'Slug must contain only lowercase letters, numbers, and hyphens.'); isValid = false; }
+    else hideClientError('slug-client-error');
+
+    const excerpt = document.getElementById('excerpt').value.trim();
+    if (!excerpt) { showClientError('excerpt-client-error', 'Excerpt is required.'); isValid = false; }
+    else if (!validateRichText(excerpt)) { showClientError('excerpt-client-error', 'Excerpt should contain only letters, numbers, spaces, &, comma, or period.'); isValid = false; }
+    else if (excerpt.length < 50 || excerpt.length > 300) { showClientError('excerpt-client-error', 'Excerpt must be between 50 and 300 characters.'); isValid = false; }
+    else hideClientError('excerpt-client-error');
+
+    if (!validateFieldLettersOnly('author_name', 'author-client-error', 'Author name')) isValid = false;
+    if (!validateFieldRichText('author_summary', 'author-summary-client-error', 'Author summary')) isValid = false;
+
+    const readingTime = document.getElementById('reading_time').value;
+    if (!readingTime) { showClientError('reading-time-client-error', 'Reading time is required.'); isValid = false; }
+    else if (parseInt(readingTime) < 1 || parseInt(readingTime) > 120) { showClientError('reading-time-client-error', 'Reading time must be between 1 and 120 minutes.'); isValid = false; }
+    else hideClientError('reading-time-client-error');
+
+    if (!validateFieldNotEmpty('publish_date', 'publish-date-client-error', 'Publish date')) isValid = false;
+    if (!validateFieldNotEmpty('category', 'category-client-error', 'Category')) isValid = false;
+    const contentVal = document.getElementById('content').value.trim();
+    if (!contentVal) { showClientError('content-client-error', 'Content is required.'); isValid = false; }
+    else if (!validateRichText(contentVal)) { showClientError('content-client-error', 'Content should contain only letters, numbers, spaces, &, comma, or period.'); isValid = false; }
+    else hideClientError('content-client-error');
+
+    const hiddenHashtags = document.getElementById('hashtags-hidden').value.trim();
+    if (hiddenHashtags) {
+        const tags = hiddenHashtags.split(',').map(tag => tag.trim()).filter(Boolean);
+        const hashtagRegex = /^[A-Za-z\s]+$/;
+        if (!tags.every(tag => hashtagRegex.test(tag))) {
+            showClientError('hashtag-client-error', 'Hashtags should contain letters only.');
+            isValid = false;
+        } else {
+            hideClientError('hashtag-client-error');
+        }
+    }
+
+    if (!isValid) return;
+
+    // keep selected files in input before submit
+    const input = document.getElementById('content-images-input');
+    const dt = new DataTransfer();
+    contentImagesArray.forEach(img => dt.items.add(img.file));
+    input.files = dt.files;
+
+    const checks = [];
+    if (title) {
+        checks.push(
+            fetch(`/api/validate-blog-title/?title=${encodeURIComponent(title)}&exclude_id=${currentBlogId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.exists) {
+                        showClientError('title-client-error', 'A blog with this title already exists.');
+                        return false;
+                    }
+                    return true;
+                })
+        );
+    }
+    if (slug && /^[a-z0-9-]+$/.test(slug)) {
+        checks.push(
+            fetch(`/api/validate-blog-slug/?slug=${encodeURIComponent(slug)}&exclude_id=${currentBlogId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.exists) {
+                        showClientError('slug-client-error', 'A blog with this URL slug already exists.');
+                        return false;
+                    }
+                    return true;
+                })
+        );
+    }
+
+    Promise.all(checks).then(results => {
+        if (results.every(r => r === true)) {
+            form.submit();
+        }
+    }).catch(() => {
+        form.submit();
+    });
+});
+
+// =====================
+// Initialize existing hashtags
+// =====================
+window.addEventListener('DOMContentLoaded', function() {
+    const existingHashtags = document.getElementById('hashtags-hidden').value;
+    if (existingHashtags) {
+        hashtags = existingHashtags
+            .split(',')
+            .map(tag => tag.trim().replace(/^#/, ''))
+            .filter(tag => tag);
+        updateHashtagsDisplay();
+    }
+});
 {% endverbatim %}
 </script>
 {% endblock %}

@@ -47,6 +47,7 @@ urlpatterns = [
 employee_patterns = [
     path('', views.employee_list, name='employee_list'),
     path('add/', views.add_employee, name='add_employee'),
+    path('check-duplicate/', views.check_employee_duplicate, name='check_employee_duplicate'),
     path('<int:pk>/', views.view_employee, name='view_employee'),
     path('edit/<int:pk>/', views.edit_employee, name='edit_employee'),
     path('delete/<int:pk>/', views.delete_employee, name='delete_employee'),

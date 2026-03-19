@@ -78,11 +78,29 @@ body{background:var(--bg);color:var(--text)}
   background:#efe7d3;border:1px solid #e2d4b0;
   display:flex;align-items:center;justify-content:center;
   overflow:hidden;
+  position:relative;
 }
 .avatar img{width:100%;height:100%;object-fit:cover;display:block}
 .avatar-fallback{
   font-size:34px;color:#a38c4b;font-weight:600;
 }
+.avatar-delete{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+.avatar:hover .avatar-delete{display:flex}
+.avatar-delete span{
+  color:#fff;
+  font-size:28px;
+  line-height:1;
+  font-weight:700;
+}
+
 .upload-col{display:flex;flex-direction:column;gap:8px}
 .upload-btn{
   display:inline-flex;
@@ -113,7 +131,28 @@ input, select{
   border:1px solid var(--border);
   background:#f3f4f6;
   font-size:14px;
+  outline:none;
+  transition:.2s ease;
 }
+input:focus, select:focus{
+  background:#fff;
+  border-color:#d9dbe4;
+  box-shadow:0 0 0 4px rgba(212,164,47,.12);
+}
+
+.form-group.error input,
+.form-group.error select{
+  border-color:var(--danger) !important;
+  background:#fff5f5;
+}
+
+.error-msg{
+  margin-top:6px;
+  font-size:12px;
+  color:var(--danger);
+  display:none;
+}
+.error-msg.show{display:block}
 
 .help{
   margin-top:6px;
@@ -158,6 +197,7 @@ input, select{
 {% endblock %}
 
 {% block content %}
+<main class="main">
 
   <div class="header">
     <div>
@@ -172,24 +212,36 @@ input, select{
   <div class="card">
     <h3>Employee Information</h3>
 
-    <form method="POST" enctype="multipart/form-data">
+    <form id="edit-employee-form" method="POST" enctype="multipart/form-data">
       {% csrf_token %}
+      <input type="hidden" name="remove_picture" id="remove_picture" value="0">
 
       <div class="profile-wrap">
-        <div class="avatar">
+        <div class="avatar" id="avatarWrap">
           {% if employee.profile_picture %}
-            <img src="{{ employee.profile_picture.url }}" alt="Profile">
+            <img src="{{ employee.profile_picture.url }}" alt="Profile" id="avatarPreview">
           {% else %}
-            <div class="avatar-fallback">
+            <img src="" alt="Profile" id="avatarPreview" style="display:none;">
+            <div class="avatar-fallback" id="avatarFallback">
               {{ employee.name|default:"E"|slice:":1" }}
             </div>
           {% endif %}
+
+          {% if employee.profile_picture %}
+            <div class="avatar-fallback" id="avatarFallback" style="display:none;">
+              {{ employee.name|default:"E"|slice:":1" }}
+            </div>
+          {% endif %}
+
+          <div class="avatar-delete" id="avatarDelete" title="Remove picture">
+            <span>×</span>
+          </div>
         </div>
 
         <div class="upload-col">
           <label class="upload-btn">
             Change Picture
-            <input type="file" name="profile_picture" hidden>
+            <input type="file" name="profile_picture" id="profile_picture" accept="image/*" hidden>
           </label>
           <div class="recommend">Recommended: Square image, at least 200x200px</div>
         </div>
@@ -197,29 +249,38 @@ input, select{
 
       <div class="form-grid">
 
-        <div class="form-group">
+        <div class="form-group{% if errors.name %} error{% endif %}" id="group-name">
           <label>Name <span class="required">*</span></label>
-          <input type="text" name="name" value="{{ employee.name }}" placeholder="John Doe" required>
+          <input type="text" name="name" id="name" value="{% if form_data %}{{ form_data.name }}{% else %}{{ employee.name }}{% endif %}" placeholder="John Doe" required>
+          <div class="error-msg{% if errors.name %} show{% endif %}" id="error-name">
+            {% if errors.name %}{{ errors.name }}{% endif %}
+          </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group{% if errors.email %} error{% endif %}" id="group-email">
           <label>Email <span class="required">*</span></label>
-          <input type="email" name="email" value="{{ employee.email }}" placeholder="john@whitehouse.com" required>
+          <input type="email" name="email" id="email" value="{% if form_data %}{{ form_data.email }}{% else %}{{ employee.email }}{% endif %}" placeholder="john@whitehouse.com" required>
+          <div class="error-msg{% if errors.email %} show{% endif %}" id="error-email">
+            {% if errors.email %}{{ errors.email }}{% endif %}
+          </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group{% if errors.phone %} error{% endif %}" id="group-phone">
           <label>Phone <span class="required">*</span></label>
-          <input type="text" name="phone" value="{{ employee.phone }}" placeholder="+91 9876543210" required>
+          <input type="text" name="phone" id="phone" maxlength="10" value="{% if form_data %}{{ form_data.phone }}{% else %}{{ employee.phone }}{% endif %}" placeholder="9876543210" required>
+          <div class="error-msg{% if errors.phone %} show{% endif %}" id="error-phone">
+            {% if errors.phone %}{{ errors.phone }}{% endif %}
+          </div>
         </div>
 
         <div class="form-group">
           <label>Role</label>
           <select name="role">
             <option value="">Select role</option>
-            <option {% if employee.role == "Manager" %}selected{% endif %}>Manager</option>
-            <option {% if employee.role == "Receptionist" %}selected{% endif %}>Receptionist</option>
-            <option {% if employee.role == "Housekeeping" %}selected{% endif %}>Housekeeping</option>
-            <option {% if employee.role == "Chef" %}selected{% endif %}>Chef</option>
+            <option value="Manager" {% if form_data.role == "Manager" or employee.role == "Manager" and not form_data %}selected{% endif %}>Manager</option>
+            <option value="Receptionist" {% if form_data.role == "Receptionist" or employee.role == "Receptionist" and not form_data %}selected{% endif %}>Receptionist</option>
+            <option value="Housekeeping" {% if form_data.role == "Housekeeping" or employee.role == "Housekeeping" and not form_data %}selected{% endif %}>Housekeeping</option>
+            <option value="Chef" {% if form_data.role == "Chef" or employee.role == "Chef" and not form_data %}selected{% endif %}>Chef</option>
           </select>
         </div>
 
@@ -227,28 +288,31 @@ input, select{
           <label>Department</label>
           <select name="department">
             <option value="">Select department</option>
-            <option {% if employee.department == "Sales" %}selected{% endif %}>Sales</option>
-            <option {% if employee.department == "Operations" %}selected{% endif %}>Operations</option>
-            <option {% if employee.department == "HR" %}selected{% endif %}>HR</option>
+            <option value="Sales" {% if form_data.department == "Sales" or employee.department == "Sales" and not form_data %}selected{% endif %}>Sales</option>
+            <option value="Operations" {% if form_data.department == "Operations" or employee.department == "Operations" and not form_data %}selected{% endif %}>Operations</option>
+            <option value="HR" {% if form_data.department == "HR" or employee.department == "HR" and not form_data %}selected{% endif %}>HR</option>
           </select>
         </div>
 
         <div class="form-group">
           <label>Join Date</label>
-          <input type="date" name="join_date" value="{{ employee.join_date|date:'Y-m-d' }}">
+          <input type="date" name="join_date" value="{% if form_data.join_date %}{{ form_data.join_date }}{% else %}{{ employee.join_date|date:'Y-m-d' }}{% endif %}">
         </div>
 
-        <div class="form-group">
+        <div class="form-group{% if errors.salary %} error{% endif %}" id="group-salary">
           <label>Salary</label>
-          <input type="text" name="salary" value="{{ employee.salary }}" placeholder="₹50,000">
+          <input type="number" name="salary" id="salary" min="0" value="{% if form_data %}{{ form_data.salary }}{% else %}{{ employee.salary }}{% endif %}" placeholder="50000">
+          <div class="error-msg{% if errors.salary %} show{% endif %}" id="error-salary">
+            {% if errors.salary %}{{ errors.salary }}{% endif %}
+          </div>
           <div class="help">Tip: store numeric salary in DB; format with ₹ in template.</div>
         </div>
 
         <div class="form-group">
           <label>Status</label>
           <select name="status">
-            <option {% if employee.status == "Active" %}selected{% endif %}>Active</option>
-            <option {% if employee.status == "Inactive" %}selected{% endif %}>Inactive</option>
+            <option value="Active" {% if form_data.status == "Active" or employee.status == "Active" and not form_data %}selected{% endif %}>Active</option>
+            <option value="Inactive" {% if form_data.status == "Inactive" or employee.status == "Inactive" and not form_data %}selected{% endif %}>Inactive</option>
           </select>
         </div>
 
@@ -265,4 +329,149 @@ input, select{
     </form>
   </div>
 
+</main>
+
+<script>
+// =====================
+// Avatar preview + delete
+// =====================
+const profileInput = document.getElementById('profile_picture');
+const avatarPreview = document.getElementById('avatarPreview');
+const avatarFallback = document.getElementById('avatarFallback');
+const avatarDelete = document.getElementById('avatarDelete');
+const removePicture = document.getElementById('remove_picture');
+
+profileInput.addEventListener('change', function() {
+  const file = this.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    avatarPreview.src = e.target.result;
+    avatarPreview.style.display = 'block';
+    if (avatarFallback) avatarFallback.style.display = 'none';
+    removePicture.value = '0';
+  };
+  reader.readAsDataURL(file);
+});
+
+avatarDelete.addEventListener('click', function() {
+  if (avatarPreview) {
+    avatarPreview.src = '';
+    avatarPreview.style.display = 'none';
+  }
+  if (avatarFallback) {
+    avatarFallback.style.display = 'flex';
+  }
+  profileInput.value = '';
+  removePicture.value = '1';
+});
+
+// =====================
+// Validation helpers
+// =====================
+function showError(groupId, errorId, message) {
+  document.getElementById(groupId).classList.add('error');
+  const errorEl = document.getElementById(errorId);
+  errorEl.textContent = message;
+  errorEl.classList.add('show');
+}
+
+function clearError(groupId, errorId) {
+  document.getElementById(groupId).classList.remove('error');
+  const errorEl = document.getElementById(errorId);
+  errorEl.textContent = '';
+  errorEl.classList.remove('show');
+}
+
+function validateName() {
+  const value = document.getElementById('name').value.trim();
+  if (!value) {
+    showError('group-name', 'error-name', 'Name is required.');
+    return false;
+  }
+  if (!/^[A-Za-z\s]+$/.test(value)) {
+    showError('group-name', 'error-name', 'Name should contain letters only.');
+    return false;
+  }
+  clearError('group-name', 'error-name');
+  return true;
+}
+
+function validateEmail() {
+  const value = document.getElementById('email').value.trim();
+  if (!value) {
+    showError('group-email', 'error-email', 'Email is required.');
+    return false;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    showError('group-email', 'error-email', 'Enter a valid email address.');
+    return false;
+  }
+  clearError('group-email', 'error-email');
+  return true;
+}
+
+function validatePhone() {
+  const value = document.getElementById('phone').value.trim();
+  if (!value) {
+    showError('group-phone', 'error-phone', 'Phone is required.');
+    return false;
+  }
+  if (!/^\d{10}$/.test(value)) {
+    showError('group-phone', 'error-phone', 'Phone must be exactly 10 digits.');
+    return false;
+  }
+  clearError('group-phone', 'error-phone');
+  return true;
+}
+
+function validateSalary() {
+  const value = document.getElementById('salary').value.trim();
+  if (!value) {
+    clearError('group-salary', 'error-salary');
+    return true;
+  }
+  if (isNaN(value) || Number(value) < 0) {
+    showError('group-salary', 'error-salary', 'Salary must be a positive number.');
+    return false;
+  }
+  clearError('group-salary', 'error-salary');
+  return true;
+}
+
+// =====================
+// Live input handling
+// =====================
+document.getElementById('name').addEventListener('input', validateName);
+document.getElementById('name').addEventListener('blur', validateName);
+
+document.getElementById('email').addEventListener('input', validateEmail);
+document.getElementById('email').addEventListener('blur', validateEmail);
+
+document.getElementById('phone').addEventListener('input', function() {
+  this.value = this.value.replace(/\D/g, '').slice(0, 10);
+  validatePhone();
+});
+document.getElementById('phone').addEventListener('blur', validatePhone);
+
+document.getElementById('salary').addEventListener('input', validateSalary);
+document.getElementById('salary').addEventListener('blur', validateSalary);
+
+// =====================
+// Submit validation
+// =====================
+document.getElementById('edit-employee-form').addEventListener('submit', function(e) {
+  const valid = [
+    validateName(),
+    validateEmail(),
+    validatePhone(),
+    validateSalary()
+  ].every(Boolean);
+
+  if (!valid) {
+    e.preventDefault();
+  }
+});
+</script>
 {% endblock %}

@@ -802,6 +802,11 @@ function validateLettersOnly(value) {
     return /^[A-Za-z\s]+$/.test(value.trim());
 }
 
+// allows letters, numbers, spaces, & , .
+function validateRichText(value) {
+    return /^[A-Za-z0-9\s&,\.]+$/.test(value.trim());
+}
+
 function validateNotEmpty(value) {
     return value.trim().length > 0;
 }
@@ -817,7 +822,26 @@ function validateFieldLettersOnly(inputId, errorId, fieldName) {
     }
 
     if (!validateLettersOnly(value)) {
-        showClientError(errorId, fieldName + ' should contain letters only.');
+        showClientError(errorId, fieldName + ' should contain letters and spaces only (no numbers or special characters).');
+        return false;
+    }
+
+    hideClientError(errorId);
+    return true;
+}
+
+function validateFieldRichText(inputId, errorId, fieldName) {
+    const input = document.getElementById(inputId);
+    if (!input) return true;
+
+    const value = input.value.trim();
+    if (!value) {
+        showClientError(errorId, fieldName + ' is required.');
+        return false;
+    }
+
+    if (!validateRichText(value)) {
+        showClientError(errorId, fieldName + ' can only contain letters, numbers, spaces, &, comma, and fullstop.');
         return false;
     }
 
@@ -877,6 +901,7 @@ function checkDuplicateSlug(value) {
 function validateTitle() {
     const value = document.getElementById('title').value.trim();
     if (!value) { showClientError('title-client-error', 'Blog title is required.'); return; }
+    if (/\d/.test(value)) { showClientError('title-client-error', 'Blog title should not contain numbers.'); return; }
     hideClientError('title-client-error');
     checkDuplicateTitle(value);
 }
@@ -899,15 +924,19 @@ document.getElementById('author_name').addEventListener('blur', function() {
 });
 
 document.getElementById('author_summary').addEventListener('input', function() {
-    validateFieldLettersOnly('author_summary', 'author-summary-client-error', 'Author summary');
+    validateFieldRichText('author_summary', 'author-summary-client-error', 'Author summary');
 });
 document.getElementById('author_summary').addEventListener('blur', function() {
-    validateFieldLettersOnly('author_summary', 'author-summary-client-error', 'Author summary');
+    validateFieldRichText('author_summary', 'author-summary-client-error', 'Author summary');
 });
 
 function validateExcerpt() {
     const value = document.getElementById('excerpt').value.trim();
     if (!value) { showClientError('excerpt-client-error', 'Excerpt is required.'); return; }
+    if (!validateRichText(value)) {
+        showClientError('excerpt-client-error', 'Excerpt can only contain letters, numbers, spaces, &, comma, and fullstop.');
+        return;
+    }
     if (value.length < 50 || value.length > 300) {
         showClientError('excerpt-client-error', 'Excerpt must be between 50 and 300 characters.');
     } else {
@@ -945,7 +974,14 @@ document.getElementById('category').addEventListener('blur', function() {
 });
 
 function validateContent() {
-    validateFieldNotEmpty('content', 'content-client-error', 'Content');
+    const value = document.getElementById('content').value.trim();
+    if (!value) { showClientError('content-client-error', 'Content is required.'); return false; }
+    if (!validateRichText(value)) {
+        showClientError('content-client-error', 'Content can only contain letters, numbers, spaces, &, comma, and fullstop.');
+        return false;
+    }
+    hideClientError('content-client-error');
+    return true;
 }
 document.getElementById('content').addEventListener('input', validateContent);
 document.getElementById('content').addEventListener('blur', validateContent);
@@ -1036,6 +1072,7 @@ document.getElementById('blog-form').addEventListener('submit', function(e) {
 
     const title = document.getElementById('title').value.trim();
     if (!title) { showClientError('title-client-error', 'Blog title is required.'); isValid = false; }
+    else if (/\d/.test(title)) { showClientError('title-client-error', 'Blog title should not contain numbers.'); isValid = false; }
     else hideClientError('title-client-error');
 
     const slug = document.getElementById('slug').value.trim();
@@ -1045,11 +1082,12 @@ document.getElementById('blog-form').addEventListener('submit', function(e) {
 
     const excerpt = document.getElementById('excerpt').value.trim();
     if (!excerpt) { showClientError('excerpt-client-error', 'Excerpt is required.'); isValid = false; }
+    else if (!validateRichText(excerpt)) { showClientError('excerpt-client-error', 'Excerpt can only contain letters, numbers, spaces, &, comma, and fullstop.'); isValid = false; }
     else if (excerpt.length < 50 || excerpt.length > 300) { showClientError('excerpt-client-error', 'Excerpt must be between 50 and 300 characters.'); isValid = false; }
     else hideClientError('excerpt-client-error');
 
     if (!validateFieldLettersOnly('author_name', 'author-client-error', 'Author name')) isValid = false;
-    if (!validateFieldLettersOnly('author_summary', 'author-summary-client-error', 'Author summary')) isValid = false;
+    if (!validateFieldRichText('author_summary', 'author-summary-client-error', 'Author summary')) isValid = false;
 
     const readingTime = document.getElementById('reading_time').value;
     if (!readingTime) { showClientError('reading-time-client-error', 'Reading time is required.'); isValid = false; }
@@ -1058,7 +1096,7 @@ document.getElementById('blog-form').addEventListener('submit', function(e) {
 
     if (!validateFieldNotEmpty('publish_date', 'publish-date-client-error', 'Publish date')) isValid = false;
     if (!validateFieldNotEmpty('category', 'category-client-error', 'Category')) isValid = false;
-    if (!validateFieldNotEmpty('content', 'content-client-error', 'Content')) isValid = false;
+    if (!validateContent()) isValid = false;
 
     const hiddenHashtags = document.getElementById('hashtags-hidden').value.trim();
     if (hiddenHashtags) {
