@@ -3201,3 +3201,10 @@ def get_next_package_id(request):
         next_id = 'PKG001'
     
     return JsonResponse({'next_id': next_id})
+
+
+def check_package_name(request):
+    name = (request.GET.get('name') or '').strip()
+    category = (request.GET.get('category') or '').strip()
+    exists = TravelPackage.objects.filter(name__iexact=name, category=category).exists() if name else False
+    return JsonResponse({'exists': exists})

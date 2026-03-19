@@ -66,13 +66,11 @@
                 </div>
                 <div>
                     <label>Package Title <span class="required-star">*</span></label>
-                    <input type="text" name="name" value="{{ form_name|default:'' }}" required class="form-control" {% if name_error %}style="border: 1.5px solid #ef4444; background:#fff5f5; margin-bottom:6px;"{% endif %}>
-                    {% if name_error %}
-                    <div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:6px; padding:8px 12px; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+                    <input type="text" id="packageName" name="name" value="{{ form_name|default:'' }}" required class="form-control" {% if name_error %}style="border: 1.5px solid #ef4444; background:#fff5f5; margin-bottom:6px;"{% endif %}>
+                    <div id="name-error-box" style="background:#fef2f2; border:1px solid #fca5a5; border-radius:6px; padding:8px 12px; margin-bottom:14px; display:{% if name_error %}flex{% else %}none{% endif %}; align-items:center; gap:8px;">
                         <span style="color:#ef4444; font-size:14px;">&#9888;</span>
-                        <span style="color:#dc2626; font-size:0.82rem; font-weight:500;">{{ name_error }}</span>
+                        <span id="name-error-msg" style="color:#dc2626; font-size:0.82rem; font-weight:500;">{% if name_error %}{{ name_error }}{% else %}A package with this title already exists. Use another title.{% endif %}</span>
                     </div>
-                    {% endif %}
                 </div>
             </div>
 
@@ -202,17 +200,61 @@
 let dayCount = 1;
 let maxDays = 0;
 
-// Generate Package ID on page load
 window.addEventListener('DOMContentLoaded', function() {
+    var nameInput = document.getElementById('packageName');
+    var nameErrorBox = document.getElementById('name-error-box');
+    var checkTimeout;
+    var nameIsDuplicate = {% if name_error %}true{% else %}false{% endif %};
+
+    function checkPackageName() {
+        var name = nameInput.value.trim();
+        var category = document.getElementById('category').value;
+        if (!name) { hideNameError(); return; }
+        fetch('{% url "admin_panel:check_package_name" %}?name=' + encodeURIComponent(name) + '&category=' + encodeURIComponent(category))
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.exists) {
+                    nameIsDuplicate = true;
+                    nameInput.style.border = '1.5px solid #ef4444';
+                    nameInput.style.background = '#fff5f5';
+                    nameErrorBox.style.display = 'flex';
+                } else {
+                    hideNameError();
+                }
+            });
+    }
+
+    function hideNameError() {
+        nameIsDuplicate = false;
+        nameInput.style.border = '';
+        nameInput.style.background = '';
+        nameErrorBox.style.display = 'none';
+    }
+
+    nameInput.addEventListener('input', function() {
+        clearTimeout(checkTimeout);
+        checkTimeout = setTimeout(checkPackageName, 400);
+    });
+
+    document.getElementById('category').addEventListener('change', function() {
+        if (nameInput.value.trim()) checkPackageName();
+    });
+
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (nameIsDuplicate) {
+            e.preventDefault();
+            nameErrorBox.style.display = 'flex';
+            nameInput.focus();
+        }
+    });
+
     const packageIdField = document.getElementById('package_id');
     const durationField = document.getElementById('duration');
-    
-    // Only generate if it's a new package (field is empty)
+
     if (!packageIdField.value) {
         generateNextPackageId();
     }
-    
-    // Initialize itinerary days if duration is already set
+
     if (durationField.value) {
         updateItineraryDays();
     }
