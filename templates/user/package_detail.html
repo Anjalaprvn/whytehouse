@@ -205,7 +205,9 @@
         padding: 35px;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
         position: sticky;
-        top: 40px;
+        top: 20px;
+        max-height: 90vh;
+        overflow-y: auto;
     }
 
     .form-tabs {
@@ -388,6 +390,10 @@
         top: 20px;
         width: 100%;
         background: transparent;
+    }
+
+    aside {
+        align-self: flex-start;
     }
 
     @media (max-width: 991px) {
