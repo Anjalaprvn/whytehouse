@@ -70,6 +70,10 @@
             transition: 0.3s;
         }
 
+        .verify-btn:hover {
+            background-color: #c9801f;
+        }
+
         .resend-text {
             margin-top: 20px;
             font-size: 13px;
@@ -77,41 +81,92 @@
         }
 
         .resend-link { color: #DB902B; text-decoration: none; font-weight: 600; }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+
+        .success-message {
+            background: #efe;
+            color: #363;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
 
     <div class="otp-card">
-        <a href="{% url 'admin_panel:login' %}" class="back-link"> ← Back</a>
+        <a href="{% url 'admin_panel:forgot_password' %}" class="back-link">← Back</a>
         
-        <img src="{% static 'app/images/logo.png' %}" alt="Logo" class="logo">
+        <img src="{% static 'img/whytehouse-logo.png' %}" alt="Logo" class="logo">
         <h2>Enter OTP</h2>
-        <p class="subtitle">We've sent a code to admin@whitehouse.com</p>
+        <p class="subtitle">We've sent a code to {{ email }}</p>
 
-        <form method="POST">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="{% if message.tags == 'error' %}error-message{% else %}success-message{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" id="otpForm">
             {% csrf_token %}
             <div class="otp-inputs">
                 <input type="text" maxlength="1" class="otp-field" required>
                 <input type="text" maxlength="1" class="otp-field" required>
                 <input type="text" maxlength="1" class="otp-field" required>
                 <input type="text" maxlength="1" class="otp-field" required>
+                <input type="text" maxlength="1" class="otp-field" required>
+                <input type="text" maxlength="1" class="otp-field" required>
             </div>
+            <input type="hidden" name="otp" id="otpValue">
 
-            <button type="submit" class="verify-btn">Verify & Proceed</button>
+            <button type="submit" class="verify-btn">Verify & Continue</button>
         </form>
 
-        <p class="resend-text">Didn't receive code? <a href="#" class="resend-link">Resend</a></p>
+        <p class="resend-text">Didn't receive code? <a href="{% url 'admin_panel:forgot_password' %}" class="resend-link">Resend</a></p>
     </div>
 
     <script>
-        // Simple script to move focus to next box automatically
+        // Handle OTP input
         const inputs = document.querySelectorAll('.otp-field');
+        const otpValue = document.getElementById('otpValue');
+        
         inputs.forEach((input, index) => {
             input.addEventListener('keyup', (e) => {
                 if (e.target.value.length === 1 && index < inputs.length - 1) {
                     inputs[index + 1].focus();
                 }
+                
+                // Update hidden field with combined OTP
+                let otp = '';
+                inputs.forEach(inp => otp += inp.value);
+                otpValue.value = otp;
             });
+            
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+        });
+        
+        // Auto-submit when all 6 digits are entered
+        document.getElementById('otpForm').addEventListener('input', () => {
+            let otp = '';
+            inputs.forEach(inp => otp += inp.value);
+            if (otp.length === 6) {
+                otpValue.value = otp;
+            }
         });
     </script>
 </body>

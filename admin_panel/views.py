@@ -183,7 +183,97 @@ def resend_otp(request):
     return redirect('admin_panel:verify_otp')
 
 def forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip().lower()
+        user = User.objects.filter(email__iexact=email).first()
+
+        if user:
+            otp = random.randint(100000, 999999)
+            request.session['reset_otp'] = str(otp)
+            request.session['reset_user_id'] = user.id
+            request.session['reset_email'] = email
+            try:
+                send_mail(
+                    subject='Password Reset OTP',
+                    message=f'Your OTP for password reset is: {otp}',
+                    from_email='whytehousee@gmail.com',
+                    recipient_list=[email],
+                    fail_silently=False,
+                )
+                messages.success(request, 'OTP sent to your email.')
+                return redirect('admin_panel:verify_reset_otp')
+            except Exception as e:
+                messages.error(request, f'Failed to send OTP: {str(e)}')
+        else:
+            messages.error(request, 'No account found with that email.')
+
     return render(request, 'admin/forgotpassword.html')
+
+def verify_reset_otp(request):
+    # Check if session has required data
+    session_otp = request.session.get('reset_otp')
+    user_id = request.session.get('reset_user_id')
+    email = request.session.get('reset_email')
+    
+    if not session_otp or not user_id or not email:
+        messages.error(request, 'Session expired. Please start the password reset process again.')
+        return redirect('admin_panel:forgot_password')
+    
+    if request.method == 'POST':
+        entered_otp = request.POST.get('otp', '').strip()
+        
+        if entered_otp == session_otp:
+            # OTP is correct, redirect to reset password
+            return redirect('admin_panel:reset_password')
+        else:
+            messages.error(request, 'Invalid OTP. Please try again.')
+            return render(request, 'admin/verify_reset_otp.html', {'email': email})
+    
+    return render(request, 'admin/verify_reset_otp.html', {'email': email})
+
+def reset_password(request):
+    # Check if user has verified OTP
+    session_otp = request.session.get('reset_otp')
+    user_id = request.session.get('reset_user_id')
+    email = request.session.get('reset_email')
+    
+    if not session_otp or not user_id or not email:
+        messages.error(request, 'Session expired. Please start the password reset process again.')
+        return redirect('admin_panel:forgot_password')
+    
+    if request.method == 'POST':
+        new_password = request.POST.get('new_password', '').strip()
+        confirm_password = request.POST.get('confirm_password', '').strip()
+        
+        if not new_password or not confirm_password:
+            messages.error(request, 'Both password fields are required.')
+            return render(request, 'admin/reset_password.html')
+        
+        if new_password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'admin/reset_password.html')
+        
+        if len(new_password) < 6:
+            messages.error(request, 'Password must be at least 6 characters long.')
+            return render(request, 'admin/reset_password.html')
+        
+        try:
+            user = User.objects.get(id=user_id)
+            user.set_password(new_password)
+            user.save()
+            
+            # Clear session data
+            request.session.pop('reset_otp', None)
+            request.session.pop('reset_user_id', None)
+            request.session.pop('reset_email', None)
+            
+            messages.success(request, 'Password reset successfully! You can now login with your new password.')
+            return redirect('admin_panel:login')
+        except User.DoesNotExist:
+            messages.error(request, 'User not found. Please start the process again.')
+            return redirect('admin_panel:forgot_password')
+    
+    return render(request, 'admin/reset_password.html')
 
 def dashboard(request):
     # Check if user has completed OTP verification (custom session check)
