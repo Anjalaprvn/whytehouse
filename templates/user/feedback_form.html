@@ -830,6 +830,11 @@
               return false;
             }
 
+            if (!/^[a-zA-Z0-9\s!.,&]+$/.test(value)) {
+              showError(feedbackInput, feedbackError, "Only letters, numbers, !, ., , and & are allowed.");
+              return false;
+            }
+
             if (value.length < 20) {
               showError(feedbackInput, feedbackError, "Feedback must be at least 20 characters.");
               return false;
@@ -920,6 +925,7 @@
           feedbackTypeInput.addEventListener("change", validateFeedbackType);
 
           feedbackInput.addEventListener("input", function () {
+            this.value = this.value.replace(/[^a-zA-Z0-9\s!.,&]/g, "");
             updateCharCount();
             validateFeedback();
           });
