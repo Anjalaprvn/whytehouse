@@ -261,7 +261,7 @@
                 <div id="new-amenities-container">
                     {% if property.amenities %}
                         {% for amenity in property.amenity_list %}
-                        <input type="text" name="new_amenities[]" class="form-control" value="{{ amenity }}" style="margin-bottom: 10px;" oninput="validateLetters(this, null)">
+                        <input type="text" name="new_amenities[]" class="form-control" value="{{ amenity }}" style="margin-bottom: 10px;" oninput="validateAmenityDuplicate(this)">
                         {% endfor %}
                     {% else %}
                         <input type="text" name="new_amenities[]" class="form-control" placeholder="Enter amenity name" style="margin-bottom: 10px;" oninput="validateLetters(this, null)">
@@ -318,6 +318,24 @@ function validateLetters(input, errorId) {
     }
 }
 
+function validateAmenityDuplicate(input) {
+    validateLetters(input, null);
+    const val = input.value.trim().toLowerCase();
+    const all = Array.from(document.querySelectorAll('#new-amenities-container input')).filter(i => i !== input).map(i => i.value.trim().toLowerCase());
+    const isDup = val !== '' && all.includes(val);
+    if (isDup) {
+        input.classList.add('invalid');
+        let msg = input.nextElementSibling;
+        if (!msg || !msg.classList.contains('inline-err')) {
+            msg = document.createElement('div');
+            msg.className = 'inline-err field-error';
+            input.insertAdjacentElement('afterend', msg);
+        }
+        msg.textContent = 'This amenity already exists.';
+        msg.style.display = 'block';
+    }
+}
+
 function addNewAmenity() {
     const container = document.getElementById('new-amenities-container');
     const input = document.createElement('input');
@@ -326,7 +344,7 @@ function addNewAmenity() {
     input.className = 'form-control';
     input.placeholder = 'Enter new amenity name';
     input.style.marginBottom = '10px';
-    input.addEventListener('input', function() { validateLetters(this, null); });
+    input.addEventListener('input', function() { validateAmenityDuplicate(this); });
     container.appendChild(input);
 }
 
@@ -392,11 +410,23 @@ document.querySelector('form').addEventListener('submit', function(e) {
     }
     if (!valid) e.preventDefault();
 
-    // Validate amenity inputs
-    document.querySelectorAll('#new-amenities-container input').forEach(function(inp) {
-        if (inp.value.trim() && !/^[a-zA-Z\s]+$/.test(inp.value)) {
+    const amenityInputs = document.querySelectorAll('#new-amenities-container input');
+    const seen = [];
+    amenityInputs.forEach(function(inp) {
+        const val = inp.value.trim().toLowerCase();
+        if (val && seen.includes(val)) {
             inp.classList.add('invalid');
+            let msg = inp.nextElementSibling;
+            if (!msg || !msg.classList.contains('inline-err')) {
+                msg = document.createElement('div');
+                msg.className = 'inline-err field-error';
+                inp.insertAdjacentElement('afterend', msg);
+            }
+            msg.textContent = 'This amenity already exists.';
+            msg.style.display = 'block';
             valid = false;
+        } else if (val) {
+            seen.push(val);
         }
     });
     if (!valid) e.preventDefault();

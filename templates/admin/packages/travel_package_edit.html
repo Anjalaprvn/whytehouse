@@ -274,14 +274,14 @@
 function validateLettersField(input, errorId) {
     const valid = errorId === 'title-error'
         ? /^[a-zA-Z\s&,]*$/.test(input.value)
-        : /^[a-zA-Z\s]*$/.test(input.value);
+        : /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
     if (!valid) {
         if (!errorId) {
             let msg = input.nextElementSibling;
             if (!msg || !msg.classList.contains('letters-msg')) {
                 msg = document.createElement('div');
                 msg.className = 'letters-msg field-error';
-                msg.textContent = 'Only letters and spaces are allowed.';
+                msg.textContent = 'Only letters, numbers, !, ., , and & are allowed.';
                 msg.style.display = 'block';
                 input.insertAdjacentElement('afterend', msg);
             }
