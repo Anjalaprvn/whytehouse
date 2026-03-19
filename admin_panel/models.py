@@ -243,7 +243,7 @@ class Account(models.Model):
     ACCOUNT_TYPE_CHOICES = [
         ('savings', 'Savings'),
         ('current', 'Current'),
-        ('checking', 'Checking'),
+        ('business', 'Business'),
     ]
     
     account_name = models.CharField(max_length=255)
