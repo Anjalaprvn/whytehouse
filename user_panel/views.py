@@ -174,7 +174,7 @@ def blog_list(request):
         blogs = blogs.filter(title__icontains=q)
     
     if category:
-        blogs = blogs.filter(category=category)
+        blogs = blogs.filter(category__slug=category)
 
     for b in blogs:
         raw = getattr(b, "tags", "") or getattr(b, "hashtags", "") or getattr(b, "hashtag", "") or ""
@@ -182,7 +182,7 @@ def blog_list(request):
     
     all_count = Blog.objects.filter(status="published").count()
     categories = [(cat.slug, cat.name) for cat in BlogCategory.objects.filter(is_active=True).order_by('order', 'name')]
-    category_counts = {cat[0]: Blog.objects.filter(status="published", category=cat[0]).count() for cat in categories}
+    category_counts = {cat[0]: Blog.objects.filter(status="published", category__slug=cat[0]).count() for cat in categories}
 
     return render(request, "user/blog.html", {
         "blogs": blogs, 
