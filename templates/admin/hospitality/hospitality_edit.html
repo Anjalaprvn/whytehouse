@@ -254,18 +254,18 @@
 
             <!-- Amenities -->
             <div class="form-group">
-                <label>Amenities</label>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px;">
-                    {% for amenity in property.amenity_list %}
-                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 400; cursor: pointer;">
-                        <input type="checkbox" name="amenities" value="{{ amenity }}" checked style="width: auto;">
-                        <span>{{ amenity }}</span>
-                    </label>
-                    {% endfor %}
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <label style="margin:0;">Amenities</label>
+                    <button type="button" onclick="addNewAmenity()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer; font-size: 12px;">+ Add Amenity</button>
                 </div>
-                <div style="margin-top: 15px;">
-                    <label style="font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">Add New Amenity</label>
-                    <input type="text" name="new_amenity" class="form-control" placeholder="Enter new amenity name">
+                <div id="new-amenities-container">
+                    {% if property.amenities %}
+                        {% for amenity in property.amenity_list %}
+                        <input type="text" name="new_amenities[]" class="form-control" value="{{ amenity }}" style="margin-bottom: 10px;" oninput="validateLetters(this, null)">
+                        {% endfor %}
+                    {% else %}
+                        <input type="text" name="new_amenities[]" class="form-control" placeholder="Enter amenity name" style="margin-bottom: 10px;" oninput="validateLetters(this, null)">
+                    {% endif %}
                 </div>
             </div>
 
@@ -303,7 +303,34 @@
 function validateLetters(input, errorId) {
     const valid = /^[a-zA-Z\s]*$/.test(input.value);
     input.classList.toggle('invalid', !valid);
-    if (errorId) document.getElementById(errorId).style.display = valid ? 'none' : 'block';
+    if (errorId) {
+        document.getElementById(errorId).style.display = valid ? 'none' : 'block';
+    } else {
+        let msg = input.nextElementSibling;
+        if (!valid) {
+            if (!msg || !msg.classList.contains('inline-err')) {
+                msg = document.createElement('div');
+                msg.className = 'inline-err field-error';
+                msg.textContent = 'Only letters and spaces are allowed.';
+                msg.style.display = 'block';
+                input.insertAdjacentElement('afterend', msg);
+            }
+        } else if (msg && msg.classList.contains('inline-err')) {
+            msg.remove();
+        }
+    }
+}
+
+function addNewAmenity() {
+    const container = document.getElementById('new-amenities-container');
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.name = 'new_amenities[]';
+    input.className = 'form-control';
+    input.placeholder = 'Enter new amenity name';
+    input.style.marginBottom = '10px';
+    input.addEventListener('input', function() { validateLetters(this, null); });
+    container.appendChild(input);
 }
 
 function validateSummary(input) {
@@ -313,7 +340,7 @@ function validateSummary(input) {
 }
 
 function validateAddress(input) {
-    const valid = /^[a-zA-Z\s,\.]*$/.test(input.value);
+    const valid = /^[a-zA-Z0-9\s,\.]*$/.test(input.value);
     input.classList.toggle('invalid', !valid);
     document.getElementById('address-error').style.display = valid ? 'none' : 'block';
 }
@@ -337,7 +364,7 @@ document.querySelector('form').addEventListener('submit', function(e) {
     const fields = [
         { id: 'edit_prop_name', errId: 'prop-name-error', pattern: /^[a-zA-Z\s]+$/ },
         { id: 'edit_prop_location', errId: 'location-error', pattern: /^[a-zA-Z\s]+$/ },
-        { id: 'edit_prop_address', errId: 'address-error', pattern: /^[a-zA-Z\s,\.]+$/ },
+        { id: 'edit_prop_address', errId: 'address-error', pattern: /^[a-zA-Z0-9\s,\.]+$/ },
         { id: 'edit_prop_summary', errId: 'summary-error', pattern: /^[a-zA-Z0-9\s!.,&]+$/ },
     ];
     fields.forEach(function(f) {
@@ -360,6 +387,15 @@ document.querySelector('form').addEventListener('submit', function(e) {
         document.getElementById('website-error').style.display = 'block';
         valid = false;
     }
+    if (!valid) e.preventDefault();
+
+    // Validate amenity inputs
+    document.querySelectorAll('#new-amenities-container input').forEach(function(inp) {
+        if (inp.value.trim() && !/^[a-zA-Z\s]+$/.test(inp.value)) {
+            inp.classList.add('invalid');
+            valid = false;
+        }
+    });
     if (!valid) e.preventDefault();
 });
 </script>

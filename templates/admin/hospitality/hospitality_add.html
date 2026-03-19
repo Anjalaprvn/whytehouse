@@ -334,7 +334,7 @@ function validateSummary(input) {
 }
 
 function validateAddress(input) {
-    const valid = /^[a-zA-Z\s,\.]*$/.test(input.value);
+    const valid = /^[a-zA-Z0-9\s,\.]*$/.test(input.value);
     input.classList.toggle('invalid', !valid);
     document.getElementById('address-error').style.display = valid ? 'none' : 'block';
 }
@@ -396,7 +396,7 @@ document.querySelector('form').addEventListener('submit', function(e) {
     let valid = true;
     required.forEach(function(f) {
         const el = document.getElementById(f.id);
-        const pattern = f.id === 'prop_address' ? /^[a-zA-Z\s,\.]+$/ : f.id === 'prop_summary' ? /^[a-zA-Z0-9\s!.,&]+$/ : /^[a-zA-Z\s]+$/;
+        const pattern = f.id === 'prop_address' ? /^[a-zA-Z0-9\s,\.]+$/ : f.id === 'prop_summary' ? /^[a-zA-Z0-9\s!.,&]+$/ : /^[a-zA-Z\s]+$/;
         if (!el.value.trim() || !pattern.test(el.value)) {
             el.classList.add('invalid');
             document.getElementById(f.errId).style.display = 'block';

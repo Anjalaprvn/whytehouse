@@ -563,17 +563,9 @@ def edit_property(request, property_id):
         prop.owner_name = request.POST.get("owner_name") or None
         prop.owner_contact = request.POST.get("owner_contact") or None
 
-        # Get existing amenities from checkboxes
-        selected_amenities = request.POST.getlist("amenities")
-        # Get new amenity from text input
-        new_amenity = request.POST.get("new_amenity", "").strip()
-        
-        # Combine all amenities
-        all_amenities = list(selected_amenities)
-        if new_amenity:
-            all_amenities.append(new_amenity)
-        
-        prop.amenities = ", ".join([a.strip() for a in all_amenities if a.strip()])
+        # Get amenities from individual inputs
+        new_amenities = request.POST.getlist("new_amenities[]")
+        prop.amenities = ", ".join([a.strip() for a in new_amenities if a.strip()])
 
         if request.FILES.get("image"):
             prop.image = request.FILES.get("image")
