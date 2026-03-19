@@ -728,6 +728,23 @@ def travel_package_add(request):
                 pass
         
         category = request.POST.get('category')
+
+        if destination and destination.category != category:
+            messages.error(request, f"Cannot save: destination '{destination.name}' belongs to {destination.category}, but package category is set to {category}.")
+            return render(request, 'admin/packages/travel_package_add.html', {
+                'default_category': category,
+                'selected_destination_id': int(destination_id),
+                'selected_destination_obj': destination,
+            })
+
+        if TravelPackage.objects.filter(name__iexact=name, category=category).exists():
+            messages.error(request, f"A {category} package named '{name}' already exists.")
+            return render(request, 'admin/packages/travel_package_add.html', {
+                'default_category': category,
+                'selected_destination_id': int(destination_id) if destination_id else None,
+                'selected_destination_obj': destination,
+            })
+
         package_id = request.POST.get('package_id')
         TravelPackage.objects.create(
             package_id=package_id,
@@ -780,7 +797,14 @@ def travel_package_edit(request, package_id):
         
         # Get the category from POST
         new_category = request.POST.get('category')
-        
+
+        if destination and destination.category != new_category:
+            messages.error(request, f"Cannot save: destination '{destination.name}' belongs to {destination.category}, but package category is set to {new_category}.")
+            return render(request, 'admin/packages/travel_package_edit.html', {
+                'package': package,
+                'destinations': destinations,
+            })
+
         package.name = request.POST.get('name')
         package.category = new_category
         package.destination = destination
