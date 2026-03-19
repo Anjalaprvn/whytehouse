@@ -596,21 +596,11 @@
             </div>
 
             <div class="field">
-              <label for="feedback_images">Upload Travel Photos <span class="hint">(optional)</span></label>
+              <label>Upload Travel Photos <span class="hint">(optional)</span></label>
               <div class="section-box">
-                <input
-                  type="file"
-                  id="feedback_images"
-                  name="feedback_images"
-                  accept="image/png,image/jpeg,image/jpg"
-                  multiple
-
-                >
-                <div class="help">
-                  You can upload multiple photos related to your trip, destination, stay, or overall experience.
-                </div>
+                <input type="file" id="feedback_images" name="feedback_images" accept="image/png,image/jpeg,image/jpg" multiple style="display:none">
+                <div class="help">You can upload multiple photos related to your trip, destination, stay, or overall experience.</div>
                 <div class="error-message" id="imageError"></div>
-
                 <div id="imagePreviewContainer" class="preview-container">
                   <div class="add-image-box" id="addImageBox">
                     <i class="fa-solid fa-plus"></i>
@@ -701,27 +691,26 @@
             syncRating();
           })();
 
-          const formEl = document.getElementById("feedbackForm");
-          const clearBtn = document.getElementById("clearFormBtn");
-
-          const nameInput = document.getElementById("name");
-          const emailInput = document.getElementById("email");
-          const mobileInput = document.getElementById("mobile_number");
+          const formEl        = document.getElementById("feedbackForm");
+          const clearBtn       = document.getElementById("clearFormBtn");
+          const nameInput      = document.getElementById("name");
+          const emailInput     = document.getElementById("email");
+          const mobileInput    = document.getElementById("mobile_number");
           const feedbackTypeInput = document.getElementById("feedback_type");
-          const feedbackInput = document.getElementById("feedback");
-          const imageInput = document.getElementById("feedback_images");
+          const feedbackInput  = document.getElementById("feedback");
+          const imageInput     = document.getElementById("feedback_images");
           const previewContainer = document.getElementById("imagePreviewContainer");
-          const addImageBox = document.getElementById("addImageBox");
+          const addImageBox    = document.getElementById("addImageBox");
           const feedbackCharCount = document.getElementById("feedbackCharCount");
-
-          const nameError = document.getElementById("nameError");
-          const emailError = document.getElementById("emailError");
-          const mobileError = document.getElementById("mobileError");
+          const nameError      = document.getElementById("nameError");
+          const emailError     = document.getElementById("emailError");
+          const mobileError    = document.getElementById("mobileError");
           const feedbackTypeError = document.getElementById("feedbackTypeError");
-          const ratingError = document.getElementById("ratingError");
-          const feedbackError = document.getElementById("feedbackError");
-          const imageError = document.getElementById("imageError");
+          const ratingError    = document.getElementById("ratingError");
+          const feedbackError  = document.getElementById("feedbackError");
+          const imageError     = document.getElementById("imageError");
 
+          // Each entry: { file, inputEl }
           let selectedFiles = [];
 
           function showError(input, errorEl, message) {
@@ -737,259 +726,147 @@
           }
 
           function updateCharCount() {
-            const count = feedbackInput.value.trim().length;
-            feedbackCharCount.textContent = count;
+            feedbackCharCount.textContent = feedbackInput.value.trim().length;
           }
 
           function validateName() {
             const value = nameInput.value.trim();
-            const regex = /^[A-Za-z\s]+$/;
-
-            if (!value) {
-              showError(nameInput, nameError, "Full name is required.");
-              return false;
-            }
-
-            if (!regex.test(value)) {
-              showError(nameInput, nameError, "Name must contain only letters and spaces.");
-              return false;
-            }
-
-            if (value.length < 3) {
-              showError(nameInput, nameError, "Name must be at least 3 characters.");
-              return false;
-            }
-
-            clearError(nameInput, nameError);
-            return true;
+            if (!value) { showError(nameInput, nameError, "Full name is required."); return false; }
+            if (!/^[A-Za-z\s]+$/.test(value)) { showError(nameInput, nameError, "Name must contain only letters and spaces."); return false; }
+            if (value.length < 3) { showError(nameInput, nameError, "Name must be at least 3 characters."); return false; }
+            clearError(nameInput, nameError); return true;
           }
 
           function validateEmail() {
             const value = emailInput.value.trim();
-
-            if (!value) {
-              showError(emailInput, emailError, "Email address is required.");
-              return false;
-            }
-
-            if (!emailInput.checkValidity()) {
-              showError(emailInput, emailError, "Enter a valid email address.");
-              return false;
-            }
-
-            clearError(emailInput, emailError);
-            return true;
+            if (!value) { showError(emailInput, emailError, "Email address is required."); return false; }
+            if (!emailInput.checkValidity()) { showError(emailInput, emailError, "Enter a valid email address."); return false; }
+            clearError(emailInput, emailError); return true;
           }
 
           function validateMobile() {
             const value = mobileInput.value.trim();
-
-            if (!value) {
-              clearError(mobileInput, mobileError);
-              return true;
-            }
-
-            if (!/^\d{10}$/.test(value)) {
-              showError(mobileInput, mobileError, "Mobile number must be exactly 10 digits.");
-              return false;
-            }
-
-            clearError(mobileInput, mobileError);
-            return true;
+            if (!value) { clearError(mobileInput, mobileError); return true; }
+            if (!/^\d{10}$/.test(value)) { showError(mobileInput, mobileError, "Mobile number must be exactly 10 digits."); return false; }
+            clearError(mobileInput, mobileError); return true;
           }
 
           function validateFeedbackType() {
-            if (!feedbackTypeInput.value) {
-              showError(feedbackTypeInput, feedbackTypeError, "Please select a feedback type.");
-              return false;
-            }
-
-            clearError(feedbackTypeInput, feedbackTypeError);
-            return true;
+            if (!feedbackTypeInput.value) { showError(feedbackTypeInput, feedbackTypeError, "Please select a feedback type."); return false; }
+            clearError(feedbackTypeInput, feedbackTypeError); return true;
           }
 
           function validateRating() {
             const checked = document.querySelector('input[name="rating"]:checked');
-
-            if (!checked) {
-              ratingError.style.display = "block";
-              ratingError.textContent = "Please select a rating.";
-              return false;
-            }
-
-            ratingError.style.display = "none";
-            ratingError.textContent = "";
-            return true;
+            if (!checked) { ratingError.style.display = "block"; ratingError.textContent = "Please select a rating."; return false; }
+            ratingError.style.display = "none"; return true;
           }
 
           function validateFeedback() {
             const value = feedbackInput.value.trim();
-
-            if (!value) {
-              showError(feedbackInput, feedbackError, "Feedback is required.");
-              return false;
-            }
-
-            if (!/^[a-zA-Z0-9\s!.,&]+$/.test(value)) {
-              showError(feedbackInput, feedbackError, "Only letters, numbers, !, ., , and & are allowed.");
-              return false;
-            }
-
-            if (value.length < 20) {
-              showError(feedbackInput, feedbackError, "Feedback must be at least 20 characters.");
-              return false;
-            }
-
-            if (value.length > 1000) {
-              showError(feedbackInput, feedbackError, "Feedback must not exceed 1000 characters.");
-              return false;
-            }
-
-            clearError(feedbackInput, feedbackError);
-            return true;
+            if (!value) { showError(feedbackInput, feedbackError, "Feedback is required."); return false; }
+            if (!/^[a-zA-Z0-9\s!.,&]+$/.test(value)) { showError(feedbackInput, feedbackError, "Only letters, numbers, !, ., , and & are allowed."); return false; }
+            if (value.length < 20) { showError(feedbackInput, feedbackError, "Feedback must be at least 20 characters."); return false; }
+            if (value.length > 1000) { showError(feedbackInput, feedbackError, "Feedback must not exceed 1000 characters."); return false; }
+            clearError(feedbackInput, feedbackError); return true;
           }
 
-          function validateImages(files) {
-            const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+          // ---- image preview (display only, selectedFiles holds File objects) ----
+          addImageBox.addEventListener('click', () => imageInput.click());
 
-            for (let file of files) {
-              if (!allowedTypes.includes(file.type)) {
-                imageError.style.display = "block";
-                imageError.textContent = "Only JPG, JPEG, and PNG images are allowed.";
-                return false;
+          imageInput.addEventListener('change', function () {
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            const newFiles = Array.from(this.files);
+            for (const f of newFiles) {
+              if (!allowedTypes.includes(f.type)) {
+                imageError.style.display = 'block';
+                imageError.textContent = 'Only JPG, JPEG, and PNG images are allowed.';
+                this.value = '';
+                return;
               }
             }
-
-            imageError.style.display = "none";
-            imageError.textContent = "";
-            return true;
-          }
-
-          function updateFileInput() {
-            const dataTransfer = new DataTransfer();
-            selectedFiles.forEach(file => dataTransfer.items.add(file));
-            imageInput.files = dataTransfer.files;
-          }
-
-          function renderImagePreviews() {
-            previewContainer.innerHTML = "";
-
-            selectedFiles.forEach((file, index) => {
-              const wrapper = document.createElement("div");
-              wrapper.className = "preview-item";
-
-              const img = document.createElement("img");
-              img.alt = file.name;
-
-              const removeBtn = document.createElement("button");
-              removeBtn.type = "button";
-              removeBtn.className = "remove-image-btn";
-              removeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-              removeBtn.title = "Remove image";
-
-              removeBtn.addEventListener("click", function () {
-                selectedFiles.splice(index, 1);
-                updateFileInput();
-                renderImagePreviews();
-              });
-
-              const reader = new FileReader();
-              reader.onload = function (e) {
-                img.src = e.target.result;
-              };
-              reader.readAsDataURL(file);
-
-              wrapper.appendChild(img);
-              wrapper.appendChild(removeBtn);
-              previewContainer.appendChild(wrapper);
-            });
-
-            previewContainer.appendChild(addImageBox);
-          }
-
-          addImageBox.addEventListener("click", function () {
-            imageInput.click();
+            imageError.style.display = 'none';
+            newFiles.forEach(addPreview);
+            this.value = '';
           });
 
-          nameInput.addEventListener("input", function () {
-            this.value = this.value.replace(/[^A-Za-z\s]/g, "");
+          function addPreview(file) {
+            selectedFiles.push(file);
+            const wrapper = document.createElement('div');
+            wrapper.className = 'preview-item';
+            const img = document.createElement('img');
+            img.alt = file.name;
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'remove-image-btn';
+            removeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+            removeBtn.addEventListener('click', function () {
+              selectedFiles = selectedFiles.filter(f => f !== file);
+              wrapper.remove();
+            });
+            const reader = new FileReader();
+            reader.onload = e => { img.src = e.target.result; };
+            reader.readAsDataURL(file);
+            wrapper.appendChild(img);
+            wrapper.appendChild(removeBtn);
+            previewContainer.insertBefore(wrapper, addImageBox);
+          }
+
+          // ---- field listeners ----
+          nameInput.addEventListener('input', function () {
+            this.value = this.value.replace(/[^A-Za-z\s]/g, '');
             validateName();
           });
-
-          mobileInput.addEventListener("input", function () {
-            this.value = this.value.replace(/\D/g, "").slice(0, 10);
+          mobileInput.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').slice(0, 10);
             validateMobile();
           });
-
-          emailInput.addEventListener("input", validateEmail);
-          feedbackTypeInput.addEventListener("change", validateFeedbackType);
-
-          feedbackInput.addEventListener("input", function () {
-            this.value = this.value.replace(/[^a-zA-Z0-9\s!.,&]/g, "");
+          emailInput.addEventListener('input', validateEmail);
+          feedbackTypeInput.addEventListener('change', validateFeedbackType);
+          feedbackInput.addEventListener('input', function () {
+            this.value = this.value.replace(/[^a-zA-Z0-9\s!.,&]/g, '');
             updateCharCount();
             validateFeedback();
           });
+          document.querySelectorAll('input[name="rating"]').forEach(r => r.addEventListener('change', validateRating));
 
-          document.querySelectorAll('input[name="rating"]').forEach(radio => {
-            radio.addEventListener("change", validateRating);
-          });
+          // ---- submit: inject selectedFiles into a fresh input, then submit normally ----
+          formEl.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const valid = validateName() & validateEmail() & validateMobile() & validateFeedbackType() & validateRating() & validateFeedback();
+            if (!valid) return;
 
-          imageInput.addEventListener("change", function () {
-            const newFiles = Array.from(this.files);
+            // Remove the original (empty) file input so it doesn't send an empty field
+            imageInput.remove();
 
-            if (!newFiles.length) return;
-
-            if (!validateImages(newFiles)) {
-              this.value = "";
-              return;
+            if (selectedFiles.length > 0) {
+              const dt = new DataTransfer();
+              selectedFiles.forEach(f => dt.items.add(f));
+              const newInput = document.createElement('input');
+              newInput.type = 'file';
+              newInput.name = 'feedback_images';
+              newInput.multiple = true;
+              newInput.style.display = 'none';
+              newInput.files = dt.files;
+              formEl.appendChild(newInput);
             }
 
-            selectedFiles = [...selectedFiles, ...newFiles];
-            updateFileInput();
-            renderImagePreviews();
-            this.value = "";
+            formEl.submit();
           });
 
-          formEl.addEventListener("submit", function (e) {
-            const isNameValid = validateName();
-            const isEmailValid = validateEmail();
-            const isMobileValid = validateMobile();
-            const isFeedbackTypeValid = validateFeedbackType();
-            const isRatingValid = validateRating();
-            const isFeedbackValid = validateFeedback();
-
-            if (!(isNameValid && isEmailValid && isMobileValid && isFeedbackTypeValid && isRatingValid && isFeedbackValid)) {
-              e.preventDefault();
-            }
-          });
-
-          clearBtn.addEventListener("click", function () {
+          clearBtn.addEventListener('click', function () {
             formEl.reset();
-
             document.querySelectorAll('input[name="rating"]').forEach(r => r.checked = false);
-
             selectedFiles = [];
-            updateFileInput();
-            previewContainer.innerHTML = "";
+            previewContainer.innerHTML = '';
             previewContainer.appendChild(addImageBox);
-
-            clearError(nameInput, nameError);
-            clearError(emailInput, emailError);
-            clearError(mobileInput, mobileError);
-            clearError(feedbackTypeInput, feedbackTypeError);
-            clearError(feedbackInput, feedbackError);
-
-            ratingError.style.display = "none";
-            ratingError.textContent = "";
-            imageError.style.display = "none";
-            imageError.textContent = "";
-
-            document.getElementById("ratingText").textContent = "Tap to rate";
+            [nameError, emailError, mobileError, feedbackTypeError, ratingError, feedbackError, imageError].forEach(el => { el.style.display = 'none'; el.textContent = ''; });
+            [nameInput, emailInput, mobileInput, feedbackTypeInput, feedbackInput].forEach(el => el.classList.remove('input-error'));
+            document.getElementById('ratingText').textContent = 'Tap to rate';
             updateCharCount();
           });
 
           updateCharCount();
-          renderImagePreviews();
         </script>
       {% endif %}
 
