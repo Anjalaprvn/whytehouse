@@ -316,8 +316,22 @@
       }, 400);
     }
 
-    nameInput.addEventListener('input', checkDuplicate);
-    placeInput.addEventListener('input', checkDuplicate);
+    // Name & Place: letters, spaces, commas only
+    const nameRegex = /^[A-Za-z ,]+$/;
+    nameInput.addEventListener('input', function () {
+      this.value = this.value.replace(/[^A-Za-z ,]/g, '');
+      if (this.value && !nameRegex.test(this.value)) {
+        showFieldError(this, 'Only letters, spaces, and commas are allowed.');
+      } else { clearFieldError(this); }
+      checkDuplicate();
+    });
+    placeInput.addEventListener('input', function () {
+      this.value = this.value.replace(/[^A-Za-z ,]/g, '');
+      if (this.value && !nameRegex.test(this.value)) {
+        showFieldError(this, 'Only letters, spaces, and commas are allowed.');
+      } else { clearFieldError(this); }
+      checkDuplicate();
+    });
 
     // Location: Google Maps links only
     const locationInput = document.getElementById('location');
@@ -382,6 +396,14 @@
     // Block submit if any validation errors
     document.querySelector('form').addEventListener('submit', e => {
       let valid = true;
+      if (!nameRegex.test(nameInput.value.trim())) {
+        showFieldError(nameInput, 'Only letters, spaces, and commas are allowed.');
+        valid = false;
+      }
+      if (!nameRegex.test(placeInput.value.trim())) {
+        showFieldError(placeInput, 'Only letters, spaces, and commas are allowed.');
+        valid = false;
+      }
       if (locationInput.value && !mapsRegex.test(locationInput.value)) {
         locationError.textContent = 'Only Google Maps links are allowed.';
         locationError.style.display = 'block';
