@@ -159,6 +159,18 @@
         text-decoration: none;
         text-align: center;
     }
+    .field-error {
+        color: #ef4444;
+        font-size: 12px;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        display: none;
+    }
+
+    .form-control.invalid {
+        border-color: #ef4444;
+        background: #fff5f5;
+    }
 </style>
 
 <div class="hospitality-add-container">
@@ -182,8 +194,9 @@
             <!-- Property Name -->
             <div class="form-group">
                 <label>Property Name <span>*</span></label>
-                <input type="text" name="name" class="form-control"
-                       value="{{ property.name|default:'' }}" required>
+                <input type="text" id="prop_name" name="name" class="form-control"
+                       value="{{ property.name|default:'' }}" oninput="validateLetters(this, 'prop-name-error')">
+                <div class="field-error" id="prop-name-error">Only letters and spaces are allowed.</div>
             </div>
 
             <!-- Property Type -->
@@ -202,42 +215,48 @@
             <!-- Location -->
             <div class="form-group">
                 <label>Location <span>*</span></label>
-                <input type="text" name="location" class="form-control"
-                       value="{{ property.location|default:'' }}" required>
+                <input type="text" id="prop_location" name="location" class="form-control"
+                       value="{{ property.location|default:'' }}" oninput="validateLetters(this, 'location-error')">
+                <div class="field-error" id="location-error">Only letters and spaces are allowed.</div>
             </div>
 
             <!-- Owner Name -->
             <div class="form-group">
                 <label>Property Owner Name (POC)</label>
                 <input type="text" name="owner_name" class="form-control"
-                       value="{{ property.owner_name|default:'' }}">
+                       value="{{ property.owner_name|default:'' }}" oninput="validateLetters(this, 'owner-name-error')">
+                <div class="field-error" id="owner-name-error">Only letters and spaces are allowed.</div>
             </div>
 
             <!-- Owner Contact -->
             <div class="form-group">
                 <label>Property Owner Contact Number (PON)</label>
-                <input type="text" name="owner_contact" class="form-control"
-                       value="{{ property.owner_contact|default:'' }}">
+                <input type="text" id="owner_contact" name="owner_contact" class="form-control"
+                       value="{{ property.owner_contact|default:'' }}" oninput="validateContact(this)" maxlength="10">
+                <div class="field-error" id="contact-error">Enter a valid 10-digit contact number.</div>
             </div>
 
             <!-- Website -->
             <div class="form-group">
                 <label>Website URL</label>
-                <input type="url" name="website" class="form-control"
-                       value="{{ property.website|default:'' }}">
+                <input type="text" id="website" name="website" class="form-control"
+                       value="{{ property.website|default:'' }}" oninput="validateURL(this)">
+                <div class="field-error" id="website-error">Enter a valid URL (e.g., https://example.com).</div>
             </div>
 
             <!-- Address -->
             <div class="form-group">
                 <label>Address <span>*</span></label>
-                <input type="text" name="address" class="form-control"
-                       value="{{ property.address|default:'' }}" required>
+                <input type="text" id="prop_address" name="address" class="form-control"
+                       value="{{ property.address|default:'' }}" oninput="validateAddress(this)">
+                <div class="field-error" id="address-error">Only letters, spaces, commas, and periods are allowed.</div>
             </div>
 
             <!-- Summary -->
             <div class="form-group">
                 <label>Summary <span>*</span></label>
-                <textarea name="summary" class="form-control" style="height: 100px;" required>{{ property.summary|default:'' }}</textarea>
+                <textarea id="prop_summary" name="summary" class="form-control" style="height: 100px;" oninput="validateLetters(this, 'summary-error')">{{ property.summary|default:'' }}</textarea>
+                <div class="field-error" id="summary-error">Only letters and spaces are allowed.</div>
             </div>
 
             <!-- Amenities -->
@@ -250,10 +269,10 @@
                 <div id="new-amenities-container">
                     {% if property.amenities %}
                         {% for amenity in property.amenities.splitlines %}
-                        <input type="text" name="new_amenities[]" class="form-control" value="{{ amenity }}" style="margin-bottom: 10px;">
+                        <input type="text" name="new_amenities[]" class="form-control" value="{{ amenity }}" style="margin-bottom: 10px;" oninput="validateLetters(this, null)">
                         {% endfor %}
                     {% else %}
-                        <input type="text" name="new_amenities[]" class="form-control" placeholder="Enter amenity name" style="margin-bottom: 10px;">
+                        <input type="text" name="new_amenities[]" class="form-control" placeholder="Enter amenity name" style="margin-bottom: 10px;" oninput="validateLetters(this, null)">
                     {% endif %}
                 </div>
             </div>
@@ -262,19 +281,16 @@
             <div class="form-group">
                 <label>Cover Image</label>
 
-                {% if property and property.image %}
-                    <div style="margin-bottom: 15px;">
-                        <p>Current Image:</p>
-                        <img src="{{ property.image.url }}"
-                             style="max-width:200px;border-radius:8px;border:1px solid #e2e8f0;">
-                    </div>
-                {% endif %}
+                <div id="img-preview-wrapper" style="display:{% if property and property.image %}block{% else %}none{% endif %}; position:relative; width:fit-content; margin-bottom:10px;">
+                    <img id="img-preview" src="{% if property and property.image %}{{ property.image.url }}{% endif %}" alt="Preview" style="max-width:200px; border-radius:8px; border:1px solid #e2e8f0; display:block;">
+                    <button type="button" id="remove-img" style="position:absolute; top:-8px; right:-8px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:22px; height:22px; font-size:13px; cursor:pointer; line-height:1;">&times;</button>
+                </div>
 
-                <div class="upload-box" onclick="document.getElementById('file-upload').click();">
+                <div class="upload-box" id="upload-box" style="{% if property and property.image %}display:none;{% endif %}" onclick="document.getElementById('file-upload').click();">
                     <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
                     <div class="upload-text">Click to upload</div>
-                    <input type="file" id="file-upload" name="image" style="display:none;" accept="image/*">
                 </div>
+                <input type="file" id="file-upload" name="image" style="display:none;" accept="image/*">
             </div>
 
             <!-- Footer -->
@@ -291,18 +307,110 @@
 </div>
 
 <script>
+document.getElementById('file-upload').addEventListener('change', function() {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('img-preview').src = e.target.result;
+            document.getElementById('img-preview-wrapper').style.display = 'block';
+            document.getElementById('upload-box').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('remove-img').addEventListener('click', function() {
+    document.getElementById('file-upload').value = '';
+    document.getElementById('img-preview').src = '';
+    document.getElementById('img-preview-wrapper').style.display = 'none';
+    document.getElementById('upload-box').style.display = 'block';
+});
+
+function validateAddress(input) {
+    const valid = /^[a-zA-Z\s,\.]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    document.getElementById('address-error').style.display = valid ? 'none' : 'block';
+}
+
+function validateLetters(input, errorId) {
+    const valid = /^[a-zA-Z\s]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    if (errorId) {
+        document.getElementById(errorId).style.display = valid ? 'none' : 'block';
+    } else {
+        let msg = input.nextElementSibling;
+        if (!valid) {
+            if (!msg || !msg.classList.contains('inline-err')) {
+                msg = document.createElement('div');
+                msg.className = 'inline-err field-error';
+                msg.textContent = 'Only letters and spaces are allowed.';
+                msg.style.display = 'block';
+                input.insertAdjacentElement('afterend', msg);
+            }
+        } else if (msg && msg.classList.contains('inline-err')) {
+            msg.remove();
+        }
+    }
+}
+
+function validateContact(input) {
+    input.value = input.value.replace(/[^0-9]/g, '');
+    const valid = input.value === '' || input.value.length === 10;
+    input.classList.toggle('invalid', !valid);
+    document.getElementById('contact-error').style.display = valid ? 'none' : 'block';
+}
+
+function validateURL(input) {
+    const val = input.value.trim();
+    const valid = val === '' || /^(https?:\/\/)[^\s$.?#].[^\s]*$/.test(val);
+    input.classList.toggle('invalid', !valid);
+    document.getElementById('website-error').style.display = valid ? 'none' : 'block';
+}
+
 function addNewAmenity() {
     const container = document.getElementById('new-amenities-container');
-    
     const input = document.createElement('input');
     input.type = 'text';
     input.name = 'new_amenities[]';
     input.className = 'form-control';
     input.placeholder = 'Enter new amenity name';
     input.style.marginBottom = '10px';
-    
+    input.addEventListener('input', function() { validateLetters(this, null); });
     container.appendChild(input);
 }
+
+document.querySelector('form').addEventListener('submit', function(e) {
+    const required = [
+        { id: 'prop_name', errId: 'prop-name-error' },
+        { id: 'prop_location', errId: 'location-error' },
+        { id: 'prop_address', errId: 'address-error', fn: (v) => /^[a-zA-Z\s,\.]+$/.test(v) },
+        { id: 'prop_summary', errId: 'summary-error' },
+    ];
+    let valid = true;
+    required.forEach(function(f) {
+        const el = document.getElementById(f.id);
+        const pattern = f.id === 'prop_address' ? /^[a-zA-Z\s,\.]+$/ : /^[a-zA-Z\s]+$/;
+        if (!el.value.trim() || !pattern.test(el.value)) {
+            el.classList.add('invalid');
+            document.getElementById(f.errId).style.display = 'block';
+            valid = false;
+        }
+    });
+    const contact = document.getElementById('owner_contact');
+    if (contact.value && contact.value.length !== 10) {
+        contact.classList.add('invalid');
+        document.getElementById('contact-error').style.display = 'block';
+        valid = false;
+    }
+    const website = document.getElementById('website');
+    if (website.value.trim() && !/^(https?:\/\/)[^\s$.?#].[^\s]*$/.test(website.value.trim())) {
+        website.classList.add('invalid');
+        document.getElementById('website-error').style.display = 'block';
+        valid = false;
+    }
+    if (!valid) e.preventDefault();
+});
 </script>
 
 {% endblock %}

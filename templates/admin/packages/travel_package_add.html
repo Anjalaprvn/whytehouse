@@ -41,6 +41,14 @@
     .btn-cancel { padding: 12px 30px; background: #fff; border: 1px solid #ddd; border-radius: 8px; text-decoration: none; color: #333; font-weight: 600; }
     
     .img-preview { width: 150px; height: 100px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; }
+
+    .field-error {
+        color: #ef4444;
+        font-size: 12px;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        display: none;
+    }
 </style>
 
 <div class="form-container">
@@ -66,7 +74,8 @@
                 </div>
                 <div>
                     <label>Package Title <span class="required-star">*</span></label>
-                    <input type="text" id="packageName" name="name" value="{{ form_name|default:'' }}" required class="form-control" {% if name_error %}style="border: 1.5px solid #ef4444; background:#fff5f5; margin-bottom:6px;"{% endif %}>
+                    <input type="text" id="packageName" name="name" value="{{ form_name|default:'' }}" required class="form-control" {% if name_error %}style="margin-bottom:6px;"{% endif %} oninput="validateLettersField(this, 'title-letters-error')">                    
+                    <div id="title-letters-error" class="field-error">Only letters, spaces, &amp;, and commas are allowed.</div>
                     <div id="name-error-box" style="background:#fef2f2; border:1px solid #fca5a5; border-radius:6px; padding:8px 12px; margin-bottom:14px; display:{% if name_error %}flex{% else %}none{% endif %}; align-items:center; gap:8px;">
                         <span style="color:#ef4444; font-size:14px;">&#9888;</span>
                         <span id="name-error-msg" style="color:#dc2626; font-size:0.82rem; font-weight:500;">{% if name_error %}{{ name_error }}{% else %}A package with this title already exists. Use another title.{% endif %}</span>
@@ -114,24 +123,31 @@
             <div class="grid-row">
                 <div>
                     <label>Location <span class="required-star">*</span></label>
-                    <input type="text" name="location" value="{{ package.location|default:'' }}" required class="form-control" placeholder="e.g. Wayanad, Kerala">
+                    <input type="text" name="location" value="{{ package.location|default:'' }}" required class="form-control" placeholder="e.g. Wayanad, Kerala" oninput="validateLettersOnly(this, 'location-error')">
+                    <div id="location-error" class="field-error">Only letters, spaces, and commas are allowed.</div>
                 </div>
 
                 <div>
                     <label>Country <span class="required-star">*</span></label>
-                    <input type="text" name="country" value="{{ package.country|default:'' }}" required class="form-control" placeholder="e.g. India">
+                    <input type="text" name="country" value="{{ package.country|default:'' }}" required class="form-control" placeholder="e.g. India" oninput="validateLettersOnly(this, 'country-error')">
+                    <div id="country-error" class="field-error">Only letters, spaces, and commas are allowed.</div>
                 </div>
             </div>
 
             <label>Description</label>
-            <textarea name="description" class="form-control">{{ package.description|default:'' }}</textarea>
+            <textarea name="description" class="form-control" oninput="validateLettersField(this, 'desc-letters-error')">{{ package.description|default:'' }}</textarea>
+            <div id="desc-letters-error" class="field-error">Only letters and spaces are allowed.</div>
 
             <label>Package Image <span class="required-star">*</span></label>
-            {% if package.image %}
-                <img src="{{ package.image.url }}" class="img-preview">
-                <p style="font-size: 0.8rem; color: #666;">Current: {{ package.image.name }}</p>
-            {% endif %}
-            <input type="file" name="image" accept="image/*" class="form-control" {% if not package %}required{% endif %}>
+            <div id="pkg-preview-wrapper" style="display:{% if package.image %}block{% else %}none{% endif %}; position:relative; width:fit-content; margin-bottom:10px;">
+                <img id="pkg-preview-img" src="{% if package.image %}{{ package.image.url }}{% endif %}" alt="Preview" style="width:150px; height:100px; object-fit:cover; border-radius:8px; border:1px solid #ddd; display:block;">
+                <button type="button" id="pkg-remove-img" style="position:absolute; top:-8px; right:-8px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:22px; height:22px; font-size:13px; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+            <div id="pkg-upload-box" onclick="document.getElementById('pkg-file-upload').click()" style="{% if package.image %}display:none;{% endif %}border:2px dashed #e2e8f0; border-radius:12px; padding:30px; text-align:center; background:#fff; cursor:pointer;">
+                <div style="font-size:28px; color:#94a3b8;"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                <div style="font-size:14px; color:#64748b; margin-top:8px;">Click to upload package image</div>
+            </div>
+            <input type="file" id="pkg-file-upload" name="image" accept="image/*" style="display:none;" {% if not package %}required{% endif %}>
 
             <div style="margin-top: 10px; display: flex; align-items: center;">
                 <label class="switch">
@@ -151,7 +167,7 @@
     <div id="itinerary-container">
         <div class="itinerary-item">
             <label>Day 1</label>
-            <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..."></textarea>
+            <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateLettersField(this, null)"></textarea>
         </div>
     </div>
 </div>
@@ -164,7 +180,7 @@
     </div>
 
     <div id="inclusion-container">
-        <input type="text" name="inclusions[]" class="form-control" placeholder="e.g., Hotel accommodation">
+        <input type="text" name="inclusions[]" class="form-control" placeholder="e.g., Hotel accommodation" oninput="validateLettersField(this, null); checkDuplicate(this, 'inclusion')">
     </div>
 </div>
 <div class="card">
@@ -174,7 +190,7 @@
     </div>
 
     <div id="exclusion-container">
-        <input type="text" name="exclusions[]" class="form-control" placeholder="e.g., Flight tickets">
+        <input type="text" name="exclusions[]" class="form-control" placeholder="e.g., Flight tickets" oninput="validateLettersField(this, null); checkDuplicate(this, 'exclusion')">
     </div>
 </div>
 
@@ -258,6 +274,31 @@ window.addEventListener('DOMContentLoaded', function() {
     if (durationField.value) {
         updateItineraryDays();
     }
+
+    const pkgFileInput = document.getElementById('pkg-file-upload');
+    const pkgPreviewImg = document.getElementById('pkg-preview-img');
+    const pkgPreviewWrapper = document.getElementById('pkg-preview-wrapper');
+    const pkgUploadBox = document.getElementById('pkg-upload-box');
+
+    pkgFileInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                pkgPreviewImg.src = e.target.result;
+                pkgPreviewWrapper.style.display = 'block';
+                pkgUploadBox.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.getElementById('pkg-remove-img').addEventListener('click', function() {
+        pkgFileInput.value = '';
+        pkgPreviewImg.src = '';
+        pkgPreviewWrapper.style.display = 'none';
+        pkgUploadBox.style.display = 'block';
+    });
 });
 
 function generateNextPackageId() {
@@ -339,7 +380,7 @@ function addDay() {
 
     div.innerHTML = `
         <label>Day ${dayCount}</label>
-        <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..."></textarea>
+        <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateLettersField(this, null)"></textarea>
     `;
 
     container.appendChild(div);
@@ -361,6 +402,7 @@ function addInclusion() {
     input.name = 'inclusions[]';
     input.className = 'form-control';
     input.placeholder = 'e.g., Breakfast included';
+    input.addEventListener('input', function() { validateLettersField(this, null); checkDuplicate(this, 'inclusion'); });
 
     container.appendChild(input);
 }
@@ -373,8 +415,78 @@ function addExclusion() {
     input.name = 'exclusions[]';
     input.className = 'form-control';
     input.placeholder = 'e.g., Personal expenses';
+    input.addEventListener('input', function() { validateLettersField(this, null); checkDuplicate(this, 'exclusion'); });
 
     container.appendChild(input);
+}
+
+function validateLettersOnly(input, errorId) {
+    const invalid = /[0-9]/.test(input.value);
+    const err = document.getElementById(errorId);
+    if (invalid) {
+        input.value = input.value.replace(/[0-9]/g, '');
+        err.style.display = 'block';
+    } else {
+        err.style.display = 'none';
+    }
+}
+
+function validateLettersField(input, errorId) {
+    const valid = errorId === 'title-letters-error'
+        ? /^[a-zA-Z\s&,]*$/.test(input.value)
+        : /^[a-zA-Z\s]*$/.test(input.value);
+    if (!valid) {
+        if (!errorId) {
+            let msg = input.nextElementSibling;
+            if (!msg || !msg.classList.contains('letters-msg')) {
+                msg = document.createElement('div');
+                msg.className = 'letters-msg field-error';
+                msg.textContent = 'Only letters and spaces are allowed.';
+                msg.style.display = 'block';
+                input.insertAdjacentElement('afterend', msg);
+            }
+        } else {
+            document.getElementById(errorId).style.display = 'block';
+        }
+    } else {
+        if (!errorId) {
+            let msg = input.nextElementSibling;
+            if (msg && msg.classList.contains('letters-msg')) msg.remove();
+        } else {
+            document.getElementById(errorId).style.display = 'none';
+        }
+    }
+}
+
+function checkDuplicate(input, type) {
+    const containerId = type === 'inclusion' ? 'inclusion-container' : 'exclusion-container';
+    const val = input.value.trim().toLowerCase();
+    const allInputs = document.querySelectorAll(`#${containerId} input`);
+    let isDuplicate = false;
+
+    if (val) {
+        allInputs.forEach(function(other) {
+            if (other !== input && other.value.trim().toLowerCase() === val) {
+                isDuplicate = true;
+            }
+        });
+    }
+
+    let msg = input.nextElementSibling;
+    if (isDuplicate) {
+        if (!msg || !msg.classList.contains('dup-msg')) {
+            msg = document.createElement('div');
+            msg.className = 'dup-msg field-error';
+            msg.style.display = 'block';
+            msg.textContent = type === 'inclusion' ? 'Inclusion already exists.' : 'Exclusion already exists.';
+            input.insertAdjacentElement('afterend', msg);
+        }
+    } else {
+        input.style.border = '';
+        input.style.background = '';
+        input.style.marginBottom = '';
+        if (msg && msg.classList.contains('dup-msg')) msg.remove();
+    }
 }
 </script>
 

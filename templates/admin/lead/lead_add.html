@@ -172,6 +172,13 @@
         border: 1px solid #bbf7d0;
         transition: opacity 0.5s ease;
     }
+
+    .field-error {
+        color: #ef4444;
+        font-size: 12px;
+        margin-top: 5px;
+        display: none;
+    }
 </style>
 
 <script>
@@ -182,6 +189,11 @@
             setTimeout(() => alert.remove(), 500);
         });
     }, 3000);
+
+    function validateLetters(input, errorId) {
+        const valid = /^[a-zA-Z\s]*$/.test(input.value);
+        document.getElementById(errorId).style.display = valid ? 'none' : 'block';
+    }
 
     function updateEmployeeDropdown() {
         const employeeSelect = document.querySelector('select[name="employee"]');
@@ -222,6 +234,14 @@
         if (employeeSelect) {
             employeeSelect.addEventListener('change', updateEmployeeDropdown);
         }
+
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const fullName = document.getElementById('full_name');
+            if (!fullName.value.trim() || !/^[a-zA-Z\s]+$/.test(fullName.value)) {
+                document.getElementById('full-name-error').style.display = 'block';
+                e.preventDefault();
+            }
+        });
     });
 </script>
 
@@ -247,7 +267,8 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label>Full Name <span>*</span></label>
-                    <input type="text" name="full_name" placeholder="John Doe" required>
+                    <input type="text" id="full_name" name="full_name" placeholder="John Doe" oninput="validateLetters(this, 'full-name-error')">
+                    <div class="field-error" id="full-name-error">Only letters and spaces are allowed.</div>
                 </div>
 
                 <div class="form-group">
@@ -258,7 +279,8 @@
 
                 <div class="form-group">
                     <label>Place</label>
-                    <input type="text" name="place" placeholder="Bangalore">
+                    <input type="text" id="place" name="place" placeholder="Bangalore" oninput="validateLetters(this, 'place-error')">
+                    <div class="field-error" id="place-error">Only letters and spaces are allowed.</div>
                 </div>
 
                 <!-- ✅ ENQUIRY TYPE FIELD -->

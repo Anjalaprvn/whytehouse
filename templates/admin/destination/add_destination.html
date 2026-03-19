@@ -149,6 +149,17 @@
         text-decoration: none;
         text-align: center;
     }
+
+    .field-error {
+        color: #ef4444;
+        font-size: 12px;
+        margin-top: 5px;
+        display: none;
+    }
+
+    .form-control.invalid {
+        border-color: #ef4444;
+    }
 </style>
 
 <div class="form-container">
@@ -167,12 +178,14 @@
         <div class="form-card">
             <div class="form-group">
                 <label>Destination Name <span>*</span></label>
-                <input type="text" name="name" class="form-control" placeholder="e.g., Goa, Paris, Tokyo" required>
+                <input type="text" id="name" name="name" class="form-control" placeholder="e.g., Goa, Paris, Tokyo">
+                <div class="field-error" id="name-error">Destination name is required and must contain only letters and spaces.</div>
             </div>
 
             <div class="form-group">
                 <label>Country <span>*</span></label>
-                <input type="text" name="country" class="form-control" placeholder="e.g., India, France, Japan" required>
+                <input type="text" id="country" name="country" class="form-control" placeholder="e.g., India, France, Japan">
+                <div class="field-error" id="country-error">Country is required and must contain only letters and spaces.</div>
             </div>
 
             <div class="form-group">
@@ -185,12 +198,14 @@
 
             <div class="form-group">
                 <label>Description</label>
-                <textarea name="description" class="form-control" style="height: 100px;" placeholder="Brief description of the destination..."></textarea>
+                <textarea id="description" name="description" class="form-control" style="height: 100px;" placeholder="Brief description of the destination..."></textarea>
+                <div class="field-error" id="description-error">Description must contain only letters and spaces.</div>
             </div>
 
             <div class="form-group">
                 <label>Packages Start From (₹)</label>
-                <input type="number" name="packages_start_from" class="form-control" placeholder="e.g., 15000" step="0.01">
+                <input type="number" id="packages_start_from" name="packages_start_from" class="form-control" placeholder="e.g., 15000" step="0.01" min="0">
+                <div class="field-error" id="packages-error">Please enter a valid positive number.</div>
             </div>
 
             <div class="form-group">
@@ -202,10 +217,13 @@
 
             <div class="form-group">
                 <label>Destination Image</label>
+                <div id="preview-wrapper" style="display:none; position:relative; display:none; width:fit-content; margin-bottom:10px;">
+                    <img id="preview-img" src="" alt="Preview" style="max-width:200px; border-radius:8px; border:1px solid #e2e8f0; display:block;" />
+                    <button type="button" id="remove-img" style="position:absolute; top:-8px; right:-8px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:22px; height:22px; font-size:13px; cursor:pointer; line-height:1;">&times;</button>
+                </div>
                 <div class="upload-box" id="upload-box" onclick="document.getElementById('file-upload').click();">
                     <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
                     <div class="upload-text">Click to upload destination image</div>
-                    <img id="preview-img" src="" alt="Preview" style="display:none; max-width:100%; max-height:200px; margin-top:10px; border-radius:8px;" />
                     <input type="file" id="file-upload" name="image" style="display:none;" accept="image/*">
                 </div>
             </div>
@@ -220,9 +238,64 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const nameInput = document.getElementById('name');
+        const countryInput = document.getElementById('country');
+        const packagesInput = document.getElementById('packages_start_from');
+
+        function validateName() {
+            const val = nameInput.value.trim();
+            const valid = val !== '' && /^[a-zA-Z\s]+$/.test(val);
+            nameInput.classList.toggle('invalid', !valid);
+            document.getElementById('name-error').style.display = valid ? 'none' : 'block';
+            return valid;
+        }
+
+        const descriptionInput = document.getElementById('description');
+
+        function validateDescription() {
+            const val = descriptionInput.value;
+            const valid = val === '' || /^[a-zA-Z\s]+$/.test(val);
+            descriptionInput.classList.toggle('invalid', !valid);
+            document.getElementById('description-error').style.display = valid ? 'none' : 'block';
+            return valid;
+        }
+
+        nameInput.addEventListener('input', validateName);
+        descriptionInput.addEventListener('input', validateDescription);
+
+        function validateCountry() {
+            const val = countryInput.value.trim();
+            const valid = val !== '' && /^[a-zA-Z\s]+$/.test(val);
+            countryInput.classList.toggle('invalid', !valid);
+            document.getElementById('country-error').style.display = valid ? 'none' : 'block';
+            return valid;
+        }
+
+        function validatePackages() {
+            const val = packagesInput.value;
+            const valid = val === '' || (parseFloat(val) >= 0);
+            packagesInput.classList.toggle('invalid', !valid);
+            document.getElementById('packages-error').style.display = valid ? 'none' : 'block';
+            return valid;
+        }
+
+        countryInput.addEventListener('input', validateCountry);
+        packagesInput.addEventListener('input', validatePackages);
+
+        form.addEventListener('submit', function(e) {
+            const n = validateName();
+            const c = validateCountry();
+            const d = validateDescription();
+            const p = validatePackages();
+            if (!n || !c || !d || !p) e.preventDefault();
+        });
+
         const fileInput = document.getElementById('file-upload');
         const previewImg = document.getElementById('preview-img');
+        const previewWrapper = document.getElementById('preview-wrapper');
         const uploadBox = document.getElementById('upload-box');
+        const removeBtn = document.getElementById('remove-img');
 
         fileInput.addEventListener('change', function() {
             const file = this.files[0];
@@ -230,18 +303,18 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     previewImg.src = e.target.result;
-                    previewImg.style.display = 'block';
-                    // hide upload icon/text when preview shown
-                    uploadBox.querySelector('.upload-icon').style.display = 'none';
-                    uploadBox.querySelector('.upload-text').style.display = 'none';
+                    previewWrapper.style.display = 'block';
+                    uploadBox.style.display = 'none';
                 }
                 reader.readAsDataURL(file);
-            } else {
-                previewImg.src = '';
-                previewImg.style.display = 'none';
-                uploadBox.querySelector('.upload-icon').style.display = '';
-                uploadBox.querySelector('.upload-text').style.display = '';
             }
+        });
+
+        removeBtn.addEventListener('click', function() {
+            fileInput.value = '';
+            previewImg.src = '';
+            previewWrapper.style.display = 'none';
+            uploadBox.style.display = 'block';
         });
     });
 </script>

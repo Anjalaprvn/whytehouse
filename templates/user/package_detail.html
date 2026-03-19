@@ -516,7 +516,7 @@
                     <div class="form-group">
                         <label>Full Name <span style="color: red;">*</span></label>
                         <div class="input-wrapper">
-                            <input type="text" name="name" placeholder="Enter your full name" value="{{ form_data.name|default:'' }}" required>
+                            <input type="text" name="name" placeholder="Enter your full name" value="{{ form_data.name|default:'' }}" required oninput="validateName(this)">
                         </div>
                     </div>
 
@@ -596,7 +596,7 @@
                     <div class="form-group">
                         <label>Full Name <span style="color: red;">*</span></label>
                         <div class="input-wrapper">
-                            <input type="text" name="message_name" placeholder="Enter your full name" required>
+                            <input type="text" name="message_name" placeholder="Enter your full name" required oninput="validateName(this)">
                         </div>
                     </div>
 
@@ -683,6 +683,23 @@
     });
 
     // Validation
+    function validateName(input) {
+        const valid = /^[a-zA-Z\s]*$/.test(input.value);
+        const formGroup = input.closest('.form-group');
+        let msg = formGroup.querySelector('.name-error');
+        if (!valid && input.value !== '') {
+            if (!msg) {
+                msg = document.createElement('div');
+                msg.className = 'name-error';
+                msg.style.cssText = 'color:#ef4444; font-size:12px; margin-top:5px;';
+                msg.textContent = 'Only letters and spaces are allowed.';
+                input.closest('.input-wrapper').insertAdjacentElement('afterend', msg);
+            }
+        } else {
+            if (msg) msg.remove();
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const forms = document.querySelectorAll('form');
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -715,6 +732,23 @@
 
             const wrapper = input.closest('.input-wrapper');
             if (wrapper) wrapper.style.borderColor = '#F0F0F0';
+        }
+
+        function validateName(input) {
+            const valid = /^[a-zA-Z\s]*$/.test(input.value);
+            const formGroup = input.closest('.form-group');
+            let msg = formGroup.querySelector('.name-error');
+            if (!valid) {
+                if (!msg) {
+                    msg = document.createElement('div');
+                    msg.className = 'name-error';
+                    msg.style.cssText = 'color:#ef4444; font-size:12px; margin-top:5px;';
+                    msg.textContent = 'Only letters and spaces are allowed.';
+                    input.closest('.input-wrapper').insertAdjacentElement('afterend', msg);
+                }
+            } else {
+                if (msg) msg.remove();
+            }
         }
 
         document.querySelectorAll('input[type="tel"]').forEach(phoneInput => {
@@ -751,6 +785,11 @@
                         isValid = false;
                     } else {
                         clearError(input);
+                    }
+
+                    if ((input.name === 'name' || input.name === 'message_name') && input.value && !/^[a-zA-Z\s]+$/.test(input.value)) {
+                        showError(input, 'Only letters and spaces are allowed.');
+                        isValid = false;
                     }
 
                     if (input.type === 'email' && input.value && !emailPattern.test(input.value)) {
