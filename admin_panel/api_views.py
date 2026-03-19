@@ -81,7 +81,7 @@ class BlogCategoryViewSet(viewsets.ModelViewSet):
         category = self.get_object()
         blogs = Blog.objects.filter(
             status="published",
-            category=category.slug
+            category=category
         ).order_by("-publish_date")
         serializer = BlogListSerializer(blogs, many=True, context={"request": request})
         return Response(serializer.data)
@@ -121,7 +121,7 @@ class BlogViewSet(viewsets.ModelViewSet):
 
         category_filter = (self.request.query_params.get("category") or "").strip()
         if category_filter:
-            qs = qs.filter(category=category_filter)
+            qs = qs.filter(category_id=category_filter)
 
         package_id = (self.request.query_params.get("package_id") or "").strip()
         if package_id:
@@ -169,7 +169,7 @@ class BlogViewSet(viewsets.ModelViewSet):
         for cat in categories:
             blogs = Blog.objects.filter(
                 status="published",
-                category=cat.slug
+                category=cat
             ).order_by("-publish_date")[:6]
 
             result[cat.slug] = BlogListSerializer(

@@ -477,20 +477,18 @@ class Blog(models.Model):
         ('scheduled', 'Scheduled'),
     ]
     
-    CATEGORY_CHOICES = [
-        ('travel', 'Travel'),
-        ('adventure', 'Adventure'),
-        ('culture', 'Culture'),
-        ('food', 'Food'),
-        ('tips', 'Tips'),
-    ]
-    
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200, unique=True, blank=True)
     excerpt = models.TextField(max_length=500)
     content = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
-    category = models.CharField(max_length=100, choices=CATEGORY_CHOICES, blank=True, null=True)
+    category = models.ForeignKey(
+        BlogCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="blogs"
+    )
     package_id = models.CharField(max_length=50, blank=True, null=True)
     
     author_name = models.CharField(max_length=100)

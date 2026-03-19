@@ -39,7 +39,7 @@ class BlogCategorySerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "blog_count"]
 
     def get_blog_count(self, obj):
-        return Blog.objects.filter(status="published", category=obj.slug).count()
+        return Blog.objects.filter(status="published", category=obj).count()
 
 
 # ==================== BLOG IMAGE SERIALIZER ====================
@@ -58,12 +58,17 @@ class BlogImageSerializer(serializers.ModelSerializer):
         return None
 
 
-# ==================== BLOG SERIALIZER ====================
 class BlogSerializer(serializers.ModelSerializer):
+    STATUS_CHOICES_LIMITED = [
+        ("draft", "Draft"),
+        ("published", "Published"),
+    ]
+
+    status = serializers.ChoiceField(choices=STATUS_CHOICES_LIMITED)
     image_url = serializers.SerializerMethodField(read_only=True)
     content_images = BlogImageSerializer(source="images", many=True, read_only=True)
-    category_name = serializers.SerializerMethodField()
     tag_list = serializers.SerializerMethodField()
+    category_name = serializers.CharField(source="category.name", read_only=True)
 
     class Meta:
         model = Blog
@@ -85,7 +90,6 @@ class BlogSerializer(serializers.ModelSerializer):
             "featured_image_url",
             "image_url",
             "hashtags",
-            "tags",
             "tag_list",
             "content_images",
             "created_at",
@@ -100,6 +104,38 @@ class BlogSerializer(serializers.ModelSerializer):
             "tag_list",
             "content_images",
         ]
+        extra_kwargs = {
+            "hashtags": {
+                "help_text": "Comma-separated hashtags (e.g. #travel, #beach)",
+                "style": {
+                    "base_template": "textarea.html",
+                    "placeholder": "#travel, #beach",
+                    "rows": 2,
+                },
+            },
+        }
+
+    def validate_hashtags(self, value):
+        if not value:
+            return ""
+
+        if isinstance(value, (list, tuple)):
+            parts = [str(tag).strip() for tag in value if str(tag).strip()]
+        else:
+            parts = [tag.strip() for tag in str(value).split(",") if tag.strip()]
+
+        cleaned = []
+        for tag in parts:
+            if not tag.startswith("#"):
+                tag = f"#{tag}"
+            cleaned.append(tag)
+        return ", ".join(cleaned)
+
+    def create(self, validated_data):
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)
 
     def get_image_url(self, obj):
         request = self.context.get("request")
@@ -109,20 +145,20 @@ class BlogSerializer(serializers.ModelSerializer):
             return obj.featured_image_url
         return None
 
-    def get_category_name(self, obj):
-        if obj.category:
-            cat = BlogCategory.objects.filter(slug=obj.category).first()
-            return cat.name if cat else obj.category
-        return None
-
     def get_tag_list(self, obj):
         raw = obj.tags or obj.hashtags or ""
         return [t.strip() for t in str(raw).split(",") if t.strip()]
 
 
 class BlogListSerializer(serializers.ModelSerializer):
+    STATUS_CHOICES_LIMITED = [
+        ("draft", "Draft"),
+        ("published", "Published"),
+    ]
+
+    status = serializers.ChoiceField(choices=STATUS_CHOICES_LIMITED, read_only=True)
     image_url = serializers.SerializerMethodField()
-    category_name = serializers.SerializerMethodField()
+    category_name = serializers.CharField(source="category.name", read_only=True)
 
     class Meta:
         model = Blog
@@ -149,13 +185,6 @@ class BlogListSerializer(serializers.ModelSerializer):
         if obj.featured_image_url:
             return obj.featured_image_url
         return None
-
-    def get_category_name(self, obj):
-        if obj.category:
-            cat = BlogCategory.objects.filter(slug=obj.category).first()
-            return cat.name if cat else obj.category
-        return None
-
 
 # ==================== LEAD SERIALIZER ====================
 class LeadSerializer(serializers.ModelSerializer):
