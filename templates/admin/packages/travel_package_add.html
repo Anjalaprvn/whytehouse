@@ -66,7 +66,13 @@
                 </div>
                 <div>
                     <label>Package Title <span class="required-star">*</span></label>
-                    <input type="text" name="name" value="{{ package.name|default:'' }}" required class="form-control">
+                    <input type="text" name="name" value="{{ form_name|default:'' }}" required class="form-control" {% if name_error %}style="border: 1.5px solid #ef4444; background:#fff5f5; margin-bottom:6px;"{% endif %}>
+                    {% if name_error %}
+                    <div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:6px; padding:8px 12px; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+                        <span style="color:#ef4444; font-size:14px;">&#9888;</span>
+                        <span style="color:#dc2626; font-size:0.82rem; font-weight:500;">{{ name_error }}</span>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 

@@ -738,11 +738,12 @@ def travel_package_add(request):
             })
 
         if TravelPackage.objects.filter(name__iexact=name, category=category).exists():
-            messages.error(request, f"A {category} package named '{name}' already exists.")
             return render(request, 'admin/packages/travel_package_add.html', {
                 'default_category': category,
                 'selected_destination_id': int(destination_id) if destination_id else None,
                 'selected_destination_obj': destination,
+                'name_error': 'This package name already exists.',
+                'form_name': name,
             })
 
         package_id = request.POST.get('package_id')
