@@ -575,103 +575,184 @@ def package_detail(request, slug):
         import re
         from admin_panel.models import Customer
         
-        name = request.POST.get('name', '').strip()
-        email = request.POST.get('email', '').strip()
-        phone = request.POST.get('phone', '').strip()
-        guests = request.POST.get('guests', '1').strip()
-        start_date = request.POST.get('start_date', '').strip()
+        form_type = request.POST.get('form_type', 'booking').strip()
         
-        # Validation
-        errors = []
-        
-        # Name validation
-        if not name or len(name) < 2:
-            errors.append('Name is required and must be at least 2 characters.')
-        
-        # Email validation
-        email_pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
-        if not email or not re.match(email_pattern, email):
-            errors.append('Please enter a valid email address.')
-        
-        # Phone validation (exactly 10 digits)
-        phone_digits = re.sub(r'\D', '', phone)
-        
-        if not phone:
-            errors.append('Phone number is required.')
-        elif len(phone_digits) != 10:
-            errors.append('Phone number must be exactly 10 digits.')
-        elif not phone_digits.isdigit():
-            errors.append('Phone number must contain only digits.')
-        
-        # Guests validation
-        try:
-            guests_int = int(guests)
-            if guests_int < 1:
-                errors.append('Number of guests must be at least 1.')
-            elif guests_int > 50:
-                errors.append('Number of guests cannot exceed 50.')
-        except ValueError:
-            errors.append('Please enter a valid number of guests.')
-        
-        # Start date validation
-        if not start_date:
-            errors.append('Start date is required.')
-        else:
+        # ============ BOOKING FORM ============
+        if form_type == 'booking':
+            name = request.POST.get('name', '').strip()
+            email = request.POST.get('email', '').strip()
+            phone = request.POST.get('phone', '').strip()
+            guests = request.POST.get('guests', '1').strip()
+            start_date = request.POST.get('start_date', '').strip()
+            
+            # Validation
+            errors = []
+            
+            # Name validation
+            if not name or len(name) < 2:
+                errors.append('Name is required and must be at least 2 characters.')
+            
+            # Email validation
+            email_pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+            if not email or not re.match(email_pattern, email):
+                errors.append('Please enter a valid email address.')
+            
+            # Phone validation (exactly 10 digits)
+            phone_digits = re.sub(r'\D', '', phone)
+            
+            if not phone:
+                errors.append('Phone number is required.')
+            elif len(phone_digits) != 10:
+                errors.append('Phone number must be exactly 10 digits.')
+            elif not phone_digits.isdigit():
+                errors.append('Phone number must contain only digits.')
+            
+            # Guests validation
             try:
-                date_obj = datetime.strptime(start_date, '%Y-%m-%d')
-                today = datetime.now().date()
-                if date_obj.date() < today:
-                    errors.append('Start date cannot be in the past.')
+                guests_int = int(guests)
+                if guests_int < 1:
+                    errors.append('Number of guests must be at least 1.')
+                elif guests_int > 50:
+                    errors.append('Number of guests cannot exceed 50.')
             except ValueError:
-                errors.append('Please enter a valid date.')
-        
-        if errors:
-            for error in errors:
-                messages.error(request, error)
-            return render(request, 'user/package_detail.html', {
-                'package': package,
-                'today': datetime.now(),
-                'form_data': {
-                    'name': name,
-                    'email': email,
-                    'phone': phone,
-                    'guests': guests,
-                    'start_date': start_date
+                errors.append('Please enter a valid number of guests.')
+            
+            # Start date validation
+            if not start_date:
+                errors.append('Start date is required.')
+            else:
+                try:
+                    date_obj = datetime.strptime(start_date, '%Y-%m-%d')
+                    today = datetime.now().date()
+                    if date_obj.date() < today:
+                        errors.append('Start date cannot be in the past.')
+                except ValueError:
+                    errors.append('Please enter a valid date.')
+            
+            if errors:
+                for error in errors:
+                    messages.error(request, error)
+                return render(request, 'user/package_detail.html', {
+                    'package': package,
+                    'today': datetime.now(),
+                    'form_data': {
+                        'name': name,
+                        'email': email,
+                        'phone': phone,
+                        'guests': guests,
+                        'start_date': start_date
+                    }
+                })
+            
+            # If validation passes, create customer and lead
+            # Split name into first and last
+            name_parts = name.split(' ', 1)
+            first_name = name_parts[0]
+            last_name = name_parts[1] if len(name_parts) > 1 else ''
+            
+            # Check if customer already exists with this phone number
+            customer, created = Customer.objects.get_or_create(
+                contact_number=phone,
+                defaults={
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'display_name': name,
+                    'whatsapp_number': phone,
+                    'same_as_whatsapp': True,
+                    'customer_type': 'Individual',
+                    'place': f'Booking: {package.name}'
                 }
-            })
+            )
+            
+            Lead.objects.create(
+                full_name=name,
+                mobile_number=phone,
+                email=email,
+                source='Website',
+                enquiry_type=package.category,  # Use package category (Domestic/International)
+                package_name=package.name,
+                remarks=f'Package: {package.name} | Email: {email} | Guests: {guests} | Start Date: {start_date}'
+            )
+            
+            messages.success(request, 'Booking request submitted! Our team will contact you soon.')
+            return redirect('user_panel:package_detail', slug=slug)
         
-        # If validation passes, create customer and lead
-        # Split name into first and last
-        name_parts = name.split(' ', 1)
-        first_name = name_parts[0]
-        last_name = name_parts[1] if len(name_parts) > 1 else ''
-        
-        # Check if customer already exists with this phone number
-        customer, created = Customer.objects.get_or_create(
-            contact_number=phone,
-            defaults={
-                'first_name': first_name,
-                'last_name': last_name,
-                'display_name': name,
-                'whatsapp_number': phone,
-                'same_as_whatsapp': True,
-                'customer_type': 'Individual',
-                'place': f'Booking: {package.name}'
-            }
-        )
-        
-        Lead.objects.create(
-            full_name=name,
-            mobile_number=phone,
-            email=email,
-            source='Website',
-            enquiry_type=package.category,  # Use package category (Domestic/International)
-            package_name=package.name,
-            remarks=f'Package: {package.name} | Email: {email} | Guests: {guests} | Start Date: {start_date}'
-        )
-        
-        messages.success(request, 'Booking request submitted! Our team will contact you soon.')
-        return redirect('user_panel:package_detail', slug=slug)
+        # ============ MESSAGE FORM ============
+        elif form_type == 'message':
+            message_name = request.POST.get('message_name', '').strip()
+            message_phone = request.POST.get('message_phone', '').strip()
+            message_email = request.POST.get('message_email', '').strip()
+            message_text = request.POST.get('message_text', '').strip()
+            
+            # Validation
+            errors = []
+            
+            # Name validation
+            if not message_name or len(message_name) < 2:
+                errors.append('Name is required and must be at least 2 characters.')
+            
+            # Email validation
+            email_pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+            if not message_email or not re.match(email_pattern, message_email):
+                errors.append('Please enter a valid email address.')
+            
+            # Phone validation (exactly 10 digits)
+            phone_digits = re.sub(r'\D', '', message_phone)
+            
+            if not message_phone:
+                errors.append('Phone number is required.')
+            elif len(phone_digits) != 10:
+                errors.append('Phone number must be exactly 10 digits.')
+            elif not phone_digits.isdigit():
+                errors.append('Phone number must contain only digits.')
+            
+            # Message validation
+            if not message_text or len(message_text) < 10:
+                errors.append('Message is required and must be at least 10 characters.')
+            
+            if errors:
+                for error in errors:
+                    messages.error(request, error)
+                return render(request, 'user/package_detail.html', {
+                    'package': package,
+                    'today': datetime.now()
+                })
+            
+            # If validation passes, create customer and lead
+            # Split name into first and last
+            name_parts = message_name.split(' ', 1)
+            first_name = name_parts[0]
+            last_name = name_parts[1] if len(name_parts) > 1 else ''
+            
+            # Check if customer already exists with this phone number
+            customer, created = Customer.objects.get_or_create(
+                contact_number=message_phone,
+                defaults={
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'display_name': message_name,
+                    'email': message_email,
+                    'whatsapp_number': message_phone,
+                    'same_as_whatsapp': True,
+                    'customer_type': 'Individual',
+                    'place': ''
+                }
+            )
+            
+            # Create lead with the message
+            Lead.objects.create(
+                full_name=message_name,
+                mobile_number=message_phone,
+                email=message_email,
+                source='Website',
+                enquiry_type=package.category,  # Use package category (Domestic/International)
+                package_name=package.name,
+                message=message_text,
+                remarks=f'Package Inquiry: {package.name}\n\nMessage: {message_text}'
+            )
+            
+            messages.success(request, 'Your message has been sent successfully! Our team will contact you soon.')
+            return redirect('user_panel:package_detail', slug=slug)
     
     return render(request, 'user/package_detail.html', {
         'package': package,
