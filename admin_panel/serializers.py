@@ -159,33 +159,20 @@ class BlogListSerializer(serializers.ModelSerializer):
 
 # ==================== LEAD SERIALIZER ====================
 class LeadSerializer(serializers.ModelSerializer):
-    employee_name = serializers.CharField(source="employee.name", read_only=True)
-
     class Meta:
         model = Lead
         fields = [
-            "id",
-            "full_name",
-            "mobile_number",
-            "place",
-            "email",
-            "message",
-            "package",
-            "package_name",
-            "property_name",
-            "source",
-            "enquiry_type",
-            "status",
-            "is_viewed",
-            "remarks",
-            "employee",
-            "employee_name",
-            "created_at",
-            "updated_at",
+            'id',
+            'full_name',
+            'mobile_number',
+            'place',
+            'enquiry_type',
+            'source',
+            'employee',
+            'remarks',
+            'created_at',
+            'updated_at',
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "employee_name"]
-
-
 # ==================== PROPERTY SERIALIZER ====================
 class PropertySerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()

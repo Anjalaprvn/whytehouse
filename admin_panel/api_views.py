@@ -183,56 +183,36 @@ class BlogViewSet(viewsets.ModelViewSet):
 
 # ==================== LEAD VIEWSET ====================
 class LeadViewSet(viewsets.ModelViewSet):
-    http_method_names = ["get", "post", "put", "delete", "head", "options"]
+    http_method_names = ["get", "post", "put", "delete"]
     serializer_class = LeadSerializer
     queryset = Lead.objects.all().order_by("-created_at")
 
     def get_queryset(self):
         qs = super().get_queryset()
 
-        enquiry_type = (self.request.query_params.get("type") or "").strip()
-        source_filter = (self.request.query_params.get("source") or "").strip()
-        status_filter = (self.request.query_params.get("status") or "").strip()
-        new_leads = (self.request.query_params.get("new") or "").strip().lower()
-        search_query = (self.request.query_params.get("search") or "").strip()
+        enquiry_type = (self.request.query_params.get("enquiry_type") or "").strip()
+        source = (self.request.query_params.get("source") or "").strip()
+        employee = (self.request.query_params.get("employee") or "").strip()
+        search = (self.request.query_params.get("search") or "").strip()
 
         if enquiry_type:
             qs = qs.filter(enquiry_type=enquiry_type)
 
-        if source_filter:
-            qs = qs.filter(source=source_filter)
+        if source:
+            qs = qs.filter(source=source)
 
-        if status_filter:
-            qs = qs.filter(status=status_filter)
+        if employee:
+            qs = qs.filter(employee_id=employee)
 
-        if new_leads == "true":
-            qs = qs.filter(source="Enquire Now")
-
-        if search_query:
+        if search:
             qs = qs.filter(
-                Q(full_name__icontains=search_query) |
-                Q(mobile_number__icontains=search_query) |
-                Q(place__icontains=search_query) |
-                Q(email__icontains=search_query) |
-                Q(package__icontains=search_query) |
-                Q(package_name__icontains=search_query) |
-                Q(property_name__icontains=search_query) |
-                Q(remarks__icontains=search_query)
+                Q(full_name__icontains=search) |
+                Q(mobile_number__icontains=search) |
+                Q(place__icontains=search) |
+                Q(remarks__icontains=search)
             )
 
         return qs
-
-    @action(detail=False, methods=["get"])
-    def summary(self, request):
-        return Response({
-            "general_count": Lead.objects.filter(enquiry_type="General").count(),
-            "international_count": Lead.objects.filter(enquiry_type="International").count(),
-            "domestic_count": Lead.objects.filter(enquiry_type="Domestic").count(),
-            "hospitality_count": Lead.objects.filter(enquiry_type="Hospitality").count(),
-            "new_leads_count": Lead.objects.filter(source="Enquire Now").count(),
-            "total": Lead.objects.count(),
-        })
-
 
 # ==================== PROPERTY VIEWSET ====================
 class PropertyViewSet(viewsets.ModelViewSet):
