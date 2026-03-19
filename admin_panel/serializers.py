@@ -202,6 +202,16 @@ class LeadSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+
+    def validate_full_name(self, value):
+        if any(c.isdigit() for c in value):
+            raise serializers.ValidationError("Full name must not contain numbers.")
+        return value
+
+    def validate_mobile_number(self, value):
+        if not value.strip().lstrip('+').isdigit():
+            raise serializers.ValidationError("Mobile number must contain digits only.")
+        return value
 # ==================== PROPERTY SERIALIZER ====================
 class PropertySerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
@@ -410,6 +420,34 @@ class CustomerSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
+    def _no_digits(self, value, field):
+        if value and any(c.isdigit() for c in value):
+            raise serializers.ValidationError(f"{field} must not contain numbers.")
+        return value
+
+    def _digits_only(self, value, field):
+        if value and not value.strip().lstrip('+').isdigit():
+            raise serializers.ValidationError(f"{field} must contain digits only.")
+        return value
+
+    def validate_first_name(self, value):
+        return self._no_digits(value, "First name")
+
+    def validate_last_name(self, value):
+        return self._no_digits(value, "Last name")
+
+    def validate_display_name(self, value):
+        return self._no_digits(value, "Display name")
+
+    def validate_contact_number(self, value):
+        return self._digits_only(value, "Contact number")
+
+    def validate_whatsapp_number(self, value):
+        return self._digits_only(value, "WhatsApp number")
+
+    def validate_work_number(self, value):
+        return self._digits_only(value, "Work number")
+
 
 # ==================== MEAL SERIALIZER ====================
 class MealSerializer(serializers.ModelSerializer):
@@ -425,6 +463,11 @@ class MealSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+    def validate_name(self, value):
+        if any(c.isdigit() for c in value):
+            raise serializers.ValidationError("Meal name must not contain numbers.")
+        return value
 
 
 # ==================== ACCOUNT SERIALIZER ====================
@@ -443,6 +486,31 @@ class AccountSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+    def validate_account_name(self, value):
+        if any(c.isdigit() for c in value):
+            raise serializers.ValidationError("Account name must not contain numbers.")
+        return value
+
+    def validate_account_number(self, value):
+        if not value.strip().isdigit():
+            raise serializers.ValidationError("Account number must contain digits only.")
+        return value
+
+    def validate_bank_name(self, value):
+        if any(c.isdigit() for c in value):
+            raise serializers.ValidationError("Bank name must not contain numbers.")
+        return value
+
+    def validate_branch_name(self, value):
+        if value and any(c.isdigit() for c in value):
+            raise serializers.ValidationError("Branch name must not contain numbers.")
+        return value
+
+    def validate_ifsc_code(self, value):
+        if value and not value.strip().isalnum():
+            raise serializers.ValidationError("IFSC code must be alphanumeric only.")
+        return value.upper() if value else value
 
 
 # ==================== INQUIRY SERIALIZER ====================
@@ -464,6 +532,16 @@ class InquirySerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "created_at", "lead_name"]
+
+    def validate_name(self, value):
+        if any(c.isdigit() for c in value):
+            raise serializers.ValidationError("Name must not contain numbers.")
+        return value
+
+    def validate_phone(self, value):
+        if not value.strip().lstrip('+').isdigit():
+            raise serializers.ValidationError("Phone must contain digits only.")
+        return value
 
 
 # ==================== EMPLOYEE SERIALIZER ====================
@@ -495,6 +573,21 @@ class EmployeeSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(obj.profile_picture.url)
         return None
 
+    def validate_name(self, value):
+        if any(c.isdigit() for c in value):
+            raise serializers.ValidationError("Name must not contain numbers.")
+        return value
+
+    def validate_phone(self, value):
+        if not value.strip().lstrip('+').isdigit():
+            raise serializers.ValidationError("Phone must contain digits only.")
+        return value
+
+    def validate_salary(self, value):
+        if value is not None and value < 0:
+            raise serializers.ValidationError("Salary must be a positive number.")
+        return value
+
 
 # ==================== RESORT SERIALIZER ====================
 class ResortSerializer(serializers.ModelSerializer):
@@ -513,6 +606,21 @@ class ResortSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+    def validate_resort_name(self, value):
+        if any(c.isdigit() for c in value):
+            raise serializers.ValidationError("Resort name must not contain numbers.")
+        return value
+
+    def validate_contact_person(self, value):
+        if value and any(c.isdigit() for c in value):
+            raise serializers.ValidationError("Contact person name must not contain numbers.")
+        return value
+
+    def validate_contact_number(self, value):
+        if value and not value.strip().lstrip('+').isdigit():
+            raise serializers.ValidationError("Contact number must contain digits only.")
+        return value
 
 
 # ==================== VOUCHER SERIALIZER ====================
@@ -665,3 +773,18 @@ class FeedbackSerializer(serializers.ModelSerializer):
             "images",
         ]
         read_only_fields = ["id", "created_at", "images"]
+
+    def validate_name(self, value):
+        if any(c.isdigit() for c in value):
+            raise serializers.ValidationError("Name must not contain numbers.")
+        return value
+
+    def validate_mobile_number(self, value):
+        if value and not value.strip().isdigit():
+            raise serializers.ValidationError("Mobile number must contain digits only.")
+        return value
+
+    def validate_rating(self, value):
+        if value not in range(1, 6):
+            raise serializers.ValidationError("Rating must be between 1 and 5.")
+        return value
