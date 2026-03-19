@@ -399,7 +399,35 @@ class TravelPackageListSerializer(serializers.ModelSerializer):
 
 # ==================== CUSTOMER SERIALIZER ====================
 class CustomerSerializer(serializers.ModelSerializer):
-    customer_type = serializers.ChoiceField(choices=['Individual', 'Business'])
+    customer_type = serializers.ChoiceField(
+        choices=['Individual', 'Business'],
+        required=True,
+        error_messages={
+            'required': 'This field is required.',
+            'invalid_choice': 'Invalid customer type.'
+        }
+    )
+    first_name = serializers.CharField(
+        required=True,
+        error_messages={
+            'required': 'This field is required.',
+            'blank': 'This field may not be blank.'
+        }
+    )
+    display_name = serializers.CharField(
+        required=True,
+        error_messages={
+            'required': 'This field is required.',
+            'blank': 'This field may not be blank.'
+        }
+    )
+    contact_number = serializers.CharField(
+        required=True,
+        error_messages={
+            'required': 'This field is required.',
+            'blank': 'This field may not be blank.'
+        }
+    )
     salutation = serializers.ChoiceField(
         choices=[('Mr.', 'Mr.'), ('Ms.', 'Ms.'), ('Mrs.', 'Mrs.'), ('Dr.', 'Dr.')],
         required=False,
@@ -426,6 +454,15 @@ class CustomerSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+        extra_kwargs = {
+            'last_name': {'required': False, 'allow_blank': True},
+            'email': {'required': False, 'allow_blank': True},
+            'place': {'required': False, 'allow_blank': True},
+            'work_number': {'required': False, 'allow_blank': True},
+            'gst_number': {'required': False, 'allow_blank': True},
+            'whatsapp_number': {'required': False, 'allow_blank': True},
+            'same_as_whatsapp': {'required': False},
+        }
 
     def _no_digits(self, value, field):
         if value and any(c.isdigit() for c in value):
@@ -504,6 +541,15 @@ class CustomerSerializer(serializers.ModelSerializer):
 
 # ==================== MEAL SERIALIZER ====================
 class MealSerializer(serializers.ModelSerializer):
+    included_meals_list = serializers.SerializerMethodField(read_only=True)
+    included_meals = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text="Comma-separated meal items (e.g. Breakfast, Lunch, Dinner)",
+        style={"base_template": "textarea.html", "rows": 2,
+               "placeholder": "Breakfast, Lunch, Dinner"},
+    )
+
     class Meta:
         model = Meal
         fields = [
@@ -511,16 +557,39 @@ class MealSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "included_meals",
+            "included_meals_list",
             "status",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "included_meals_list", "created_at", "updated_at"]
+
+    def get_included_meals_list(self, obj):
+        if obj.included_meals:
+            return [m.strip() for m in obj.included_meals.split(',') if m.strip()]
+        return []
 
     def validate_name(self, value):
-        if any(c.isdigit() for c in value):
-            raise serializers.ValidationError("Meal name must not contain numbers.")
-        return value
+        if not value or not value.strip():
+            raise serializers.ValidationError("Meal plan name is required.")
+        if len(value.strip()) < 2 or len(value.strip()) > 50:
+            raise serializers.ValidationError("Meal plan name must be between 2 and 50 characters.")
+        instance = getattr(self, 'instance', None)
+        qs = Meal.objects.filter(name=value.strip())
+        if instance:
+            qs = qs.exclude(pk=instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("A meal plan with this name already exists.")
+        return value.strip()
+
+    def validate_included_meals(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError("Please provide at least one meal item.")
+        items = [m.strip() for m in value.split(',') if m.strip()]
+        if not items:
+            raise serializers.ValidationError("Please provide at least one meal item.")
+        # Normalise back to clean comma-separated string
+        return ', '.join(items)
 
 
 # ==================== ACCOUNT SERIALIZER ====================

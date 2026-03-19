@@ -123,6 +123,38 @@
       font-weight:600;
       margin:0 0 10px;
     }
+
+    .add-meal-row{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-bottom:16px;
+      flex-wrap:wrap;
+    }
+    .add-meal-input{
+      flex:1;
+      min-width:240px;
+    }
+    .add-meal-btn{
+      border:none;
+      background:var(--accent);
+      color:#111;
+      font-weight:600;
+      border-radius:14px;
+      padding:13px 18px;
+      cursor:pointer;
+      box-shadow:0 10px 18px rgba(212,164,47,.22);
+      transition:.2s ease;
+    }
+    .add-meal-btn:hover{ transform:translateY(-1px); }
+    .meal-error{
+      display:none;
+      color:var(--danger);
+      font-size:13px;
+      margin-top:-6px;
+      margin-bottom:10px;
+    }
+
     .meals-grid{
       display:grid;
       grid-template-columns: repeat(2, minmax(240px, 1fr));
@@ -195,6 +227,8 @@
     }
     @media (max-width: 720px){
       .main{margin-left:0}
+      .add-meal-row{ flex-direction:column; align-items:stretch; }
+      .add-meal-btn{ width:100%; }
     }
 </style>
 {% endblock %}
@@ -248,7 +282,13 @@
           <div class="meals-block">
             <div class="meals-title">Included Meals</div>
 
-            <div class="meals-grid">
+            <div class="add-meal-row">
+              <input type="text" id="newMealItem" class="input add-meal-input" placeholder="Enter new meal item" />
+              <button type="button" id="addMealBtn" class="add-meal-btn">Add Item</button>
+            </div>
+            <div id="mealError" class="meal-error">Please enter a valid unique meal item.</div>
+
+            <div class="meals-grid" id="mealsGrid">
 
               <label class="meal-option">
                 <input type="checkbox" name="included_meals" value="Breakfast" {% if 'Breakfast' in meal.included_meals %}checked{% endif %}>
@@ -280,6 +320,13 @@
                 <span>All Meals</span>
               </label>
 
+              {% for item in extra_meals %}
+              <label class="meal-option">
+                <input type="checkbox" name="included_meals" value="{{ item }}" checked>
+                <span>{{ item }}</span>
+              </label>
+              {% endfor %}
+
             </div>
           </div>
 
@@ -297,28 +344,86 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      const mealsGrid = document.getElementById('mealsGrid');
       const allMealsCheckbox = document.querySelector('input[value="All Meals"]');
-      const individualMeals = document.querySelectorAll('input[name="included_meals"]:not([value="All Meals"])');
+      const addMealBtn = document.getElementById('addMealBtn');
+      const newMealInput = document.getElementById('newMealItem');
+      const mealError = document.getElementById('mealError');
 
-      // When "All Meals" is clicked
-      allMealsCheckbox.addEventListener('change', function() {
-        individualMeals.forEach(meal => {
-          meal.checked = this.checked;
-        });
-      });
+      function getIndividualMeals() {
+        return document.querySelectorAll('input[name="included_meals"]:not([value="All Meals"])');
+      }
 
-      // When individual meals are clicked
-      individualMeals.forEach(meal => {
-        meal.addEventListener('change', function() {
-          // If all individual meals are checked, auto-check "All Meals"
-          const allChecked = Array.from(individualMeals).every(m => m.checked);
-          if (allChecked) {
-            allMealsCheckbox.checked = true;
-          } else {
-            // If any individual meal is unchecked, uncheck "All Meals"
-            allMealsCheckbox.checked = false;
+      function syncAllMealsState() {
+        const individualMeals = Array.from(getIndividualMeals());
+        allMealsCheckbox.checked = individualMeals.length > 0 && individualMeals.every(m => m.checked);
+      }
+
+      function bindIndividualMealEvents(checkbox) {
+        checkbox.addEventListener('change', syncAllMealsState);
+      }
+
+      function bindAllExistingIndividualMeals() {
+        getIndividualMeals().forEach(meal => {
+          if (!meal.dataset.bound) {
+            bindIndividualMealEvents(meal);
+            meal.dataset.bound = 'true';
           }
         });
+      }
+
+      allMealsCheckbox.addEventListener('change', function() {
+        getIndividualMeals().forEach(meal => { meal.checked = this.checked; });
+      });
+
+      bindAllExistingIndividualMeals();
+
+      function mealAlreadyExists(name) {
+        return Array.from(document.querySelectorAll('input[name="included_meals"]'))
+          .some(item => item.value.trim().toLowerCase() === name.trim().toLowerCase());
+      }
+
+      function createMealOption(mealName) {
+        const label = document.createElement('label');
+        label.className = 'meal-option';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.name = 'included_meals';
+        checkbox.value = mealName;
+        const span = document.createElement('span');
+        span.textContent = mealName;
+        label.appendChild(checkbox);
+        label.appendChild(span);
+        mealsGrid.insertBefore(label, allMealsCheckbox.closest('.meal-option'));
+        bindIndividualMealEvents(checkbox);
+        if (allMealsCheckbox.checked) checkbox.checked = true;
+        syncAllMealsState();
+      }
+
+      addMealBtn.addEventListener('click', function() {
+        const mealName = newMealInput.value.trim();
+        if (!mealName) {
+          mealError.textContent = 'Please enter a meal item name.';
+          mealError.style.display = 'block';
+          return;
+        }
+        if (mealAlreadyExists(mealName)) {
+          mealError.textContent = 'This meal item already exists.';
+          mealError.style.display = 'block';
+          return;
+        }
+        createMealOption(mealName);
+        newMealInput.value = '';
+        mealError.style.display = 'none';
+        newMealInput.focus();
+      });
+
+      newMealInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); addMealBtn.click(); }
+      });
+
+      newMealInput.addEventListener('input', function() {
+        if (this.value.trim()) mealError.style.display = 'none';
       });
     });
   </script>

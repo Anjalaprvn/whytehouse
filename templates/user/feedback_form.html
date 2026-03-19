@@ -189,8 +189,7 @@
     input[type="email"],
     input[type="tel"],
     textarea,
-    select,
-    input[type="file"]{
+    select{
       width:100%;
       padding:13px 14px;
       border:1px solid var(--border);
@@ -209,6 +208,11 @@
       box-shadow:var(--focus);
     }
 
+    .input-error{
+      border-color:#dc2626 !important;
+      box-shadow:0 0 0 4px rgba(220,38,38,.10) !important;
+    }
+
     textarea{
       min-height:150px;
       resize:vertical;
@@ -220,6 +224,21 @@
       font-size:12px;
       color:var(--muted);
       line-height:1.5;
+    }
+
+    .error-message{
+      margin-top:6px;
+      font-size:12px;
+      color:#dc2626;
+      font-weight:600;
+      display:none;
+    }
+
+    .char-counter{
+      margin-top:6px;
+      font-size:12px;
+      color:var(--muted);
+      text-align:right;
     }
 
     .section-box{
@@ -282,13 +301,75 @@
       margin-top:14px;
     }
 
-    .preview-container img{
+    .preview-item{
+      position:relative;
+      width:120px;
+      height:90px;
+    }
+
+    .preview-item img{
       width:120px;
       height:90px;
       object-fit:cover;
       border-radius:10px;
       border:1px solid var(--border);
       box-shadow:0 4px 10px rgba(0,0,0,0.08);
+      background:#fff;
+      display:block;
+    }
+
+    .remove-image-btn{
+      position:absolute;
+      top:-8px;
+      right:-8px;
+      width:26px;
+      height:26px;
+      border:none;
+      border-radius:50%;
+      background:#dc2626;
+      color:#fff;
+      font-size:12px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 4px 10px rgba(0,0,0,0.15);
+      z-index:2;
+    }
+
+    .remove-image-btn:hover{
+      background:#b91c1c;
+    }
+
+    .add-image-box{
+      width:120px;
+      height:90px;
+      border:2px dashed var(--border);
+      border-radius:10px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      background:#fafafa;
+      color:var(--muted);
+      transition:.2s ease;
+      flex-shrink:0;
+    }
+
+    .add-image-box i{
+      font-size:20px;
+      margin-bottom:4px;
+    }
+
+    .add-image-box span{
+      font-size:12px;
+      font-weight:600;
+    }
+
+    .add-image-box:hover{
+      border-color:var(--primary);
+      color:var(--primary);
       background:#fff;
     }
 
@@ -460,26 +541,46 @@
             </div>
           {% endif %}
 
-          <form method="post" action="{% url 'user_panel:feedback_form' %}" enctype="multipart/form-data">
+          <form id="feedbackForm" method="post" action="{% url 'user_panel:feedback_form' %}" enctype="multipart/form-data" novalidate>
             {% csrf_token %}
 
             <div class="grid">
               <div class="field">
                 <label for="name">Full Name <span class="req-dot"></span></label>
-                <input type="text" id="name" name="name" required value="{{ request.POST.name }}" placeholder="Enter your full name">
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  required
+                  maxlength="50"
+                  value="{{ request.POST.name }}"
+                  placeholder="Enter your full name"
+                >
+                <div class="help"></div>
+                <div class="error-message" id="nameError"></div>
               </div>
 
               <div class="field">
                 <label for="email">Email Address <span class="req-dot"></span></label>
                 <input type="email" id="email" name="email" required value="{{ request.POST.email }}" placeholder="Enter your email address">
+                <div class="error-message" id="emailError"></div>
               </div>
             </div>
 
             <div class="grid">
               <div class="field">
                 <label for="mobile_number">Mobile Number <span class="hint">(optional)</span></label>
-                <input type="tel" id="mobile_number" name="mobile_number" maxlength="10" value="{{ request.POST.mobile_number }}" placeholder="10-digit number">
-                <div class="help">Example: 9876543210</div>
+                <input
+                  type="tel"
+                  id="mobile_number"
+                  name="mobile_number"
+                  maxlength="10"
+                  inputmode="numeric"
+                  value="{{ request.POST.mobile_number }}"
+                  placeholder="10-digit number"
+                >
+                <div class="help"></div>
+                <div class="error-message" id="mobileError"></div>
               </div>
 
               <div class="field">
@@ -490,6 +591,7 @@
                     <option value="{{ value }}" {% if request.POST.feedback_type == value %}selected{% endif %}>{{ label }}</option>
                   {% endfor %}
                 </select>
+                <div class="error-message" id="feedbackTypeError"></div>
               </div>
             </div>
 
@@ -502,11 +604,19 @@
                   name="feedback_images"
                   accept="image/png,image/jpeg,image/jpg"
                   multiple
+                  hidden
                 >
                 <div class="help">
-                  You can upload photos related to your trip, destination, stay, or overall experience.
+                  You can upload multiple photos related to your trip, destination, stay, or overall experience.
                 </div>
-                <div id="imagePreviewContainer" class="preview-container"></div>
+                <div class="error-message" id="imageError"></div>
+
+                <div id="imagePreviewContainer" class="preview-container">
+                  <div class="add-image-box" id="addImageBox">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Add</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -533,11 +643,22 @@
                 <div class="rating-text" id="ratingText">Tap to rate</div>
               </div>
               <div class="help">Select a rating based on your overall experience.</div>
+              <div class="error-message" id="ratingError"></div>
             </div>
 
             <div class="field">
               <label for="feedback">Your Feedback <span class="req-dot"></span></label>
-              <textarea id="feedback" name="feedback" required placeholder="Tell us about your travel experience with Whytehouse...">{{ request.POST.feedback }}</textarea>
+              <textarea
+                id="feedback"
+                name="feedback"
+                required
+                minlength="20"
+                maxlength="1000"
+                placeholder="Tell us about your travel experience with Whytehouse..."
+              >{{ request.POST.feedback }}</textarea>
+              <div class="char-counter"><span id="feedbackCharCount">0</span> / 1000 characters</div>
+              <div class="help">Minimum 20 characters required.</div>
+              <div class="error-message" id="feedbackError"></div>
             </div>
 
             <div class="actions">
@@ -580,42 +701,289 @@
             syncRating();
           })();
 
+          const formEl = document.getElementById("feedbackForm");
+          const clearBtn = document.getElementById("clearFormBtn");
+
+          const nameInput = document.getElementById("name");
+          const emailInput = document.getElementById("email");
+          const mobileInput = document.getElementById("mobile_number");
+          const feedbackTypeInput = document.getElementById("feedback_type");
+          const feedbackInput = document.getElementById("feedback");
           const imageInput = document.getElementById("feedback_images");
           const previewContainer = document.getElementById("imagePreviewContainer");
+          const addImageBox = document.getElementById("addImageBox");
+          const feedbackCharCount = document.getElementById("feedbackCharCount");
 
-          imageInput.addEventListener("change", function () {
+          const nameError = document.getElementById("nameError");
+          const emailError = document.getElementById("emailError");
+          const mobileError = document.getElementById("mobileError");
+          const feedbackTypeError = document.getElementById("feedbackTypeError");
+          const ratingError = document.getElementById("ratingError");
+          const feedbackError = document.getElementById("feedbackError");
+          const imageError = document.getElementById("imageError");
+
+          let selectedFiles = [];
+
+          function showError(input, errorEl, message) {
+            if (input) input.classList.add("input-error");
+            errorEl.style.display = "block";
+            errorEl.textContent = message;
+          }
+
+          function clearError(input, errorEl) {
+            if (input) input.classList.remove("input-error");
+            errorEl.style.display = "none";
+            errorEl.textContent = "";
+          }
+
+          function updateCharCount() {
+            const count = feedbackInput.value.trim().length;
+            feedbackCharCount.textContent = count;
+          }
+
+          function validateName() {
+            const value = nameInput.value.trim();
+            const regex = /^[A-Za-z\s]+$/;
+
+            if (!value) {
+              showError(nameInput, nameError, "Full name is required.");
+              return false;
+            }
+
+            if (!regex.test(value)) {
+              showError(nameInput, nameError, "Name must contain only letters and spaces.");
+              return false;
+            }
+
+            if (value.length < 3) {
+              showError(nameInput, nameError, "Name must be at least 3 characters.");
+              return false;
+            }
+
+            clearError(nameInput, nameError);
+            return true;
+          }
+
+          function validateEmail() {
+            const value = emailInput.value.trim();
+
+            if (!value) {
+              showError(emailInput, emailError, "Email address is required.");
+              return false;
+            }
+
+            if (!emailInput.checkValidity()) {
+              showError(emailInput, emailError, "Enter a valid email address.");
+              return false;
+            }
+
+            clearError(emailInput, emailError);
+            return true;
+          }
+
+          function validateMobile() {
+            const value = mobileInput.value.trim();
+
+            if (!value) {
+              clearError(mobileInput, mobileError);
+              return true;
+            }
+
+            if (!/^\d{10}$/.test(value)) {
+              showError(mobileInput, mobileError, "Mobile number must be exactly 10 digits.");
+              return false;
+            }
+
+            clearError(mobileInput, mobileError);
+            return true;
+          }
+
+          function validateFeedbackType() {
+            if (!feedbackTypeInput.value) {
+              showError(feedbackTypeInput, feedbackTypeError, "Please select a feedback type.");
+              return false;
+            }
+
+            clearError(feedbackTypeInput, feedbackTypeError);
+            return true;
+          }
+
+          function validateRating() {
+            const checked = document.querySelector('input[name="rating"]:checked');
+
+            if (!checked) {
+              ratingError.style.display = "block";
+              ratingError.textContent = "Please select a rating.";
+              return false;
+            }
+
+            ratingError.style.display = "none";
+            ratingError.textContent = "";
+            return true;
+          }
+
+          function validateFeedback() {
+            const value = feedbackInput.value.trim();
+
+            if (!value) {
+              showError(feedbackInput, feedbackError, "Feedback is required.");
+              return false;
+            }
+
+            if (value.length < 20) {
+              showError(feedbackInput, feedbackError, "Feedback must be at least 20 characters.");
+              return false;
+            }
+
+            if (value.length > 1000) {
+              showError(feedbackInput, feedbackError, "Feedback must not exceed 1000 characters.");
+              return false;
+            }
+
+            clearError(feedbackInput, feedbackError);
+            return true;
+          }
+
+          function validateImages(files) {
+            const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+
+            for (let file of files) {
+              if (!allowedTypes.includes(file.type)) {
+                imageError.style.display = "block";
+                imageError.textContent = "Only JPG, JPEG, and PNG images are allowed.";
+                return false;
+              }
+            }
+
+            imageError.style.display = "none";
+            imageError.textContent = "";
+            return true;
+          }
+
+          function updateFileInput() {
+            const dataTransfer = new DataTransfer();
+            selectedFiles.forEach(file => dataTransfer.items.add(file));
+            imageInput.files = dataTransfer.files;
+          }
+
+          function renderImagePreviews() {
             previewContainer.innerHTML = "";
-            const files = this.files;
 
-            if (!files.length) return;
+            selectedFiles.forEach((file, index) => {
+              const wrapper = document.createElement("div");
+              wrapper.className = "preview-item";
 
-            Array.from(files).forEach(file => {
+              const img = document.createElement("img");
+              img.alt = file.name;
+
+              const removeBtn = document.createElement("button");
+              removeBtn.type = "button";
+              removeBtn.className = "remove-image-btn";
+              removeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+              removeBtn.title = "Remove image";
+
+              removeBtn.addEventListener("click", function () {
+                selectedFiles.splice(index, 1);
+                updateFileInput();
+                renderImagePreviews();
+              });
+
               const reader = new FileReader();
-
               reader.onload = function (e) {
-                const img = document.createElement("img");
                 img.src = e.target.result;
-                previewContainer.appendChild(img);
               };
-
               reader.readAsDataURL(file);
+
+              wrapper.appendChild(img);
+              wrapper.appendChild(removeBtn);
+              previewContainer.appendChild(wrapper);
             });
+
+            previewContainer.appendChild(addImageBox);
+          }
+
+          addImageBox.addEventListener("click", function () {
+            imageInput.click();
           });
 
-          const clearBtn = document.getElementById("clearFormBtn");
-          const formEl = document.querySelector("form");
+          nameInput.addEventListener("input", function () {
+            this.value = this.value.replace(/[^A-Za-z\s]/g, "");
+            validateName();
+          });
+
+          mobileInput.addEventListener("input", function () {
+            this.value = this.value.replace(/\D/g, "").slice(0, 10);
+            validateMobile();
+          });
+
+          emailInput.addEventListener("input", validateEmail);
+          feedbackTypeInput.addEventListener("change", validateFeedbackType);
+
+          feedbackInput.addEventListener("input", function () {
+            updateCharCount();
+            validateFeedback();
+          });
+
+          document.querySelectorAll('input[name="rating"]').forEach(radio => {
+            radio.addEventListener("change", validateRating);
+          });
+
+          imageInput.addEventListener("change", function () {
+            const newFiles = Array.from(this.files);
+
+            if (!newFiles.length) return;
+
+            if (!validateImages(newFiles)) {
+              this.value = "";
+              return;
+            }
+
+            selectedFiles = [...selectedFiles, ...newFiles];
+            updateFileInput();
+            renderImagePreviews();
+            this.value = "";
+          });
+
+          formEl.addEventListener("submit", function (e) {
+            const isNameValid = validateName();
+            const isEmailValid = validateEmail();
+            const isMobileValid = validateMobile();
+            const isFeedbackTypeValid = validateFeedbackType();
+            const isRatingValid = validateRating();
+            const isFeedbackValid = validateFeedback();
+
+            if (!(isNameValid && isEmailValid && isMobileValid && isFeedbackTypeValid && isRatingValid && isFeedbackValid)) {
+              e.preventDefault();
+            }
+          });
 
           clearBtn.addEventListener("click", function () {
             formEl.reset();
 
             document.querySelectorAll('input[name="rating"]').forEach(r => r.checked = false);
 
-            const ratingText = document.getElementById("ratingText");
-            if (ratingText) ratingText.textContent = "Tap to rate";
+            selectedFiles = [];
+            updateFileInput();
+            previewContainer.innerHTML = "";
+            previewContainer.appendChild(addImageBox);
 
-            if (imageInput) imageInput.value = "";
-            if (previewContainer) previewContainer.innerHTML = "";
+            clearError(nameInput, nameError);
+            clearError(emailInput, emailError);
+            clearError(mobileInput, mobileError);
+            clearError(feedbackTypeInput, feedbackTypeError);
+            clearError(feedbackInput, feedbackError);
+
+            ratingError.style.display = "none";
+            ratingError.textContent = "";
+            imageError.style.display = "none";
+            imageError.textContent = "";
+
+            document.getElementById("ratingText").textContent = "Tap to rate";
+            updateCharCount();
           });
+
+          updateCharCount();
+          renderImagePreviews();
         </script>
       {% endif %}
 

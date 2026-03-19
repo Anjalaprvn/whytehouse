@@ -16,6 +16,8 @@ from .api_views import (
     InvoiceViewSet,
     FeedbackViewSet,
     validate_package_id,
+    validate_blog_title,
+    validate_blog_slug,
     get_next_invoice_id,
     get_next_voucher_id,
 )
@@ -107,6 +109,8 @@ urlpatterns = [
 
     # Utilities
     path('validate-package-id/<str:package_id>/', validate_package_id, name='validate-package-id'),
+    path('validate-blog-title/', validate_blog_title, name='validate-blog-title'),
+    path('validate-blog-slug/', validate_blog_slug, name='validate-blog-slug'),
     path('get-next-invoice-id/', get_next_invoice_id, name='get-next-invoice-id'),
     path('get-next-voucher-id/', get_next_voucher_id, name='get-next-voucher-id'),
 ]

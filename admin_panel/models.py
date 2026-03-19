@@ -352,6 +352,12 @@ class Meal(models.Model):
     def __str__(self):
         return self.name
     
+    @property
+    def included_meals_list(self):
+        if self.included_meals:
+            return [m.strip() for m in self.included_meals.split(',') if m.strip()]
+        return []
+    
     class Meta:
         ordering = ['-created_at']
 

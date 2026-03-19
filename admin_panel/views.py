@@ -1638,7 +1638,10 @@ def edit_meal(request, meal_id):
     except Meal.DoesNotExist:
         messages.error(request, "Meal not found.")
         return redirect("sales:meal_list")
-    
+
+    DEFAULT_MEALS = {'Breakfast', 'Lunch', 'Dinner', 'Snacks', 'High Tea', 'All Meals'}
+    extra_meals = [m for m in meal.included_meals_list if m not in DEFAULT_MEALS]
+
     if request.method == "POST":
         try:
             meal.name = request.POST.get("name", "").strip()
@@ -1652,9 +1655,10 @@ def edit_meal(request, meal_id):
         except Exception as e:
             return render(request, "admin/sales/meals/edit_meals.html", {
                 "meal": meal,
+                "extra_meals": extra_meals,
                 "error": f"Error updating meal: {str(e)}"
             })
-    return render(request, "admin/sales/meals/edit_meals.html", {"meal": meal})
+    return render(request, "admin/sales/meals/edit_meals.html", {"meal": meal, "extra_meals": extra_meals})
 
 def delete_meal(request, meal_id):
     if request.method != 'POST':
@@ -2066,6 +2070,8 @@ def add_blog(request):
 
             if not title:
                 errors['title'] = "Blog title is required."
+            elif Blog.objects.filter(title__iexact=title).exists():
+                errors['title'] = "A blog with this title already exists."
 
             if not slug:
                 errors['slug'] = "URL slug is required."

@@ -490,11 +490,36 @@ class CustomerViewSet(viewsets.ModelViewSet):
         })
 
 
+class MealBrowsableAPIRenderer(BrowsableAPIRenderer):
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        ret = super().render(data, accepted_media_type, renderer_context)
+        if isinstance(ret, bytes):
+            ret = ret.decode('utf-8')
+        script = """
+        <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('form input:not([type=hidden]):not([type=submit]):not([type=button]), form textarea, form select').forEach(function(el) {
+                if (el.tagName === 'SELECT') {
+                    el.selectedIndex = 0;
+                } else {
+                    el.value = '';
+                }
+            });
+            document.querySelectorAll('.alert').forEach(function(el) {
+                el.style.display = 'none';
+            });
+        });
+        </script>
+        """
+        return (ret + script).encode('utf-8')
+
+
 # ==================== MEAL VIEWSET ====================
 class MealViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put", "delete", "head", "options"]
     queryset = Meal.objects.all().order_by("-created_at")
     serializer_class = MealSerializer
+    renderer_classes = [JSONRenderer, MealBrowsableAPIRenderer]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -882,6 +907,21 @@ class FeedbackImageViewSet(viewsets.ModelViewSet):
         if feedback_id:
             qs = qs.filter(feedback_id=feedback_id)
         return qs
+
+
+# ==================== BLOG TITLE/SLUG VALIDATION ENDPOINTS ====================
+@api_view(["GET"])
+def validate_blog_title(request):
+    title = (request.query_params.get("title") or "").strip()
+    exists = Blog.objects.filter(title__iexact=title).exists() if title else False
+    return Response({"exists": exists})
+
+
+@api_view(["GET"])
+def validate_blog_slug(request):
+    slug = (request.query_params.get("slug") or "").strip()
+    exists = Blog.objects.filter(slug=slug).exists() if slug else False
+    return Response({"exists": exists})
 
 
 # ==================== PACKAGE ID VALIDATION ENDPOINT ====================
