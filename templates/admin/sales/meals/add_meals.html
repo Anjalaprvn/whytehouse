@@ -217,6 +217,17 @@
     }
     .btn:active{transform:translateY(1px)}
 
+    .field-err{
+      display:none;
+      color:var(--danger);
+      font-size:12px;
+      margin-top:5px;
+    }
+    .input.invalid, .textarea.invalid{
+      border-color:var(--danger) !important;
+      background:#fff5f5;
+    }
+
     @media (max-width: 980px){
       .titles h1{font-size:34px}
       .main{padding:26px 18px 60px}
@@ -255,7 +266,7 @@
     <section class="card">
       <h3 class="section-title">Meal Plan Information</h3>
 
-      <form method="POST" action="">
+      <form method="POST" action="" id="mealForm" novalidate>
         {% csrf_token %}
 
         <div class="form-grid">
@@ -265,20 +276,23 @@
             <input
               class="input"
               type="text"
+              id="meal_name"
               name="name"
               placeholder="e.g., EP (European Plan), CP, MAP, AP"
-              required
               value="{{ form.name.value|default_if_none:'' }}"
             />
+            <span class="field-err" id="err_meal_name"></span>
           </div>
 
           <div class="field">
             <label>Description</label>
             <textarea
               class="textarea"
+              id="meal_description"
               name="description"
               placeholder="Brief description of what's included in this meal plan"
             >{{ form.description.value|default_if_none:'' }}</textarea>
+            <span class="field-err" id="err_meal_description"></span>
           </div>
 
           <div class="meals-block">
@@ -344,6 +358,62 @@
   </main>
 
   <script>
+    function showErr(id, msg) {
+      const el = document.getElementById('err_' + id);
+      const inp = document.getElementById(id);
+      el.textContent = msg;
+      el.style.display = msg ? 'block' : 'none';
+      inp.classList.toggle('invalid', !!msg);
+    }
+
+    // AJAX duplicate check + letters-only for meal plan name
+    let dupTimer = null;
+    let mealNameDuplicate = false;
+    document.getElementById('meal_name').addEventListener('input', function() {
+      mealNameDuplicate = false;
+      clearTimeout(dupTimer);
+      const val = this.value.trim();
+      if (!val) { showErr('meal_name', ''); return; }
+      if (/[0-9]/.test(val)) { showErr('meal_name', 'Meal Plan Name must not contain numbers.'); return; }
+      if (/[^A-Za-z\s]/.test(val)) { showErr('meal_name', 'Meal Plan Name must contain letters only.'); return; }
+      showErr('meal_name', '');
+      dupTimer = setTimeout(() => {
+        fetch('{% url "sales:check_meal_name" %}?name=' + encodeURIComponent(val))
+          .then(r => r.json())
+          .then(data => {
+            mealNameDuplicate = data.exists;
+            showErr('meal_name', data.exists ? 'This meal plan name already exists.' : '');
+          });
+      }, 400);
+    });
+
+    // Description: letters, numbers, spaces, . ! ,
+    document.getElementById('meal_description').addEventListener('input', function() {
+      const val = this.value.trim();
+      if (!val) { showErr('meal_description', ''); return; }
+      if (!/^[A-Za-z0-9\s.,!&]+$/.test(val))
+        showErr('meal_description', 'Description may only contain letters, numbers, spaces, . , ! &');
+      else showErr('meal_description', '');
+    });
+
+    document.getElementById('mealForm').addEventListener('submit', function(e) {
+      let valid = true;
+
+      const name = document.getElementById('meal_name').value.trim();
+      if (!name) { showErr('meal_name', 'Meal Plan Name is required.'); valid = false; }
+      else if (/[0-9]/.test(name)) { showErr('meal_name', 'Meal Plan Name must not contain numbers.'); valid = false; }
+      else if (/[^A-Za-z\s]/.test(name)) { showErr('meal_name', 'Meal Plan Name must contain letters only.'); valid = false; }
+      else if (mealNameDuplicate) { showErr('meal_name', 'This meal plan name already exists.'); valid = false; }
+
+      const desc = document.getElementById('meal_description').value.trim();
+      if (desc && !/^[A-Za-z0-9\s.,!&]+$/.test(desc)) {
+        showErr('meal_description', 'Description may only contain letters, numbers, spaces, . , ! &');
+        valid = false;
+      }
+
+      if (!valid) e.preventDefault();
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
       const mealsGrid = document.getElementById('mealsGrid');
       const allMealsCheckbox = document.querySelector('input[value="All Meals"]');

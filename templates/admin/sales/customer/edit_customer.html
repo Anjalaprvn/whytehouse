@@ -185,6 +185,17 @@
       box-shadow:0 10px 18px rgba(212,164,47,.22);
     }
 
+    .err-msg{
+      display:none;
+      color:#d13b3b;
+      font-size:12px;
+      margin-top:5px;
+    }
+    input.invalid, select.invalid{
+      border-color:#d13b3b !important;
+      background:#fff5f5;
+    }
+
     @media (max-width: 980px){
       .grid{grid-template-columns:1fr 1fr}
       .span-2{grid-column:1/-1}
@@ -259,38 +270,43 @@
           <!-- First Name -->
           <div class="field">
             <label>First Name <span class="req">*</span></label>
-            <input type="text" name="first_name" value="{{ customer.first_name }}" required />
+            <input type="text" id="first_name" name="first_name" value="{{ customer.first_name }}" />
+            <span class="err-msg" id="err_first_name"></span>
           </div>
 
           <!-- Last Name -->
           <div class="field">
             <label>Last Name</label>
-            <input type="text" name="last_name" value="{{ customer.last_name|default:"" }}" />
+            <input type="text" id="last_name" name="last_name" value="{{ customer.last_name|default:"" }}" />
+            <span class="err-msg" id="err_last_name"></span>
           </div>
 
           <!-- Customer Display Name -->
           <div class="field span-3">
             <label>Customer Display Name <span class="req">*</span></label>
-            <input type="text" name="display_name" value="{{ customer.display_name }}" required />
+            <input type="text" id="display_name" name="display_name" value="{{ customer.display_name }}" />
+            <span class="err-msg" id="err_display_name"></span>
           </div>
 
           <!-- Customer Place -->
           <div class="field span-3">
             <label>Customer Place</label>
-            <input type="text" name="place" value="{{ customer.place|default:"" }}" />
+            <input type="text" id="place" name="place" value="{{ customer.place|default:"" }}" />
+            <span class="err-msg" id="err_place"></span>
           </div>
 
           <!-- Contact Number -->
           <div class="field span-3">
             <label>Contact Number <span class="req">*</span></label>
-            <input type="text" name="contact_number" value="{{ customer.contact_number }}" placeholder="+91 9876543210" required />
+            <input type="text" id="contactNumber" name="contact_number" value="{{ customer.contact_number }}" placeholder="+91 9876543210" />
+            <span class="err-msg" id="err_contact_number"></span>
           </div>
 
           <!-- Toggle -->
           <div class="field span-3">
             <div class="toggle-row">
               <label class="switch" aria-label="Same as WhatsApp number">
-                <input type="checkbox" name="same_as_whatsapp" {% if customer.same_as_whatsapp %}checked{% endif %} />
+                <input type="checkbox" id="sameAsWhatsapp" name="same_as_whatsapp" {% if customer.same_as_whatsapp %}checked{% endif %} />
                 <span class="slider"></span>
               </label>
               <span>Same as WhatsApp number</span>
@@ -300,19 +316,22 @@
           <!-- WhatsApp Number -->
           <div class="field span-3">
             <label>WhatsApp Number</label>
-            <input type="text" name="whatsapp_number" value="{{ customer.whatsapp_number|default:"" }}" placeholder="+91 9876543210" />
+            <input type="text" id="whatsappNumber" name="whatsapp_number" value="{{ customer.whatsapp_number|default:"" }}" placeholder="+91 9876543210" />
+            <span class="err-msg" id="err_whatsapp_number"></span>
           </div>
 
           <!-- Work Number -->
           <div class="field span-3">
             <label>Work Number</label>
-            <input type="text" name="work_number" value="{{ customer.work_number|default:"" }}" />
+            <input type="text" id="work_number" name="work_number" value="{{ customer.work_number|default:"" }}" />
+            <span class="err-msg" id="err_work_number"></span>
           </div>
 
           <!-- GST Number -->
           <div class="field span-3">
             <label>GST Number</label>
-            <input type="text" name="gst_number" value="{{ customer.gst_number|default:"" }}" />
+            <input type="text" id="gst_number" name="gst_number" value="{{ customer.gst_number|default:"" }}" />
+            <span class="err-msg" id="err_gst_number"></span>
           </div>
         </div>
 
@@ -324,32 +343,112 @@
     </section>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const sameAsWhatsapp = document.querySelector('input[name="same_as_whatsapp"]');
-      const whatsappField = document.querySelector('input[name="whatsapp_number"]');
-      const contactField = document.querySelector('input[name="contact_number"]');
-      
-      function toggleWhatsappField() {
-        if (sameAsWhatsapp.checked) {
-          whatsappField.value = contactField.value;
-          whatsappField.disabled = true;
-          whatsappField.style.backgroundColor = '#f0f0f0';
-        } else {
-          whatsappField.disabled = false;
-          whatsappField.style.backgroundColor = '';
-        }
+    const toggleCheckbox = document.getElementById('sameAsWhatsapp');
+    const contactInput = document.getElementById('contactNumber');
+    const whatsappInput = document.getElementById('whatsappNumber');
+
+    function showErr(id, msg) {
+      const el = document.getElementById('err_' + id);
+      const input = document.getElementById(id);
+      if (!el) return;
+      el.textContent = msg;
+      el.style.display = msg ? 'block' : 'none';
+      if (input) input.classList.toggle('invalid', !!msg);
+    }
+
+    function applyToggleState() {
+      if (toggleCheckbox.checked) {
+        whatsappInput.value = contactInput.value.trim();
+        whatsappInput.readOnly = true;
+      } else {
+        whatsappInput.readOnly = false;
       }
-      
-      // Initial check
-      toggleWhatsappField();
-      
-      // Listen for changes
-      sameAsWhatsapp.addEventListener('change', toggleWhatsappField);
-      contactField.addEventListener('input', function() {
-        if (sameAsWhatsapp.checked) {
-          whatsappField.value = this.value;
-        }
-      });
+    }
+
+    toggleCheckbox.addEventListener('change', applyToggleState);
+
+    contactInput.addEventListener('input', function() {
+      const val = this.value.trim();
+      if (toggleCheckbox.checked) whatsappInput.value = val;
+      if (!val) { showErr('contact_number', ''); return; }
+      if (!/^\+?\d+$/.test(val)) showErr('contact_number', 'Contact number must contain digits only.');
+      else if (val.replace('+','').length < 10 || val.replace('+','').length > 15) showErr('contact_number', 'Contact number must be 10–15 digits.');
+      else showErr('contact_number', '');
     });
+
+    function liveTextOnly(id, label) {
+      const val = document.getElementById(id).value.trim();
+      if (!val) { showErr(id, ''); return; }
+      if (/\d/.test(val)) showErr(id, label + ' must not contain numbers.');
+      else showErr(id, '');
+    }
+
+    function liveDigitsOnly(inputId, errId, label) {
+      const val = document.getElementById(inputId).value.trim();
+      if (!val) { showErr(errId, ''); return; }
+      if (!/^\+?\d+$/.test(val)) showErr(errId, label + ' must contain digits only.');
+      else showErr(errId, '');
+    }
+
+    function liveGST(id) {
+      const val = document.getElementById(id).value.trim();
+      if (!val) { showErr(id, ''); return; }
+      if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i.test(val))
+        showErr(id, 'Invalid GST format (e.g. 22AAAAA0000A1Z5).');
+      else showErr(id, '');
+    }
+
+    document.getElementById('first_name').addEventListener('input', () => liveTextOnly('first_name', 'First name'));
+    document.getElementById('last_name').addEventListener('input', () => liveTextOnly('last_name', 'Last name'));
+    document.getElementById('display_name').addEventListener('input', () => liveTextOnly('display_name', 'Display name'));
+    document.getElementById('place').addEventListener('input', () => liveTextOnly('place', 'Customer Place'));
+    document.getElementById('whatsappNumber').addEventListener('input', () => liveDigitsOnly('whatsappNumber', 'whatsapp_number', 'WhatsApp number'));
+    document.getElementById('work_number').addEventListener('input', () => liveDigitsOnly('work_number', 'work_number', 'Work number'));
+    document.getElementById('gst_number').addEventListener('input', () => liveGST('gst_number'));
+
+    document.querySelector('form').addEventListener('submit', function(e) {
+      let ok = true;
+
+      const fn = document.getElementById('first_name').value.trim();
+      if (!fn) { showErr('first_name', 'First name is required.'); ok = false; }
+      else if (/\d/.test(fn)) { showErr('first_name', 'First name must not contain numbers.'); ok = false; }
+      else showErr('first_name', '');
+
+      const dn = document.getElementById('display_name').value.trim();
+      if (!dn) { showErr('display_name', 'Display name is required.'); ok = false; }
+      else if (/\d/.test(dn)) { showErr('display_name', 'Display name must not contain numbers.'); ok = false; }
+      else showErr('display_name', '');
+
+      const ln = document.getElementById('last_name').value.trim();
+      if (ln && /\d/.test(ln)) { showErr('last_name', 'Last name must not contain numbers.'); ok = false; }
+      else showErr('last_name', '');
+
+      const pl = document.getElementById('place').value.trim();
+      if (pl && /\d/.test(pl)) { showErr('place', 'Customer Place must not contain numbers.'); ok = false; }
+      else showErr('place', '');
+
+      const cn = contactInput.value.trim();
+      if (!cn) { showErr('contact_number', 'Contact number is required.'); ok = false; }
+      else if (!/^\+?\d+$/.test(cn)) { showErr('contact_number', 'Contact number must contain digits only.'); ok = false; }
+      else if (cn.replace('+','').length < 10 || cn.replace('+','').length > 15) { showErr('contact_number', 'Contact number must be 10–15 digits.'); ok = false; }
+      else showErr('contact_number', '');
+
+      const wn = whatsappInput.value.trim();
+      if (wn && !/^\+?\d+$/.test(wn)) { showErr('whatsapp_number', 'WhatsApp number must contain digits only.'); ok = false; }
+      else showErr('whatsapp_number', '');
+
+      const wk = document.getElementById('work_number').value.trim();
+      if (wk && !/^\+?\d+$/.test(wk)) { showErr('work_number', 'Work number must contain digits only.'); ok = false; }
+      else showErr('work_number', '');
+
+      const gst = document.getElementById('gst_number').value.trim();
+      if (gst && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i.test(gst)) {
+        showErr('gst_number', 'Invalid GST format (e.g. 22AAAAA0000A1Z5).'); ok = false;
+      } else showErr('gst_number', '');
+
+      if (!ok) e.preventDefault();
+    });
+
+    applyToggleState();
   </script>
 {% endblock %}

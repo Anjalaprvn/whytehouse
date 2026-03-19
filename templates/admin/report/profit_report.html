@@ -35,6 +35,8 @@ table{width:100%;border-collapse:collapse;margin-top:10px}
 thead th{padding:12px;text-align:left;border-bottom:1px solid #e5e7eb;background:#f9fafb;font-size:13px;font-weight:600}
 tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
 @media (max-width:900px){.grid{grid-template-columns:1fr}.tab{min-width:100px}}
+.err-msg{display:none;color:#dc2626;font-size:12px;margin-top:5px;}
+input[type="date"].invalid{border-color:#dc2626 !important;background:#fff5f5 !important;}
 </style>
 {% endblock %}
 
@@ -59,12 +61,13 @@ tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
     <div class="grid">
       <div class="field">
         <label>From Date <span class="req">*</span></label>
-        <input type="date" name="from_date" value="{{ selected.from_date }}" required>
+        <input type="date" id="from_date" name="from_date" value="{{ selected.from_date }}" required>
       </div>
 
       <div class="field">
         <label>To Date <span class="req">*</span></label>
-        <input type="date" name="to_date" value="{{ selected.to_date }}" required>
+        <input type="date" id="to_date" name="to_date" value="{{ selected.to_date }}" required>
+        <span class="err-msg" id="err_to_date"></span>
       </div>
 
       <div class="field span-2">
@@ -175,4 +178,28 @@ tbody td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:14px}
 {% endblock %}
 
 {% block extra_js %}
+<script>
+function validateDates() {
+  const from = document.getElementById('from_date').value;
+  const to = document.getElementById('to_date').value;
+  const err = document.getElementById('err_to_date');
+  const toInput = document.getElementById('to_date');
+  if (from && to && to < from) {
+    err.textContent = 'To Date must be after From Date.';
+    err.style.display = 'block';
+    toInput.classList.add('invalid');
+    return false;
+  }
+  err.style.display = 'none';
+  toInput.classList.remove('invalid');
+  return true;
+}
+document.getElementById('from_date').addEventListener('change', validateDates);
+document.getElementById('to_date').addEventListener('change', validateDates);
+document.querySelectorAll('button[type="submit"]').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    if (!validateDates()) e.preventDefault();
+  });
+});
+</script>
 {% endblock %}

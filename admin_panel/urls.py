@@ -81,6 +81,7 @@ sales_patterns = [
     path('meals/<int:meal_id>/', views.view_meal, name='view_meal'),
     path('meals/<int:meal_id>/edit/', views.edit_meal, name='edit_meal'),
     path('meals/<int:meal_id>/delete/', views.delete_meal, name='delete_meal'),
+    path('meals/check-name/', views.check_meal_name, name='check_meal_name'),
     #VOUCHER URLS---------------------------------
     path('vouchers/', views.voucher_list, name='voucher_list'),
     path('vouchers/add/', views.add_voucher, name='add_voucher'),

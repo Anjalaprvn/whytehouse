@@ -236,6 +236,17 @@
       color: #d97706;
     }
 
+    .err-msg{
+      display:none;
+      color:#d13b3b;
+      font-size:12px;
+      margin-top:5px;
+    }
+    input.invalid, textarea.invalid{
+      border-color:#d13b3b !important;
+      background:#fff5f5 !important;
+    }
+
     @media (max-width: 980px){
       .grid-3{grid-template-columns:1fr 1fr}
     }
@@ -264,7 +275,7 @@
       </div>
     </div>
 
-    <form method="post">
+    <form method="post" id="invoiceForm" novalidate>
       {% csrf_token %}
 
       <!-- BASIC INFORMATION -->
@@ -287,7 +298,7 @@
 
           <div class="field">
             <label>Invoice No <span class="req">*</span></label>
-            <input type="text" name="invoice_no" placeholder="INV-001" value="{{ invoice.invoice_no }}" required>
+            <input type="text" name="invoice_no" value="{{ invoice.invoice_no }}" readonly style="background:var(--input);cursor:not-allowed;">
           </div>
 
           <div class="field">
@@ -342,7 +353,7 @@
           <div class="field">
             <label>Check-in Date</label>
             <div class="icon-input">
-              <input type="text" name="checkin_date" placeholder="mm/dd/yyyy" value="{% if invoice.checkin_date %}{{ invoice.checkin_date|date:'Y-m-d' }}{% endif %}">
+              <input type="text" id="checkin_date" name="checkin_date" placeholder="mm/dd/yyyy" value="{% if invoice.checkin_date %}{{ invoice.checkin_date|date:'Y-m-d' }}{% endif %}">
               <svg class="right-ic" viewBox="0 0 24 24" fill="none">
                 <rect x="3" y="5" width="18" height="16" rx="2" stroke="#111" stroke-width="2"/>
                 <path d="M8 3V7M16 3V7" stroke="#111" stroke-width="2" stroke-linecap="round"/>
@@ -354,13 +365,14 @@
           <div class="field">
             <label>Check-out Date</label>
             <div class="icon-input">
-              <input type="text" name="checkout_date" placeholder="mm/dd/yyyy" value="{% if invoice.checkout_date %}{{ invoice.checkout_date|date:'Y-m-d' }}{% endif %}">
+              <input type="text" id="checkout_date" name="checkout_date" placeholder="mm/dd/yyyy" value="{% if invoice.checkout_date %}{{ invoice.checkout_date|date:'Y-m-d' }}{% endif %}">
               <svg class="right-ic" viewBox="0 0 24 24" fill="none">
                 <rect x="3" y="5" width="18" height="16" rx="2" stroke="#111" stroke-width="2"/>
                 <path d="M8 3V7M16 3V7" stroke="#111" stroke-width="2" stroke-linecap="round"/>
                 <path d="M3 10H21" stroke="#111" stroke-width="2"/>
               </svg>
             </div>
+            <span class="err-msg" id="err_checkout"></span>
           </div>
 
           <div class="field">
@@ -409,7 +421,8 @@
 
         <div class="field span-2">
           <label>Pax Notes</label>
-          <textarea name="pax_notes" placeholder="Additional notes about passengers...">{{ invoice.pax_notes }}</textarea>
+          <textarea id="pax_notes" name="pax_notes" placeholder="Additional notes about passengers...">{{ invoice.pax_notes }}</textarea>
+          <span class="err-msg" id="err_pax_notes"></span>
         </div>
 
         <div class="grid-3">
@@ -509,7 +522,8 @@
 
           <div class="field span-2">
             <label>Notes</label>
-            <textarea name="notes" placeholder="Additional notes about the invoice...">{{ invoice.notes }}</textarea>
+            <textarea id="notes" name="notes" placeholder="Additional notes about the invoice...">{{ invoice.notes }}</textarea>
+            <span class="err-msg" id="err_notes"></span>
           </div>
         </div>
       </section>
@@ -525,6 +539,51 @@
   </button>
 
   <script>
+    // ── Validation ────────────────────────────────────────────────
+    const NOTES_RE = /^[A-Za-z0-9\s.,&!]+$/;
+
+    function showErr(id, msg) {
+      const el = document.getElementById('err_' + id);
+      const inp = document.getElementById(id);
+      el.textContent = msg;
+      el.style.display = msg ? 'block' : 'none';
+      if (inp) inp.classList.toggle('invalid', !!msg);
+    }
+
+    function validateNotes(id) {
+      const val = document.getElementById(id).value.trim();
+      if (!val) { showErr(id, ''); return true; }
+      if (!NOTES_RE.test(val)) {
+        showErr(id, 'Only letters, numbers, spaces, . , & ! are allowed.');
+        return false;
+      }
+      showErr(id, ''); return true;
+    }
+
+    function validateDates() {
+      const cin = document.getElementById('checkin_date').value;
+      const cout = document.getElementById('checkout_date').value;
+      if (cin && cout && new Date(cout) <= new Date(cin)) {
+        showErr('checkout', 'Check-out date must be after check-in date.');
+        document.getElementById('checkout_date').classList.add('invalid');
+        return false;
+      }
+      showErr('checkout', '');
+      document.getElementById('checkout_date').classList.remove('invalid');
+      return true;
+    }
+
+    document.getElementById('pax_notes').addEventListener('input', () => validateNotes('pax_notes'));
+    document.getElementById('notes').addEventListener('input', () => validateNotes('notes'));
+    document.getElementById('checkout_date').addEventListener('change', validateDates);
+    document.getElementById('checkin_date').addEventListener('change', validateDates);
+
+    document.getElementById('invoiceForm').addEventListener('submit', function(e) {
+      const ok = validateNotes('pax_notes') & validateNotes('notes') & validateDates();
+      if (!ok) e.preventDefault();
+    });
+    // ── End Validation ────────────────────────────────────────────
+
     // Customer data from Django
     const customers = [
       {% for customer in customers %}

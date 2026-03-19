@@ -207,6 +207,16 @@ body{background:#f5f7fb;color:#111}
   .main{padding:18px}
   .grid-2,.counter-row,.price-grid{grid-template-columns:1fr}
 }
+.err-msg{
+  display:none;
+  color:#ef4444;
+  font-size:12px;
+  margin-top:4px;
+}
+.input.invalid,.textarea.invalid{
+  border-color:#ef4444 !important;
+  background:#fff5f5 !important;
+}
 </style>
 {% endblock %}
 
@@ -222,7 +232,7 @@ body{background:#f5f7fb;color:#111}
     </div>
   </div>
 
-  <form method="POST" action="">
+  <form method="POST" action="" id="voucherForm" novalidate>
     {% csrf_token %}
 
     <!-- BASIC INFORMATION -->
@@ -286,22 +296,24 @@ body{background:#f5f7fb;color:#111}
 
         <div class="field">
           <div class="label">Check-in Date <span class="req">*</span></div>
-          <input class="input" type="date" name="checkin_date" value="{{ form.checkin_date.value|default:'' }}">
+          <input class="input" type="date" id="checkin_date" name="checkin_date" value="{{ form.checkin_date.value|default:'' }}">
         </div>
 
         <div class="field">
           <div class="label">Check-out Date <span class="req">*</span></div>
-          <input class="input" type="date" name="checkout_date" value="{{ form.checkout_date.value|default:'' }}">
+          <input class="input" type="date" id="checkout_date" name="checkout_date" value="{{ form.checkout_date.value|default:'' }}">
+          <span class="err-msg" id="err_checkout_date"></span>
         </div>
 
         <div class="field">
           <div class="label">Check-in Time <span class="req">*</span></div>
-          <input class="input" type="time" name="checkin_time" value="{{ form.checkin_time.value|default:'' }}">
+          <input class="input" type="time" id="checkin_time" name="checkin_time" value="{{ form.checkin_time.value|default:'' }}">
         </div>
 
         <div class="field">
           <div class="label">Check-out Time <span class="req">*</span></div>
-          <input class="input" type="time" name="checkout_time" value="{{ form.checkout_time.value|default:'' }}">
+          <input class="input" type="time" id="checkout_time" name="checkout_time" value="{{ form.checkout_time.value|default:'' }}">
+          <span class="err-msg" id="err_checkout_time"></span>
         </div>
 
       </div>
@@ -341,7 +353,8 @@ body{background:#f5f7fb;color:#111}
 
       <div class="field">
         <div class="label">Pax Notes <span class="req">*</span></div>
-        <textarea class="textarea" name="pax_notes" placeholder="Enter notes about passengers...">{{ form.pax_notes.value|default:'' }}</textarea>
+        <textarea class="textarea" id="pax_notes" name="pax_notes" placeholder="Enter notes about passengers...">{{ form.pax_notes.value|default:'' }}</textarea>
+        <span class="err-msg" id="err_pax_notes"></span>
       </div>
 
       <div class="spacer"></div>
@@ -438,14 +451,16 @@ body{background:#f5f7fb;color:#111}
         <div class="note-block">
           <div class="label">Note for Resort</div>
           <div class="helper">Maximum 130 characters</div>
-          <textarea class="textarea" name="note_for_resort" maxlength="130" placeholder="Enter notes for the resort...">{{ form.note_for_resort.value|default:'' }}</textarea>
+          <textarea class="textarea" id="note_for_resort" name="note_for_resort" maxlength="130" placeholder="Enter notes for the resort...">{{ form.note_for_resort.value|default:'' }}</textarea>
+          <span class="err-msg" id="err_note_for_resort"></span>
           <div class="helper" style="text-align:right;margin-top:8px;">0/130</div>
         </div>
 
         <div class="note-block">
           <div class="label">Note for Guest</div>
           <div class="helper">Maximum 130 characters</div>
-          <textarea class="textarea" name="note_for_guest" maxlength="130" placeholder="Enter notes for the guest...">{{ form.note_for_guest.value|default:'' }}</textarea>
+          <textarea class="textarea" id="note_for_guest" name="note_for_guest" maxlength="130" placeholder="Enter notes for the guest...">{{ form.note_for_guest.value|default:'' }}</textarea>
+          <span class="err-msg" id="err_note_for_guest"></span>
           <div class="helper" style="text-align:right;margin-top:8px;">0/130</div>
         </div>
 
@@ -463,6 +478,68 @@ body{background:#f5f7fb;color:#111}
 </div>
 
 <script>
+// ── Validation ────────────────────────────────────────────────
+const NOTES_RE = /^[A-Za-z0-9\s.,&!]+$/;
+
+function showErr(id, msg) {
+  const el = document.getElementById('err_' + id);
+  const inp = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+  if (inp) inp.classList.toggle('invalid', !!msg);
+}
+
+function validateNotes(id) {
+  const el = document.getElementById(id);
+  if (!el) return true;
+  const val = el.value.trim();
+  if (!val) { showErr(id, ''); return true; }
+  if (!NOTES_RE.test(val)) {
+    showErr(id, 'Only letters, numbers, spaces, . , & ! are allowed.');
+    return false;
+  }
+  showErr(id, ''); return true;
+}
+
+function validateDates() {
+  const cin = document.getElementById('checkin_date').value;
+  const cout = document.getElementById('checkout_date').value;
+  if (cin && cout && new Date(cout) <= new Date(cin)) {
+    showErr('checkout_date', 'Check-out date must be after check-in date.');
+    return false;
+  }
+  showErr('checkout_date', ''); return true;
+}
+
+function validateTimes() {
+  const cin = document.getElementById('checkin_date').value;
+  const cout = document.getElementById('checkout_date').value;
+  const tin = document.getElementById('checkin_time').value;
+  const tout = document.getElementById('checkout_time').value;
+  if (!tin || !tout) { showErr('checkout_time', ''); return true; }
+  // Only compare times if dates are the same
+  if (cin && cout && cin === cout && tout <= tin) {
+    showErr('checkout_time', 'Check-out time must be after check-in time on the same day.');
+    return false;
+  }
+  showErr('checkout_time', ''); return true;
+}
+
+document.getElementById('checkin_date').addEventListener('change', () => { validateDates(); validateTimes(); });
+document.getElementById('checkout_date').addEventListener('change', () => { validateDates(); validateTimes(); });
+document.getElementById('checkin_time').addEventListener('change', validateTimes);
+document.getElementById('checkout_time').addEventListener('change', validateTimes);
+document.getElementById('pax_notes').addEventListener('input', () => validateNotes('pax_notes'));
+document.getElementById('note_for_resort').addEventListener('input', () => validateNotes('note_for_resort'));
+document.getElementById('note_for_guest').addEventListener('input', () => validateNotes('note_for_guest'));
+
+document.getElementById('voucherForm').addEventListener('submit', function(e) {
+  const ok = [validateDates(), validateTimes(), validateNotes('pax_notes'), validateNotes('note_for_resort'), validateNotes('note_for_guest')].every(Boolean);
+  if (!ok) e.preventDefault();
+});
+// ── End Validation ─────────────────────────────────────────────
+
 // Customer data from Django
 const customers = [
   {% for customer in customers %}
