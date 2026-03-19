@@ -72,6 +72,7 @@ sales_patterns = [
     path('resorts/<int:resort_id>/', views.view_resort, name='view_resort'),
     path('resorts/<int:resort_id>/edit/', views.edit_resort, name='edit_resort'),
     path('resorts/<int:resort_id>/delete/', views.delete_resort, name='delete_resort'),
+    path('resorts/check-duplicate/', views.check_resort_duplicate, name='check_resort_duplicate'),
     #MEAL URLS---------------------------------
     path('meals/', views.meal_list, name='meal_list'),
     path('meals/add/', views.add_meal, name='add_meal'),

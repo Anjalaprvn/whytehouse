@@ -102,6 +102,17 @@
       box-shadow:0 0 0 4px rgba(212,164,47,.12);
     }
 
+    input.input-error{
+      border-color:#d13b3b;
+      background:#fff;
+    }
+
+    .field-error{
+      color:#d13b3b;
+      font-size:12px;
+      margin-top:5px;
+    }
+
     /* CC email row */
     .cc-row{
       display:flex;
@@ -194,42 +205,54 @@
           <!-- Resort Name -->
           <div class="field span-2">
             <label>Resort Name <span class="req">*</span></label>
-            <input type="text" name="resort_name" placeholder="Paradise Beach Resort" required>
+            <input type="text" name="resort_name" placeholder="Paradise Beach Resort" required
+              value="{{ form_data.resort_name }}"
+              class="{% if errors.resort_name %}input-error{% endif %}">
+            {% if errors.resort_name %}<div class="field-error">{{ errors.resort_name }}</div>{% endif %}
           </div>
 
           <!-- Resort Place -->
           <div class="field span-2">
             <label>Resort Place <span class="req">*</span></label>
-            <input type="text" name="resort_place" placeholder="Goa, India" required>
+            <input type="text" name="resort_place" placeholder="Goa, India" required
+              value="{{ form_data.resort_place }}"
+              class="{% if errors.resort_place %}input-error{% endif %}">
+            {% if errors.resort_place %}<div class="field-error">{{ errors.resort_place }}</div>{% endif %}
           </div>
 
           <!-- Mobile -->
           <div class="field span-2">
             <label>Mobile</label>
-            <input type="text" name="mobile" placeholder="+91 9876543210">
+            <input type="text" name="mobile" id="mobile" placeholder="9876543210" maxlength="10" value="{{ form_data.mobile }}">
+            <div class="field-error" id="mobile-error" style="display:none"></div>
           </div>
 
           <!-- Email -->
           <div class="field span-2">
             <label>Email <span class="req">*</span></label>
-            <input type="email" name="email" placeholder="resort@example.com" required>
+            <input type="text" name="email" id="email" placeholder="resort@example.com" required value="{{ form_data.email }}">
+            <div class="field-error" id="email-error" style="display:none"></div>
           </div>
 
           <!-- CC Emails -->
           <div class="field span-2">
             <label>CC Emails</label>
             <div id="cc-container">
-              <div class="cc-row">
-                <input type="email" name="cc_email[]" placeholder="cc@example.com">
-                <button type="button" class="btn-add" onclick="addCCEmail()">Add</button>
+              <div class="cc-entry">
+                <div class="cc-row">
+                  <input type="email" name="cc_email[]" placeholder="cc@example.com">
+                  <button type="button" class="btn-add" onclick="addCCEmail()">Add</button>
+                </div>
+                <div class="field-error cc-error" style="display:none"></div>
               </div>
             </div>
           </div>
 
           <!-- Location -->
           <div class="field span-2">
-            <label>Location <span class="req">*</span></label>
-            <input type="text" name="location" placeholder="https://maps.google.com/..." required>
+            <label>Location</label>
+            <input type="text" name="location" id="location" placeholder="https://maps.google.com/..." value="{{ form_data.location }}">
+            <div class="field-error" id="location-error" style="display:none"></div>
           </div>
         </div>
 
@@ -247,11 +270,144 @@
   <script>
     function addCCEmail() {
       const container = document.getElementById('cc-container');
-      const newRow = document.createElement('div');
-      newRow.className = 'cc-row';
-      newRow.style.marginTop = '10px';
-      newRow.innerHTML = '<input type="email" name="cc_email[]" placeholder="cc@example.com">';
-      container.appendChild(newRow);
+      const entry = document.createElement('div');
+      entry.className = 'cc-entry';
+      entry.style.marginTop = '10px';
+      entry.innerHTML = '<div class="cc-row"><input type="email" name="cc_email[]" placeholder="cc@example.com"></div><div class="field-error cc-error" style="display:none"></div>';
+      container.appendChild(entry);
     }
+
+    const nameInput  = document.querySelector('input[name="resort_name"]');
+    const placeInput = document.querySelector('input[name="resort_place"]');
+
+    function showFieldError(input, msg) {
+      input.classList.add('input-error');
+      let err = input.parentElement.querySelector('.field-error');
+      if (!err) { err = document.createElement('div'); err.className = 'field-error'; input.parentElement.appendChild(err); }
+      err.textContent = msg;
+    }
+
+    function clearFieldError(input) {
+      input.classList.remove('input-error');
+      const err = input.parentElement.querySelector('.field-error');
+      if (err) err.remove();
+    }
+
+    let debounceTimer;
+    function checkDuplicate() {
+      const name  = nameInput.value.trim();
+      const place = placeInput.value.trim();
+      if (!name || !place) return;
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        fetch(`/sales/resorts/check-duplicate/?name=${encodeURIComponent(name)}&place=${encodeURIComponent(place)}`)
+          .then(r => r.json())
+          .then(data => {
+            if (data.exists) {
+              showFieldError(nameInput,  'A resort with this name and place already exists.');
+              showFieldError(placeInput, 'A resort with this name and place already exists.');
+            } else {
+              clearFieldError(nameInput);
+              clearFieldError(placeInput);
+            }
+          });
+      }, 400);
+    }
+
+    nameInput.addEventListener('input', checkDuplicate);
+    placeInput.addEventListener('input', checkDuplicate);
+
+    // Location: Google Maps links only
+    const locationInput = document.getElementById('location');
+    const locationError = document.getElementById('location-error');
+    const mapsRegex = /^https?:\/\/(www\.)?(google\.[a-z.]+\/maps|maps\.google\.[a-z.]+|goo\.gl\/maps|maps\.app\.goo\.gl)/i;
+    locationInput.addEventListener('input', () => {
+      if (locationInput.value && !mapsRegex.test(locationInput.value)) {
+        locationError.textContent = 'Only Google Maps links are allowed.';
+        locationError.style.display = 'block';
+        locationInput.classList.add('input-error');
+      } else {
+        locationError.style.display = 'none';
+        locationInput.classList.remove('input-error');
+      }
+    });
+
+    // Mobile: digits only, exactly 10
+    const mobileInput = document.getElementById('mobile');
+    const mobileError = document.getElementById('mobile-error');
+    mobileInput.addEventListener('input', () => {
+      mobileInput.value = mobileInput.value.replace(/\D/g, '').slice(0, 10);
+      if (mobileInput.value && mobileInput.value.length !== 10) {
+        mobileError.textContent = 'Mobile number must be exactly 10 digits.';
+        mobileError.style.display = 'block';
+        mobileInput.classList.add('input-error');
+      } else {
+        mobileError.style.display = 'none';
+        mobileInput.classList.remove('input-error');
+      }
+    });
+
+    // Email format
+    const emailInput = document.getElementById('email');
+    const emailError = document.getElementById('email-error');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    emailInput.addEventListener('input', () => {
+      if (emailInput.value && !emailRegex.test(emailInput.value)) {
+        emailError.textContent = 'Enter a valid email address.';
+        emailError.style.display = 'block';
+        emailInput.classList.add('input-error');
+      } else {
+        emailError.style.display = 'none';
+        emailInput.classList.remove('input-error');
+      }
+    });
+
+    // CC email format (live, on each input)
+    document.getElementById('cc-container').addEventListener('input', e => {
+      if (!e.target.matches('input[name="cc_email[]"]')) return;
+      const entry = e.target.closest('.cc-entry');
+      const err = entry.querySelector('.cc-error');
+      if (e.target.value && !emailRegex.test(e.target.value)) {
+        err.textContent = 'Enter a valid email address.';
+        err.style.display = 'block';
+        e.target.classList.add('input-error');
+      } else {
+        err.style.display = 'none';
+        e.target.classList.remove('input-error');
+      }
+    });
+
+    // Block submit if any validation errors
+    document.querySelector('form').addEventListener('submit', e => {
+      let valid = true;
+      if (locationInput.value && !mapsRegex.test(locationInput.value)) {
+        locationError.textContent = 'Only Google Maps links are allowed.';
+        locationError.style.display = 'block';
+        locationInput.classList.add('input-error');
+        valid = false;
+      }
+      if (mobileInput.value && mobileInput.value.length !== 10) {
+        mobileError.textContent = 'Mobile number must be exactly 10 digits.';
+        mobileError.style.display = 'block';
+        mobileInput.classList.add('input-error');
+        valid = false;
+      }
+      if (emailInput.value && !emailRegex.test(emailInput.value)) {
+        emailError.textContent = 'Enter a valid email address.';
+        emailError.style.display = 'block';
+        emailInput.classList.add('input-error');
+        valid = false;
+      }
+      document.querySelectorAll('input[name="cc_email[]"]').forEach(inp => {
+        if (inp.value && !emailRegex.test(inp.value)) {
+          const err = inp.closest('.cc-entry').querySelector('.cc-error');
+          err.textContent = 'Enter a valid email address.';
+          err.style.display = 'block';
+          inp.classList.add('input-error');
+          valid = false;
+        }
+      });
+      if (!valid) e.preventDefault();
+    });
   </script>
 {% endblock %}

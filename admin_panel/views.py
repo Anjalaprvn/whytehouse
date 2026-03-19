@@ -1484,29 +1484,34 @@ def add_resort(request):
     if request.method == "POST":
         try:
             resort_name = request.POST.get("resort_name", "").strip()
-            location = request.POST.get("location", "").strip()
-            contact_person = request.POST.get("contact_person", "").strip()
-            contact_number = request.POST.get("contact_number", "").strip()
+            location = request.POST.get("resort_place", "").strip()
+            mobile = request.POST.get("mobile", "").strip()
             email = request.POST.get("email", "").strip()
-            address = request.POST.get("address", "").strip()
-            status = request.POST.get("status", "Active")
-            
-            if not resort_name or not location:
-                messages.error(request, "Resort Name and Location are required.")
-                return render(request, "admin/sales/resort/add_resort.html")
-            
-            if Resort.objects.filter(resort_name=resort_name).exists():
-                messages.error(request, "Resort name already exists.")
-                return render(request, "admin/sales/resort/add_resort.html")
-            
+            maps_location = request.POST.get("location", "").strip()
+
+            errors = {}
+            if not resort_name:
+                errors["resort_name"] = "Resort Name is required."
+            if not location:
+                errors["resort_place"] = "Resort Place is required."
+
+            if not errors and Resort.objects.filter(resort_name__iexact=resort_name, location__iexact=location).exists():
+                errors["resort_name"] = "A resort with this name and place already exists."
+                errors["resort_place"] = "A resort with this name and place already exists."
+
+            if errors:
+                return render(request, "admin/sales/resort/add_resort.html", {
+                    "errors": errors,
+                    "form_data": {"resort_name": resort_name, "resort_place": location,
+                                  "mobile": mobile, "email": email, "location": maps_location}
+                })
+
             Resort.objects.create(
                 resort_name=resort_name,
                 location=location,
-                contact_person=contact_person,
-                contact_number=contact_number,
+                contact_number=mobile,
                 email=email,
-                address=address,
-                status=status
+                address=maps_location,
             )
             messages.success(request, f"Resort '{resort_name}' added successfully!")
             return redirect("sales:resort_list")
@@ -1529,18 +1534,42 @@ def edit_resort(request, resort_id):
     except Resort.DoesNotExist:
         messages.error(request, "Resort not found.")
         return redirect("sales:resort_list")
-    
+
     if request.method == "POST":
         try:
-            resort.resort_name = request.POST.get("resort_name", "").strip()
-            resort.location = request.POST.get("resort_place", "").strip()  # Changed from "location" to "resort_place"
-            resort.contact_person = request.POST.get("contact_person", "").strip()
-            resort.contact_number = request.POST.get("contact_number", "").strip()
-            resort.email = request.POST.get("email", "").strip()
-            resort.address = request.POST.get("address", "").strip()
-            resort.status = request.POST.get("status", "Active")
+            resort_name = request.POST.get("resort_name", "").strip()
+            location = request.POST.get("resort_place", "").strip()
+            contact_number = request.POST.get("mobile", "").strip()
+            email = request.POST.get("email", "").strip()
+            address = request.POST.get("location", "").strip()
+
+            errors = {}
+            if not resort_name:
+                errors["resort_name"] = "Resort Name is required."
+            if not location:
+                errors["resort_place"] = "Resort Place is required."
+
+            if not errors and Resort.objects.filter(
+                resort_name__iexact=resort_name, location__iexact=location
+            ).exclude(id=resort_id).exists():
+                errors["resort_name"] = "A resort with this name and place already exists."
+                errors["resort_place"] = "A resort with this name and place already exists."
+
+            if errors:
+                return render(request, "admin/sales/resort/edit_resort.html", {
+                    "resort": resort,
+                    "errors": errors,
+                    "form_data": {"resort_name": resort_name, "resort_place": location,
+                                  "mobile": contact_number, "email": email, "location": address}
+                })
+
+            resort.resort_name = resort_name
+            resort.location = location
+            resort.contact_number = contact_number
+            resort.email = email
+            resort.address = address
             resort.save()
-            messages.success(request, f"Resort updated successfully!")
+            messages.success(request, "Resort updated successfully!")
             return redirect("sales:resort_list")
         except Exception as e:
             return render(request, "admin/sales/resort/edit_resort.html", {
@@ -3205,4 +3234,15 @@ def check_package_name(request):
     name = (request.GET.get('name') or '').strip()
     category = (request.GET.get('category') or '').strip()
     exists = TravelPackage.objects.filter(name__iexact=name, category=category).exists() if name else False
+    return JsonResponse({'exists': exists})
+
+
+def check_resort_duplicate(request):
+    name = (request.GET.get('name') or '').strip()
+    place = (request.GET.get('place') or '').strip()
+    exclude_id = request.GET.get('exclude_id')
+    qs = Resort.objects.filter(resort_name__iexact=name, location__iexact=place)
+    if exclude_id:
+        qs = qs.exclude(id=exclude_id)
+    exists = qs.exists() if name and place else False
     return JsonResponse({'exists': exists})
