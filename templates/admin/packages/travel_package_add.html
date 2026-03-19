@@ -116,7 +116,8 @@
 
                 <div>
                     <label>Duration <span class="required-star">*</span></label>
-                    <input type="text" id="duration" name="duration" value="{{ package.duration|default:'' }}" class="form-control" placeholder="e.g. 7 Days / 6 Nights" onchange="updateItineraryDays()">
+                    <input type="text" id="duration" name="duration" value="{{ package.duration|default:'' }}" class="form-control" placeholder="e.g. 7 Days / 6 Nights" oninput="validateDuration(this)" onchange="updateItineraryDays()">
+                    <div id="duration-error" class="field-error">Format must be like: 5 Days / 4 Nights</div>
                 </div>
             </div>
 
@@ -135,8 +136,8 @@
             </div>
 
             <label>Description</label>
-            <textarea name="description" class="form-control" oninput="validateLettersField(this, 'desc-letters-error')">{{ package.description|default:'' }}</textarea>
-            <div id="desc-letters-error" class="field-error">Only letters and spaces are allowed.</div>
+            <textarea name="description" class="form-control" oninput="validateDescField(this)">{{ package.description|default:'' }}</textarea>
+            <div id="desc-letters-error" class="field-error">Only letters, numbers, !, ., , and &amp; are allowed.</div>
 
             <label>Package Image <span class="required-star">*</span></label>
             <div id="pkg-preview-wrapper" style="display:{% if package.image %}block{% else %}none{% endif %}; position:relative; width:fit-content; margin-bottom:10px;">
@@ -167,7 +168,7 @@
     <div id="itinerary-container">
         <div class="itinerary-item">
             <label>Day 1</label>
-            <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateLettersField(this, null)"></textarea>
+            <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateItinerary(this)"></textarea>
         </div>
     </div>
 </div>
@@ -261,6 +262,12 @@ window.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             nameErrorBox.style.display = 'flex';
             nameInput.focus();
+            return;
+        }
+        const durationVal = document.getElementById('duration').value.trim();
+        if (!validateDuration(document.getElementById('duration'))) {
+            e.preventDefault();
+            document.getElementById('duration').focus();
         }
     });
 
@@ -338,7 +345,7 @@ function updateItineraryDays() {
                 div.classList.add('itinerary-item');
                 div.innerHTML = `
                     <label>Day ${i}</label>
-                    <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..."></textarea>
+                    <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateItinerary(this)"></textarea>
                 `;
                 container.appendChild(div);
             }
@@ -380,7 +387,7 @@ function addDay() {
 
     div.innerHTML = `
         <label>Day ${dayCount}</label>
-        <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateLettersField(this, null)"></textarea>
+        <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateItinerary(this)"></textarea>
     `;
 
     container.appendChild(div);
@@ -418,6 +425,40 @@ function addExclusion() {
     input.addEventListener('input', function() { validateLettersField(this, null); checkDuplicate(this, 'exclusion'); });
 
     container.appendChild(input);
+}
+
+function validateDuration(input) {
+    const pattern = /^\d+\s+Days\s+\/\s+\d+\s+Nights$/i;
+    const err = document.getElementById('duration-error');
+    if (!pattern.test(input.value.trim())) {
+        err.style.display = 'block';
+        return false;
+    } else {
+        err.style.display = 'none';
+        return true;
+    }
+}
+
+function validateItinerary(input) {
+    const valid = /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    let msg = input.nextElementSibling;
+    if (!valid) {
+        if (!msg || !msg.classList.contains('itin-err')) {
+            msg = document.createElement('div');
+            msg.className = 'itin-err field-error';
+            msg.style.display = 'block';
+            msg.textContent = 'Only letters, numbers, !, ., , and & are allowed.';
+            input.insertAdjacentElement('afterend', msg);
+        }
+    } else if (msg && msg.classList.contains('itin-err')) {
+        msg.remove();
+    }
+}
+
+function validateDescField(input) {
+    const valid = /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
+    document.getElementById('desc-letters-error').style.display = valid ? 'none' : 'block';
 }
 
 function validateLettersOnly(input, errorId) {

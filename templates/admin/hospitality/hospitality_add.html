@@ -255,8 +255,8 @@
             <!-- Summary -->
             <div class="form-group">
                 <label>Summary <span>*</span></label>
-                <textarea id="prop_summary" name="summary" class="form-control" style="height: 100px;" oninput="validateLetters(this, 'summary-error')">{{ property.summary|default:'' }}</textarea>
-                <div class="field-error" id="summary-error">Only letters and spaces are allowed.</div>
+                <textarea id="prop_summary" name="summary" class="form-control" style="height: 100px;" oninput="validateSummary(this)">{{ property.summary|default:'' }}</textarea>
+                <div class="field-error" id="summary-error">Only letters, numbers, !, ., , and &amp; are allowed.</div>
             </div>
 
             <!-- Amenities -->
@@ -327,6 +327,12 @@ document.getElementById('remove-img').addEventListener('click', function() {
     document.getElementById('upload-box').style.display = 'block';
 });
 
+function validateSummary(input) {
+    const valid = /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    document.getElementById('summary-error').style.display = valid ? 'none' : 'block';
+}
+
 function validateAddress(input) {
     const valid = /^[a-zA-Z\s,\.]*$/.test(input.value);
     input.classList.toggle('invalid', !valid);
@@ -385,12 +391,12 @@ document.querySelector('form').addEventListener('submit', function(e) {
         { id: 'prop_name', errId: 'prop-name-error' },
         { id: 'prop_location', errId: 'location-error' },
         { id: 'prop_address', errId: 'address-error', fn: (v) => /^[a-zA-Z\s,\.]+$/.test(v) },
-        { id: 'prop_summary', errId: 'summary-error' },
+        { id: 'prop_summary', errId: 'summary-error', fn: (v) => /^[a-zA-Z0-9\s!.,]+$/.test(v) },
     ];
     let valid = true;
     required.forEach(function(f) {
         const el = document.getElementById(f.id);
-        const pattern = f.id === 'prop_address' ? /^[a-zA-Z\s,\.]+$/ : /^[a-zA-Z\s]+$/;
+        const pattern = f.id === 'prop_address' ? /^[a-zA-Z\s,\.]+$/ : f.id === 'prop_summary' ? /^[a-zA-Z0-9\s!.,&]+$/ : /^[a-zA-Z\s]+$/;
         if (!el.value.trim() || !pattern.test(el.value)) {
             el.classList.add('invalid');
             document.getElementById(f.errId).style.display = 'block';
