@@ -774,6 +774,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const value = this.value.replace(/\D/g, '');
         this.value = value;
     });
+
+    // Message - only allow letters, numbers, spaces, commas, and &
+    form.querySelector('textarea[name="message"]').addEventListener('input', function() {
+        this.value = this.value.replace(/[^a-zA-Z0-9 ,&]/g, '');
+    });
 });
 </script>
 {% endblock %}
