@@ -249,6 +249,7 @@ class Account(models.Model):
     account_name = models.CharField(max_length=255)
     account_number = models.CharField(max_length=50, unique=True)
     bank_name = models.CharField(max_length=255)
+    branch_name = models.CharField(max_length=255, blank=True, null=True)
     ifsc_code = models.CharField(max_length=11)
     account_type = models.CharField(
         max_length=20,

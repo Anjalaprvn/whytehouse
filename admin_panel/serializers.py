@@ -436,6 +436,7 @@ class AccountSerializer(serializers.ModelSerializer):
             "account_name",
             "account_number",
             "bank_name",
+            "branch_name",
             "ifsc_code",
             "account_type",
             "created_at",

@@ -151,6 +151,17 @@
     }
     .help-fab span{font-weight:700;color:#2a2d36}
 
+    .err-msg{
+      display:none;
+      color:#d13b3b;
+      font-size:12px;
+      margin-top:5px;
+    }
+    input.invalid, select.invalid{
+      border-color:#d13b3b !important;
+      background:#fff5f5;
+    }
+
     @media (max-width: 720px){
       .main{padding:22px 16px 60px}
       .title h1{font-size:32px}
@@ -177,39 +188,44 @@
     <section class="card">
       <h3>Account Information</h3>
 
-      <form method="post">
+      <form method="post" id="accountForm" novalidate>
         {% csrf_token %}
 
         <div class="field">
           <label>Account Name <span class="req">*</span></label>
-          <input type="text" name="account_name" placeholder="White House Holidays" required>
+          <input type="text" id="account_name" name="account_name" placeholder="White House Holidays">
+          <span class="err-msg" id="err_account_name"></span>
         </div>
 
         <div class="field">
           <label>Account Number <span class="req">*</span></label>
-          <input type="text" name="account_number" placeholder="1234567890" required>
+          <input type="text" id="account_number" name="account_number" placeholder="1234567890">
+          <span class="err-msg" id="err_account_number"></span>
         </div>
 
         <div class="field">
           <label>IFSC Code</label>
-          <input type="text" name="ifsc_code" placeholder="HDFC0001234">
+          <input type="text" id="ifsc_code" name="ifsc_code" placeholder="HDFC0001234">
+          <span class="err-msg" id="err_ifsc_code"></span>
         </div>
 
         <div class="field">
           <label>Bank Name <span class="req">*</span></label>
-          <input type="text" name="bank_name" placeholder="HDFC Bank" required>
+          <input type="text" id="bank_name" name="bank_name" placeholder="HDFC Bank">
+          <span class="err-msg" id="err_bank_name"></span>
         </div>
 
         <div class="field">
           <label>Branch Name</label>
-          <input type="text" name="branch_name" placeholder="Mumbai Main Branch">
+          <input type="text" id="branch_name" name="branch_name" placeholder="Mumbai Main Branch">
+          <span class="err-msg" id="err_branch_name"></span>
         </div>
 
         <div class="field">
-          <label>Account Type</label>
+          <label>Account Type <span class="req">*</span></label>
           <div class="select-wrap">
-            <select name="account_type">
-              <option selected disabled>Select account type</option>
+            <select id="account_type" name="account_type">
+              <option value="" selected disabled>Select account type</option>
               <option>Current</option>
               <option>Savings</option>
               <option>Business</option>
@@ -218,6 +234,7 @@
               <path d="M7 10L12 15L17 10" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
+          <span class="err-msg" id="err_account_type"></span>
         </div>
 
         <div class="btn-row">
@@ -232,4 +249,73 @@
   <button class="help-fab" type="button" aria-label="Help">
     <span>?</span>
   </button>
+
+<script>
+  function showErr(id, msg) {
+    const el = document.getElementById('err_' + id);
+    const input = document.getElementById(id);
+    el.textContent = msg;
+    el.style.display = msg ? 'block' : 'none';
+    input.classList.toggle('invalid', !!msg);
+  }
+
+  // Only fires while user is typing — never shows "required" error live
+  function liveTextOnly(id, label) {
+    const val = document.getElementById(id).value.trim();
+    if (!val) { showErr(id, ''); return; }
+    if (/\d/.test(val)) showErr(id, label + ' must not contain numbers.');
+    else showErr(id, '');
+  }
+
+  function liveNumberOnly(id, label) {
+    const val = document.getElementById(id).value.trim();
+    if (!val) { showErr(id, ''); return; }
+    if (!/^\d+$/.test(val)) showErr(id, label + ' must contain digits only.');
+    else showErr(id, '');
+  }
+
+  function liveIFSC(id) {
+    const input = document.getElementById(id);
+    input.value = input.value.toUpperCase();
+    const val = input.value.trim();
+    if (!val) { showErr(id, ''); return; }
+    if (!/^[A-Z0-9]+$/.test(val)) showErr(id, 'IFSC Code must be alphanumeric only.');
+    else showErr(id, '');
+  }
+
+  document.getElementById('account_name').addEventListener('input', () => liveTextOnly('account_name', 'Account Name'));
+  document.getElementById('account_number').addEventListener('input', () => liveNumberOnly('account_number', 'Account Number'));
+  document.getElementById('ifsc_code').addEventListener('input', () => liveIFSC('ifsc_code'));
+  document.getElementById('bank_name').addEventListener('input', () => liveTextOnly('bank_name', 'Bank Name'));
+  document.getElementById('branch_name').addEventListener('input', () => liveTextOnly('branch_name', 'Branch Name'));
+  document.getElementById('account_type').addEventListener('change', () => showErr('account_type', ''));
+
+  // On submit: check required + format, then show errors only for actual problems
+  document.getElementById('accountForm').addEventListener('submit', function(e) {
+    let valid = true;
+
+    const name = document.getElementById('account_name').value.trim();
+    if (!name) { showErr('account_name', 'Account Name is required.'); valid = false; }
+    else if (/\d/.test(name)) { showErr('account_name', 'Account Name must not contain numbers.'); valid = false; }
+
+    const num = document.getElementById('account_number').value.trim();
+    if (!num) { showErr('account_number', 'Account Number is required.'); valid = false; }
+    else if (!/^\d+$/.test(num)) { showErr('account_number', 'Account Number must contain digits only.'); valid = false; }
+
+    const ifsc = document.getElementById('ifsc_code').value.trim();
+    if (ifsc && !/^[A-Z0-9]+$/.test(ifsc)) { showErr('ifsc_code', 'IFSC Code must be alphanumeric only.'); valid = false; }
+
+    const bank = document.getElementById('bank_name').value.trim();
+    if (!bank) { showErr('bank_name', 'Bank Name is required.'); valid = false; }
+    else if (/\d/.test(bank)) { showErr('bank_name', 'Bank Name must not contain numbers.'); valid = false; }
+
+    const branch = document.getElementById('branch_name').value.trim();
+    if (branch && /\d/.test(branch)) { showErr('branch_name', 'Branch Name must not contain numbers.'); valid = false; }
+
+    const type = document.getElementById('account_type').value;
+    if (!type) { showErr('account_type', 'Please select an Account Type.'); valid = false; }
+
+    if (!valid) e.preventDefault();
+  });
+</script>
 {% endblock %}

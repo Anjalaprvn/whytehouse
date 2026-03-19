@@ -1125,6 +1125,7 @@ def add_account(request):
             bank_name = request.POST.get('bank_name', '').strip()
             ifsc_code = request.POST.get('ifsc_code', '').strip()
             account_type = request.POST.get('account_type', 'current')
+            branch_name = request.POST.get('branch_name', '').strip()
             
             # Validation
             if not account_name or not account_number or not bank_name or not ifsc_code:
@@ -1152,6 +1153,7 @@ def add_account(request):
                 account_name=account_name,
                 account_number=account_number,
                 bank_name=bank_name,
+                branch_name=branch_name or None,
                 ifsc_code=ifsc_code.upper(),
                 account_type=account_type
             )
@@ -1191,6 +1193,7 @@ def edit_account(request, account_id):
             bank_name = request.POST.get('bank_name', '').strip()
             ifsc_code = request.POST.get('ifsc_code', '').strip()
             account_type = request.POST.get('account_type', '').strip()
+            branch_name = request.POST.get('branch_name', '').strip()
             
             # Validation
             if not account_name or not account_number or not bank_name:
@@ -1203,6 +1206,7 @@ def edit_account(request, account_id):
             account.account_name = account_name
             account.account_number = account_number
             account.bank_name = bank_name
+            account.branch_name = branch_name or None
             account.ifsc_code = ifsc_code
             account.account_type = account_type
             
