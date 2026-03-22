@@ -18,7 +18,10 @@ h1{font-size:28px;margin-bottom:6px;margin-top:0}
 .yellow{background:#fff4dd;color:#f1a500}
 .orange{background:#fff0e8;color:#ff6a00}
 .pink{background:#ffe9f4;color:#ff3d9a}
+.teal{background:#e6faf8;color:#00a896}
 .value{font-size:32px;font-weight:700}
+.stars{font-size:20px;letter-spacing:2px;line-height:1}
+.star-val{font-size:13px;color:#7a7f8c;margin-top:4px}
 .growth{color:#00b85c;font-size:14px;margin-left:6px}
 .section{background:#fff;border-radius:20px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,0.04);margin-bottom:30px}
 .section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
@@ -92,10 +95,10 @@ th{color:#777;font-weight:500}
 
     <div class="card">
       <div class="card-top">
-        <span>Feedbacks</span>
-        <div class="icon blue"><i class="fa-solid fa-comment"></i></div>
+        <span>Avg. Feedback Rating</span>
+        <div class="icon teal"><i class="fa-solid fa-star"></i></div>
       </div>
-      <div class="value">{{ total_feedbacks }}</div>
+      <div class="value">{{ avg_feedback }} <span style="color:#f1a500;font-size:28px">&#9733;</span></div>
     </div>
 
     <div class="card">

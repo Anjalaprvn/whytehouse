@@ -283,7 +283,7 @@ def dashboard(request):
         messages.error(request, "Please login to access this page.")
         return redirect('admin_panel:login')
     
-    from django.db.models import Sum, Count
+    from django.db.models import Sum, Count, Avg
     from datetime import datetime, timedelta
     
     # Stats
@@ -293,6 +293,8 @@ def dashboard(request):
     new_leads = Lead.objects.filter(created_at__gte=datetime.now() - timedelta(days=30)).count()
     total_customers = Customer.objects.count()
     total_feedbacks = Feedback.objects.count()
+    avg_feedback_raw = Feedback.objects.aggregate(Avg('rating'))['rating__avg']
+    avg_feedback = round(avg_feedback_raw, 1) if avg_feedback_raw else 0
     total_blogs = Blog.objects.count()
     international_packages = TravelPackage.objects.filter(category='International').count()
     domestic_packages = TravelPackage.objects.filter(category='Domestic').count()
@@ -314,6 +316,7 @@ def dashboard(request):
         'new_leads': new_leads,
         'total_customers': total_customers,
         'total_feedbacks': total_feedbacks,
+        'avg_feedback': avg_feedback,
         'total_blogs': total_blogs,
         'international_packages': international_packages,
         'domestic_packages': domestic_packages,
@@ -3303,3 +3306,4 @@ def check_employee_duplicate(request):
     else:
         exists = False
     return JsonResponse({'exists': exists})
+

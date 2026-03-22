@@ -200,10 +200,12 @@
             <h4>SEO Settings</h4>
 
             <label>Meta Title</label>
-            <input type="text" name="meta_title" value="{{ package.meta_title|default:'' }}" class="form-control">
+            <input type="text" id="meta_title" name="meta_title" value="{{ package.meta_title|default:'' }}" class="form-control" oninput="validateMetaTitle(this)">
+            <div id="meta-title-error" class="field-error">Only letters and hyphens (-) are allowed.</div>
 
             <label>Meta Description</label>
-            <textarea name="meta_description" class="form-control">{{ package.meta_description|default:'' }}</textarea>
+            <textarea id="meta_description" name="meta_description" class="form-control" oninput="validateMetaDesc(this)">{{ package.meta_description|default:'' }}</textarea>
+            <div id="meta-desc-error" class="field-error">Only letters, numbers, !, , . and &amp; are allowed.</div>
 
             <div class="btn-group">
                 <a href="{% url 'admin_panel:travel_packages' %}" class="btn-cancel">Cancel</a>
@@ -268,6 +270,21 @@ window.addEventListener('DOMContentLoaded', function() {
         if (!validateDuration(document.getElementById('duration'))) {
             e.preventDefault();
             document.getElementById('duration').focus();
+            return;
+        }
+        const metaTitleEl = document.getElementById('meta_title');
+        const metaDescEl = document.getElementById('meta_description');
+        if (metaTitleEl.value && !/^[a-zA-Z\s-]*$/.test(metaTitleEl.value)) {
+            e.preventDefault();
+            document.getElementById('meta-title-error').style.display = 'block';
+            metaTitleEl.focus();
+            return;
+        }
+        if (metaDescEl.value && !/^[a-zA-Z0-9\s!,\.&]*$/.test(metaDescEl.value)) {
+            e.preventDefault();
+            document.getElementById('meta-desc-error').style.display = 'block';
+            metaDescEl.focus();
+            return;
         }
     });
 
@@ -497,6 +514,16 @@ function validateLettersField(input, errorId) {
             document.getElementById(errorId).style.display = 'none';
         }
     }
+}
+
+function validateMetaTitle(input) {
+    const valid = /^[a-zA-Z\s-]*$/.test(input.value);
+    document.getElementById('meta-title-error').style.display = valid ? 'none' : 'block';
+}
+
+function validateMetaDesc(input) {
+    const valid = /^[a-zA-Z0-9\s!,\.&]*$/.test(input.value);
+    document.getElementById('meta-desc-error').style.display = valid ? 'none' : 'block';
 }
 
 function checkDuplicate(input, type) {
