@@ -810,12 +810,14 @@
     }
 
     .testimonial-text {
-      font-size: 16px;
-      line-height: 1.7;
-      color: #333;
-      margin-bottom: 30px;
-      font-style: italic;
-    }
+  font-size: 16px;
+  line-height: 1.7;
+  color: #333;
+  margin-bottom: 30px;
+  font-style: italic;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
 
     .user-info {
       display: flex;
@@ -1393,7 +1395,7 @@ during, and after your trip.</p></div>
         });
 
         if (progressFill) {
-          progressFill.style.width = `${((index + 1) / total) * 100}%`;
+          progressFill.style.width = ${((index + 1) / total) * 100}%;
         }
       }
 
