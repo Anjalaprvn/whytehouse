@@ -665,117 +665,136 @@
         font-weight: 700;
     }
 
-    /* PROCESS */
-    .process-section {
-        padding: 80px 0;
-        background-color: #f5f5f5;
-        background-image: url("{% static 'images/wavy-bg.png' %}");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-    }
+  /* PROCESS */
+.process-section {
+    padding: 80px 0;
+    background-color: #f5f5f5;
+    background-image: url("{% static 'images/wavy-bg.png' %}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
 
-    .container {
-        width: min(1100px, 92%);
-        margin: auto;
-    }
+.container {
+    width: min(1100px, 92%);
+    margin: auto;
+}
 
-    .heading {
-        text-align: center;
-        margin-bottom: 70px;
-    }
+.heading {
+    text-align: center;
+    margin-bottom: 70px;
+}
 
-    .heading .tag {
-        display: inline-block;
-        padding: 6px 20px;
-        border-radius: 30px;
-        background: #f3e5d3;
-        color: #c98b2e;
-        font-size: 14px;
-        margin-bottom: 15px;
-    }
+.heading .tag {
+    display: inline-block;
+    padding: 6px 20px;
+    border-radius: 30px;
+    background: #f3e5d3;
+    color: #c98b2e;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
 
-    .heading h1 {
-        font-size: 38px;
-        font-weight: 600;
-        color: #1a1a1a;
-    }
+.heading h1 {
+    font-size: 38px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
 
-    .heading h1 span {
-        font-weight: 800;
-        color: #000;
-    }
+.heading h1 span {
+    font-weight: 800;
+    color: #000;
+}
 
-    .heading p {
-        color: #666;
-        margin-top: 10px;
-        line-height: 1.7;
-    }
+.heading p {
+    color: #666;
+    margin-top: 10px;
+    line-height: 1.7;
+}
 
-    .timeline {
-        position: relative;
-        margin-left: 80px;
-    }
+.timeline {
+    position: relative;
+    margin-left: 80px;
+}
 
-    .timeline::before {
-        content: "";
-        position: absolute;
-        left: 25px;
-        top: 0;
-        width: 2px;
-        height: 100%;
-        background: #e0a85c;
-    }
+.timeline::before {
+    display: none;
+}
 
-    .step {
-        display: flex;
-        align-items: flex-start;
-        margin-bottom: 60px;
-    }
+.step {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    column-gap: 30px;
+    padding-bottom: 70px;
+}
 
-    .icon-box {
-        position: relative;
-        width: 50px;
-        text-align: center;
-        flex-shrink: 0;
-    }
+.step:last-child {
+    padding-bottom: 0;
+}
 
-    .icon-circle img {
-        width: 55px;
-        height: 55px;
-        object-fit: contain;
-        display: block;
-        position: relative;
-        z-index: 2;
-    }
+.step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: 44px;
+    top: 110px;   /* start BELOW "Step 1" text */
+    height: 70px; /* short line like figma */
+    width: 2px;
+    background: #e0a85c;
+}
+.icon-box {
+    position: relative;
+    width: 88px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    z-index: 2;
+}
 
-    .icon-box span {
-        display: block;
-        margin-top: 10px;
-        font-size: 12px;
-        color: #777;
-    }
+.icon-circle {
+    position: relative;
+    z-index: 2;
+}
 
-    .content {
-        background: #ead6b8;
-        padding: 25px 30px;
-        border-radius: 15px;
-        margin-left: 30px;
-        width: 100%;
-    }
+.icon-circle img {
+    width: 55px;
+    height: 55px;
+    object-fit: contain;
+    display: block;
+    position: relative;
+    z-index: 2;
+}
 
-    .content h3 {
-        margin-bottom: 10px;
-        font-size: 18px;
-        color: #111;
-    }
+.icon-box span {
+    display: block;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #777;
+    line-height: 1.2;
+    position: relative;
+    z-index: 2;
+}
 
-    .content p {
-        font-size: 14px;
-        color: #555;
-        line-height: 1.7;
-    }
+.content {
+    background: #ead6b8;
+    padding: 25px 30px;
+    border-radius: 15px;
+    width: 100%;
+}
 
+.content h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
+    color: #111;
+}
+
+.content p {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.7;
+}
     /* STATS */
     .stats-section {
         background: linear-gradient(to right, #d28b2e, #c47a1f);
@@ -1631,7 +1650,7 @@
             <div class="step">
                 <div class="icon-box">
                     <div class="icon-circle">
-                        <img src="{% static 'images/p1.png' %}" alt="Consultation">
+                        <img src="{% static 'images/t1.png' %}" alt="Consultation">
                     </div>
                     <span>Step 1</span>
                 </div>
