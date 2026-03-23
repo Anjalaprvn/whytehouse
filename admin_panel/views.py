@@ -613,7 +613,7 @@ def travel_packages(request):
     search_query = request.GET.get('search', '').strip()
     
     # Get destinations for the selected category
-    destinations = Destination.objects.filter(category=category).order_by('name')
+    destinations = Destination.objects.filter(category=category, is_active=True).order_by('name')
     
     # Get packages based on category and destination
     packages = TravelPackage.objects.filter(category=category)
@@ -3146,6 +3146,12 @@ def delete_destination(request, destination_id):
     destination.delete()
     messages.success(request, "Destination deleted successfully!")
     return redirect('admin_panel:destinations')
+
+def toggle_destination_status(request, destination_id):
+    destination = get_object_or_404(Destination, id=destination_id)
+    destination.is_active = not destination.is_active
+    destination.save()
+    return redirect(f"{reverse('admin_panel:destinations')}?cat={destination.category}")
 
 # FEEDBACK MANAGEMENT
 def feedback_list(request):

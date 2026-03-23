@@ -116,8 +116,23 @@
 
                 <div>
                     <label>Duration <span class="required-star">*</span></label>
-                    <input type="text" id="duration" name="duration" value="{{ package.duration|default:'' }}" class="form-control" placeholder="e.g. 7 Days / 6 Nights" oninput="validateDuration(this)" onchange="updateItineraryDays()">
-                    <div id="duration-error" class="field-error">Format must be like: 5 Days / 4 Nights</div>
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:20px;">
+                        <div style="display:flex; align-items:center; background:#f3f4f6; border-radius:8px; overflow:hidden; flex:1;">
+                            <button type="button" onclick="changeDuration('days',-1)" style="padding:10px 14px; background:none; border:none; font-size:18px; cursor:pointer; color:#555;">−</button>
+                            <input type="number" id="days-input" min="1" value="1" style="width:40px; text-align:center; border:none; background:transparent; font-size:15px; font-weight:600; outline:none;" oninput="syncDuration()">
+                            <span style="font-size:13px; color:#666; padding-right:10px;">Days</span>
+                            <button type="button" onclick="changeDuration('days',1)" style="padding:10px 14px; background:none; border:none; font-size:18px; cursor:pointer; color:#555;">+</button>
+                        </div>
+                        <span style="color:#999;">/</span>
+                        <div style="display:flex; align-items:center; background:#f3f4f6; border-radius:8px; overflow:hidden; flex:1;">
+                            <button type="button" onclick="changeDuration('nights',-1)" style="padding:10px 14px; background:none; border:none; font-size:18px; cursor:pointer; color:#555;">−</button>
+                            <input type="number" id="nights-input" min="0" value="0" style="width:40px; text-align:center; border:none; background:transparent; font-size:15px; font-weight:600; outline:none;" oninput="syncDuration()">
+                            <span style="font-size:13px; color:#666; padding-right:10px;">Nights</span>
+                            <button type="button" onclick="changeDuration('nights',1)" style="padding:10px 14px; background:none; border:none; font-size:18px; cursor:pointer; color:#555;">+</button>
+                        </div>
+                    </div>
+                    <input type="hidden" id="duration" name="duration" value="{{ package.duration|default:'' }}">
+                    <div id="duration-error" class="field-error">Duration is required.</div>
                 </div>
             </div>
 
@@ -267,9 +282,9 @@ window.addEventListener('DOMContentLoaded', function() {
             return;
         }
         const durationVal = document.getElementById('duration').value.trim();
-        if (!validateDuration(document.getElementById('duration'))) {
+        if (!durationVal) {
             e.preventDefault();
-            document.getElementById('duration').focus();
+            document.getElementById('duration-error').style.display = 'block';
             return;
         }
         const metaTitleEl = document.getElementById('meta_title');
@@ -295,9 +310,15 @@ window.addEventListener('DOMContentLoaded', function() {
         generateNextPackageId();
     }
 
-    if (durationField.value) {
-        updateItineraryDays();
+    // Init duration spinners from existing value
+    const existingDuration = document.getElementById('duration').value;
+    if (existingDuration) {
+        const dMatch = existingDuration.match(/(\d+)\s*days?/i);
+        const nMatch = existingDuration.match(/(\d+)\s*nights?/i);
+        if (dMatch) document.getElementById('days-input').value = parseInt(dMatch[1]);
+        if (nMatch) document.getElementById('nights-input').value = parseInt(nMatch[1]);
     }
+    syncDuration();
 
     const pkgFileInput = document.getElementById('pkg-file-upload');
     const pkgPreviewImg = document.getElementById('pkg-preview-img');
@@ -444,16 +465,31 @@ function addExclusion() {
     container.appendChild(input);
 }
 
+function changeDuration(type, delta) {
+    const input = document.getElementById(type === 'days' ? 'days-input' : 'nights-input');
+    const min = type === 'days' ? 1 : 0;
+    input.value = Math.max(min, (parseInt(input.value) || 0) + delta);
+    syncDuration();
+}
+
+function syncDuration() {
+    const days = Math.max(1, parseInt(document.getElementById('days-input').value) || 1);
+    const nights = Math.max(0, parseInt(document.getElementById('nights-input').value) || 0);
+    document.getElementById('days-input').value = days;
+    document.getElementById('nights-input').value = nights;
+    const val = `${days} Days / ${nights} Nights`;
+    document.getElementById('duration').value = val;
+    updateItineraryDays();
+}
+
 function validateDuration(input) {
-    const pattern = /^\d+\s+Days\s+\/\s+\d+\s+Nights$/i;
     const err = document.getElementById('duration-error');
-    if (!pattern.test(input.value.trim())) {
+    if (!input.value.trim()) {
         err.style.display = 'block';
         return false;
-    } else {
-        err.style.display = 'none';
-        return true;
     }
+    err.style.display = 'none';
+    return true;
 }
 
 function validateItinerary(input) {

@@ -38,6 +38,7 @@ urlpatterns = [
     path('destinations/<int:destination_id>/', views.view_destination, name='view_destination'),
     path('destinations/edit/<int:destination_id>/', views.edit_destination, name='edit_destination'),
     path('destinations/delete/<int:destination_id>/', views.delete_destination, name='delete_destination'),
+    path('destinations/toggle/<int:destination_id>/', views.toggle_destination_status, name='toggle_destination_status'),
     path('customer-inquiries/', views.customer_inquiries, name='customer_inquiries'),
     path('customer-inquiries/<int:inquiry_id>/', views.view_inquiry, name='view_inquiry'),
     path('customer-inquiries/<int:inquiry_id>/update-status/', views.update_inquiry_status, name='update_inquiry_status'),

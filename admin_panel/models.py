@@ -117,6 +117,7 @@ class Destination(models.Model):
     image = models.ImageField(upload_to='destinations/', blank=True, null=True)
     map_image = models.ImageField(upload_to='destinations/maps/', blank=True, null=True)
     is_popular = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
