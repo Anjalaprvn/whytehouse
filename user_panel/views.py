@@ -70,6 +70,7 @@ def index(request):
     side_tab_destinations = Destination.objects.filter(
         category='International',
         is_popular=True,
+        is_active=True,
         packages__active=True
     ).distinct().order_by('name')[:3]
     
@@ -77,6 +78,7 @@ def index(request):
     filter_destinations = Destination.objects.filter(
         category='International',
         is_popular=True,
+        is_active=True,
         packages__active=True
     ).distinct().order_by('name')[:4]
     
@@ -126,7 +128,7 @@ def domestic(request):
     packages = TravelPackage.objects.filter(active=True, category='Domestic')[:6]
     
     # Get domestic destinations for the explorer section
-    domestic_destinations = Destination.objects.filter(category='Domestic').order_by('name')[:4]
+    domestic_destinations = Destination.objects.filter(category='Domestic', is_active=True).order_by('name')[:4]
     
     # Get featured package for each destination (Kozhikode, Munnar, Wayanad, Ooty)
     kozhikode_package = TravelPackage.objects.filter(active=True, category='Domestic', destination__name__icontains='Kozhikode').first()
@@ -135,7 +137,7 @@ def domestic(request):
     ooty_package = TravelPackage.objects.filter(active=True, category='Domestic', destination__name__icontains='Ooty').first()
     
     # Get ALL domestic destinations for gallery (show 3 at a time with navigation)
-    gallery_destinations = Destination.objects.filter(category='Domestic').order_by('name')
+    gallery_destinations = Destination.objects.filter(category='Domestic', is_active=True).order_by('name')
     
     # Get all properties for hospitality section (show 3 at a time)
     properties = Property.objects.filter(is_active=True)
@@ -466,7 +468,7 @@ def domestic_packages(request):
     search_query = request.GET.get('search', '').strip()
     
     # Get all domestic destinations
-    destinations = Destination.objects.filter(category='Domestic').order_by('name')
+    destinations = Destination.objects.filter(category='Domestic', is_active=True).order_by('name')
     
     # Filter packages
     packages = TravelPackage.objects.filter(active=True, category='Domestic')
@@ -519,7 +521,7 @@ def international_packages(request):
     search_query = request.GET.get('search', '').strip()
     
     # Get all international destinations
-    destinations = Destination.objects.filter(category='International').order_by('name')
+    destinations = Destination.objects.filter(category='International', is_active=True).order_by('name')
     
     # Filter packages
     packages = TravelPackage.objects.filter(active=True, category='International')

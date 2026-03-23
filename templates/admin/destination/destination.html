@@ -267,8 +267,50 @@
         color: #ef4444;
     }
 
-    .empty-state {
-        grid-column: 1 / -1;
+    .btn-toggle-active {
+        width: 46px;
+        height: 46px;
+        min-width: 46px;
+        border: 1px solid #d1fae5;
+        border-radius: 12px;
+        background: #ffffff;
+        color: #10b981;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.25s ease;
+        cursor: pointer;
+    }
+
+    .btn-toggle-active:hover {
+        background: #f0fdf4;
+        border-color: #6ee7b7;
+    }
+
+    .btn-toggle-inactive {
+        width: 46px;
+        height: 46px;
+        min-width: 46px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #ffffff;
+        color: #9ca3af;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.25s ease;
+        cursor: pointer;
+    }
+
+    .btn-toggle-inactive:hover {
+        background: #f9fafb;
+        border-color: #d1d5db;
+        color: #6b7280;
+    }
+
+    .destination-card.inactive {
+        opacity: 0.6;
+    }
         text-align: center;
         padding: 70px 20px;
         color: #64748b;
@@ -347,7 +389,7 @@
 
     <div class="destinations-grid">
         {% for destination in destinations %}
-        <div class="destination-card" onclick="window.location.href='{% url 'admin_panel:view_destination' destination.id %}'">
+        <div class="destination-card {% if not destination.is_active %}inactive{% endif %}" onclick="window.location.href='{% url 'admin_panel:view_destination' destination.id %}'">
             <div class="card-image-container">
                 {% if destination.image %}
                     <img src="{{ destination.image.url }}" alt="{{ destination.name }}" class="dest-image">
@@ -383,6 +425,13 @@
                        onclick="event.stopPropagation()">
                         <i class="fas fa-pen-to-square"></i>
                         <span>Edit</span>
+                    </a>
+
+                    <a href="{% url 'admin_panel:toggle_destination_status' destination.id %}"
+                       class="{% if destination.is_active %}btn-toggle-active{% else %}btn-toggle-inactive{% endif %}"
+                       onclick="event.stopPropagation()"
+                       title="{% if destination.is_active %}Disable{% else %}Enable{% endif %}">
+                        <i class="fas fa-{% if destination.is_active %}check{% else %}ban{% endif %}"></i>
                     </a>
 
                     <a href="{% url 'admin_panel:delete_destination' destination.id %}"
