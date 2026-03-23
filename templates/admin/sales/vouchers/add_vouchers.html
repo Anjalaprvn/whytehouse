@@ -270,7 +270,7 @@ body{background:#f5f7fb;color:#111}
           <select class="select" name="sales_person" required>
             <option value="">Select sales person</option>
             {% for emp in employees %}
-              <option value="{{ emp.id }}">{{ emp.name }} - {{ emp.role }}</option>
+              <option value="{{ emp.id }}">{{ emp.name }}</option>
             {% endfor %}
           </select>
         </div>

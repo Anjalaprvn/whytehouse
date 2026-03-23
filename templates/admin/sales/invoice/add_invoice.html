@@ -314,7 +314,7 @@
               <select name="sales_person" required>
                 <option selected disabled>Select sales person</option>
                 {% for emp in employees %}
-                <option value="{{ emp.id }}">{{ emp.name }} - {{ emp.role }}</option>
+                <option value="{{ emp.id }}">{{ emp.name }}</option>
                 {% endfor %}
               </select>
               <svg class="caret" viewBox="0 0 24 24" fill="none">
