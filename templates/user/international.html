@@ -1074,7 +1074,7 @@ during, and after your trip.</p></div>
           {% if data.destination.map_image %}
           <img src="{{ data.destination.map_image.url }}" class="map-silhouette" alt="map">
           {% endif %}
-          {% if data.destination.description %}
+          {% if data.destination.description and data.destination.description != 'None' %}
           <div class="top-right-info">{{ data.destination.description }}</div>
           {% endif %}
 
