@@ -786,6 +786,15 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 30px;
+      align-items: start;
+    }
+
+    .testimonials-grid .testimonial-card:nth-child(3n+1):last-child {
+      grid-column: 1;
+    }
+
+    .testimonials-grid .testimonial-card:nth-child(3n+2):last-child {
+      grid-column: 2;
     }
 
     .testimonial-card {
@@ -794,6 +803,9 @@
       padding: 40px;
       position: relative;
       transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
 
     .testimonial-card:hover {
@@ -1395,7 +1407,7 @@ during, and after your trip.</p></div>
         });
 
         if (progressFill) {
-          progressFill.style.width = ${((index + 1) / total) * 100}%;
+          progressFill.style.width = `${((index + 1) / total) * 100}%`;
         }
       }
 
