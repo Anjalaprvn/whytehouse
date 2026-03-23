@@ -635,8 +635,12 @@
     /* CTA BANNER */
     .potential-banner {
         background:
-            linear-gradient(90deg, rgba(212,154,68,0.94) 0%, rgba(166,124,82,0.92) 100%),
-            url("{% static 'dashboard/images/banner.png' %}") no-repeat center center/cover;
+            radial-gradient(ellipse at top left, rgba(255,140,60,0.65) 0%, transparent 50%),
+            radial-gradient(ellipse at bottom left, rgba(210,140,60,0.60) 0%, transparent 50%),
+            radial-gradient(ellipse at right, rgba(200,120,60,0.55) 0%, transparent 55%),
+            radial-gradient(ellipse at center, rgba(180,100,40,0.48) 0%, rgba(220,130,70,0.45) 100%),
+            linear-gradient(rgba(160,80,20,0.20), rgba(160,80,20,0.20)),
+            url("{% static 'images/t2.png' %}") no-repeat center center/cover;
         padding: 80px 8%;
         text-align: center;
         color: #fff;
