@@ -427,6 +427,10 @@
                                     <i class="fas fa-eye"></i>
                                 </a>
 
+                                <a href="{% url 'feedback:edit_feedback' feedback.id %}" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+
                                 <form method="POST" action="{% url 'feedback:toggle_featured_feedback' feedback.id %}">
                                     {% csrf_token %}
                                     <button type="submit" title="Toggle Featured">

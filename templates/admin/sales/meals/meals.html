@@ -29,6 +29,11 @@ tbody tr:last-child td{border-bottom:none}
 .icon-btn{width:36px;height:36px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;display:grid;place-items:center;cursor:pointer;text-decoration:none}
 .icon-btn svg{width:16px;height:16px}
 .icon-btn.delete svg{stroke:#ef4444}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
+.badge.available{background:#dcfce7;color:#15803d}
+.badge.unavailable{background:#fee2e2;color:#991b1b}
+.toggle-btn{width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:#f9fafb;border:1px solid #eceff3;cursor:pointer;transition:.25s ease;padding:0;margin:0}
+.toggle-btn:hover{color:#d4a017;border-color:rgba(212,160,23,.35);background:#fffaf0}
 </style>
 {% endblock %}
 
@@ -65,6 +70,7 @@ tbody tr:last-child td{border-bottom:none}
             <tr>
               <th class="sl">Sl No</th>
               <th>Meals</th>
+              <th style="width:160px;">Status</th>
               <th style="width:200px;">Actions</th>
             </tr>
           </thead>
@@ -74,6 +80,21 @@ tbody tr:last-child td{border-bottom:none}
             <tr>
               <td class="sl">{{ forloop.counter }}</td>
               <td class="meal">{{ meal.name }}</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <form method="POST" action="{% url 'sales:toggle_meal_status' meal.id %}" style="display:inline-flex;margin:0;">
+                    {% csrf_token %}
+                    <button type="submit" class="toggle-btn" title="Toggle status">
+                      {% if meal.status == 'Available' %}
+                        <i class="fas fa-check-circle" style="color:green;font-size:16px;"></i>
+                      {% else %}
+                        <i class="fas fa-check" style="color:#9ca3af;font-size:16px;"></i>
+                      {% endif %}
+                    </button>
+                  </form>
+                  <span class="badge {% if meal.status == 'Available' %}available{% else %}unavailable{% endif %}">{{ meal.status }}</span>
+                </div>
+              </td>
               <td>
                 <div class="actions">
                   <a href="{% url 'sales:view_meal' meal.id %}" class="icon-btn" title="View" aria-label="View">
@@ -107,7 +128,7 @@ tbody tr:last-child td{border-bottom:none}
             </tr>
             {% empty %}
             <tr>
-              <td colspan="3" style="text-align:center;padding:40px;color:var(--muted);">
+              <td colspan="4" style="text-align:center;padding:40px;color:var(--muted);">
                 No meal plans found. <a href="{% url 'sales:add_meal' %}" style="color:var(--accent);font-weight:600;text-decoration:none;">Add your first meal plan</a>.
               </td>
             </tr>

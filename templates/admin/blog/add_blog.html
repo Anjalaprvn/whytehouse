@@ -900,8 +900,8 @@ function checkDuplicateSlug(value) {
 // real-time + blur validation
 function validateTitle() {
     const value = document.getElementById('title').value.trim();
-    if (!value) { showClientError('title-client-error', 'Blog title is required.'); return; }
-    if (/\d/.test(value)) { showClientError('title-client-error', 'Blog title should not contain numbers.'); return; }
+    if (!value) { hideClientError('title-client-error'); return; }
+    if (/[^A-Za-z\s]/.test(value)) { showClientError('title-client-error', 'Blog title should contain letters and spaces only (no numbers or special characters).'); return; }
     hideClientError('title-client-error');
     checkDuplicateTitle(value);
 }
@@ -910,29 +910,37 @@ document.getElementById('title').addEventListener('blur', validateTitle);
 
 function validateSlug() {
     const value = document.getElementById('slug').value.trim();
-    if (!value) { showClientError('slug-client-error', 'URL slug is required.'); return; }
+    if (!value) { hideClientError('slug-client-error'); return; }
     checkDuplicateSlug(value);
 }
 document.getElementById('slug').addEventListener('input', validateSlug);
 document.getElementById('slug').addEventListener('blur', validateSlug);
 
 document.getElementById('author_name').addEventListener('input', function() {
+    const value = this.value.trim();
+    if (!value) { hideClientError('author-client-error'); return; }
     validateFieldLettersOnly('author_name', 'author-client-error', 'Author name');
 });
 document.getElementById('author_name').addEventListener('blur', function() {
+    const value = this.value.trim();
+    if (!value) { hideClientError('author-client-error'); return; }
     validateFieldLettersOnly('author_name', 'author-client-error', 'Author name');
 });
 
 document.getElementById('author_summary').addEventListener('input', function() {
+    const value = this.value.trim();
+    if (!value) { hideClientError('author-summary-client-error'); return; }
     validateFieldRichText('author_summary', 'author-summary-client-error', 'Author summary');
 });
 document.getElementById('author_summary').addEventListener('blur', function() {
+    const value = this.value.trim();
+    if (!value) { hideClientError('author-summary-client-error'); return; }
     validateFieldRichText('author_summary', 'author-summary-client-error', 'Author summary');
 });
 
 function validateExcerpt() {
     const value = document.getElementById('excerpt').value.trim();
-    if (!value) { showClientError('excerpt-client-error', 'Excerpt is required.'); return; }
+    if (!value) { hideClientError('excerpt-client-error'); return; }
     if (!validateRichText(value)) {
         showClientError('excerpt-client-error', 'Excerpt can only contain letters, numbers, spaces, &, comma, and fullstop.');
         return;
@@ -949,7 +957,7 @@ document.getElementById('excerpt').addEventListener('blur', validateExcerpt);
 function validateReadingTime() {
     const el = document.getElementById('reading_time');
     const value = parseInt(el.value);
-    if (!el.value) { showClientError('reading-time-client-error', 'Reading time is required.'); return; }
+    if (!el.value) { hideClientError('reading-time-client-error'); return; }
     if (isNaN(value) || value < 1 || value > 120) {
         showClientError('reading-time-client-error', 'Reading time must be between 1 and 120 minutes.');
     } else {
@@ -960,22 +968,26 @@ document.getElementById('reading_time').addEventListener('input', validateReadin
 document.getElementById('reading_time').addEventListener('blur', validateReadingTime);
 
 document.getElementById('publish_date').addEventListener('change', function() {
-    validateFieldNotEmpty('publish_date', 'publish-date-client-error', 'Publish date');
+    if (!this.value) { hideClientError('publish-date-client-error'); return; }
+    hideClientError('publish-date-client-error');
 });
 document.getElementById('publish_date').addEventListener('blur', function() {
-    validateFieldNotEmpty('publish_date', 'publish-date-client-error', 'Publish date');
+    if (!this.value) { hideClientError('publish-date-client-error'); return; }
+    hideClientError('publish-date-client-error');
 });
 
 document.getElementById('category').addEventListener('change', function() {
-    validateFieldNotEmpty('category', 'category-client-error', 'Category');
+    if (!this.value) { hideClientError('category-client-error'); return; }
+    hideClientError('category-client-error');
 });
 document.getElementById('category').addEventListener('blur', function() {
-    validateFieldNotEmpty('category', 'category-client-error', 'Category');
+    if (!this.value) { hideClientError('category-client-error'); return; }
+    hideClientError('category-client-error');
 });
 
 function validateContent() {
     const value = document.getElementById('content').value.trim();
-    if (!value) { showClientError('content-client-error', 'Content is required.'); return false; }
+    if (!value) { hideClientError('content-client-error'); return true; }
     if (!validateRichText(value)) {
         showClientError('content-client-error', 'Content can only contain letters, numbers, spaces, &, comma, and fullstop.');
         return false;
@@ -1072,7 +1084,7 @@ document.getElementById('blog-form').addEventListener('submit', function(e) {
 
     const title = document.getElementById('title').value.trim();
     if (!title) { showClientError('title-client-error', 'Blog title is required.'); isValid = false; }
-    else if (/\d/.test(title)) { showClientError('title-client-error', 'Blog title should not contain numbers.'); isValid = false; }
+    else if (/[^A-Za-z\s]/.test(title)) { showClientError('title-client-error', 'Blog title should contain letters and spaces only (no numbers or special characters).'); isValid = false; }
     else hideClientError('title-client-error');
 
     const slug = document.getElementById('slug').value.trim();

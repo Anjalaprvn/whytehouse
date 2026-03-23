@@ -1,3 +1,4 @@
+import re
 from rest_framework import serializers
 
 from .models import (
@@ -67,7 +68,16 @@ class BlogSerializer(serializers.ModelSerializer):
     status = serializers.ChoiceField(choices=STATUS_CHOICES_LIMITED)
     image_url = serializers.SerializerMethodField(read_only=True)
     content_images = BlogImageSerializer(source="images", many=True, read_only=True)
-    tag_list = serializers.SerializerMethodField()
+    upload_content_images = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True,
+        required=False,
+        help_text="Upload one or more content images (multipart/form-data, key: upload_content_images)",
+    )
+    content = serializers.CharField(
+        style={"base_template": "textarea.html", "rows": 10},
+        help_text="Write your blog content here. Reference uploaded images using {{image1}}, {{image2}}, etc.",
+    )
     category_name = serializers.CharField(source="category.name", read_only=True)
 
     class Meta:
@@ -90,8 +100,8 @@ class BlogSerializer(serializers.ModelSerializer):
             "featured_image_url",
             "image_url",
             "hashtags",
-            "tag_list",
             "content_images",
+            "upload_content_images",
             "created_at",
             "updated_at",
         ]
@@ -101,19 +111,103 @@ class BlogSerializer(serializers.ModelSerializer):
             "updated_at",
             "image_url",
             "category_name",
-            "tag_list",
             "content_images",
         ]
         extra_kwargs = {
+            "content": {
+                "style": {"base_template": "textarea.html", "rows": 10},
+                "help_text": "Write your blog content here. Reference uploaded images using {{image1}}, {{image2}}, etc.",
+            },
             "hashtags": {
                 "help_text": "Comma-separated hashtags (e.g. #travel, #beach)",
-                "style": {
-                    "base_template": "textarea.html",
-                    "placeholder": "#travel, #beach",
-                    "rows": 2,
-                },
+                "style": {"base_template": "textarea.html", "placeholder": "#travel, #beach", "rows": 2},
             },
+            "category": {"required": True},
+            "publish_date": {"required": True},
+            "featured_image": {"required": False},
+            "featured_image_url": {"required": False, "allow_blank": True, "allow_null": True},
         }
+
+    _RICH_TEXT_RE = r'^[A-Za-z0-9\s&,.]+$'
+
+    def validate_title(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Blog title is required.")
+        if re.search(r'\d', value):
+            raise serializers.ValidationError("Blog title should not contain numbers.")
+        instance = getattr(self, 'instance', None)
+        qs = Blog.objects.filter(title__iexact=value)
+        if instance:
+            qs = qs.exclude(pk=instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("A blog with this title already exists.")
+        return value
+
+    def validate_slug(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("URL slug is required.")
+        if not re.match(r'^[a-z0-9-]+$', value):
+            raise serializers.ValidationError("Slug must contain only lowercase letters, numbers, and hyphens.")
+        instance = getattr(self, 'instance', None)
+        qs = Blog.objects.filter(slug=value)
+        if instance:
+            qs = qs.exclude(pk=instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("A blog with this slug already exists.")
+        return value
+
+    def validate_excerpt(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Excerpt is required.")
+        if not re.match(self._RICH_TEXT_RE, value):
+            raise serializers.ValidationError("Excerpt can only contain letters, numbers, spaces, &, comma, and fullstop.")
+        if not (50 <= len(value) <= 300):
+            raise serializers.ValidationError("Excerpt must be between 50 and 300 characters.")
+        return value
+
+    def validate_author_name(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Author name is required.")
+        if not re.match(r'^[A-Za-z\s]+$', value):
+            raise serializers.ValidationError("Author name should contain letters and spaces only (no numbers or special characters).")
+        return value
+
+    def validate_author_summary(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Author summary is required.")
+        if not re.match(self._RICH_TEXT_RE, value):
+            raise serializers.ValidationError("Author summary can only contain letters, numbers, spaces, &, comma, and fullstop.")
+        return value
+
+    def validate_reading_time(self, value):
+        if value is None:
+            raise serializers.ValidationError("Reading time is required.")
+        if not (1 <= value <= 120):
+            raise serializers.ValidationError("Reading time must be between 1 and 120 minutes.")
+        return value
+
+    def validate_content(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Content is required.")
+        if not re.match(self._RICH_TEXT_RE, value):
+            raise serializers.ValidationError("Content can only contain letters, numbers, spaces, &, comma, and fullstop.")
+        return value
+
+    def validate_package_id(self, value):
+        if not value:
+            return value
+        value = value.strip().upper()
+        if not re.match(r'^PKG\d{3}$', value):
+            raise serializers.ValidationError("Package ID must be in format PKG followed by 3 digits (e.g., PKG001).")
+        if not TravelPackage.objects.filter(package_id=value).exists():
+            raise serializers.ValidationError("No package found with this ID.")
+        return value
 
     def validate_hashtags(self, value):
         if not value:
@@ -126,16 +220,25 @@ class BlogSerializer(serializers.ModelSerializer):
 
         cleaned = []
         for tag in parts:
-            if not tag.startswith("#"):
-                tag = f"#{tag}"
-            cleaned.append(tag)
+            tag = tag.lstrip('#').strip()
+            if not re.match(r'^[A-Za-z\s]+$', tag):
+                raise serializers.ValidationError("Hashtags should contain letters only.")
+            cleaned.append(f"#{tag}")
         return ", ".join(cleaned)
 
     def create(self, validated_data):
-        return super().create(validated_data)
+        upload_content_images = validated_data.pop("upload_content_images", [])
+        instance = super().create(validated_data)
+        for i, image in enumerate(upload_content_images):
+            BlogImage.objects.create(blog=instance, image=image, order=i)
+        return instance
 
     def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
+        upload_content_images = validated_data.pop("upload_content_images", [])
+        instance = super().update(instance, validated_data)
+        for i, image in enumerate(upload_content_images):
+            BlogImage.objects.create(blog=instance, image=image, order=i)
+        return instance
 
     def get_image_url(self, obj):
         request = self.context.get("request")
@@ -145,9 +248,6 @@ class BlogSerializer(serializers.ModelSerializer):
             return obj.featured_image_url
         return None
 
-    def get_tag_list(self, obj):
-        raw = obj.tags or obj.hashtags or ""
-        return [t.strip() for t in str(raw).split(",") if t.strip()]
 
 
 class BlogListSerializer(serializers.ModelSerializer):
@@ -531,7 +631,6 @@ class CustomerSerializer(serializers.ModelSerializer):
         return data
 
     def validate_gst_number(self, value):
-        import re
         if not value:
             return value
         if not re.match(r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$', value.strip().upper()):
@@ -688,6 +787,13 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at", "image_url"]
+        extra_kwargs = {
+            "role": {"required": False, "allow_blank": True},
+            "department": {"required": False, "allow_blank": True},
+            "join_date": {"required": False, "allow_null": True},
+            "salary": {"required": False, "allow_null": True},
+            "profile_picture": {"required": False},
+        }
 
     def get_image_url(self, obj):
         request = self.context.get("request")
@@ -696,13 +802,39 @@ class EmployeeSerializer(serializers.ModelSerializer):
         return None
 
     def validate_name(self, value):
-        if any(c.isdigit() for c in value):
-            raise serializers.ValidationError("Name must not contain numbers.")
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Name is required.")
+        if not re.match(r'^[A-Za-z\s]+$', value):
+            raise serializers.ValidationError("Name should contain letters only (no numbers or special characters).")
+        return value
+
+    def validate_email(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Email is required.")
+        if not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', value):
+            raise serializers.ValidationError("Enter a valid email address.")
+        instance = getattr(self, 'instance', None)
+        qs = Employee.objects.filter(email=value)
+        if instance:
+            qs = qs.exclude(pk=instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("This email is already registered to another employee.")
         return value
 
     def validate_phone(self, value):
-        if not value.strip().lstrip('+').isdigit():
-            raise serializers.ValidationError("Phone must contain digits only.")
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Phone is required.")
+        if not re.match(r'^\d{10}$', value):
+            raise serializers.ValidationError("Phone must be exactly 10 digits.")
+        instance = getattr(self, 'instance', None)
+        qs = Employee.objects.filter(phone=value)
+        if instance:
+            qs = qs.exclude(pk=instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("This phone number is already registered to another employee.")
         return value
 
     def validate_salary(self, value):
@@ -713,36 +845,56 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
 # ==================== RESORT SERIALIZER ====================
 class ResortSerializer(serializers.ModelSerializer):
+    resort_place = serializers.CharField(source='location', required=True)
+    mobile       = serializers.CharField(source='contact_number', required=False, allow_blank=True, default='')
+    cc_emails    = serializers.CharField(required=False, allow_blank=True, default='',
+                       help_text='Enter multiple CC emails separated by commas. e.g. a@b.com, c@d.com')
+
     class Meta:
         model = Resort
         fields = [
-            "id",
-            "resort_name",
-            "location",
-            "contact_person",
-            "contact_number",
-            "email",
-            "address",
-            "status",
-            "created_at",
-            "updated_at",
+            'id',
+            'resort_name',
+            'resort_place',
+            'mobile',
+            'email',
+            'cc_emails',
+            'location',
+            'status',
+            'created_at',
+            'updated_at',
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ['id', 'location', 'created_at', 'updated_at']
 
     def validate_resort_name(self, value):
         if any(c.isdigit() for c in value):
-            raise serializers.ValidationError("Resort name must not contain numbers.")
+            raise serializers.ValidationError('Resort name must not contain numbers.')
         return value
 
-    def validate_contact_person(self, value):
-        if value and any(c.isdigit() for c in value):
-            raise serializers.ValidationError("Contact person name must not contain numbers.")
-        return value
-
-    def validate_contact_number(self, value):
+    def validate_mobile(self, value):
         if value and not value.strip().lstrip('+').isdigit():
-            raise serializers.ValidationError("Contact number must contain digits only.")
+            raise serializers.ValidationError('Mobile must contain digits only.')
+        if value and len(value.strip()) != 10:
+            raise serializers.ValidationError('Mobile number must be exactly 10 digits.')
         return value
+
+    def validate_cc_emails(self, value):
+        if not value:
+            return value
+        import re
+        email_re = re.compile(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+        for email in [e.strip() for e in value.split(',') if e.strip()]:
+            if not email_re.match(email):
+                raise serializers.ValidationError(f'Invalid email address: {email}')
+        return value
+
+    def create(self, validated_data):
+        validated_data.pop('cc_emails', None)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data.pop('cc_emails', None)
+        return super().update(instance, validated_data)
 
 
 # ==================== VOUCHER SERIALIZER ====================

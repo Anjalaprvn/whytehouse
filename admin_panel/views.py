@@ -1731,6 +1731,15 @@ def delete_meal(request, meal_id):
 
 
 # VOUCHER VIEWS
+
+def toggle_meal_status(request, meal_id):
+    if request.method != 'POST':
+        return redirect('sales:meal_list')
+    meal = get_object_or_404(Meal, id=meal_id)
+    meal.status = 'Unavailable' if meal.status == 'Available' else 'Available'
+    meal.save()
+    return redirect('sales:meal_list')
+
 def voucher_list(request):
     search_query = request.GET.get('search', '').strip()
     vouchers = Voucher.objects.all()
@@ -1750,7 +1759,7 @@ def add_voucher(request):
     resorts = Resort.objects.all()
     accounts = Account.objects.all()
     employees = Employee.objects.filter(status='Active')
-    meals = Meal.objects.all()
+    meals = Meal.objects.filter(status='Available')
     
     # Get next voucher ID
     from .models import Voucher
@@ -1885,7 +1894,7 @@ def add_invoice(request):
     resorts = Resort.objects.all()
     accounts = Account.objects.all()
     employees = Employee.objects.filter(status='Active')
-    meals = Meal.objects.all()
+    meals = Meal.objects.filter(status='Available')
     
     # Get next invoice ID
     from .models import Invoice
@@ -3218,6 +3227,39 @@ def add_feedback(request):
 def view_feedback(request, feedback_id):
     feedback = get_object_or_404(Feedback, id=feedback_id)
     return render(request, 'admin/feedback/view_feedback.html', {'feedback': feedback})
+
+def edit_feedback(request, feedback_id):
+    feedback_obj = get_object_or_404(Feedback, id=feedback_id)
+    if request.method == 'POST':
+        try:
+            name          = (request.POST.get('name') or '').strip()
+            email         = (request.POST.get('email') or '').strip()
+            mobile_number = (request.POST.get('mobile_number') or '').strip()
+            feedback_type = (request.POST.get('feedback_type') or '').strip()
+            rating        = (request.POST.get('rating') or '').strip()
+            feedback_text = (request.POST.get('feedback') or '').strip()
+            if not all([name, email, rating, feedback_text, feedback_type]):
+                messages.error(request, 'Name, Email, Feedback Type, Rating and Feedback are required.')
+                return render(request, 'admin/feedback/edit_feedback.html', {
+                    'feedback': feedback_obj,
+                    'feedback_type_choices': Feedback.FEEDBACK_TYPE_CHOICES,
+                })
+            feedback_obj.name          = name
+            feedback_obj.email         = email
+            feedback_obj.mobile_number = mobile_number
+            feedback_obj.feedback_type = feedback_type
+            feedback_obj.rating        = int(rating)
+            feedback_obj.feedback      = feedback_text
+            feedback_obj.featured      = request.POST.get('featured') == '1'
+            feedback_obj.save()
+            messages.success(request, 'Feedback updated successfully!')
+            return redirect('feedback:feedback_list')
+        except Exception as e:
+            messages.error(request, f'Error updating feedback: {str(e)}')
+    return render(request, 'admin/feedback/edit_feedback.html', {
+        'feedback': feedback_obj,
+        'feedback_type_choices': Feedback.FEEDBACK_TYPE_CHOICES,
+    })
 
 def delete_feedback(request, feedback_id):
     if request.method != 'POST':

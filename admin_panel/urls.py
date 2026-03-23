@@ -84,6 +84,7 @@ sales_patterns = [
     path('meals/<int:meal_id>/edit/', views.edit_meal, name='edit_meal'),
     path('meals/<int:meal_id>/delete/', views.delete_meal, name='delete_meal'),
     path('meals/check-name/', views.check_meal_name, name='check_meal_name'),
+    path('meals/<int:meal_id>/toggle-status/', views.toggle_meal_status, name='toggle_meal_status'),
     #VOUCHER URLS---------------------------------
     path('vouchers/', views.voucher_list, name='voucher_list'),
     path('vouchers/add/', views.add_voucher, name='add_voucher'),
@@ -121,6 +122,7 @@ feedback_patterns = [
     path('', views.feedback_list, name='feedback_list'),
     path('add/', views.add_feedback, name='add_feedback'),
     path('<int:feedback_id>/', views.view_feedback, name='view_feedback'),
+    path('<int:feedback_id>/edit/', views.edit_feedback, name='edit_feedback'),
     path('<int:feedback_id>/delete/', views.delete_feedback, name='delete_feedback'),
     path('<int:feedback_id>/toggle-featured/', views.toggle_featured_feedback, name='toggle_featured_feedback'),
 ]

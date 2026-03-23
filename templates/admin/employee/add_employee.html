@@ -131,6 +131,19 @@
     .error-msg::before{content:'⚠';font-size:13px;}
     .error-msg.show{display:flex;}
 
+    /* Department add */
+    .dept-add-wrap{
+      display:flex;
+      gap:10px;
+      margin-top:10px;
+    }
+    .dept-add-wrap .input{
+      flex:1;
+    }
+    .dept-add-btn{
+      min-width:90px;
+    }
+
     /* Buttons */
     .btn-row{display:flex;gap:14px;margin-top:24px;}
     .btn{
@@ -159,6 +172,12 @@
       .form-grid{grid-template-columns:1fr}
       .titles h1{font-size:32px}
       .main{padding:26px 18px 60px}
+    }
+
+    @media (max-width:600px){
+      .dept-add-wrap{
+        flex-direction:column;
+      }
     }
 </style>
 {% endblock %}
@@ -245,14 +264,21 @@
 
           <div class="field">
             <label>Department</label>
-            <select class="select" name="department">
+            <select class="select" name="department" id="departmentSelect">
               <option value="">Select department</option>
-              <option {% if form_data.department == "Sales" %}selected{% endif %}>Sales</option>
-              <option {% if form_data.department == "Operations" %}selected{% endif %}>Operations</option>
-              <option {% if form_data.department == "Marketing" %}selected{% endif %}>Marketing</option>
-              <option {% if form_data.department == "Finance" %}selected{% endif %}>Finance</option>
-              <option {% if form_data.department == "HR" %}selected{% endif %}>HR</option>
+              <option value="Sales" {% if form_data.department == "Sales" %}selected{% endif %}>Sales</option>
+              <option value="Operations" {% if form_data.department == "Operations" %}selected{% endif %}>Operations</option>
+              <option value="Marketing" {% if form_data.department == "Marketing" %}selected{% endif %}>Marketing</option>
+              <option value="Finance" {% if form_data.department == "Finance" %}selected{% endif %}>Finance</option>
+              <option value="HR" {% if form_data.department == "HR" %}selected{% endif %}>HR</option>
             </select>
+
+            <div class="dept-add-wrap">
+              <input type="text" id="newDepartment" class="input" placeholder="Enter new department">
+              <button type="button" class="btn dept-add-btn" id="addDepartmentBtn">Add</button>
+            </div>
+
+            <div class="error-msg" id="dept-msg"></div>
           </div>
 
           <div class="field">
@@ -434,7 +460,10 @@ const CHECK_URL = "{% url 'employee:check_employee_duplicate' %}";
 
 function checkDuplicate(field, value, alertId, fieldId) {
     const alert = document.getElementById(alertId);
-    if (!value) { alert.style.display = 'none'; return; }
+    if (!value) { 
+        alert.style.display = 'none'; 
+        return; 
+    }
     fetch(`${CHECK_URL}?field=${field}&value=${encodeURIComponent(value)}`)
         .then(r => r.json())
         .then(data => {
@@ -467,6 +496,66 @@ document.getElementById('phone').addEventListener('blur', function() {
 });
 document.getElementById('phone').addEventListener('input', function() {
     document.getElementById('dup-phone').style.display = 'none';
+});
+
+// =====================
+// Add Department Feature
+// =====================
+const departmentSelect = document.getElementById('departmentSelect');
+const newDepartmentInput = document.getElementById('newDepartment');
+const addDepartmentBtn = document.getElementById('addDepartmentBtn');
+const deptMsg = document.getElementById('dept-msg');
+
+function showDeptMsg(msg, success = false) {
+    deptMsg.textContent = msg;
+    deptMsg.classList.add('show');
+    deptMsg.style.color = success ? 'green' : 'var(--danger)';
+}
+
+function hideDeptMsg() {
+    deptMsg.textContent = '';
+    deptMsg.classList.remove('show');
+}
+
+function addDepartment() {
+    const newDept = newDepartmentInput.value.trim();
+
+    if (!newDept) {
+        showDeptMsg('Please enter a department');
+        return;
+    }
+
+    const exists = Array.from(departmentSelect.options).some(
+        opt => opt.value.toLowerCase() === newDept.toLowerCase()
+    );
+
+    if (exists) {
+        showDeptMsg('Department already exists');
+        return;
+    }
+
+    const option = document.createElement('option');
+    option.value = newDept;
+    option.textContent = newDept;
+    option.selected = true;
+
+    departmentSelect.appendChild(option);
+    newDepartmentInput.value = '';
+    showDeptMsg('Department added successfully', true);
+}
+
+addDepartmentBtn.addEventListener('click', addDepartment);
+
+newDepartmentInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        addDepartment();
+    }
+});
+
+newDepartmentInput.addEventListener('input', function() {
+    this.value = this.value.replace(/[^A-Za-z\s]/g, '');
+    hideDeptMsg();
 });
 </script>
 {% endblock %}

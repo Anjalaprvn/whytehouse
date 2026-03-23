@@ -164,19 +164,11 @@ class BlogViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         hashtags_value = (self.request.data.get("hashtags") or "").strip()
-        tags_value = (self.request.data.get("tags") or "").strip()
-        serializer.save(
-            hashtags=hashtags_value,
-            tags=tags_value or hashtags_value
-        )
+        serializer.save(hashtags=hashtags_value)
 
     def perform_update(self, serializer):
         hashtags_value = (self.request.data.get("hashtags") or "").strip()
-        tags_value = (self.request.data.get("tags") or "").strip()
-        serializer.save(
-            hashtags=hashtags_value,
-            tags=tags_value or hashtags_value
-        )
+        serializer.save(hashtags=hashtags_value)
 
     @action(detail=False, methods=["get"])
     def summary(self, request):
@@ -548,11 +540,134 @@ class MealViewSet(viewsets.ModelViewSet):
         })
 
 
+# ==================== ACCOUNT BROWSABLE API RENDERER ====================
+class AccountBrowsableAPIRenderer(BrowsableAPIRenderer):
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        ret = super().render(data, accepted_media_type, renderer_context)
+        if isinstance(ret, bytes):
+            ret = ret.decode('utf-8')
+        script = """
+        <style>.acct-err{color:#d13b3b;font-size:12px;margin-top:4px;}</style>
+        <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var nameInput   = document.querySelector('input[name="account_name"]');
+            var numInput    = document.querySelector('input[name="account_number"]');
+            var bankInput   = document.querySelector('input[name="bank_name"]');
+            var branchInput = document.querySelector('input[name="branch_name"]');
+            var ifscInput   = document.querySelector('input[name="ifsc_code"]');
+            var typeSelect  = document.querySelector('select[name="account_type"]');
+            if (!nameInput) return;
+
+            function getOrCreateErr(input) {
+                var err = input.parentElement.querySelector('.acct-err');
+                if (!err) {
+                    err = document.createElement('div');
+                    err.className = 'acct-err';
+                    input.parentElement.appendChild(err);
+                }
+                return err;
+            }
+            function showErr(input, msg) {
+                getOrCreateErr(input).textContent = msg;
+                input.style.borderColor = msg ? '#d13b3b' : '';
+            }
+            function clearErr(input) { showErr(input, ''); }
+
+            // letters + spaces only
+            function liveLetters(input, label) {
+                var v = input.value.trim();
+                if (!v) { clearErr(input); return; }
+                if (!/^[A-Za-z\s]+$/.test(v)) showErr(input, label + ' must contain letters only.');
+                else clearErr(input);
+            }
+
+            // digits only
+            function liveDigits(input, label) {
+                var v = input.value.trim();
+                if (!v) { clearErr(input); return; }
+                if (!/^\d+$/.test(v)) showErr(input, label + ' must contain digits only.');
+                else clearErr(input);
+            }
+
+            // IFSC: alphanumeric, auto-uppercase
+            function liveIFSC(input) {
+                input.value = input.value.toUpperCase();
+                var v = input.value.trim();
+                if (!v) { clearErr(input); return; }
+                if (!/^[A-Z0-9]+$/.test(v)) showErr(input, 'IFSC Code must be alphanumeric only.');
+                else clearErr(input);
+            }
+
+            // AJAX duplicate check on account number
+            var dupTimer, isDuplicate = false;
+            numInput.addEventListener('input', function() {
+                liveDigits(this, 'Account Number');
+                isDuplicate = false;
+                clearTimeout(dupTimer);
+                var v = this.value.trim();
+                if (!v || !/^\d+$/.test(v)) return;
+                dupTimer = setTimeout(function() {
+                    fetch('/sales/accounts/check-number/?number=' + encodeURIComponent(v))
+                        .then(function(r){ return r.json(); })
+                        .then(function(d){
+                            isDuplicate = d.exists;
+                            if (d.exists) showErr(numInput, 'This account number already exists.');
+                            else clearErr(numInput);
+                        });
+                }, 400);
+            });
+
+            nameInput.addEventListener('input',   function(){ liveLetters(this, 'Account Name'); });
+            bankInput.addEventListener('input',   function(){ liveLetters(this, 'Bank Name'); });
+            if (branchInput) branchInput.addEventListener('input', function(){ liveLetters(this, 'Branch Name'); });
+            if (ifscInput)   ifscInput.addEventListener('input',   function(){ liveIFSC(this); });
+
+            var form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    var ok = true;
+
+                    var name = nameInput.value.trim();
+                    if (!name) { showErr(nameInput, 'Account Name is required.'); ok = false; }
+                    else if (!/^[A-Za-z\s]+$/.test(name)) { showErr(nameInput, 'Account Name must contain letters only.'); ok = false; }
+                    else clearErr(nameInput);
+
+                    var num = numInput.value.trim();
+                    if (!num) { showErr(numInput, 'Account Number is required.'); ok = false; }
+                    else if (!/^\d+$/.test(num)) { showErr(numInput, 'Account Number must contain digits only.'); ok = false; }
+                    else if (isDuplicate) { showErr(numInput, 'This account number already exists.'); ok = false; }
+                    else clearErr(numInput);
+
+                    var bank = bankInput.value.trim();
+                    if (!bank) { showErr(bankInput, 'Bank Name is required.'); ok = false; }
+                    else if (!/^[A-Za-z\s]+$/.test(bank)) { showErr(bankInput, 'Bank Name must contain letters only.'); ok = false; }
+                    else clearErr(bankInput);
+
+                    if (branchInput && branchInput.value.trim() && !/^[A-Za-z\s]+$/.test(branchInput.value.trim())) {
+                        showErr(branchInput, 'Branch Name must contain letters only.'); ok = false;
+                    }
+                    if (ifscInput && ifscInput.value.trim() && !/^[A-Z0-9]+$/.test(ifscInput.value.trim())) {
+                        showErr(ifscInput, 'IFSC Code must be alphanumeric only.'); ok = false;
+                    }
+                    if (typeSelect && !typeSelect.value) {
+                        getOrCreateErr(typeSelect).textContent = 'Please select an Account Type.';
+                        typeSelect.style.borderColor = '#d13b3b'; ok = false;
+                    }
+                    if (!ok) e.preventDefault();
+                });
+            }
+        });
+        </script>
+        """
+        return (ret + script).encode('utf-8')
+
+
 # ==================== ACCOUNT VIEWSET ====================
 class AccountViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put", "delete", "head", "options"]
     queryset = Account.objects.all().order_by("-created_at")
     serializer_class = AccountSerializer
+    renderer_classes = [JSONRenderer, AccountBrowsableAPIRenderer]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -617,11 +732,120 @@ class InquiryViewSet(viewsets.ModelViewSet):
         })
 
 
+
+# ==================== EMPLOYEE BROWSABLE API RENDERER ====================
+class EmployeeBrowsableAPIRenderer(BrowsableAPIRenderer):
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        ret = super().render(data, accepted_media_type, renderer_context)
+        if isinstance(ret, bytes):
+            ret = ret.decode('utf-8')
+        script = (
+            '<style>'
+            '.emp-err{color:#d13b3b;font-size:12px;margin-top:4px;}'
+            '.emp-ok{color:#16a34a;font-size:12px;margin-top:4px;}'
+            '</style>'
+            '<script>'
+            'document.addEventListener("DOMContentLoaded",function(){'
+            '  var n=document.querySelector("input[name=\\"name\\"]");'
+            '  var em=document.querySelector("input[name=\\"email\\"]");'
+            '  var ph=document.querySelector("input[name=\\"phone\\"]");'
+            '  var sal=document.querySelector("input[name=\\"salary\\"]");'
+            '  var dept=document.querySelector("input[name=\\"department\\"]");'
+            '  if(!n)return;'
+            '  function mkErr(inp){'
+            '    var e=inp.parentElement.querySelector(".emp-err");'
+            '    if(!e){e=document.createElement("div");e.className="emp-err";inp.parentElement.appendChild(e);}'
+            '    return e;'
+            '  }'
+            '  function se(inp,msg){mkErr(inp).textContent=msg;inp.style.borderColor=msg?"#d13b3b":""}'
+            '  function ce(inp){se(inp,"")}'
+            '  n.addEventListener("input",function(){'
+            '    this.value=this.value.replace(/[^A-Za-z\\s]/g,"");'
+            '    var v=this.value.trim();'
+            '    if(!v){ce(this);return;}'
+            '    se(this,!/^[A-Za-z\\s]+$/.test(v)?"Name should contain letters only.":"");'
+            '  });'
+            '  em.addEventListener("input",function(){'
+            '    var v=this.value.trim();'
+            '    if(!v){ce(this);return;}'
+            '    se(this,!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(v)?"Enter a valid email address.":"");'
+            '  });'
+            '  ph.addEventListener("input",function(){'
+            '    this.value=this.value.replace(/\\D/g,"").slice(0,10);'
+            '    var v=this.value.trim();'
+            '    if(!v){ce(this);return;}'
+            '    se(this,!/^\\d{10}$/.test(v)?"Phone must be exactly 10 digits.":"");'
+            '  });'
+            '  if(dept){'
+            '    dept.addEventListener("input",function(){'
+            '      this.value=this.value.replace(/[^A-Za-z\\s]/g,"");'
+            '      var v=this.value.trim();'
+            '      if(!v){ce(this);return;}'
+            '      se(this,!/^[A-Za-z\\s]+$/.test(v)?"Department should contain letters only.":"");'
+            '    });'
+            '  }'
+            '  if(sal){'
+            '    sal.addEventListener("input",function(){'
+            '      var v=this.value.trim();'
+            '      if(!v){ce(this);return;}'
+            '      se(this,isNaN(v)||parseFloat(v)<0?"Salary must be a positive number.":"");'
+            '    });'
+            '  }'
+            '  var et,pt;'
+            '  em.addEventListener("blur",function(){'
+            '    var v=this.value.trim();'
+            '    if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(v))return;'
+            '    clearTimeout(et);'
+            '    et=setTimeout(function(){'
+            '      fetch("/employee/check-duplicate/?field=email&value="+encodeURIComponent(v))'
+            '        .then(function(r){return r.json();})'
+            '        .then(function(d){se(em,d.exists?"This email is already registered to another employee.":"");});'
+            '    },300);'
+            '  });'
+            '  em.addEventListener("input",function(){ce(em);clearTimeout(et);});'
+            '  ph.addEventListener("blur",function(){'
+            '    var v=this.value.trim();'
+            '    if(!/^\\d{10}$/.test(v))return;'
+            '    clearTimeout(pt);'
+            '    pt=setTimeout(function(){'
+            '      fetch("/employee/check-duplicate/?field=phone&value="+encodeURIComponent(v))'
+            '        .then(function(r){return r.json();})'
+            '        .then(function(d){se(ph,d.exists?"This phone number is already registered to another employee.":"");});'
+            '    },300);'
+            '  });'
+            '  ph.addEventListener("input",function(){ce(ph);clearTimeout(pt);});'
+            '  var form=document.querySelector("form");'
+            '  if(form){'
+            '    form.addEventListener("submit",function(e){'
+            '      var ok=true;'
+            '      var nv=n.value.trim();'
+            '      if(!nv){se(n,"Name is required.");ok=false;}'
+            '      else if(!/^[A-Za-z\\s]+$/.test(nv)){se(n,"Name should contain letters only.");ok=false;}'
+            '      else ce(n);'
+            '      var ev=em.value.trim();'
+            '      if(!ev){se(em,"Email is required.");ok=false;}'
+            '      else if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(ev)){se(em,"Enter a valid email address.");ok=false;}'
+            '      else ce(em);'
+            '      var pv=ph.value.trim();'
+            '      if(!pv){se(ph,"Phone is required.");ok=false;}'
+            '      else if(!/^\\d{10}$/.test(pv)){se(ph,"Phone must be exactly 10 digits.");ok=false;}'
+            '      else ce(ph);'
+            '      if(dept&&dept.value.trim()&&!/^[A-Za-z\\s]+$/.test(dept.value.trim())){se(dept,"Department should contain letters only.");ok=false;}'
+            '      if(sal&&sal.value.trim()){var sv=sal.value.trim();if(isNaN(sv)||parseFloat(sv)<0){se(sal,"Salary must be a positive number.");ok=false;}else ce(sal);}'
+            '      if(!ok)e.preventDefault();'
+            '    });'
+            '  }'
+            '});'
+            '<\/script>'
+        )
+        return (ret + script).encode('utf-8')
+
 # ==================== EMPLOYEE VIEWSET ====================
 class EmployeeViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put", "delete", "head", "options"]
     queryset = Employee.objects.all().order_by("-created_at")
     serializer_class = EmployeeSerializer
+    renderer_classes = [JSONRenderer, EmployeeBrowsableAPIRenderer]
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
@@ -666,11 +890,134 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         })
 
 
+# ==================== RESORT BROWSABLE API RENDERER ====================
+class ResortBrowsableAPIRenderer(BrowsableAPIRenderer):
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        ret = super().render(data, accepted_media_type, renderer_context)
+        if isinstance(ret, bytes):
+            ret = ret.decode('utf-8')
+        script = """
+        <style>.resort-api-err{color:#d13b3b;font-size:12px;margin-top:4px;}</style>
+        <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var nameInput   = document.querySelector('input[name="resort_name"]');
+            var placeInput  = document.querySelector('input[name="resort_place"]');
+            var mobileInput = document.querySelector('input[name="mobile"]');
+            var emailInput  = document.querySelector('input[name="email"]');
+            var ccInput     = document.querySelector('input[name="cc_emails"]');
+            if (!nameInput) return;
+
+            var nameRegex  = /^[A-Za-z ,]+$/;
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            function getOrCreateError(input) {
+                var err = input.parentElement.querySelector('.resort-api-err');
+                if (!err) {
+                    err = document.createElement('div');
+                    err.className = 'resort-api-err';
+                    input.parentElement.appendChild(err);
+                }
+                return err;
+            }
+            function showErr(input, msg) {
+                getOrCreateError(input).textContent = msg;
+                input.style.borderColor = msg ? '#d13b3b' : '';
+            }
+            function clearErr(input) { showErr(input, ''); }
+
+            var dupTimer;
+            function checkDuplicate() {
+                var name  = nameInput.value.trim();
+                var place = placeInput ? placeInput.value.trim() : '';
+                if (!name || !place) return;
+                clearTimeout(dupTimer);
+                dupTimer = setTimeout(function() {
+                    fetch('/sales/resorts/check-duplicate/?name=' + encodeURIComponent(name) + '&place=' + encodeURIComponent(place))
+                        .then(function(r){ return r.json(); })
+                        .then(function(d){
+                            if (d.exists) {
+                                showErr(nameInput, 'A resort with this name and place already exists.');
+                                if (placeInput) showErr(placeInput, 'A resort with this name and place already exists.');
+                            } else {
+                                clearErr(nameInput);
+                                if (placeInput) clearErr(placeInput);
+                            }
+                        });
+                }, 400);
+            }
+
+            nameInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^A-Za-z ,]/g, '');
+                showErr(this, this.value && !nameRegex.test(this.value) ? 'Only letters, spaces, and commas are allowed.' : '');
+                checkDuplicate();
+            });
+            if (placeInput) {
+                placeInput.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^A-Za-z ,]/g, '');
+                    showErr(this, this.value && !nameRegex.test(this.value) ? 'Only letters, spaces, and commas are allowed.' : '');
+                    checkDuplicate();
+                });
+            }
+            if (mobileInput) {
+                mobileInput.addEventListener('input', function() {
+                    this.value = this.value.replace(/\D/g, '').slice(0, 10);
+                    showErr(this, this.value && this.value.length !== 10 ? 'Mobile number must be exactly 10 digits.' : '');
+                });
+            }
+            if (emailInput) {
+                emailInput.addEventListener('input', function() {
+                    showErr(this, this.value && !emailRegex.test(this.value) ? 'Enter a valid email address.' : '');
+                });
+            }
+            if (ccInput) {
+                ccInput.addEventListener('input', function() {
+                    var parts = this.value.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+                    var invalid = parts.filter(function(e){ return !emailRegex.test(e); });
+                    showErr(this, invalid.length ? 'Invalid email(s): ' + invalid.join(', ') : '');
+                });
+            }
+
+            var form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    var ok = true;
+                    var name = nameInput.value.trim();
+                    if (!name) { showErr(nameInput, 'Resort name is required.'); ok = false; }
+                    else if (!nameRegex.test(name)) { showErr(nameInput, 'Only letters, spaces, and commas are allowed.'); ok = false; }
+                    else clearErr(nameInput);
+                    if (placeInput) {
+                        var place = placeInput.value.trim();
+                        if (!place) { showErr(placeInput, 'Resort place is required.'); ok = false; }
+                        else if (!nameRegex.test(place)) { showErr(placeInput, 'Only letters, spaces, and commas are allowed.'); ok = false; }
+                        else clearErr(placeInput);
+                    }
+                    if (mobileInput && mobileInput.value && mobileInput.value.replace(/\D/g,'').length !== 10) {
+                        showErr(mobileInput, 'Mobile number must be exactly 10 digits.'); ok = false;
+                    }
+                    if (emailInput && emailInput.value && !emailRegex.test(emailInput.value)) {
+                        showErr(emailInput, 'Enter a valid email address.'); ok = false;
+                    }
+                    if (ccInput && ccInput.value) {
+                        var parts = ccInput.value.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+                        var invalid = parts.filter(function(e){ return !emailRegex.test(e); });
+                        if (invalid.length) { showErr(ccInput, 'Invalid email(s): ' + invalid.join(', ')); ok = false; }
+                        else clearErr(ccInput);
+                    }
+                    if (!ok) e.preventDefault();
+                });
+            }
+        });
+        </script>
+        """
+        return (ret + script).encode('utf-8')
+
+
 # ==================== RESORT VIEWSET ====================
 class ResortViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put", "delete", "head", "options"]
     queryset = Resort.objects.all().order_by("-created_at")
     serializer_class = ResortSerializer
+    renderer_classes = [JSONRenderer, ResortBrowsableAPIRenderer]
 
     def get_queryset(self):
         qs = super().get_queryset()

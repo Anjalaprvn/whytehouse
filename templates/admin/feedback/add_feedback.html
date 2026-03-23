@@ -377,12 +377,18 @@
 
                 <div class="form-group">
                     <label>Feedback Type <span>*</span></label>
-                    <select name="feedback_type" required>
+                    <input type="hidden" name="feedback_type" id="feedback-type-hidden">
+                    <select id="feedback-type-select">
                         <option value="">Select Type</option>
                         {% for value, label in feedback_type_choices %}
                         <option value="{{ value }}">{{ label }}</option>
                         {% endfor %}
                     </select>
+                    <div style="display:flex;gap:8px;margin-top:8px;">
+                        <input type="text" id="feedback-type-new" placeholder="Or type new feedback type" style="flex:1">
+                        <button type="button" id="feedback-type-add-btn" style="padding:10px 16px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Add</button>
+                    </div>
+                    <div id="feedback-type-msg" style="font-size:12px;margin-top:4px;display:none;"></div>
                 </div>
 
                 <div class="form-group">
@@ -471,9 +477,7 @@ function removeThumb(btn) {
 
 addBtn.addEventListener('click', function() { createFileInput().click(); });
 
-
-
-
+function showErr(id, msg) {
     const el = document.getElementById(id);
     el.textContent = msg;
     el.style.display = 'block';
@@ -628,27 +632,81 @@ fbInput.addEventListener('input', function() {
     if (touched.feedback) validateFeedback();
 });
 
+// =====================
+// Feedback Type: select + custom input → hidden field
+// =====================
+const ftSelect  = document.getElementById('feedback-type-select');
+const ftNew     = document.getElementById('feedback-type-new');
+const ftHidden  = document.getElementById('feedback-type-hidden');
+const ftAddBtn  = document.getElementById('feedback-type-add-btn');
+const ftMsg     = document.getElementById('feedback-type-msg');
+
+function ftShowMsg(msg, ok) {
+    ftMsg.textContent = msg;
+    ftMsg.style.color = ok ? '#16a34a' : '#ef4444';
+    ftMsg.style.display = 'block';
+}
+function ftHideMsg() { ftMsg.style.display = 'none'; }
+
+function syncFeedbackType() {
+    ftHidden.value = ftNew.value.trim() || ftSelect.value;
+}
+
+ftSelect.addEventListener('change', function() {
+    if (this.value) ftNew.value = '';
+    ftHideMsg();
+    syncFeedbackType();
+});
+
+ftNew.addEventListener('input', function() {
+    this.value = this.value.replace(/[^A-Za-z\s]/g, '');
+    if (this.value.trim()) ftSelect.value = '';
+    ftHideMsg();
+    syncFeedbackType();
+});
+
+ftAddBtn.addEventListener('click', function() {
+    const val = ftNew.value.trim();
+    if (!val) { ftShowMsg('Please enter a feedback type.', false); return; }
+    if (!/^[A-Za-z\s]+$/.test(val)) { ftShowMsg('Only letters are allowed.', false); return; }
+    const exists = Array.from(ftSelect.options).some(o => o.value.toLowerCase() === val.toLowerCase());
+    if (exists) { ftShowMsg('This type already exists in the list.', false); return; }
+    const opt = document.createElement('option');
+    opt.value = val; opt.textContent = val; opt.selected = true;
+    ftSelect.appendChild(opt);
+    ftNew.value = '';
+    syncFeedbackType();
+    ftShowMsg('Feedback type added!', true);
+});
+
+ftNew.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); ftAddBtn.click(); }
+});
+
 form.addEventListener('submit', function(e) {
     touched.name = true;
     touched.email = true;
     touched.mobile = true;
     touched.feedback = true;
 
+    syncFeedbackType();
+    if (!ftHidden.value) {
+        ftShowMsg('Please select or enter a feedback type.', false);
+    }
+
     const ok =
         validateName(true) &&
         validateEmail(true) &&
         validateMobile(true) &&
-        validateFeedback(true);
+        validateFeedback(true) &&
+        !!ftHidden.value;
 
     if (!ok) {
         e.preventDefault();
         return;
     }
-
-
-
-
 });
+
 {% endverbatim %}
 </script>
 
