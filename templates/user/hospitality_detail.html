@@ -135,15 +135,16 @@
     .amenity-icon {
         width: 42px;
         height: 42px;
-        background: #d4a017;
-        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #fff;
-        font-size: 18px;
         flex-shrink: 0;
-        font-weight: 700;
+    }
+
+    .amenity-icon img {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
     }
 
     .amenity-text {
@@ -373,7 +374,7 @@
                 <div class="amenities-grid">
                     {% for amenity in property.amenity_list %}
                     <div class="amenity-item">
-                        <div class="amenity-icon">✓</div>
+                        <div class="amenity-icon"><img src="{% static 'images/star.png' %}" alt="*"></div>
                         <div class="amenity-text">{{ amenity }}</div>
                     </div>
                     {% endfor %}

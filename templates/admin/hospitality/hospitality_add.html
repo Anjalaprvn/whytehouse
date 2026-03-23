@@ -272,7 +272,7 @@
                         <input type="text" name="new_amenities[]" class="form-control" value="{{ amenity }}" style="margin-bottom: 10px;" oninput="validateAmenityDuplicate(this)">
                         {% endfor %}
                     {% else %}
-                        <input type="text" name="new_amenities[]" class="form-control" placeholder="Enter amenity name" style="margin-bottom: 10px;" oninput="validateLetters(this, null)">
+                        <input type="text" name="new_amenities[]" class="form-control" placeholder="Enter amenity name" style="margin-bottom: 10px;" oninput="validateAmenityDuplicate(this)">
                     {% endif %}
                 </div>
             </div>
@@ -378,8 +378,25 @@ function getAmenityValues() {
     return Array.from(document.querySelectorAll('#new-amenities-container input')).map(i => i.value.trim().toLowerCase());
 }
 
+function validateAmenity(input) {
+    const valid = /^[a-zA-Z0-9\s\-]*$/.test(input.value);
+    input.classList.toggle('invalid', !valid);
+    let msg = input.nextElementSibling;
+    if (!valid) {
+        if (!msg || !msg.classList.contains('inline-err')) {
+            msg = document.createElement('div');
+            msg.className = 'inline-err field-error';
+            msg.style.display = 'block';
+            input.insertAdjacentElement('afterend', msg);
+        }
+        msg.textContent = 'Only letters, numbers, spaces, and - are allowed.';
+    } else if (msg && msg.classList.contains('inline-err')) {
+        msg.remove();
+    }
+}
+
 function validateAmenityDuplicate(input) {
-    validateLetters(input, null);
+    validateAmenity(input);
     const val = input.value.trim().toLowerCase();
     const all = Array.from(document.querySelectorAll('#new-amenities-container input')).filter(i => i !== input).map(i => i.value.trim().toLowerCase());
     const isDup = val !== '' && all.includes(val);
@@ -441,7 +458,10 @@ document.querySelector('form').addEventListener('submit', function(e) {
     const seen = [];
     amenityInputs.forEach(function(inp) {
         const val = inp.value.trim().toLowerCase();
-        if (val && seen.includes(val)) {
+        if (val && !/^[a-zA-Z0-9\s\-]+$/.test(inp.value)) {
+            inp.classList.add('invalid');
+            valid = false;
+        } else if (val && seen.includes(val)) {
             inp.classList.add('invalid');
             let msg = inp.nextElementSibling;
             if (!msg || !msg.classList.contains('inline-err')) {
