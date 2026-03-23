@@ -30,8 +30,8 @@
 
 html, body{
   width:100%;
-  min-height:100%;
-  overflow-x:hidden;
+  height:100%;
+  overflow:hidden;
 }
 
 body{
@@ -70,7 +70,9 @@ body{
   flex:1;
   margin-left:var(--sidebar-width);
   transition:0.3s ease;
-  min-height:100vh;
+  height:100vh;
+  overflow-y:auto;
+  overscroll-behavior:none;
   position:relative;
   width:calc(100% - var(--sidebar-width));
 }
@@ -78,6 +80,8 @@ body{
 #toggle-sidebar:checked ~ .main-content{
   margin-left:var(--sidebar-collapsed);
   width:calc(100% - var(--sidebar-collapsed));
+  height:100vh;
+  overflow-y:auto;
 }
 
 /* Logo Area */
