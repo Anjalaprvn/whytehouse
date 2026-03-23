@@ -399,7 +399,7 @@
 
                 <div class="form-group full-width">
                     <label>Feedback Message <span>*</span></label>
-                    <textarea id="feedback-input" name="feedback" placeholder="Enter customer feedback..." required>{{ request.POST.feedback }}</textarea>
+                    <textarea id="feedback-input" name="feedback" placeholder="Enter customer feedback..." required oninput="this.value = this.value.replace(/[^A-Za-z0-9\s&()!.,]/g, '');">{{ request.POST.feedback }}</textarea>
                     <div class="field-error" id="feedback-error"></div>
                 </div>
 
@@ -585,7 +585,7 @@ function validateFeedback(force = false) {
         return false;
     }
 
-    if (!/^[A-Za-z0-9\s,\.&!]+$/.test(v)) {
+    if (!/^[A-Za-z0-9\s&()!.,]+$/.test(v)) {
         fbInput.classList.add('input-error');
         showErr('feedback-error', 'Please provide a valid feedback message.');
         return false;

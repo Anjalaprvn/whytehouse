@@ -202,7 +202,9 @@ input:focus, select:focus{
   <div class="header">
     <div>
       <div class="header-left">
-        <div class="back-btn" onclick="history.back()">←</div>
+        <a href="{% url 'employee:employee_list' %}" class="back-btn" style="text-decoration:none;color:#333;">
+          <i class="fas fa-arrow-left"></i>
+        </a>
         <h1 class="page-title">Edit Employee</h1>
       </div>
       <p class="page-sub">Update employee details</p>

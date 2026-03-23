@@ -238,6 +238,17 @@ class Employee(models.Model):
         ordering = ['-created_at']
 
         
+class EmployeeRole(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
+
+
 # Create your models here.
 class Account(models.Model):
     ACCOUNT_TYPE_CHOICES = [

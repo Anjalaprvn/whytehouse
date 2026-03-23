@@ -1,0 +1,98 @@
+{% extends 'admin/sidebar.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+.page-title{font-size:32px;font-weight:600;margin-bottom:8px;color:#111}
+.page-sub{color:#666;font-size:15px;margin-bottom:24px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.05);max-width:800px}
+.field{display:flex;gap:12px;margin-bottom:20px;align-items:flex-start}
+.field input{flex:1;padding:12px;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none}
+.field input:focus{border-color:#d4a017;box-shadow:0 0 0 3px rgba(212,160,23,0.12)}
+.field input.error{border-color:#dc2626;background:#fef2f2}
+.btn-add{display:inline-flex;align-items:center;gap:8px;background:#d4a017;color:#000;border:none;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer;font-size:14px}
+.btn-add:hover{background:#c39514}
+.roles-list{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.role-item{display:flex;align-items:center;gap:8px;padding:8px 16px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:20px}
+.delete-btn{background:#fee2e2;border:none;color:#dc2626;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.delete-btn:hover{background:#fecaca}
+.error-message{margin-top:-8px;margin-bottom:14px;color:#dc2626;font-size:13px;display:none}
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+  <button onclick="history.back()" style="width:40px;height:40px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px">←</button>
+  <h1 class="page-title" style="margin:0">Manage Roles</h1>
+</div>
+<p class="page-sub">Add and manage employee roles</p>
+
+<section class="card">
+  <form method="POST" id="roleForm">
+    {% csrf_token %}
+    <div class="field">
+      <input type="text" id="roleName" name="name" placeholder="Enter role name" required>
+      <button type="submit" class="btn-add">Add Role</button>
+    </div>
+    <div id="roleError" class="error-message"></div>
+  </form>
+
+  <script type="application/json" id="existingRolesData">
+    [{% for role in roles %}"{{ role.name|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}]
+  </script>
+
+  <div class="roles-list">
+    {% for role in roles %}
+    <div class="role-item">
+      <span>{{ role.name }}</span>
+      <form method="POST" action="{% url 'employee:delete_role' role.id %}" style="display:inline;margin:0;">
+        {% csrf_token %}
+        <button type="submit" class="delete-btn" onclick="return confirm('Delete this role?')">×</button>
+      </form>
+    </div>
+    {% empty %}
+    <p style="color:#666;padding:20px 0;">No roles yet. Add your first role above.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<script>
+  const roleForm = document.getElementById('roleForm');
+  const roleInput = document.getElementById('roleName');
+  const roleError = document.getElementById('roleError');
+
+  const existingRoles = JSON.parse(
+    document.getElementById('existingRolesData').textContent
+  ).map(n => n.trim().toLowerCase());
+
+  function showError(msg) {
+    roleError.style.display = 'block';
+    roleError.textContent = msg;
+    roleInput.classList.add('error');
+  }
+
+  function clearError() {
+    roleError.style.display = 'none';
+    roleError.textContent = '';
+    roleInput.classList.remove('error');
+  }
+
+  roleInput.addEventListener('input', function() {
+    this.value = this.value.replace(/[^A-Za-z ]/g, '');
+    const value = this.value.replace(/\s+/g, ' ');
+    if (!value.trim()) { clearError(); return; }
+    if (existingRoles.includes(value.trim().toLowerCase())) {
+      showError('This role already exists.');
+    } else {
+      clearError();
+    }
+  });
+
+  roleForm.addEventListener('submit', function(e) {
+    const value = roleInput.value.replace(/\s+/g, ' ').trim();
+    roleInput.value = value;
+    if (!value) { showError('Role name is required.'); e.preventDefault(); return; }
+    if (existingRoles.includes(value.toLowerCase())) { showError('This role already exists.'); e.preventDefault(); }
+  });
+</script>
+{% endblock %}

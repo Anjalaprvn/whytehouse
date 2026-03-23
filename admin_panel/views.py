@@ -15,7 +15,7 @@ from .models import BlogCategory
 from django.http import JsonResponse
 
 from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry, Destination, Feedback
-from .models import Employee,Blog,BlogImage
+from .models import Employee,Blog,BlogImage,EmployeeRole
 
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
@@ -994,7 +994,8 @@ def employee_list(request):
         'departments': departments,
         'active_count': active_count,
         'department_count': department_count,
-        'now': datetime.now().strftime('%B %d, %Y')
+        'now': datetime.now().strftime('%B %d, %Y'),
+        'roles': EmployeeRole.objects.all(),
     }
     return render(request, "admin/employee/employee.html", context)
 
@@ -1037,7 +1038,7 @@ def add_employee(request):
 
         if errors:
             messages.error(request, 'Please fix the errors below.')
-            return render(request, 'admin/employee/add_employee.html', {'errors': errors, 'form_data': request.POST})
+            return render(request, 'admin/employee/add_employee.html', {'errors': errors, 'form_data': request.POST, 'roles': EmployeeRole.objects.all()})
 
         try:
             employee = Employee.objects.create(
@@ -1057,7 +1058,7 @@ def add_employee(request):
             return redirect('employee:employee_list')
         except Exception as e:
             messages.error(request, f'Error adding employee: {str(e)}')
-    return render(request, "admin/employee/add_employee.html")
+    return render(request, "admin/employee/add_employee.html", {'roles': EmployeeRole.objects.all()})
            
     
 
@@ -3306,4 +3307,28 @@ def check_employee_duplicate(request):
     else:
         exists = False
     return JsonResponse({'exists': exists})
+
+
+def manage_employee_roles(request):
+    if request.method == 'POST':
+        name = (request.POST.get('name') or '').strip()
+        if not name:
+            return redirect('employee:manage_roles')
+        if EmployeeRole.objects.filter(name__iexact=name).exists():
+            return redirect('employee:manage_roles')
+        EmployeeRole.objects.create(name=name)
+        messages.success(request, f'Role "{name}" added successfully!')
+        return redirect(reverse('employee:manage_roles'))
+    roles = EmployeeRole.objects.all()
+    return render(request, 'admin/employee/manage_roles.html', {'roles': roles})
+
+
+def delete_employee_role(request, role_id):
+    if request.method != 'POST':
+        return redirect('employee:manage_roles')
+    role = get_object_or_404(EmployeeRole, id=role_id)
+    role_name = role.name
+    role.delete()
+    messages.success(request, f'Role "{role_name}" deleted successfully.')
+    return redirect('employee:manage_roles')
 

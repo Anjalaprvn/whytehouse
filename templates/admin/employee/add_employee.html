@@ -237,11 +237,9 @@
             <label>Role</label>
             <select class="select" name="role">
               <option value="">Select role</option>
-              <option {% if form_data.role == "Manager" %}selected{% endif %}>Manager</option>
-              <option {% if form_data.role == "Sales Executive" %}selected{% endif %}>Sales Executive</option>
-              <option {% if form_data.role == "Tour Guide" %}selected{% endif %}>Tour Guide</option>
-              <option {% if form_data.role == "Operations" %}selected{% endif %}>Operations</option>
-              <option {% if form_data.role == "Customer Support" %}selected{% endif %}>Customer Support</option>
+              {% for role in roles %}
+              <option value="{{ role.name }}" {% if form_data.role == role.name %}selected{% endif %}>{{ role.name }}</option>
+              {% endfor %}
             </select>
           </div>
 
