@@ -402,7 +402,7 @@ def add_lead(request):
         messages.success(request, "Lead added successfully!")
         return redirect('admin_panel:leads')
     
-    all_employees = Employee.objects.filter(status='Active').order_by('name')
+    all_employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive', 'Customer Care Support']).order_by('name')
     next_emp = get_next_employee_for_lead()
     
     employees_list = list(all_employees)
@@ -429,7 +429,7 @@ def edit_lead(request, id):
         messages.success(request, "Lead updated successfully!")
         return redirect('admin_panel:view_lead', lead_id=id)
     
-    all_employees = Employee.objects.filter(status='Active').order_by('name')
+    all_employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive', 'Customer Care Support']).order_by('name')
     assigned_employee_ids = set(Lead.objects.exclude(id=id).filter(employee__isnull=False).values_list('employee_id', flat=True))
     
     current_employee = lead.employee
@@ -1758,7 +1758,7 @@ def add_voucher(request):
     customers = Customer.objects.all()
     resorts = Resort.objects.all()
     accounts = Account.objects.all()
-    employees = Employee.objects.filter(status='Active')
+    employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive'])
     meals = Meal.objects.filter(status='Available')
     
     # Get next voucher ID
@@ -1837,26 +1837,53 @@ def edit_voucher(request, voucher_id):
     except Voucher.DoesNotExist:
         messages.error(request, "Voucher not found.")
         return redirect("sales:voucher_list")
-    
+
+    employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive'])
+    customers = Customer.objects.all()
+    resorts = Resort.objects.all()
+    accounts = Account.objects.all()
+    meals = Meal.objects.filter(status='Available')
+
     if request.method == "POST":
         try:
-            # don't allow editing voucher_no or voucher_date here; keep current values
-            voucher.voucher_code = request.POST.get("voucher_code", "").strip()
-            voucher.discount_amount = request.POST.get("discount_amount", 0)
-            voucher.discount_percentage = request.POST.get("discount_percentage", 0) or None
-            voucher.description = request.POST.get("description", "").strip()
-            voucher.valid_from = request.POST.get("valid_from")
-            voucher.valid_till = request.POST.get("valid_till")
-            voucher.status = request.POST.get("status", "Active")
+            voucher.customer_id = request.POST.get("customer_id") or None
+            voucher.voucher_date = request.POST.get("voucher_date")
+            voucher.sales_person_id = request.POST.get("sales_person") or None
+            voucher.resort_id = request.POST.get("resort") or None
+            voucher.checkin_date = request.POST.get("checkin_date") or None
+            voucher.checkout_date = request.POST.get("checkout_date") or None
+            voucher.checkin_time = request.POST.get("checkin_time") or None
+            voucher.checkout_time = request.POST.get("checkout_time") or None
+            voucher.adults = request.POST.get("adults", 0)
+            voucher.children = request.POST.get("children", 0)
+            voucher.nights = request.POST.get("nights", 1)
+            voucher.pax_notes = request.POST.get("pax_notes", "").strip()
+            voucher.room_type = request.POST.get("room_type", "").strip()
+            voucher.no_of_rooms = request.POST.get("no_of_rooms", 1)
+            voucher.meals_plan_id = request.POST.get("meals_plan") or None
+            voucher.bank_account_id = request.POST.get("bank_account") or None
+            voucher.package_price = request.POST.get("package_price", 0)
+            voucher.resort_price = request.POST.get("resort_price", 0)
+            voucher.total_amount = request.POST.get("total_amount", 0)
+            voucher.received = request.POST.get("received", 0)
+            voucher.pending = request.POST.get("pending", 0)
+            voucher.from_whytehouse = request.POST.get("from_whytehouse", 0)
+            voucher.profit = request.POST.get("profit", 0)
+            voucher.note_for_resort = request.POST.get("note_for_resort", "").strip()
+            voucher.note_for_guest = request.POST.get("note_for_guest", "").strip()
             voucher.save()
-            messages.success(request, f"Voucher updated successfully!")
+            messages.success(request, "Voucher updated successfully!")
             return redirect("sales:voucher_list")
         except Exception as e:
             return render(request, "admin/sales/vouchers/edit_vouchers.html", {
-                "voucher": voucher,
+                "voucher": voucher, "employees": employees, "customers": customers,
+                "resorts": resorts, "accounts": accounts, "meals": meals,
                 "error": f"Error updating voucher: {str(e)}"
             })
-    return render(request, "admin/sales/vouchers/edit_vouchers.html", {"voucher": voucher})
+    return render(request, "admin/sales/vouchers/edit_vouchers.html", {
+        "voucher": voucher, "employees": employees, "customers": customers,
+        "resorts": resorts, "accounts": accounts, "meals": meals,
+    })
 
 def delete_voucher(request, voucher_id):
     if request.method != 'POST':
@@ -1893,7 +1920,7 @@ def add_invoice(request):
     customers = Customer.objects.all()
     resorts = Resort.objects.all()
     accounts = Account.objects.all()
-    employees = Employee.objects.filter(status='Active')
+    employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive'])
     meals = Meal.objects.filter(status='Available')
     
     # Get next invoice ID
@@ -1992,7 +2019,7 @@ def edit_invoice(request, invoice_id):
     customers = Customer.objects.all()
     resorts = Resort.objects.all()
     accounts = Account.objects.all()
-    employees = Employee.objects.filter(status='Active')
+    employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive'])
     
     try:
         invoice = Invoice.objects.get(id=invoice_id)

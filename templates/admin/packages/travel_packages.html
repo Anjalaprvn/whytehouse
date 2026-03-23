@@ -160,7 +160,7 @@
 </div>
 {% endif %}
 
-<div class="package-grid">
+<div class="package-grid" data-paginate-cards="15">
     {% for package in packages %}
     <div class="package-card" onclick="window.location.href='{% url 'admin_panel:travel_package_view' package.id %}'">
         <img src="{% if package.image %}{{ package.image.url }}{% else %}{% static 'images/placeholder.png' %}{% endif %}">

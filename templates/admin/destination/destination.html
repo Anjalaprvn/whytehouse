@@ -387,7 +387,7 @@
         </form>
     </div>
 
-    <div class="destinations-grid">
+    <div class="destinations-grid" data-paginate-cards="15">
         {% for destination in destinations %}
         <div class="destination-card {% if not destination.is_active %}inactive{% endif %}" onclick="window.location.href='{% url 'admin_panel:view_destination' destination.id %}'">
             <div class="card-image-container">
