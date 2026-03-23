@@ -1032,6 +1032,18 @@ def feedback_page(request):
     return render(request, 'user/feedback.html')
 
 
+def terms_of_service(request):
+    return render(request, 'user/terms_of_service.html')
+
+
+def license(request):
+    return render(request, 'user/license.html')
+
+
+def faq(request):
+    return render(request, 'user/faq.html')
+
+
 def feedback_form(request):
     """Render a simple feedback form (no sidebar). On POST, save and show
     success message on the same page.

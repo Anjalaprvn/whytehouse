@@ -22,4 +22,7 @@ urlpatterns = [
     # user feedback form (simple page without sidebar)
     path('feedback-form/', views.feedback_form, name='feedback_form'),
     path('feedback_form/', views.feedback_form, name='feedback_form_alt'),  # support underscore variant
+    path('terms-of-service/', views.terms_of_service, name='terms_of_service'),
+    path('license/', views.license, name='license'),
+    path('faq/', views.faq, name='faq'),
 ]

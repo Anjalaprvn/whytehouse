@@ -1,0 +1,231 @@
+{% extends 'user/navbar.html' %}
+{% load static %}
+
+{% block title %}FAQ – Whyte House Holidays{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { background: #fff; }
+
+  .faq-hero {
+    background: #000;
+    color: #fff;
+    padding: 160px 80px 70px;
+  }
+  .faq-hero span {
+    font-size: 13px;
+    color: #DB902B;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 12px;
+  }
+  .faq-hero h1 { font-size: 52px; font-weight: 300; }
+  .faq-hero p { font-size: 15px; color: #999; margin-top: 14px; font-weight: 300; }
+
+  .faq-content {
+    max-width: 860px;
+    margin: 60px auto 80px;
+    padding: 0 40px;
+  }
+
+  .faq-category { margin-bottom: 50px; }
+  .faq-category h2 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #DB902B;
+    margin-bottom: 20px;
+  }
+
+  .faq-item {
+    border-bottom: 1px solid #eee;
+  }
+
+  .faq-question {
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 20px 0;
+    font-size: 15px;
+    font-weight: 500;
+    color: #1a1a1a;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Poppins', sans-serif;
+    gap: 20px;
+  }
+
+  .faq-question:hover { color: #DB902B; }
+
+  .faq-icon {
+    font-size: 22px;
+    font-weight: 300;
+    color: #DB902B;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+  }
+
+  .faq-answer {
+    display: none;
+    font-size: 14px;
+    line-height: 1.9;
+    color: #555;
+    padding-bottom: 20px;
+  }
+
+  .faq-item.open .faq-answer { display: block; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+  .contact-box {
+    background: #f9f9f9;
+    border-radius: 16px;
+    padding: 30px 35px;
+    margin-top: 20px;
+    text-align: center;
+  }
+  .contact-box h3 { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+  .contact-box p { font-size: 14px; color: #555; line-height: 1.9; }
+  .contact-box a {
+    display: inline-block;
+    margin-top: 16px;
+    background: #DB902B;
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 32px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="faq-hero">
+  <span>Support</span>
+  <h1>Frequently Asked Questions</h1>
+  <p>Everything you need to know about our packages, bookings, and services.</p>
+</div>
+
+<div class="faq-content">
+
+  <div class="faq-category">
+    <h2>Bookings & Payments</h2>
+
+    <div class="faq-item">
+      <button class="faq-question">How do I book a travel package? <span class="faq-icon">+</span></button>
+      <div class="faq-answer">You can book a package by browsing our Packages page and submitting an enquiry form, or by contacting us directly via phone or WhatsApp. Our team will confirm availability and guide you through the booking process.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">What payment methods do you accept? <span class="faq-icon">+</span></button>
+      <div class="faq-answer">We accept bank transfers, UPI payments, and other standard payment methods. Full payment details will be shared upon booking confirmation.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">Is an advance payment required to confirm a booking? <span class="faq-icon">+</span></button>
+      <div class="faq-answer">Yes, a booking is confirmed only after receipt of the required advance payment. The advance amount varies by package and will be communicated by our team at the time of booking.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">Will I receive a booking confirmation? <span class="faq-icon">+</span></button>
+      <div class="faq-answer">Yes, once your booking is confirmed and payment is received, you will receive a confirmation with your itinerary details via email or WhatsApp.</div>
+    </div>
+  </div>
+
+  <div class="faq-category">
+    <h2>Cancellations & Refunds</h2>
+
+    <div class="faq-item">
+      <button class="faq-question">What is your cancellation policy? <span class="faq-icon">+</span></button>
+      <div class="faq-answer">Cancellation requests must be submitted in writing via email. Refund eligibility depends on how far in advance the cancellation is made. Certain peak-season bookings may be non-refundable, which will be clearly stated at the time of booking.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">How long does a refund take? <span class="faq-icon">+</span></button>
+      <div class="faq-answer">Approved refunds are processed within 7–14 business days to the original payment method.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">Can I reschedule my trip instead of cancelling? <span class="faq-icon">+</span></button>
+      <div class="faq-answer">Yes, rescheduling is possible subject to availability. Please contact us as early as possible and we will do our best to accommodate your new dates.</div>
+    </div>
+  </div>
+
+  <div class="faq-category">
+    <h2>Packages & Itineraries</h2>
+
+    <div class="faq-item">
+      <button class="faq-question">Can I customise a package? <span class="faq-icon">+</span></button>
+      <div class="faq-answer">Absolutely. We offer fully customisable itineraries tailored to your preferences, budget, and travel dates. Reach out to our team and we'll put together a personalised plan for you.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">Are meals included in the packages? <span class="faq-icon">+</span></button>
+      <div class="faq-answer">Meal inclusions vary by package. Each package listing clearly states what is included. If you have specific dietary requirements, please let us know at the time of booking.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">Do your packages include flights? <span class="faq-icon">+</span></button>
+      <div class="faq-answer">Some packages include flights while others are land-only. This is clearly mentioned in each package description. We can also assist with flight bookings upon request.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">What is the minimum group size for a package? <span class="faq-icon">+</span></button>
+      <div class="faq-answer">Most of our packages are available for individuals, couples, families, and groups. There is no strict minimum, though pricing may vary based on group size. Contact us for group-specific quotes.</div>
+    </div>
+  </div>
+
+  <div class="faq-category">
+    <h2>Travel Documents & Visas</h2>
+
+    <div class="faq-item">
+      <button class="faq-question">Do you assist with visa applications? <span class="faq-icon">+</span></button>
+      <div class="faq-answer">We provide guidance on visa requirements for international destinations and can assist with documentation. However, the responsibility for obtaining a valid visa rests with the traveller.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">What travel documents do I need? <span class="faq-icon">+</span></button>
+      <div class="faq-answer">For international travel, you will need a valid passport (with at least 6 months validity), the required visa, and any destination-specific permits. For domestic travel, a government-issued photo ID is sufficient.</div>
+    </div>
+  </div>
+
+  <div class="faq-category">
+    <h2>Hospitality & Properties</h2>
+
+    <div class="faq-item">
+      <button class="faq-question">What types of properties do you manage? <span class="faq-icon">+</span></button>
+      <div class="faq-answer">We manage a range of properties including villas, resorts, and holiday homes across various destinations. Each property is carefully selected to ensure quality and comfort.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">How do I enquire about a specific property? <span class="faq-icon">+</span></button>
+      <div class="faq-answer">You can submit an enquiry directly from the property's detail page on our website, or contact us via phone or WhatsApp and our team will assist you.</div>
+    </div>
+  </div>
+
+  <div class="contact-box">
+    <h3>Still have questions?</h3>
+    <p>Our team is happy to help with anything not covered here.</p>
+    <a href="{% url 'user_panel:contact' %}">Contact Us</a>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.parentElement;
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+</script>
+{% endblock %}

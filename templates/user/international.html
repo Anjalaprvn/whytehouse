@@ -886,102 +886,6 @@
       letter-spacing: 2px;
     }
 
-    /* ================= FOOTER ================= */
-    .main-footer {
-      background-color: #000000;
-      color: #FFFFFF;
-      padding: 80px 100px 40px 100px;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    .footer-cta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 80px;
-    }
-
-    .cta-text h2 { font-size: 32px; font-weight: 400; margin-bottom: 10px; }
-    .cta-text p { font-size: 14px; color: #999; }
-
-    .subscribe-box {
-      position: relative;
-      display: flex;
-      align-items: center;
-      background: #1A1A1A;
-      border-radius: 100px;
-      padding: 5px 5px 5px 25px;
-      width: 450px;
-    }
-
-    .subscribe-box input {
-      background: transparent;
-      border: none;
-      color: white;
-      width: 100%;
-      outline: none;
-      font-size: 14px;
-    }
-
-    .subscribe-btn {
-      background-color: #DB902B;
-      color: black;
-      border: none;
-      padding: 12px 30px;
-      border-radius: 100px;
-      font-weight: 500;
-      cursor: pointer;
-    }
-
-    .footer-content {
-      display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr 1fr;
-      gap: 60px;
-      padding-top: 60px;
-      border-top: 1px solid #333;
-    }
-
-    .footer-brand .logo {
-      width: 120px;
-      margin-bottom: 25px;
-    }
-
-    .brand-desc {
-      font-size: 13px;
-      line-height: 1.8;
-      color: #888;
-      margin-bottom: 25px;
-    }
-
-    .social-links { display: flex; gap: 15px; }
-    .social-circle img { width: 40px; height: 40px; }
-
-    .footer-col h4 {
-      font-size: 16px;
-      font-weight: 500;
-      margin-bottom: 25px;
-      color: #FFFFFF;
-    }
-
-    .footer-col ul { list-style: none; padding: 0; }
-    .footer-col ul li { margin-bottom: 15px; }
-
-    .footer-col ul li a {
-      text-decoration: none;
-      color: #888;
-      font-size: 14px;
-      transition: 0.3s;
-    }
-
-    .footer-col ul li a:hover { color: #DB902B; }
-
-    .copyright {
-      text-align: center;
-      padding-top: 80px;
-      font-size: 12px;
-      color: #555;
-    }
-
     @media (max-width: 992px) {
       nav { padding: 30px 20px; }
 
@@ -1029,8 +933,6 @@
         gap: 30px;
       }
 
-      .subscribe-box { width: 100%; }
-      .footer-content { grid-template-columns: 1fr 1fr; }
       .testimonials-section { padding: 60px 20px; }
     }
   </style>
@@ -1328,60 +1230,7 @@ during, and after your trip.</p></div>
     </section>
   </div>
 
-  <footer class="main-footer">
-    <div class="footer-cta">
-      <div class="cta-text">
-        <h2>Book Your Tour Today</h2>
-        <p>Join us for an unforgettable getaway and adventures</p>
-      </div>
-      <div class="subscribe-box">
-        <input type="email" placeholder="Enter your email">
-        <button class="subscribe-btn">Subscribe</button>
-      </div>
-    </div>
-
-    <div class="footer-content">
-      <div class="footer-brand">
-        <img src="{% static 'images/logo.png' %}" class="logo" alt="Whyte House">
-        <p class="brand-desc">Whether you're booking a holiday or managing a property, our promise remains the same.</p>
-        <div class="social-links">
-          <a href="#" class="social-circle" title="Facebook"><img src="{% static 'images/facebook.png' %}" alt="Facebook"></a>
-          <a href="#" class="social-circle" title="Instagram"><img src="{% static 'images/instagram.png' %}" alt="Instagram"></a>
-          <a href="#" class="social-circle" title="YouTube"><img src="{% static 'images/youtube.png' %}" alt="YouTube"></a>
-          <a href="#" class="social-circle" title="WhatsApp"><img src="{% static 'images/whatsapp.png' %}" alt="WhatsApp"></a>
-        </div>
-      </div>
-
-      <div class="footer-col">
-        <h4>Location</h4>
-        <ul>
-          <li><a href="#">Kozhikode, Kerala</a></li>
-          <li><a href="#">Kakkanchery 673321</a></li>
-          <li><a href="#">Since 2015</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-col">
-        <h4>Contact</h4>
-        <ul>
-          <li><a href="#">+91 78 523 521 45</a></li>
-          <li><a href="#">hi@whytehouseholidays.com</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-col">
-        <h4>Company & Legals</h4>
-        <ul>
-          <li><a href="#">About Us</a></li>
-          <li><a href="#">Frequently ask question</a></li>
-          <li><a href="#">Terms of Service</a></li>
-          <li><a href="#">License</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <p class="copyright">© 2025 Whyte House Holidays. All Rights Reserved</p>
-  </footer>
+  {% include 'user/footer.html' %}
 
   {% include 'user/enquire_popup.html' %}
 

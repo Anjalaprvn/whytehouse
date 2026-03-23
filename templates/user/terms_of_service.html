@@ -1,0 +1,132 @@
+{% extends 'user/navbar.html' %}
+{% load static %}
+
+{% block title %}Terms of Service – Whyte House Holidays{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { background: #fff; }
+
+  .tos-hero {
+    background: #000;
+    color: #fff;
+    padding: 160px 80px 70px;
+  }
+  .tos-hero span {
+    font-size: 13px;
+    color: #DB902B;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 12px;
+  }
+  .tos-hero h1 { font-size: 52px; font-weight: 300; }
+
+  .tos-content {
+    max-width: 860px;
+    margin: 60px auto 80px;
+    padding: 0 40px;
+  }
+
+  .last-updated { font-size: 13px; color: #999; margin-bottom: 40px; }
+
+  .tos-section { margin-bottom: 38px; }
+  .tos-section h2 { font-size: 19px; font-weight: 600; margin-bottom: 10px; color: #000; }
+  .tos-section p, .tos-section li { font-size: 14px; line-height: 1.9; color: #555; }
+  .tos-section ul { padding-left: 20px; margin-top: 8px; }
+  .tos-section ul li { margin-bottom: 6px; }
+
+  .tos-divider { border: none; border-top: 1px solid #eee; margin: 40px 0; }
+
+  .contact-box {
+    background: #f9f9f9;
+    border-radius: 16px;
+    padding: 30px 35px;
+    margin-top: 50px;
+  }
+  .contact-box h3 { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+  .contact-box p { font-size: 14px; color: #555; line-height: 1.9; }
+  .contact-box a { color: #DB902B; text-decoration: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tos-hero">
+  <span>Legal</span>
+  <h1>Terms of Service</h1>
+</div>
+
+<div class="tos-content">
+  <p class="last-updated">Last updated: June 2025</p>
+
+  <div class="tos-section">
+    <p>Welcome to Whyte House Holidays. By accessing or using our website and services, you agree to be bound by these Terms of Service. Please read them carefully before making any bookings or enquiries.</p>
+  </div>
+
+  <hr class="tos-divider">
+
+  <div class="tos-section">
+    <h2>1. Acceptance of Terms</h2>
+    <p>By using our website or booking any of our travel packages or hospitality services, you confirm that you are at least 18 years of age and agree to these terms in full. If you do not agree, please refrain from using our services.</p>
+  </div>
+
+  <div class="tos-section">
+    <h2>2. Bookings & Payments</h2>
+    <ul>
+      <li>All bookings are subject to availability and confirmation by our team.</li>
+      <li>A booking is confirmed only upon receipt of the required advance payment.</li>
+      <li>Prices are quoted in Indian Rupees (INR) and are subject to change without prior notice until a booking is confirmed.</li>
+      <li>Any applicable taxes and service charges will be communicated at the time of booking.</li>
+    </ul>
+  </div>
+
+  <div class="tos-section">
+    <h2>3. Cancellations & Refunds</h2>
+    <ul>
+      <li>Cancellation requests must be submitted in writing via email.</li>
+      <li>Refunds, if applicable, will be processed within 7–14 business days based on our cancellation policy.</li>
+      <li>Certain packages and peak-season bookings may be non-refundable. This will be clearly stated at the time of booking.</li>
+      <li>Whyte House Holidays reserves the right to cancel or modify a trip due to unforeseen circumstances, including natural events or safety concerns, with appropriate alternatives or refunds offered.</li>
+    </ul>
+  </div>
+
+  <div class="tos-section">
+    <h2>4. Travel Documents & Responsibilities</h2>
+    <p>It is the traveller's responsibility to ensure valid travel documents (passport, visa, permits) are in order before departure. Whyte House Holidays is not liable for any issues arising from invalid or missing documentation.</p>
+  </div>
+
+  <div class="tos-section">
+    <h2>5. Limitation of Liability</h2>
+    <p>Whyte House Holidays acts as an organiser and facilitator. We are not liable for any loss, injury, damage, or expense arising from circumstances beyond our reasonable control, including but not limited to acts of nature, government actions, or third-party service failures.</p>
+  </div>
+
+  <div class="tos-section">
+    <h2>6. Privacy</h2>
+    <p>Your personal information is collected solely for the purpose of processing bookings and improving our services. We do not sell or share your data with third parties without your consent. By using our services, you consent to our data practices.</p>
+  </div>
+
+  <div class="tos-section">
+    <h2>7. Intellectual Property</h2>
+    <p>All content on this website — including images, text, logos, and design — is the property of Whyte House Holidays and may not be reproduced or used without prior written permission.</p>
+  </div>
+
+  <div class="tos-section">
+    <h2>8. Governing Law</h2>
+    <p>These terms are governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of the courts in Kozhikode, Kerala.</p>
+  </div>
+
+  <div class="tos-section">
+    <h2>9. Changes to Terms</h2>
+    <p>We reserve the right to update these Terms of Service at any time. Continued use of our services after changes are posted constitutes your acceptance of the revised terms.</p>
+  </div>
+
+  <div class="contact-box">
+    <h3>Questions about these terms?</h3>
+    <p>
+      Reach us at <a href="mailto:hi@whytehouseholidays.com">hi@whytehouseholidays.com</a><br>
+      or call us at <a href="tel:+917852352145">+91 78 523 521 45</a><br>
+      Whyte House Holidays, Kakkanchery, Kozhikode, Kerala – 673321
+    </p>
+  </div>
+</div>
+{% endblock %}
