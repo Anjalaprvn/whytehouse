@@ -1076,7 +1076,7 @@ def edit_employee(request, pk):
             phone = request.POST.get('phone', '').strip()
             if not name or not email or not phone:
                 messages.error(request, "Name, email and phone are required.")
-                return render(request, "admin/employee/edit_employee.html", {'employee': employee})
+                return render(request, "admin/employee/edit_employee.html", {'employee': employee, 'roles': EmployeeRole.objects.all()})
 
             employee.name = name
             employee.email = email
@@ -1097,7 +1097,7 @@ def edit_employee(request, pk):
         except Exception as e:
             messages.error(request, f'Error updating employee: {str(e)}')
     
-    return render(request, "admin/employee/edit_employee.html", {'employee': employee})
+    return render(request, "admin/employee/edit_employee.html", {'employee': employee, 'roles': EmployeeRole.objects.all()})
 
 def delete_employee(request, pk):
     if request.method != 'POST':

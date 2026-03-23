@@ -279,10 +279,9 @@ input:focus, select:focus{
           <label>Role</label>
           <select name="role">
             <option value="">Select role</option>
-            <option value="Manager" {% if form_data.role == "Manager" or employee.role == "Manager" and not form_data %}selected{% endif %}>Manager</option>
-            <option value="Receptionist" {% if form_data.role == "Receptionist" or employee.role == "Receptionist" and not form_data %}selected{% endif %}>Receptionist</option>
-            <option value="Housekeeping" {% if form_data.role == "Housekeeping" or employee.role == "Housekeeping" and not form_data %}selected{% endif %}>Housekeeping</option>
-            <option value="Chef" {% if form_data.role == "Chef" or employee.role == "Chef" and not form_data %}selected{% endif %}>Chef</option>
+            {% for role in roles %}
+            <option value="{{ role.name }}" {% if role.name == employee.role %}selected{% endif %}>{{ role.name }}</option>
+            {% endfor %}
           </select>
         </div>
 
@@ -290,9 +289,9 @@ input:focus, select:focus{
           <label>Department</label>
           <select name="department">
             <option value="">Select department</option>
-            <option value="Sales" {% if form_data.department == "Sales" or employee.department == "Sales" and not form_data %}selected{% endif %}>Sales</option>
-            <option value="Operations" {% if form_data.department == "Operations" or employee.department == "Operations" and not form_data %}selected{% endif %}>Operations</option>
-            <option value="HR" {% if form_data.department == "HR" or employee.department == "HR" and not form_data %}selected{% endif %}>HR</option>
+            <option value="Sales" {% if employee.department == "Sales" %}selected{% endif %}>Sales</option>
+            <option value="Operations" {% if employee.department == "Operations" %}selected{% endif %}>Operations</option>
+            <option value="HR" {% if employee.department == "HR" %}selected{% endif %}>HR</option>
           </select>
         </div>
 
@@ -313,8 +312,9 @@ input:focus, select:focus{
         <div class="form-group">
           <label>Status</label>
           <select name="status">
-            <option value="Active" {% if form_data.status == "Active" or employee.status == "Active" and not form_data %}selected{% endif %}>Active</option>
-            <option value="Inactive" {% if form_data.status == "Inactive" or employee.status == "Inactive" and not form_data %}selected{% endif %}>Inactive</option>
+            <option value="Active" {% if employee.status == "Active" %}selected{% endif %}>Active</option>
+            <option value="Inactive" {% if employee.status == "Inactive" %}selected{% endif %}>Inactive</option>
+            <option value="On Leave" {% if employee.status == "On Leave" %}selected{% endif %}>On Leave</option>
           </select>
         </div>
 
