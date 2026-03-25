@@ -78,15 +78,7 @@
     </svg>
   </label>
 
-  <div class="header-date" id="current-date">
-    Loading...
+  <div class="header-date">
+    {% if today %}{{ today|date:"l, F d, Y" }}{% else %}Monday, February 23, 2026{% endif %}
   </div>
 </header>
-
-<script>
-// Auto-update date in header
-const dateDisplay = document.getElementById('current-date');
-const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-const today = new Date();
-dateDisplay.textContent = today.toLocaleDateString('en-US', options);
-</script>
