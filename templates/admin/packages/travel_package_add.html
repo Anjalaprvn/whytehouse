@@ -287,6 +287,16 @@ window.addEventListener('DOMContentLoaded', function() {
             document.getElementById('duration-error').style.display = 'block';
             return;
         }
+        // Validate all itinerary fields
+        let itinValid = true;
+        document.querySelectorAll('#itinerary-container textarea').forEach(function(ta) {
+            if (!validateItinerary(ta)) itinValid = false;
+        });
+        if (!itinValid) {
+            e.preventDefault();
+            document.querySelector('#itinerary-container .itin-err').scrollIntoView({behavior:'smooth', block:'center'});
+            return;
+        }
         const metaTitleEl = document.getElementById('meta_title');
         const metaDescEl = document.getElementById('meta_description');
         if (metaTitleEl.value && !/^[a-zA-Z\s-]*$/.test(metaTitleEl.value)) {
@@ -493,20 +503,48 @@ function validateDuration(input) {
 }
 
 function validateItinerary(input) {
-    const valid = /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
-    input.classList.toggle('invalid', !valid);
+    const val = input.value.trim();
+    let errorMsg = '';
+    if (!val) {
+        errorMsg = 'Itinerary for this day is required.';
+    } else if (val.length < 10) {
+        errorMsg = 'Please enter at least 10 characters.';
+    } else if (!/^[a-zA-Z0-9\s!.,&-]*$/.test(val)) {
+        errorMsg = 'Only letters, numbers, !, ., ,, - and & are allowed.';
+    } else {
+        const allTextareas = document.querySelectorAll('#itinerary-container textarea');
+        allTextareas.forEach(function(other) {
+            if (other !== input && other.value.trim().toLowerCase() === val.toLowerCase()) {
+                errorMsg = 'This itinerary already exists for another day.';
+            }
+        });
+    }
+    input.classList.toggle('invalid', !!errorMsg);
     let msg = input.nextElementSibling;
-    if (!valid) {
+    if (errorMsg) {
         if (!msg || !msg.classList.contains('itin-err')) {
             msg = document.createElement('div');
             msg.className = 'itin-err field-error';
-            msg.style.display = 'block';
-            msg.textContent = 'Only letters, numbers, !, ., , and & are allowed.';
             input.insertAdjacentElement('afterend', msg);
         }
+        msg.style.display = 'block';
+        msg.textContent = errorMsg;
     } else if (msg && msg.classList.contains('itin-err')) {
         msg.remove();
     }
+    // Re-validate others to clear stale duplicate errors
+    document.querySelectorAll('#itinerary-container textarea').forEach(function(other) {
+        if (other !== input) {
+            const otherMsg = other.nextElementSibling;
+            if (otherMsg && otherMsg.classList.contains('itin-err') && otherMsg.textContent.includes('already exists')) {
+                const otherVal = other.value.trim();
+                const isDup = Array.from(document.querySelectorAll('#itinerary-container textarea'))
+                    .some(function(t) { return t !== other && t.value.trim().toLowerCase() === otherVal.toLowerCase(); });
+                if (!isDup) { otherMsg.remove(); other.classList.remove('invalid'); }
+            }
+        }
+    });
+    return !errorMsg;
 }
 
 function validateDescField(input) {

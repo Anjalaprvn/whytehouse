@@ -3076,8 +3076,14 @@ def destination_list(request):
     destinations = destinations.order_by('-created_at')
     domestic_count = Destination.objects.filter(category='Domestic').count()
     international_count = Destination.objects.filter(category='International').count()
+
+    paginator = Paginator(destinations, 9)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'destinations': destinations,
+        'destinations': page_obj,
+        'page_obj': page_obj,
         'selected_category': category,
         'domestic_count': domestic_count,
         'international_count': international_count,
