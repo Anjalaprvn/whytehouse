@@ -644,9 +644,13 @@ def travel_packages(request):
             selected_destination_obj = Destination.objects.get(id=destination_id)
         except Destination.DoesNotExist:
             pass
-    
+
+    paginator = Paginator(packages, 9)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
     context = {
-        'packages': packages,
+        'packages': page_obj,
+        'page_obj': page_obj,
         'destinations': destinations,
         'destination_counts': destination_counts,
         'selected_category': category,

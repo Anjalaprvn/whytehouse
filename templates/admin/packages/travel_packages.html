@@ -160,7 +160,7 @@
 </div>
 {% endif %}
 
-<div class="package-grid" data-paginate-cards="15">
+<div class="package-grid">
     {% for package in packages %}
     <div class="package-card" onclick="window.location.href='{% url 'admin_panel:travel_package_view' package.id %}'">
         <img src="{% if package.image %}{{ package.image.url }}{% else %}{% static 'images/placeholder.png' %}{% endif %}">
@@ -221,6 +221,24 @@
     <p>No packages available{% if selected_destination_obj %} for {{ selected_destination_obj.name }}{% endif %}.</p>
     {% endfor %}
 </div>
+
+{% if page_obj.has_other_pages %}
+<div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-top:32px;flex-wrap:wrap;">
+    {% if page_obj.has_previous %}
+        <a href="?cat={{ selected_category }}{% if selected_destination %}&dest={{ selected_destination }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}&page={{ page_obj.previous_page_number }}" style="padding:8px 14px;border:1px solid #e2e8f0;border-radius:8px;text-decoration:none;color:#374151;font-size:14px;background:#fff;">&laquo;</a>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+            <span style="padding:8px 14px;border-radius:8px;background:#c89b2d;color:#fff;font-size:14px;font-weight:600;">{{ num }}</span>
+        {% else %}
+            <a href="?cat={{ selected_category }}{% if selected_destination %}&dest={{ selected_destination }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}&page={{ num }}" style="padding:8px 14px;border:1px solid #e2e8f0;border-radius:8px;text-decoration:none;color:#374151;font-size:14px;background:#fff;">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+        <a href="?cat={{ selected_category }}{% if selected_destination %}&dest={{ selected_destination }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}&page={{ page_obj.next_page_number }}" style="padding:8px 14px;border:1px solid #e2e8f0;border-radius:8px;text-decoration:none;color:#374151;font-size:14px;background:#fff;">&raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
 
 <script>
 let searchTimeout;
