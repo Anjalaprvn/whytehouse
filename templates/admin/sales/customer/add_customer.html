@@ -286,14 +286,15 @@
             type="checkbox"
             id="sameAsWhatsapp"
             name="same_as_whatsapp"
+            tabindex="-1"
             {% if form.same_as_whatsapp %}checked{% endif %}
           />
 
           <div class="field span-3">
             <div class="toggle-row">
-             <label class="switch toggle-ui" for="sameAsWhatsapp" tabindex="-1">
+             <div class="switch toggle-ui" tabindex="0">
                 <span class="slider"></span>
-              </label>
+              </div>
               <label class="toggle-text" for="sameAsWhatsapp">Same as WhatsApp number</label>
             </div>
             <small class="hint">
@@ -337,93 +338,143 @@
 
   <script>
     const toggleCheckbox = document.getElementById('sameAsWhatsapp');
-    const toggleSwitch = document.querySelector('.switch.toggle-ui');
-    const contactInput = document.getElementById('contactNumber');
-    const whatsappInput = document.getElementById('whatsappNumber');
+    const toggleSwitch   = document.querySelector('.switch.toggle-ui');
+    const contactInput   = document.getElementById('contactNumber');
+    const whatsappInput  = document.getElementById('whatsappNumber');
 
+    /* ── helpers ── */
+    function showErr(id, msg) {
+      const el  = document.getElementById('err_' + id);
+      const inp = document.getElementById(id) || document.querySelector('[name="' + id + '"]');
+      if (!el) return;
+      el.textContent = msg;
+      el.style.display = msg ? 'block' : 'none';
+      if (inp) inp.classList.toggle('invalid', !!msg);
+    }
+
+    /* first / last name — letters, spaces, dots, hyphens only */
+    function validateName(id, label) {
+      const val = document.getElementById(id).value.trim();
+      if (!val) { showErr(id, ''); return true; }
+      if (!/^[A-Za-z\s.\-]+$/.test(val)) {
+        showErr(id, label + ' must contain letters only.'); return false;
+      }
+      showErr(id, ''); return true;
+    }
+
+    /* display name — letters, numbers, spaces */
+    function validateDisplayName() {
+      const val = document.getElementById('display_name').value.trim();
+      if (!val) { showErr('display_name', 'Display name is required.'); return false; }
+      if (!/^[A-Za-z0-9\s]+$/.test(val)) {
+        showErr('display_name', 'Display name may contain letters and numbers only.'); return false;
+      }
+      showErr('display_name', ''); return true;
+    }
+
+    /* place — letters, spaces, commas */
+    function validatePlace() {
+      const val = document.getElementById('place').value.trim();
+      if (!val) { showErr('place', ''); return true; }
+      if (!/^[A-Za-z\s,]+$/.test(val)) {
+        showErr('place', 'Place may contain letters and commas only.'); return false;
+      }
+      showErr('place', ''); return true;
+    }
+
+    /* 10-digit phone */
+    function validatePhone(id, errId, label) {
+      const val = document.getElementById(id).value.trim();
+      if (!val) { showErr(errId, ''); return true; }
+      if (!/^\d{10}$/.test(val)) {
+        showErr(errId, label + ' must be exactly 10 digits.'); return false;
+      }
+      showErr(errId, ''); return true;
+    }
+
+    /* GST — 15 chars, capital letters and numbers only, must have both */
+    function validateGST() {
+      const val = document.getElementById('gst_number').value.trim();
+      if (!val) { showErr('gst_number', ''); return true; }
+      if (!/^[A-Z0-9]+$/.test(val)) {
+        showErr('gst_number', 'GST number must contain capital letters and numbers only.'); return false;
+      }
+      if (val.length !== 15) {
+        showErr('gst_number', 'GST number must be exactly 15 characters.'); return false;
+      }
+      if (!/[A-Z]/.test(val) || !/[0-9]/.test(val)) {
+        showErr('gst_number', 'GST number must include both letters and numbers.'); return false;
+      }
+      showErr('gst_number', ''); return true;
+    }
+
+    /* ── live listeners ── */
+    document.getElementById('first_name').addEventListener('input',   () => validateName('first_name', 'First name'));
+    document.getElementById('last_name').addEventListener('input',    () => validateName('last_name', 'Last name'));
+    document.getElementById('display_name').addEventListener('input', () => validateDisplayName());
+    document.getElementById('place').addEventListener('input',        () => validatePlace());
+    contactInput.addEventListener('input', () => {
+      if (toggleCheckbox.checked) whatsappInput.value = contactInput.value.trim();
+      validatePhone('contactNumber', 'contact_number', 'Contact number');
+    });
+    document.getElementById('whatsappNumber').addEventListener('input', () => validatePhone('whatsappNumber', 'whatsapp_number', 'WhatsApp number'));
+    document.getElementById('work_number').addEventListener('input',    () => validatePhone('work_number', 'work_number', 'Work number'));
+    document.getElementById('gst_number').addEventListener('input',     () => validateGST());
+
+    /* ── toggle switch ── */
     function applyToggleState() {
       if (toggleCheckbox.checked) {
-        whatsappInput.value = contactInput.value.trim();
+        whatsappInput.value    = contactInput.value.trim();
         whatsappInput.readOnly = true;
         toggleSwitch.classList.add('on');
       } else {
         whatsappInput.readOnly = false;
-        whatsappInput.value = '';
         toggleSwitch.classList.remove('on');
       }
     }
 
-    toggleSwitch.addEventListener('click', function() {
-      const hasContact = contactInput.value.trim().length > 0;
-      if (!hasContact && !toggleCheckbox.checked) return;
+    toggleSwitch.addEventListener('click', function () {
+      if (!toggleCheckbox.checked && !contactInput.value.trim()) {
+        showErr('contact_number', 'Please enter a contact number first.');
+        return;
+      }
       toggleCheckbox.checked = !toggleCheckbox.checked;
       applyToggleState();
     });
 
-    contactInput.addEventListener('input', function() {
-      const val = this.value.trim();
-
-      if (toggleCheckbox.checked) {
-        whatsappInput.value = val;
-      }
-
-      if (!val) {
-        toggleCheckbox.checked = false;
+    toggleSwitch.addEventListener('keydown', function (e) {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        if (!toggleCheckbox.checked && !contactInput.value.trim()) {
+          showErr('contact_number', 'Please enter a contact number first.');
+          return;
+        }
+        toggleCheckbox.checked = !toggleCheckbox.checked;
         applyToggleState();
-        showErr('contact_number', '');
-        return;
-      }
-
-      if (!/^\+?\d+$/.test(val)) {
-        showErr('contact_number', 'Contact number must contain digits only.');
-      } else if (val.replace('+','').length < 10 || val.replace('+','').length > 15) {
-        showErr('contact_number', 'Contact number must be 10–15 digits.');
-      } else {
-        showErr('contact_number', '');
       }
     });
 
-    function showErr(id, msg) {
-      const el = document.getElementById('err_' + id);
-      const input = document.getElementById(id);
-      if (!el) return;
-      el.textContent = msg;
-      el.style.display = msg ? 'block' : 'none';
-      if (input) input.classList.toggle('invalid', !!msg);
-    }
-
-    function liveTextOnly(id, label) {
-      const val = document.getElementById(id).value.trim();
-      if (!val) { showErr(id, ''); return; }
-      if (/\d/.test(val)) showErr(id, label + ' must not contain numbers.');
-      else showErr(id, '');
-    }
-
-    function liveDigitsOnly(inputId, errId, label) {
-      const val = document.getElementById(inputId).value.trim();
-      if (!val) { showErr(errId, ''); return; }
-      if (!/^\+?\d+$/.test(val)) showErr(errId, label + ' must contain digits only.');
-      else showErr(errId, '');
-    }
-
-    function liveGST(id) {
-      const val = document.getElementById(id).value.trim();
-      if (!val) { showErr(id, ''); return; }
-      if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i.test(val))
-        showErr(id, 'Invalid GST format (e.g. 22AAAAA0000A1Z5).');
-      else showErr(id, '');
-    }
-
-    document.getElementById('first_name').addEventListener('input', () => liveTextOnly('first_name', 'First name'));
-    document.getElementById('last_name').addEventListener('input', () => liveTextOnly('last_name', 'Last name'));
-    document.getElementById('display_name').addEventListener('input', () => liveTextOnly('display_name', 'Display name'));
-    document.getElementById('place').addEventListener('input', () => liveTextOnly('place', 'Customer Place'));
-    document.getElementById('whatsappNumber').addEventListener('input', () => liveDigitsOnly('whatsappNumber', 'whatsapp_number', 'WhatsApp number'));
-    document.getElementById('work_number').addEventListener('input', () => liveDigitsOnly('work_number', 'work_number', 'Work number'));
-    document.getElementById('gst_number').addEventListener('input', () => liveGST('gst_number'));
-
     applyToggleState();
 
+    /* ── submit validation ── */
+    document.querySelector('form').addEventListener('submit', function (e) {
+      const ok = [
+        validateName('first_name', 'First name'),
+        validateName('last_name', 'Last name'),
+        validateDisplayName(),
+        validatePlace(),
+        validatePhone('contactNumber', 'contact_number', 'Contact number'),
+        validatePhone('whatsappNumber', 'whatsapp_number', 'WhatsApp number'),
+        validatePhone('work_number', 'work_number', 'Work number'),
+        validateGST(),
+      ].every(Boolean);
+      if (!ok) {
+        e.preventDefault();
+        document.querySelector('.invalid')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+
+    /* show server-side errors on load */
     document.querySelectorAll('.err-msg').forEach(el => {
       if (el.textContent.trim()) el.style.display = 'block';
     });
