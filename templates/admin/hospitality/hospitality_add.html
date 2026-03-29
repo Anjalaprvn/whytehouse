@@ -327,55 +327,83 @@ document.getElementById('remove-img').addEventListener('click', function() {
     document.getElementById('upload-box').style.display = 'block';
 });
 
-function validateSummary(input) {
-    const valid = /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
-    input.classList.toggle('invalid', !valid);
-    document.getElementById('summary-error').style.display = valid ? 'none' : 'block';
+function showErr(id, msg) {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = msg; el.style.display = 'block'; }
 }
-
-function validateAddress(input) {
-    const valid = /^[a-zA-Z0-9\s,\.]*$/.test(input.value);
-    input.classList.toggle('invalid', !valid);
-    document.getElementById('address-error').style.display = valid ? 'none' : 'block';
+function hideErr(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
 }
 
 function validateLetters(input, errorId) {
-    const valid = /^[a-zA-Z\s]*$/.test(input.value);
-    input.classList.toggle('invalid', !valid);
-    if (errorId) {
-        document.getElementById(errorId).style.display = valid ? 'none' : 'block';
+    const val = input.value.trim();
+    if (!val) {
+        input.classList.add('invalid');
+        showErr(errorId, 'This field is required.');
+    } else if (!/^[a-zA-Z\s]*$/.test(input.value)) {
+        input.classList.add('invalid');
+        showErr(errorId, 'Only letters and spaces are allowed.');
     } else {
-        let msg = input.nextElementSibling;
-        if (!valid) {
-            if (!msg || !msg.classList.contains('inline-err')) {
-                msg = document.createElement('div');
-                msg.className = 'inline-err field-error';
-                msg.textContent = 'Only letters and spaces are allowed.';
-                msg.style.display = 'block';
-                input.insertAdjacentElement('afterend', msg);
-            }
-        } else if (msg && msg.classList.contains('inline-err')) {
-            msg.remove();
-        }
+        input.classList.remove('invalid');
+        hideErr(errorId);
     }
 }
 
 function validateContact(input) {
     input.value = input.value.replace(/[^0-9]/g, '');
-    const valid = input.value === '' || input.value.length === 10;
-    input.classList.toggle('invalid', !valid);
-    document.getElementById('contact-error').style.display = valid ? 'none' : 'block';
+    if (input.value === '') {
+        input.classList.remove('invalid');
+        hideErr('contact-error');
+    } else if (input.value.length !== 10) {
+        input.classList.add('invalid');
+        showErr('contact-error', 'Enter a valid 10-digit contact number.');
+    } else {
+        input.classList.remove('invalid');
+        hideErr('contact-error');
+    }
 }
 
 function validateURL(input) {
     const val = input.value.trim();
-    const valid = val === '' || /^(https?:\/\/)[^\s$.?#].[^\s]*$/.test(val);
-    input.classList.toggle('invalid', !valid);
-    document.getElementById('website-error').style.display = valid ? 'none' : 'block';
+    if (val === '') {
+        input.classList.remove('invalid');
+        hideErr('website-error');
+    } else if (!/^(https?:\/\/)[^\s$.?#].[^\s]*$/.test(val)) {
+        input.classList.add('invalid');
+        showErr('website-error', 'Enter a valid URL starting with http:// or https://');
+    } else {
+        input.classList.remove('invalid');
+        hideErr('website-error');
+    }
 }
 
-function getAmenityValues() {
-    return Array.from(document.querySelectorAll('#new-amenities-container input')).map(i => i.value.trim().toLowerCase());
+function validateAddress(input) {
+    const val = input.value.trim();
+    if (!val) {
+        input.classList.add('invalid');
+        showErr('address-error', 'This field is required.');
+    } else if (!/^[a-zA-Z0-9\s,\.]*$/.test(input.value)) {
+        input.classList.add('invalid');
+        showErr('address-error', 'Only letters, numbers, spaces, commas, and periods are allowed.');
+    } else {
+        input.classList.remove('invalid');
+        hideErr('address-error');
+    }
+}
+
+function validateSummary(input) {
+    const val = input.value.trim();
+    if (!val) {
+        input.classList.add('invalid');
+        showErr('summary-error', 'This field is required.');
+    } else if (!/^[a-zA-Z0-9\s!.,&]*$/.test(input.value)) {
+        input.classList.add('invalid');
+        showErr('summary-error', 'Only letters, numbers, !, ., , and & are allowed.');
+    } else {
+        input.classList.remove('invalid');
+        hideErr('summary-error');
+    }
 }
 
 function validateAmenity(input) {
@@ -425,57 +453,65 @@ function addNewAmenity() {
     container.appendChild(input);
 }
 
-document.querySelector('form').addEventListener('submit', function(e) {
-    const required = [
-        { id: 'prop_name', errId: 'prop-name-error' },
-        { id: 'prop_location', errId: 'location-error' },
-        { id: 'prop_address', errId: 'address-error', fn: (v) => /^[a-zA-Z\s,\.]+$/.test(v) },
-        { id: 'prop_summary', errId: 'summary-error', fn: (v) => /^[a-zA-Z0-9\s!.,]+$/.test(v) },
-    ];
-    let valid = true;
-    required.forEach(function(f) {
-        const el = document.getElementById(f.id);
-        const pattern = f.id === 'prop_address' ? /^[a-zA-Z0-9\s,\.]+$/ : f.id === 'prop_summary' ? /^[a-zA-Z0-9\s!.,&]+$/ : /^[a-zA-Z\s]+$/;
-        if (!el.value.trim() || !pattern.test(el.value)) {
-            el.classList.add('invalid');
-            document.getElementById(f.errId).style.display = 'block';
-            valid = false;
+// Property type live validation
+document.querySelector('select[name="property_type"]').addEventListener('change', function() {
+    let msg = this.nextElementSibling;
+    if (!this.value) {
+        this.classList.add('invalid');
+        if (!msg || !msg.classList.contains('inline-err')) {
+            msg = document.createElement('div');
+            msg.className = 'inline-err field-error';
+            this.insertAdjacentElement('afterend', msg);
         }
-    });
+        msg.textContent = 'Please select a property type.';
+        msg.style.display = 'block';
+    } else {
+        this.classList.remove('invalid');
+        if (msg && msg.classList.contains('inline-err')) msg.remove();
+    }
+});
+
+document.querySelector('form').addEventListener('submit', function(e) {
+    let valid = true;
+
+    validateLetters(document.getElementById('prop_name'), 'prop-name-error');
+    validateLetters(document.getElementById('prop_location'), 'location-error');
+    validateAddress(document.getElementById('prop_address'));
+    validateSummary(document.getElementById('prop_summary'));
+
+    if (document.getElementById('prop_name').classList.contains('invalid')) valid = false;
+    if (document.getElementById('prop_location').classList.contains('invalid')) valid = false;
+    if (document.getElementById('prop_address').classList.contains('invalid')) valid = false;
+    if (document.getElementById('prop_summary').classList.contains('invalid')) valid = false;
+
+    const typeSelect = document.querySelector('select[name="property_type"]');
+    if (!typeSelect.value) {
+        typeSelect.classList.add('invalid');
+        let msg = typeSelect.nextElementSibling;
+        if (!msg || !msg.classList.contains('inline-err')) {
+            msg = document.createElement('div');
+            msg.className = 'inline-err field-error';
+            typeSelect.insertAdjacentElement('afterend', msg);
+        }
+        msg.textContent = 'Please select a property type.';
+        msg.style.display = 'block';
+        valid = false;
+    }
+
     const contact = document.getElementById('owner_contact');
     if (contact.value && contact.value.length !== 10) {
         contact.classList.add('invalid');
-        document.getElementById('contact-error').style.display = 'block';
+        showErr('contact-error', 'Enter a valid 10-digit contact number.');
         valid = false;
     }
+
     const website = document.getElementById('website');
     if (website.value.trim() && !/^(https?:\/\/)[^\s$.?#].[^\s]*$/.test(website.value.trim())) {
         website.classList.add('invalid');
-        document.getElementById('website-error').style.display = 'block';
+        showErr('website-error', 'Enter a valid URL starting with http:// or https://');
         valid = false;
     }
-    const amenityInputs = document.querySelectorAll('#new-amenities-container input');
-    const seen = [];
-    amenityInputs.forEach(function(inp) {
-        const val = inp.value.trim().toLowerCase();
-        if (val && !/^[a-zA-Z0-9\s\-]+$/.test(inp.value)) {
-            inp.classList.add('invalid');
-            valid = false;
-        } else if (val && seen.includes(val)) {
-            inp.classList.add('invalid');
-            let msg = inp.nextElementSibling;
-            if (!msg || !msg.classList.contains('inline-err')) {
-                msg = document.createElement('div');
-                msg.className = 'inline-err field-error';
-                inp.insertAdjacentElement('afterend', msg);
-            }
-            msg.textContent = 'This amenity already exists.';
-            msg.style.display = 'block';
-            valid = false;
-        } else if (val) {
-            seen.push(val);
-        }
-    });
+
     if (!valid) e.preventDefault();
 });
 </script>

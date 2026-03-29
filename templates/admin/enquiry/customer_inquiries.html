@@ -210,16 +210,30 @@
     </div>
 
     <!-- Search & Filter -->
-    <div class="search-filter">
-        <input type="text" placeholder="Search by name, email, or message...">
-        <select>
-            <option>All Status</option>
-            <option>New</option>
-            <option>Contacted</option>
-            <option>Converted</option>
-            <option>Junk</option>
+    <form method="GET" action="" style="display:flex;gap:15px;margin-bottom:25px;" class="search-filter">
+        {% if request.GET.status %}
+            <input type="hidden" name="status" value="{{ request.GET.status }}">
+        {% endif %}
+        <input type="text" name="search" id="liveSearch" placeholder="Search by name, email, or message..." value="{{ search_query|default:'' }}" style="padding:12px;border-radius:8px;border:1px solid #ddd;width:100%;" autocomplete="off">
+        <select name="status" onchange="this.form.submit()" style="padding:12px;border-radius:8px;border:1px solid #ddd;min-width:160px;">
+            <option value="">All Status</option>
+            <option value="New" {% if request.GET.status == 'New' %}selected{% endif %}>New</option>
+            <option value="Contacted" {% if request.GET.status == 'Contacted' %}selected{% endif %}>Contacted</option>
+            <option value="Converted" {% if request.GET.status == 'Converted' %}selected{% endif %}>Converted</option>
+            <option value="Junk" {% if request.GET.status == 'Junk' %}selected{% endif %}>Junk</option>
         </select>
-    </div>
+        <button type="submit" style="padding:12px 20px;border-radius:8px;border:none;background:#d4a017;color:#fff;font-weight:600;cursor:pointer;"><i class="fas fa-search"></i></button>
+    </form>
+
+    <script>
+    document.getElementById('liveSearch').addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('.inquiry-card').forEach(function(card) {
+            const text = card.innerText.toLowerCase();
+            card.style.display = text.includes(q) ? '' : 'none';
+        });
+    });
+    </script>
 
     <!-- Inquiry List -->
     {% for inquiry in inquiries %}

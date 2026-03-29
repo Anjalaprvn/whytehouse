@@ -528,9 +528,8 @@ def add_property(request):
         # Validate website URL
         if website:
             import re
-            url_pattern = re.compile(r'^https?://[\w\-]+(\.[\w\-]+)+[/#?]?.*$')
+            url_pattern = re.compile(r'^https?://.+\..+')
             if not url_pattern.match(website):
-                messages.error(request, "Invalid website URL format. Must start with http:// or https://")
                 return render(request, "admin/hospitality/hospitality_add.html")
         
         # Validate owner contact number
@@ -908,25 +907,30 @@ def toggle_package_status(request, package_id):
 # CUSTOMER INQUIRIES
 def customer_inquiries(request):
     status_filter = request.GET.get('status')
-    
-    # Get all inquiries
+    search_query = request.GET.get('search', '').strip()
+
     inquiries = Inquiry.objects.all()
-    
-    # Apply status filter if provided
+
     if status_filter:
         inquiries = inquiries.filter(status=status_filter)
-    
+
+    if search_query:
+        inquiries = inquiries.filter(
+            Q(name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(phone__icontains=search_query) |
+            Q(message__icontains=search_query) |
+            Q(package__icontains=search_query)
+        )
+
     inquiries = inquiries.order_by('-created_at')
-    
-    # Count by status (from all inquiries, not just filtered)
+
     all_inquiries = Inquiry.objects.all()
     new_count = all_inquiries.filter(status='New').count()
     contacted_count = all_inquiries.filter(status='Contacted').count()
     converted_count = all_inquiries.filter(status='Converted').count()
     junk_count = all_inquiries.filter(status='Junk').count()
-    
-    print(f"DEBUG customer_inquiries: Total={all_inquiries.count()}, New={new_count}, Contacted={contacted_count}, Converted={converted_count}, Junk={junk_count}")
-    
+
     context = {
         'inquiries': inquiries,
         'total_count': all_inquiries.count(),
@@ -934,6 +938,7 @@ def customer_inquiries(request):
         'contacted_count': contacted_count,
         'converted_count': converted_count,
         'junk_count': junk_count,
+        'search_query': search_query,
     }
     return render(request, 'admin/enquiry/customer_inquiries.html', context)
 
