@@ -323,6 +323,12 @@
             <span class="err-msg" id="err_gst_number">{% if errors.gst_number %}{{ errors.gst_number }}{% endif %}</span>
           </div>
 
+          <div class="field span-3">
+            <label>Email Address</label>
+            <input type="email" id="email" name="email" value="{{ form.email|default:'' }}" placeholder="e.g. customer@example.com" />
+            <span class="err-msg" id="err_email">{% if errors.email %}{{ errors.email }}{% endif %}</span>
+          </div>
+
         </div>
 
         <div class="btn-row">
@@ -421,6 +427,17 @@
     document.getElementById('work_number').addEventListener('input',    () => validatePhone('work_number', 'work_number', 'Work number'));
     document.getElementById('gst_number').addEventListener('input',     () => validateGST());
 
+    /* email */
+    function validateEmail() {
+      const val = document.getElementById('email').value.trim();
+      if (!val) { showErr('email', ''); return true; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+        showErr('email', 'Enter a valid email address.'); return false;
+      }
+      showErr('email', ''); return true;
+    }
+    document.getElementById('email').addEventListener('input', () => validateEmail());
+
     /* ── toggle switch ── */
     function applyToggleState() {
       if (toggleCheckbox.checked) {
@@ -467,6 +484,7 @@
         validatePhone('whatsappNumber', 'whatsapp_number', 'WhatsApp number'),
         validatePhone('work_number', 'work_number', 'Work number'),
         validateGST(),
+        validateEmail(),
       ].every(Boolean);
       if (!ok) {
         e.preventDefault();
