@@ -725,8 +725,7 @@
       function calculateTotal() {
         const packagePrice = parseFloat(document.querySelector('input[name="package_price"]').value) || 0;
         const tax = parseFloat(document.querySelector('input[name="tax"]').value) || 0;
-        const resortPrice = parseFloat(document.querySelector('input[name="resort_price"]').value) || 0;
-        const total = packagePrice + tax + resortPrice;
+        const total = packagePrice + tax;
         
         document.querySelector('input[name="total"]').value = total.toFixed(2);
         calculatePending();

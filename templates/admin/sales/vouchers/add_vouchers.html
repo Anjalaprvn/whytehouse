@@ -639,6 +639,7 @@ counters.forEach(counter => {
 // Auto-calculate pricing
 const packagePrice = document.querySelector('input[name="package_price"]');
 const resortPrice = document.querySelector('input[name="resort_price"]');
+const fromWhytehouse = document.querySelector('input[name="from_whytehouse"]');
 const totalAmount = document.querySelector('input[name="total_amount"]');
 const received = document.querySelector('input[name="received"]');
 const pending = document.querySelector('input[name="pending"]');
@@ -646,8 +647,7 @@ const profit = document.querySelector('input[name="profit"]');
 
 function calculateTotal() {
   const pkg = parseFloat(packagePrice.value) || 0;
-  const resort = parseFloat(resortPrice.value) || 0;
-  totalAmount.value = (pkg + resort).toFixed(2);
+  totalAmount.value = pkg.toFixed(2);
   calculatePending();
   calculateProfit();
 }
@@ -661,11 +661,13 @@ function calculatePending() {
 function calculateProfit() {
   const pkg = parseFloat(packagePrice.value) || 0;
   const resort = parseFloat(resortPrice.value) || 0;
-  profit.value = (pkg - resort).toFixed(2);
+  const whytehouse = parseFloat(fromWhytehouse.value) || 0;
+  profit.value = (pkg - resort - whytehouse).toFixed(2);
 }
 
 if (packagePrice) packagePrice.addEventListener('input', calculateTotal);
-if (resortPrice) resortPrice.addEventListener('input', calculateTotal);
+if (resortPrice) resortPrice.addEventListener('input', calculateProfit);
+if (fromWhytehouse) fromWhytehouse.addEventListener('input', calculateProfit);
 if (received) received.addEventListener('input', calculatePending);
 
 // Auto-generate Voucher ID on page load
