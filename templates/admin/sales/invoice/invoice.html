@@ -97,13 +97,14 @@ tbody tr:last-child td{border-bottom:none}
                   <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </a>
-              <a href="https://wa.me/{{ inv.customer.contact_number|default:'' }}" class="icon-btn" title="WhatsApp" target="_blank">
+              <!-- Send invoice via WhatsApp and Email -->
+              <a href="{% url 'sales:send_invoice' inv.id %}?channel=whatsapp" class="icon-btn" title="Send via WhatsApp" target="_blank">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
                   <path d="M20 11.5C20 16.194 16.194 20 11.5 20C10.09 20 8.76 19.66 7.59 19.06L4 20L4.96 16.56C4.35 15.37 4 14.01 4 12.58C4 7.886 7.806 4.08 12.5 4.08C17.194 4.08 21 7.806 21 12.5" stroke="#16a34a" stroke-linecap="round" stroke-linejoin="round"/>
                   <path d="M9.2 9.8C9.5 10.9 10.6 12.2 11.6 12.9C12.7 13.7 13.6 14 14.4 14.1C15 14.1 15.6 13.8 16 13.4" stroke="#16a34a" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </a>
-              <a href="mailto:{{ inv.customer.email|default:'' }}" class="icon-btn" title="Mail" target="_blank">
+              <a href="{% url 'sales:send_invoice' inv.id %}?channel=email" class="icon-btn" title="Send via Email">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
                   <path d="M4 6H20C21.105 6 22 6.895 22 8V16C22 17.105 21.105 18 20 18H4C2.895 18 2 17.105 2 16V8C2 6.895 2.895 6 4 6Z" stroke="#2563eb" stroke-linejoin="round"/>
                   <path d="M22 8L12 13L2 8" stroke="#2563eb" stroke-linejoin="round"/>

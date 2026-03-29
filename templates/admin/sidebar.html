@@ -439,8 +439,8 @@ body{
 
   <div class="bottom-user">
     <div class="info">
-      <strong>Admin User</strong>
-      <span>admin@whytehouse.com</span>
+      <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+      <span>{{ request.user.email }}</span>
     </div>
     <a href="{% url 'admin_panel:logout' %}" class="logout" title="Logout">
       <svg fill="none" viewBox="0 0 24 24" style="width:22px;height:22px;stroke:currentColor;stroke-width:2;">

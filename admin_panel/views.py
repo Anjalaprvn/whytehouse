@@ -13,9 +13,11 @@ from django.contrib import messages
 from datetime import datetime
 from .models import BlogCategory
 from django.http import JsonResponse
+import urllib.parse
+
 
 from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry, Destination, Feedback
-from .models import Employee,Blog,BlogImage,EmployeeRole
+from .models import Employee,Blog,BlogImage
 
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
@@ -23,44 +25,6 @@ from django.http import HttpResponse
 from django.utils import timezone
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 # Create your views here.
-
-# Lead Assignment Functions
-def get_next_employee_for_lead():
-    """
-    Get the next employee in round-robin order for lead assignment.
-    Returns the employee who should be assigned the next lead.
-    """
-    active_employees = Employee.objects.filter(status='Active').order_by('id')
-    if not active_employees.exists():
-        return None
-    
-    last_lead = Lead.objects.filter(employee__isnull=False).order_by('-created_at').first()
-    if not last_lead or not last_lead.employee:
-        return active_employees.first()
-    
-    employees_list = list(active_employees)
-    try:
-        last_index = next(i for i, emp in enumerate(employees_list) if emp.id == last_lead.employee_id)
-        next_index = (last_index + 1) % len(employees_list)
-        return employees_list[next_index]
-    except (StopIteration, IndexError):
-        return employees_list[0]
-
-
-def get_employees_ordered_for_display(exclude_lead_id=None):
-    """
-    Get all active employees ordered with the next assignee first.
-    Useful for displaying employee lists in forms.
-    """
-    all_employees = Employee.objects.filter(status='Active').order_by('name')
-    next_emp = get_next_employee_for_lead()
-    
-    employees_list = list(all_employees)
-    if next_emp and next_emp in employees_list:
-        employees_list.remove(next_emp)
-        employees_list.insert(0, next_emp)
-    
-    return employees_list
 def home(request):
     return redirect('login')
 
@@ -183,97 +147,7 @@ def resend_otp(request):
     return redirect('admin_panel:verify_otp')
 
 def forgot_password(request):
-    if request.method == 'POST':
-        email = request.POST.get('email', '').strip().lower()
-        user = User.objects.filter(email__iexact=email).first()
-
-        if user:
-            otp = random.randint(100000, 999999)
-            request.session['reset_otp'] = str(otp)
-            request.session['reset_user_id'] = user.id
-            request.session['reset_email'] = email
-            try:
-                send_mail(
-                    subject='Password Reset OTP',
-                    message=f'Your OTP for password reset is: {otp}',
-                    from_email='whytehousee@gmail.com',
-                    recipient_list=[email],
-                    fail_silently=False,
-                )
-                messages.success(request, 'OTP sent to your email.')
-                return redirect('admin_panel:verify_reset_otp')
-            except Exception as e:
-                messages.error(request, f'Failed to send OTP: {str(e)}')
-        else:
-            messages.error(request, 'No account found with that email.')
-
     return render(request, 'admin/forgotpassword.html')
-
-def verify_reset_otp(request):
-    # Check if session has required data
-    session_otp = request.session.get('reset_otp')
-    user_id = request.session.get('reset_user_id')
-    email = request.session.get('reset_email')
-    
-    if not session_otp or not user_id or not email:
-        messages.error(request, 'Session expired. Please start the password reset process again.')
-        return redirect('admin_panel:forgot_password')
-    
-    if request.method == 'POST':
-        entered_otp = request.POST.get('otp', '').strip()
-        
-        if entered_otp == session_otp:
-            # OTP is correct, redirect to reset password
-            return redirect('admin_panel:reset_password')
-        else:
-            messages.error(request, 'Invalid OTP. Please try again.')
-            return render(request, 'admin/verify_reset_otp.html', {'email': email})
-    
-    return render(request, 'admin/verify_reset_otp.html', {'email': email})
-
-def reset_password(request):
-    # Check if user has verified OTP
-    session_otp = request.session.get('reset_otp')
-    user_id = request.session.get('reset_user_id')
-    email = request.session.get('reset_email')
-    
-    if not session_otp or not user_id or not email:
-        messages.error(request, 'Session expired. Please start the password reset process again.')
-        return redirect('admin_panel:forgot_password')
-    
-    if request.method == 'POST':
-        new_password = request.POST.get('new_password', '').strip()
-        confirm_password = request.POST.get('confirm_password', '').strip()
-        
-        if not new_password or not confirm_password:
-            messages.error(request, 'Both password fields are required.')
-            return render(request, 'admin/reset_password.html')
-        
-        if new_password != confirm_password:
-            messages.error(request, 'Passwords do not match.')
-            return render(request, 'admin/reset_password.html')
-        
-        if len(new_password) < 6:
-            messages.error(request, 'Password must be at least 6 characters long.')
-            return render(request, 'admin/reset_password.html')
-        
-        try:
-            user = User.objects.get(id=user_id)
-            user.set_password(new_password)
-            user.save()
-            
-            # Clear session data
-            request.session.pop('reset_otp', None)
-            request.session.pop('reset_user_id', None)
-            request.session.pop('reset_email', None)
-            
-            messages.success(request, 'Password reset successfully! You can now login with your new password.')
-            return redirect('admin_panel:login')
-        except User.DoesNotExist:
-            messages.error(request, 'User not found. Please start the process again.')
-            return redirect('admin_panel:forgot_password')
-    
-    return render(request, 'admin/reset_password.html')
 
 def dashboard(request):
     # Check if user has completed OTP verification (custom session check)
@@ -283,7 +157,7 @@ def dashboard(request):
         messages.error(request, "Please login to access this page.")
         return redirect('admin_panel:login')
     
-    from django.db.models import Sum, Count, Avg
+    from django.db.models import Sum, Count
     from datetime import datetime, timedelta
     
     # Stats
@@ -293,12 +167,9 @@ def dashboard(request):
     new_leads = Lead.objects.filter(created_at__gte=datetime.now() - timedelta(days=30)).count()
     total_customers = Customer.objects.count()
     total_feedbacks = Feedback.objects.count()
-    avg_feedback_raw = Feedback.objects.aggregate(Avg('rating'))['rating__avg']
-    avg_feedback = round(avg_feedback_raw, 1) if avg_feedback_raw else 0
     total_blogs = Blog.objects.count()
     international_packages = TravelPackage.objects.filter(category='International').count()
     domestic_packages = TravelPackage.objects.filter(category='Domestic').count()
-    total_properties = Property.objects.count()
     
     # Upcoming bookings (vouchers with future check-in dates)
     upcoming_bookings = Voucher.objects.filter(checkin_date__gte=datetime.now()).order_by('checkin_date')[:3]
@@ -316,11 +187,9 @@ def dashboard(request):
         'new_leads': new_leads,
         'total_customers': total_customers,
         'total_feedbacks': total_feedbacks,
-        'avg_feedback': avg_feedback,
         'total_blogs': total_blogs,
         'international_packages': international_packages,
         'domestic_packages': domestic_packages,
-        'total_properties': total_properties,
         'upcoming_bookings': upcoming_bookings,
         'recent_invoices': recent_invoices,
         'recent_leads': recent_leads,
@@ -402,7 +271,7 @@ def add_lead(request):
         messages.success(request, "Lead added successfully!")
         return redirect('admin_panel:leads')
     
-    all_employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive', 'Customer Care Support']).order_by('name')
+    all_employees = Employee.objects.filter(status='Active').order_by('name')
     next_emp = get_next_employee_for_lead()
     
     employees_list = list(all_employees)
@@ -429,7 +298,7 @@ def edit_lead(request, id):
         messages.success(request, "Lead updated successfully!")
         return redirect('admin_panel:view_lead', lead_id=id)
     
-    all_employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive', 'Customer Care Support']).order_by('name')
+    all_employees = Employee.objects.filter(status='Active').order_by('name')
     assigned_employee_ids = set(Lead.objects.exclude(id=id).filter(employee__isnull=False).values_list('employee_id', flat=True))
     
     current_employee = lead.employee
@@ -480,7 +349,7 @@ def view_lead(request, lead_id):
 # HOSPITALITY
 def hospitality_management(request):
     search_query = request.GET.get('search', '').strip()
-    properties = Property.objects.all()  # Show all properties in admin, regardless of is_active status
+    properties = Property.objects.filter(is_active=True)
     
     if search_query:
         properties = properties.filter(
@@ -566,9 +435,17 @@ def edit_property(request, property_id):
         prop.owner_name = request.POST.get("owner_name") or None
         prop.owner_contact = request.POST.get("owner_contact") or None
 
-        # Get amenities from individual inputs
-        new_amenities = request.POST.getlist("new_amenities[]")
-        prop.amenities = ", ".join([a.strip() for a in new_amenities if a.strip()])
+        # Get existing amenities from checkboxes
+        selected_amenities = request.POST.getlist("amenities")
+        # Get new amenity from text input
+        new_amenity = request.POST.get("new_amenity", "").strip()
+        
+        # Combine all amenities
+        all_amenities = list(selected_amenities)
+        if new_amenity:
+            all_amenities.append(new_amenity)
+        
+        prop.amenities = ", ".join([a.strip() for a in all_amenities if a.strip()])
 
         if request.FILES.get("image"):
             prop.image = request.FILES.get("image")
@@ -613,7 +490,7 @@ def travel_packages(request):
     search_query = request.GET.get('search', '').strip()
     
     # Get destinations for the selected category
-    destinations = Destination.objects.filter(category=category, is_active=True).order_by('name')
+    destinations = Destination.objects.filter(category=category).order_by('name')
     
     # Get packages based on category and destination
     packages = TravelPackage.objects.filter(category=category)
@@ -644,13 +521,9 @@ def travel_packages(request):
             selected_destination_obj = Destination.objects.get(id=destination_id)
         except Destination.DoesNotExist:
             pass
-
-    paginator = Paginator(packages, 9)
-    page_obj = paginator.get_page(request.GET.get('page'))
-
+    
     context = {
-        'packages': page_obj,
-        'page_obj': page_obj,
+        'packages': packages,
         'destinations': destinations,
         'destination_counts': destination_counts,
         'selected_category': category,
@@ -727,25 +600,6 @@ def travel_package_add(request):
                 pass
         
         category = request.POST.get('category')
-
-        if destination and destination.category != category:
-            messages.error(request, f"Cannot save: destination '{destination.name}' belongs to {destination.category}, but package category is set to {category}.")
-            return render(request, 'admin/packages/travel_package_add.html', {
-                'default_category': category,
-                'selected_destination_id': int(destination_id),
-                'selected_destination_obj': destination,
-            })
-
-        if TravelPackage.objects.filter(name__iexact=name, category=category).exists():
-            return render(request, 'admin/packages/travel_package_add.html', {
-                'default_category': category,
-                'selected_destination_id': int(destination_id) if destination_id else None,
-                'selected_destination_obj': destination,
-                'name_error': 'This package name already exists.',
-                'form_name': name,
-            })
-
-        package_id = request.POST.get('package_id')
         TravelPackage.objects.create(
             package_id=package_id,
             name=name,
@@ -797,14 +651,7 @@ def travel_package_edit(request, package_id):
         
         # Get the category from POST
         new_category = request.POST.get('category')
-
-        if destination and destination.category != new_category:
-            messages.error(request, f"Cannot save: destination '{destination.name}' belongs to {destination.category}, but package category is set to {new_category}.")
-            return render(request, 'admin/packages/travel_package_edit.html', {
-                'package': package,
-                'destinations': destinations,
-            })
-
+        
         package.name = request.POST.get('name')
         package.category = new_category
         package.destination = destination
@@ -813,9 +660,9 @@ def travel_package_edit(request, package_id):
         package.location = request.POST.get('location')
         package.country = request.POST.get('country')
         package.description = request.POST.get('description')
-        package.itinerary = '\n'.join(filter(None, [i.strip() for i in request.POST.getlist('itinerary[]')]))
-        package.inclusions = '\n'.join(filter(None, [i.strip() for i in request.POST.getlist('inclusions[]')]))
-        package.exclusions = '\n'.join(filter(None, [i.strip() for i in request.POST.getlist('exclusions[]')]))
+        package.itinerary = request.POST.get('itinerary')
+        package.inclusions = request.POST.get('inclusions')
+        package.exclusions = request.POST.get('exclusions')
         package.meta_title = request.POST.get('meta_title')
         package.meta_description = request.POST.get('meta_description')
         package.active = request.POST.get('active') == 'on'
@@ -998,53 +845,21 @@ def employee_list(request):
         'departments': departments,
         'active_count': active_count,
         'department_count': department_count,
-        'now': datetime.now().strftime('%B %d, %Y'),
-        'roles': EmployeeRole.objects.all(),
+        'now': datetime.now().strftime('%B %d, %Y')
     }
     return render(request, "admin/employee/employee.html", context)
 
 def add_employee(request):
     if request.method == 'POST':
-        import re
-        name = request.POST.get('name', '').strip()
-        email = request.POST.get('email', '').strip()
-        phone = request.POST.get('phone', '').strip()
-        salary = request.POST.get('salary', '').strip()
-
-        errors = {}
-        if not name:
-            errors['name'] = 'Name is required.'
-        elif not re.match(r'^[A-Za-z\s]+$', name):
-            errors['name'] = 'Name should contain letters only.'
-
-        if not email:
-            errors['email'] = 'Email is required.'
-        elif not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
-            errors['email'] = 'Enter a valid email address.'
-        elif Employee.objects.filter(email__iexact=email).exists():
-            errors['email'] = 'An employee with this email already exists.'
-
-        if not phone:
-            errors['phone'] = 'Phone is required.'
-        elif not phone.isdigit():
-            errors['phone'] = 'Phone must contain digits only.'
-        elif len(phone) < 10 or len(phone) > 15:
-            errors['phone'] = 'Phone must be 10–15 digits.'
-        elif Employee.objects.filter(phone=phone).exists():
-            errors['phone'] = 'An employee with this phone number already exists.'
-
-        if salary:
-            try:
-                if float(salary) < 0:
-                    errors['salary'] = 'Salary must be a positive number.'
-            except ValueError:
-                errors['salary'] = 'Salary must be a valid number.'
-
-        if errors:
-            messages.error(request, 'Please fix the errors below.')
-            return render(request, 'admin/employee/add_employee.html', {'errors': errors, 'form_data': request.POST, 'roles': EmployeeRole.objects.all()})
-
         try:
+            # basic required validation
+            name = request.POST.get('name', '').strip()
+            email = request.POST.get('email', '').strip()
+            phone = request.POST.get('phone', '').strip()
+            if not name or not email or not phone:
+                messages.error(request, "Name, email and phone are required.")
+                return render(request, "admin/employee/add_employee.html")
+
             employee = Employee.objects.create(
                 name=name,
                 email=email,
@@ -1052,17 +867,19 @@ def add_employee(request):
                 role=request.POST.get('role', ''),
                 department=request.POST.get('department', ''),
                 join_date=request.POST.get('join_date') or None,
-                salary=salary or None,
+                salary=request.POST.get('salary') or None,
                 status=request.POST.get('status', 'Active'),
             )
+            
             if request.FILES.get('profile_picture'):
                 employee.profile_picture = request.FILES['profile_picture']
                 employee.save()
+            
             messages.success(request, f'Employee {employee.name} added successfully!')
             return redirect('employee:employee_list')
         except Exception as e:
             messages.error(request, f'Error adding employee: {str(e)}')
-    return render(request, "admin/employee/add_employee.html", {'roles': EmployeeRole.objects.all()})
+    return render(request, "admin/employee/add_employee.html")
            
     
 
@@ -1080,7 +897,7 @@ def edit_employee(request, pk):
             phone = request.POST.get('phone', '').strip()
             if not name or not email or not phone:
                 messages.error(request, "Name, email and phone are required.")
-                return render(request, "admin/employee/edit_employee.html", {'employee': employee, 'roles': EmployeeRole.objects.all()})
+                return render(request, "admin/employee/edit_employee.html", {'employee': employee})
 
             employee.name = name
             employee.email = email
@@ -1101,7 +918,7 @@ def edit_employee(request, pk):
         except Exception as e:
             messages.error(request, f'Error updating employee: {str(e)}')
     
-    return render(request, "admin/employee/edit_employee.html", {'employee': employee, 'roles': EmployeeRole.objects.all()})
+    return render(request, "admin/employee/edit_employee.html", {'employee': employee})
 
 def delete_employee(request, pk):
     if request.method != 'POST':
@@ -1155,7 +972,6 @@ def add_account(request):
             bank_name = request.POST.get('bank_name', '').strip()
             ifsc_code = request.POST.get('ifsc_code', '').strip()
             account_type = request.POST.get('account_type', 'current')
-            branch_name = request.POST.get('branch_name', '').strip()
             
             # Validation
             if not account_name or not account_number or not bank_name or not ifsc_code:
@@ -1183,7 +999,6 @@ def add_account(request):
                 account_name=account_name,
                 account_number=account_number,
                 bank_name=bank_name,
-                branch_name=branch_name or None,
                 ifsc_code=ifsc_code.upper(),
                 account_type=account_type
             )
@@ -1223,7 +1038,6 @@ def edit_account(request, account_id):
             bank_name = request.POST.get('bank_name', '').strip()
             ifsc_code = request.POST.get('ifsc_code', '').strip()
             account_type = request.POST.get('account_type', '').strip()
-            branch_name = request.POST.get('branch_name', '').strip()
             
             # Validation
             if not account_name or not account_number or not bank_name:
@@ -1236,7 +1050,6 @@ def edit_account(request, account_id):
             account.account_name = account_name
             account.account_number = account_number
             account.bank_name = bank_name
-            account.branch_name = branch_name or None
             account.ifsc_code = ifsc_code
             account.account_type = account_type
             
@@ -1297,9 +1110,10 @@ def customer_list(request):
     })
 
 def add_customer(request):
+    context = {"form": {}}
+
     if request.method == "POST":
         try:
-            import re
             same_as_whatsapp = request.POST.get("same_as_whatsapp") == "on"
 
             customer_type = (request.POST.get("customer_type") or "Individual").strip()
@@ -1313,97 +1127,122 @@ def add_customer(request):
             work_number = (request.POST.get("work_number") or "").strip()
             gst_number = (request.POST.get("gst_number") or "").strip()
 
-            errors = {}
+            # Keep values in template if error
+            context["form"] = {
+                "customer_type": customer_type,
+                "salutation": salutation,
+                "first_name": first_name,
+                "last_name": last_name,
+                "display_name": display_name,
+                "place": place,
+                "contact_number": contact_number,
+                "same_as_whatsapp": same_as_whatsapp,
+                "whatsapp_number": whatsapp_number,
+                "work_number": work_number,
+                "gst_number": gst_number,
+            }
 
-            if not first_name:
-                errors["first_name"] = "First Name is required."
-            elif any(c.isdigit() for c in first_name):
-                errors["first_name"] = "First Name must not contain numbers."
+            # Required validation
+            if not first_name or not display_name or not contact_number:
+                context["error"] = "First Name, Display Name, and Contact Number are required."
+                return render(request, "admin/sales/customer/add_customer.html", context)
+            
+            # First name validation
+            if len(first_name) < 2 or len(first_name) > 50:
+                context["error"] = "First Name must be between 2 and 50 characters."
+                return render(request, "admin/sales/customer/add_customer.html", context)
+            
+            # Display name validation
+            if len(display_name) < 2 or len(display_name) > 100:
+                context["error"] = "Display Name must be between 2 and 100 characters."
+                return render(request, "admin/sales/customer/add_customer.html", context)
+            
+            # Contact number validation
+            import re
+            if not contact_number.isdigit():
+                context["error"] = "Contact Number must contain only digits."
+                return render(request, "admin/sales/customer/add_customer.html", context)
+            
+            if len(contact_number) < 10 or len(contact_number) > 15:
+                context["error"] = "Contact Number must be between 10 and 15 digits."
+                return render(request, "admin/sales/customer/add_customer.html", context)
 
-            if last_name and any(c.isdigit() for c in last_name):
-                errors["last_name"] = "Last Name must not contain numbers."
-
-            if not display_name:
-                errors["display_name"] = "Display Name is required."
-            elif any(c.isdigit() for c in display_name):
-                errors["display_name"] = "Display Name must not contain numbers."
-
-            if place and any(c.isdigit() for c in place):
-                errors["place"] = "Customer Place must not contain numbers."
-
-            if not contact_number:
-                errors["contact_number"] = "Contact Number is required."
-            elif not contact_number.isdigit():
-                errors["contact_number"] = "Contact Number must contain digits only."
-            elif len(contact_number) < 10 or len(contact_number) > 15:
-                errors["contact_number"] = "Contact Number must be 10–15 digits."
-
+            # NO-JS WhatsApp logic
             if same_as_whatsapp:
                 whatsapp_number = contact_number
+
+            # IMPORTANT fallback:
+            # If whatsapp_number is empty, set it to contact_number (prevents NOT NULL issues)
             if not whatsapp_number:
                 whatsapp_number = contact_number
-
+            
+            # WhatsApp number validation if different from contact
             if whatsapp_number != contact_number:
                 if not whatsapp_number.isdigit():
-                    errors["whatsapp_number"] = "WhatsApp Number must contain digits only."
-                elif len(whatsapp_number) < 10 or len(whatsapp_number) > 15:
-                    errors["whatsapp_number"] = "WhatsApp Number must be 10–15 digits."
-
+                    context["error"] = "WhatsApp Number must contain only digits."
+                    return render(request, "admin/sales/customer/add_customer.html", context)
+                
+                if len(whatsapp_number) < 10 or len(whatsapp_number) > 15:
+                    context["error"] = "WhatsApp Number must be between 10 and 15 digits."
+                    return render(request, "admin/sales/customer/add_customer.html", context)
+            
+            # Work number validation (optional)
             if work_number:
                 if not work_number.isdigit():
-                    errors["work_number"] = "Work Number must contain digits only."
-                elif len(work_number) < 10 or len(work_number) > 15:
-                    errors["work_number"] = "Work Number must be 10–15 digits."
-
+                    context["error"] = "Work Number must contain only digits."
+                    return render(request, "admin/sales/customer/add_customer.html", context)
+                
+                if len(work_number) < 10 or len(work_number) > 15:
+                    context["error"] = "Work Number must be between 10 and 15 digits."
+                    return render(request, "admin/sales/customer/add_customer.html", context)
+            
+            # GST number validation (optional)
             if gst_number:
                 gst_pattern = r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$'
                 if not re.match(gst_pattern, gst_number.upper()):
-                    errors["gst_number"] = "Invalid GST Number format (e.g. 22AAAAA0000A1Z5)."
-                else:
-                    gst_number = gst_number.upper()
+                    context["error"] = "Invalid GST Number format. Must be 15 characters (e.g., 22AAAAA0000A1Z5)."
+                    return render(request, "admin/sales/customer/add_customer.html", context)
+                gst_number = gst_number.upper()
+            
+            # Place validation (optional)
+            if place and len(place) > 100:
+                context["error"] = "Place must not exceed 100 characters."
+                return render(request, "admin/sales/customer/add_customer.html", context)
 
-            if not errors and Customer.objects.filter(contact_number=contact_number).exists():
-                errors["contact_number"] = "This Contact Number already exists."
-
-            if errors:
-                request.session["_add_customer_form"] = {
-                    "customer_type": customer_type, "salutation": salutation,
-                    "first_name": first_name, "last_name": last_name,
-                    "display_name": display_name, "place": place,
-                    "contact_number": contact_number, "same_as_whatsapp": same_as_whatsapp,
-                    "whatsapp_number": whatsapp_number, "work_number": work_number,
-                    "gst_number": gst_number,
-                }
-                request.session["_add_customer_errors"] = errors
-                return redirect("sales:add_customer")
+            # Optional: prevent duplicates if contact_number is unique
+            if Customer.objects.filter(contact_number=contact_number).exists():
+                context["error"] = "This Contact Number already exists."
+                return render(request, "admin/sales/customer/add_customer.html", context)
 
             Customer.objects.create(
-                customer_type=customer_type, salutation=salutation,
-                first_name=first_name, last_name=last_name,
-                display_name=display_name, place=place,
-                contact_number=contact_number, same_as_whatsapp=same_as_whatsapp,
-                whatsapp_number=whatsapp_number, work_number=work_number,
+                customer_type=customer_type,
+                salutation=salutation,
+                first_name=first_name,
+                last_name=last_name,
+                display_name=display_name,
+                place=place,
+                contact_number=contact_number,
+                same_as_whatsapp=same_as_whatsapp,
+                whatsapp_number=whatsapp_number,
+                work_number=work_number,
                 gst_number=gst_number,
             )
 
             messages.success(request, f"Customer '{display_name}' added successfully!")
             return redirect("sales:customer_list")
 
-        except IntegrityError:
-            request.session["_add_customer_errors"] = {"contact_number": "This Contact Number already exists."}
-            return redirect("sales:add_customer")
+        except IntegrityError as e:
+            print("INTEGRITY ERROR:", str(e))
+            context["error"] = f"Database error: {str(e)}"
+            return render(request, "admin/sales/customer/add_customer.html", context)
 
         except Exception as e:
             import traceback
             traceback.print_exc()
-            request.session["_add_customer_errors"] = {}
-            request.session["_add_customer_error"] = f"Error saving customer: {str(e)}"
-            return redirect("sales:add_customer")
+            context["error"] = f"Error saving customer: {str(e)}"
+            return render(request, "admin/sales/customer/add_customer.html", context)
 
-    form = request.session.pop("_add_customer_form", {})
-    errors = request.session.pop("_add_customer_errors", {})
-    error = request.session.pop("_add_customer_error", "")
-    return render(request, "admin/sales/customer/add_customer.html", {"form": form, "errors": errors, "error": error})
+    return render(request, "admin/sales/customer/add_customer.html", context)
 def view_customer(request, customer_id):
     try:
         customer = Customer.objects.get(id=customer_id)
@@ -1521,34 +1360,29 @@ def add_resort(request):
     if request.method == "POST":
         try:
             resort_name = request.POST.get("resort_name", "").strip()
-            location = request.POST.get("resort_place", "").strip()
-            mobile = request.POST.get("mobile", "").strip()
+            location = request.POST.get("location", "").strip()
+            contact_person = request.POST.get("contact_person", "").strip()
+            contact_number = request.POST.get("contact_number", "").strip()
             email = request.POST.get("email", "").strip()
-            maps_location = request.POST.get("location", "").strip()
-
-            errors = {}
-            if not resort_name:
-                errors["resort_name"] = "Resort Name is required."
-            if not location:
-                errors["resort_place"] = "Resort Place is required."
-
-            if not errors and Resort.objects.filter(resort_name__iexact=resort_name, location__iexact=location).exists():
-                errors["resort_name"] = "A resort with this name and place already exists."
-                errors["resort_place"] = "A resort with this name and place already exists."
-
-            if errors:
-                return render(request, "admin/sales/resort/add_resort.html", {
-                    "errors": errors,
-                    "form_data": {"resort_name": resort_name, "resort_place": location,
-                                  "mobile": mobile, "email": email, "location": maps_location}
-                })
-
+            address = request.POST.get("address", "").strip()
+            status = request.POST.get("status", "Active")
+            
+            if not resort_name or not location:
+                messages.error(request, "Resort Name and Location are required.")
+                return render(request, "admin/sales/resort/add_resort.html")
+            
+            if Resort.objects.filter(resort_name=resort_name).exists():
+                messages.error(request, "Resort name already exists.")
+                return render(request, "admin/sales/resort/add_resort.html")
+            
             Resort.objects.create(
                 resort_name=resort_name,
                 location=location,
-                contact_number=mobile,
+                contact_person=contact_person,
+                contact_number=contact_number,
                 email=email,
-                address=maps_location,
+                address=address,
+                status=status
             )
             messages.success(request, f"Resort '{resort_name}' added successfully!")
             return redirect("sales:resort_list")
@@ -1571,42 +1405,18 @@ def edit_resort(request, resort_id):
     except Resort.DoesNotExist:
         messages.error(request, "Resort not found.")
         return redirect("sales:resort_list")
-
+    
     if request.method == "POST":
         try:
-            resort_name = request.POST.get("resort_name", "").strip()
-            location = request.POST.get("resort_place", "").strip()
-            contact_number = request.POST.get("mobile", "").strip()
-            email = request.POST.get("email", "").strip()
-            address = request.POST.get("location", "").strip()
-
-            errors = {}
-            if not resort_name:
-                errors["resort_name"] = "Resort Name is required."
-            if not location:
-                errors["resort_place"] = "Resort Place is required."
-
-            if not errors and Resort.objects.filter(
-                resort_name__iexact=resort_name, location__iexact=location
-            ).exclude(id=resort_id).exists():
-                errors["resort_name"] = "A resort with this name and place already exists."
-                errors["resort_place"] = "A resort with this name and place already exists."
-
-            if errors:
-                return render(request, "admin/sales/resort/edit_resort.html", {
-                    "resort": resort,
-                    "errors": errors,
-                    "form_data": {"resort_name": resort_name, "resort_place": location,
-                                  "mobile": contact_number, "email": email, "location": address}
-                })
-
-            resort.resort_name = resort_name
-            resort.location = location
-            resort.contact_number = contact_number
-            resort.email = email
-            resort.address = address
+            resort.resort_name = request.POST.get("resort_name", "").strip()
+            resort.location = request.POST.get("resort_place", "").strip()  # Changed from "location" to "resort_place"
+            resort.contact_person = request.POST.get("contact_person", "").strip()
+            resort.contact_number = request.POST.get("contact_number", "").strip()
+            resort.email = request.POST.get("email", "").strip()
+            resort.address = request.POST.get("address", "").strip()
+            resort.status = request.POST.get("status", "Active")
             resort.save()
-            messages.success(request, "Resort updated successfully!")
+            messages.success(request, f"Resort updated successfully!")
             return redirect("sales:resort_list")
         except Exception as e:
             return render(request, "admin/sales/resort/edit_resort.html", {
@@ -1696,10 +1506,7 @@ def edit_meal(request, meal_id):
     except Meal.DoesNotExist:
         messages.error(request, "Meal not found.")
         return redirect("sales:meal_list")
-
-    DEFAULT_MEALS = {'Breakfast', 'Lunch', 'Dinner', 'Snacks', 'High Tea', 'All Meals'}
-    extra_meals = [m for m in meal.included_meals_list if m not in DEFAULT_MEALS]
-
+    
     if request.method == "POST":
         try:
             meal.name = request.POST.get("name", "").strip()
@@ -1713,10 +1520,9 @@ def edit_meal(request, meal_id):
         except Exception as e:
             return render(request, "admin/sales/meals/edit_meals.html", {
                 "meal": meal,
-                "extra_meals": extra_meals,
                 "error": f"Error updating meal: {str(e)}"
             })
-    return render(request, "admin/sales/meals/edit_meals.html", {"meal": meal, "extra_meals": extra_meals})
+    return render(request, "admin/sales/meals/edit_meals.html", {"meal": meal})
 
 def delete_meal(request, meal_id):
     if request.method != 'POST':
@@ -1735,15 +1541,6 @@ def delete_meal(request, meal_id):
 
 
 # VOUCHER VIEWS
-
-def toggle_meal_status(request, meal_id):
-    if request.method != 'POST':
-        return redirect('sales:meal_list')
-    meal = get_object_or_404(Meal, id=meal_id)
-    meal.status = 'Unavailable' if meal.status == 'Available' else 'Available'
-    meal.save()
-    return redirect('sales:meal_list')
-
 def voucher_list(request):
     search_query = request.GET.get('search', '').strip()
     vouchers = Voucher.objects.all()
@@ -1751,19 +1548,25 @@ def voucher_list(request):
     if search_query:
         vouchers = vouchers.filter(
             Q(voucher_no__icontains=search_query) |
-            Q(customer_display_name_icontains=search_query) |
-            Q(resort_resort_name_icontains=search_query)
+            Q(customer__display_name__icontains=search_query) |
+            Q(resort__resort_name__icontains=search_query)
         )
     
     vouchers = vouchers.order_by('-voucher_date', '-id')
-    return render(request, "admin/sales/vouchers/vouchers.html", {"vouchers": vouchers, "search_query": search_query})
+    
+    # Pagination
+    paginator = Paginator(vouchers, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, "admin/sales/vouchers/vouchers.html", {"page_obj": page_obj, "search_query": search_query})
 
 def add_voucher(request):
     customers = Customer.objects.all()
     resorts = Resort.objects.all()
     accounts = Account.objects.all()
-    employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive'])
-    meals = Meal.objects.filter(status='Available')
+    employees = Employee.objects.filter(status='Active')
+    meals = Meal.objects.all()
     
     # Get next voucher ID
     from .models import Voucher
@@ -1841,53 +1644,26 @@ def edit_voucher(request, voucher_id):
     except Voucher.DoesNotExist:
         messages.error(request, "Voucher not found.")
         return redirect("sales:voucher_list")
-
-    employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive'])
-    customers = Customer.objects.all()
-    resorts = Resort.objects.all()
-    accounts = Account.objects.all()
-    meals = Meal.objects.filter(status='Available')
-
+    
     if request.method == "POST":
         try:
-            voucher.customer_id = request.POST.get("customer_id") or None
-            voucher.voucher_date = request.POST.get("voucher_date")
-            voucher.sales_person_id = request.POST.get("sales_person") or None
-            voucher.resort_id = request.POST.get("resort") or None
-            voucher.checkin_date = request.POST.get("checkin_date") or None
-            voucher.checkout_date = request.POST.get("checkout_date") or None
-            voucher.checkin_time = request.POST.get("checkin_time") or None
-            voucher.checkout_time = request.POST.get("checkout_time") or None
-            voucher.adults = request.POST.get("adults", 0)
-            voucher.children = request.POST.get("children", 0)
-            voucher.nights = request.POST.get("nights", 1)
-            voucher.pax_notes = request.POST.get("pax_notes", "").strip()
-            voucher.room_type = request.POST.get("room_type", "").strip()
-            voucher.no_of_rooms = request.POST.get("no_of_rooms", 1)
-            voucher.meals_plan_id = request.POST.get("meals_plan") or None
-            voucher.bank_account_id = request.POST.get("bank_account") or None
-            voucher.package_price = request.POST.get("package_price", 0)
-            voucher.resort_price = request.POST.get("resort_price", 0)
-            voucher.total_amount = request.POST.get("total_amount", 0)
-            voucher.received = request.POST.get("received", 0)
-            voucher.pending = request.POST.get("pending", 0)
-            voucher.from_whytehouse = request.POST.get("from_whytehouse", 0)
-            voucher.profit = request.POST.get("profit", 0)
-            voucher.note_for_resort = request.POST.get("note_for_resort", "").strip()
-            voucher.note_for_guest = request.POST.get("note_for_guest", "").strip()
+            # don't allow editing voucher_no or voucher_date here; keep current values
+            voucher.voucher_code = request.POST.get("voucher_code", "").strip()
+            voucher.discount_amount = request.POST.get("discount_amount", 0)
+            voucher.discount_percentage = request.POST.get("discount_percentage", 0) or None
+            voucher.description = request.POST.get("description", "").strip()
+            voucher.valid_from = request.POST.get("valid_from")
+            voucher.valid_till = request.POST.get("valid_till")
+            voucher.status = request.POST.get("status", "Active")
             voucher.save()
-            messages.success(request, "Voucher updated successfully!")
+            messages.success(request, f"Voucher updated successfully!")
             return redirect("sales:voucher_list")
         except Exception as e:
             return render(request, "admin/sales/vouchers/edit_vouchers.html", {
-                "voucher": voucher, "employees": employees, "customers": customers,
-                "resorts": resorts, "accounts": accounts, "meals": meals,
+                "voucher": voucher,
                 "error": f"Error updating voucher: {str(e)}"
             })
-    return render(request, "admin/sales/vouchers/edit_vouchers.html", {
-        "voucher": voucher, "employees": employees, "customers": customers,
-        "resorts": resorts, "accounts": accounts, "meals": meals,
-    })
+    return render(request, "admin/sales/vouchers/edit_vouchers.html", {"voucher": voucher})
 
 def delete_voucher(request, voucher_id):
     if request.method != 'POST':
@@ -1903,6 +1679,66 @@ def delete_voucher(request, voucher_id):
     except Exception as e:
         messages.error(request, f"Error deleting voucher: {str(e)}")
     return redirect("sales:voucher_list")
+
+
+def send_voucher(request, voucher_id):
+    """Send voucher details via WhatsApp or Email"""
+    try:
+        voucher = get_object_or_404(Voucher, id=voucher_id)
+        channel = request.GET.get('channel', 'email').lower()
+        
+        # Prepare voucher details
+        customer_name = voucher.customer.display_name if voucher.customer else "Guest"
+        resort_name = voucher.resort.resort_name if voucher.resort else "N/A"
+        checkin = voucher.checkin_date.strftime("%d %b %Y") if voucher.checkin_date else "N/A"
+        checkout = voucher.checkout_date.strftime("%d %b %Y") if voucher.checkout_date else "N/A"
+        
+        message = f"""Voucher Details:
+Voucher No: {voucher.voucher_no}
+Customer: {customer_name}
+Resort: {resort_name}
+Check-in: {checkin}
+Check-out: {checkout}
+Total Amount: ₹{voucher.total_amount}
+Guests: {voucher.adults} Adults, {voucher.children} Children
+Room Type: {voucher.room_type}
+Number of Rooms: {voucher.no_of_rooms}
+
+Thank you for choosing Whytehouse Holidays!"""
+        
+        if channel == 'whatsapp':
+            # Generate WhatsApp link
+            customer_phone = voucher.customer.contact_number if voucher.customer else ""
+            if customer_phone:
+                # Format phone number for WhatsApp (remove spaces/dashes)
+                phone = ''.join(filter(str.isdigit, customer_phone))
+                # Add India country code if not present
+                if not phone.startswith('91'):
+                    phone = '91' + phone
+                whatsapp_url = f"https://wa.me/{phone}?text={urllib.parse.quote(message)}"
+                return redirect(whatsapp_url)
+            else:
+                messages.warning(request, "Customer phone number not available for WhatsApp.")
+                return redirect('sales:voucher_list')
+        
+        elif channel == 'email':
+            customer_email = voucher.customer.email if voucher.customer else None
+            if customer_email:
+                # Redirect to Gmail compose with pre-filled fields
+                subject = f"Whytehouse Holidays - Voucher {voucher.voucher_no}"
+                gmail_compose_url = f"https://mail.google.com/mail/?view=cm&fs=1&to={urllib.parse.quote(customer_email)}&su={urllib.parse.quote(subject)}&body={urllib.parse.quote(message)}"
+                return redirect(gmail_compose_url)
+            else:
+                messages.warning(request, "Customer email not available.")
+                return redirect('sales:voucher_list')
+        
+        else:
+            messages.error(request, "Invalid channel specified.")
+            return redirect('sales:voucher_list')
+    
+    except Exception as e:
+        messages.error(request, f"Error sending voucher: {str(e)}")
+        return redirect('sales:voucher_list')
 
 
 # INVOICE VIEWS
@@ -1924,8 +1760,8 @@ def add_invoice(request):
     customers = Customer.objects.all()
     resorts = Resort.objects.all()
     accounts = Account.objects.all()
-    employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive'])
-    meals = Meal.objects.filter(status='Available')
+    employees = Employee.objects.filter(status='Active')
+    meals = Meal.objects.all()
     
     # Get next invoice ID
     from .models import Invoice
@@ -2023,7 +1859,7 @@ def edit_invoice(request, invoice_id):
     customers = Customer.objects.all()
     resorts = Resort.objects.all()
     accounts = Account.objects.all()
-    employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive'])
+    employees = Employee.objects.filter(status='Active')
     
     try:
         invoice = Invoice.objects.get(id=invoice_id)
@@ -2096,6 +1932,67 @@ def delete_invoice(request, invoice_id):
         messages.error(request, f"Error deleting invoice: {str(e)}")
     return redirect("sales:invoice_list")
 
+def send_invoice(request, invoice_id):
+    """Send invoice details via WhatsApp or Email"""
+    try:
+        invoice = get_object_or_404(Invoice, id=invoice_id)
+        channel = request.GET.get('channel', 'email').lower()
+        
+        # Prepare invoice details
+        customer_name = invoice.customer.display_name if invoice.customer else "Guest"
+        resort_name = invoice.resort.resort_name if invoice.resort else "N/A"
+        checkin = invoice.checkin_date.strftime("%d %b %Y") if invoice.checkin_date else "N/A"
+        checkout = invoice.checkout_date.strftime("%d %b %Y") if invoice.checkout_date else "N/A"
+        
+        message = f"""Invoice Details:
+Invoice No: {invoice.invoice_no}
+Customer: {customer_name}
+Resort: {resort_name}
+Check-in: {checkin}
+Check-out: {checkout}
+Total Amount: ₹{invoice.total}
+Received: ₹{invoice.received}
+Pending: ₹{invoice.pending}
+Adults: {invoice.adults}, Children: {invoice.children}
+Room Type: {invoice.room_type}
+Number of Rooms: {invoice.rooms}
+
+Thank you for choosing Whytehouse Holidays!"""
+        
+        if channel == 'whatsapp':
+            # Generate WhatsApp link
+            customer_phone = invoice.customer.contact_number if invoice.customer else ""
+            if customer_phone:
+                # Format phone number for WhatsApp (remove spaces/dashes)
+                phone = ''.join(filter(str.isdigit, customer_phone))
+                # Add India country code if not present
+                if not phone.startswith('91'):
+                    phone = '91' + phone
+                whatsapp_url = f"https://wa.me/{phone}?text={urllib.parse.quote(message)}"
+                return redirect(whatsapp_url)
+            else:
+                messages.warning(request, "Customer phone number not available for WhatsApp.")
+                return redirect('sales:invoice_list')
+        
+        elif channel == 'email':
+            customer_email = invoice.customer.email if invoice.customer else None
+            if customer_email:
+                # Redirect to Gmail compose with pre-filled fields
+                subject = f"Whytehouse Holidays - Invoice {invoice.invoice_no}"
+                gmail_compose_url = f"https://mail.google.com/mail/?view=cm&fs=1&to={urllib.parse.quote(customer_email)}&su={urllib.parse.quote(subject)}&body={urllib.parse.quote(message)}"
+                return redirect(gmail_compose_url)
+            else:
+                messages.warning(request, "Customer email not available.")
+                return redirect('sales:invoice_list')
+        
+        else:
+            messages.error(request, "Invalid channel specified.")
+            return redirect('sales:invoice_list')
+    
+    except Exception as e:
+        messages.error(request, f"Error sending invoice: {str(e)}")
+        return redirect('sales:invoice_list')
+
 def blog_list(request):
     blogs = Blog.objects.all()
 
@@ -2131,8 +2028,6 @@ def add_blog(request):
 
     if request.method == "POST":
         try:
-            import re  
-            
             title = (request.POST.get("title") or "").strip()
             slug = (request.POST.get("slug") or "").strip()
             excerpt = (request.POST.get("excerpt") or "").strip()
@@ -2142,90 +2037,64 @@ def add_blog(request):
             reading_time = request.POST.get("reading_time")
             publish_date = request.POST.get("publish_date")
 
-            # Prepare form data for re-rendering
-            form_data = {
-                'title': title,
-                'slug': slug,
-                'excerpt': excerpt,
-                'content': content,
-                'author_name': author_name,
-                'author_summary': author_summary,
-                'reading_time': reading_time,
-                'publish_date': publish_date,
-                'status': request.POST.get("status", "draft"),
-                'category': request.POST.get("category", ""),
-                'package_id': (request.POST.get("package_id") or "").strip(),
-                'featured_image_url': (request.POST.get("featured_image_url") or "").strip(),
-                'hashtags': (request.POST.get("hashtags") or "").strip(),
-            }
+            if not title or not slug or not excerpt or not content or not author_name or not author_summary or not reading_time or not publish_date:
+                messages.error(request, "Please fill in all required fields.")
+                return render(request, "admin/blog/add_blog.html", {"categories": categories})
 
-            # Validation errors dictionary
-            errors = {}
+            import re
+            if not re.match(r'^[a-z0-9-]+$', slug):
+                messages.error(request, "Slug must contain only lowercase letters, numbers, and hyphens.")
+                return render(request, "admin/blog/add_blog.html", {"categories": categories})
 
-            if not title:
-                errors['title'] = "Blog title is required."
-            elif Blog.objects.filter(title__iexact=title).exists():
-                errors['title'] = "A blog with this title already exists."
+            if Blog.objects.filter(slug=slug).exists():
+                messages.error(request, "A blog with this slug already exists.")
+                return render(request, "admin/blog/add_blog.html", {"categories": categories})
 
-            if not slug:
-                errors['slug'] = "URL slug is required."
-            elif not re.match(r'^[a-z0-9-]+$', slug):
-                errors['slug'] = "Slug must contain only lowercase letters, numbers, and hyphens."
-            elif Blog.objects.filter(slug=slug).exists():
-                errors['slug'] = "A blog with this slug already exists."
+            try:
+                reading_time_val = int(reading_time)
+                if reading_time_val < 1 or reading_time_val > 120:
+                    messages.error(request, "Reading time must be between 1 and 120 minutes.")
+                    return render(request, "admin/blog/add_blog.html", {"categories": categories})
+            except ValueError:
+                messages.error(request, "Invalid reading time format.")
+                return render(request, "admin/blog/add_blog.html", {"categories": categories})
 
-            if not excerpt:
-                errors['excerpt'] = "Excerpt is required."
-            elif len(excerpt) < 50 or len(excerpt) > 300:
-                errors['excerpt'] = "Excerpt must be between 50 and 300 characters."
+            if len(excerpt) < 50 or len(excerpt) > 300:
+                messages.error(request, "Excerpt must be between 50 and 300 characters.")
+                return render(request, "admin/blog/add_blog.html", {"categories": categories})
 
-            if not content:
-                errors['content'] = "Content is required."
-
-            if not author_name:
-                errors['author_name'] = "Author name is required."
-
-            if not author_summary:
-                errors['author_summary'] = "Author summary is required."
-
-            if not reading_time:
-                errors['reading_time'] = "Reading time is required."
+            hashtags_value = (request.POST.get("hashtags") or "").strip()
+            category_slug = request.POST.get("category", "")
+            
+            # Validate package ID if provided
+            package_id_value = (request.POST.get("package_id") or "").strip()
+            if package_id_value:
+                # Check format
+                import re
+                if not re.match(r'^PKG\d{3}$', package_id_value.upper()):
+                    messages.error(request, "Package ID must be in format PKG followed by 3 digits (e.g., PKG001).")
+                    return render(request, "admin/blog/add_blog.html", {"categories": categories})
+                
+                # Check if package exists
+                if not TravelPackage.objects.filter(package_id=package_id_value.upper()).exists():
+                    messages.error(request, "Type valid package ID. The entered package ID does not exist.")
+                    return render(request, "admin/blog/add_blog.html", {"categories": categories})
             else:
-                try:
-                    reading_time_val = int(reading_time)
-                    if reading_time_val < 1 or reading_time_val > 120:
-                        errors['reading_time'] = "Reading time must be between 1 and 120 minutes."
-                except ValueError:
-                    errors['reading_time'] = "Invalid reading time format."
+                package_id_value = None
 
-            if not publish_date:
-                errors['publish_date'] = "Publish date is required."
-
-            # Package ID is optional
-            package_id_value = (request.POST.get("package_id") or "").strip() or None
-
-            # If there are validation errors, return with form data and errors
-            if errors:
-                return render(request, "admin/blog/add_blog.html", {
-                    "categories": categories,
-                    "form_data": form_data,
-                    "errors": errors
-                })
-
-            # If no errors, proceed with creation
             blog = Blog.objects.create(
                 title=title,
                 slug=slug,
                 excerpt=excerpt,
                 content=content,
                 status=request.POST.get("status", "draft"),
-                category=request.POST.get("category", ""),
+                category=category_slug,
                 package_id=package_id_value,
                 author_name=author_name,
                 author_summary=author_summary,
                 reading_time=reading_time_val,
                 publish_date=publish_date,
-                tags=form_data['hashtags'],
+                tags=hashtags_value,
             )
 
             if request.FILES.get("featured_image"):
@@ -2269,8 +2138,21 @@ def edit_blog(request, blog_id):
             # Get category slug from dropdown
             category_slug = request.POST.get("category", "")
             
-            # Package ID is optional
-            package_id_value = (request.POST.get("package_id") or "").strip() or None
+            # Validate package ID if provided
+            package_id_value = (request.POST.get("package_id") or "").strip()
+            if package_id_value:
+                # Check format
+                import re
+                if not re.match(r'^PKG\d{3}$', package_id_value.upper()):
+                    messages.error(request, "Package ID must be in format PKG followed by 3 digits (e.g., PKG001).")
+                    return render(request, "admin/blog/edit_blog.html", {"blog": blog, "categories": categories})
+                
+                # Check if package exists
+                if not TravelPackage.objects.filter(package_id=package_id_value.upper()).exists():
+                    messages.error(request, "Type valid package ID. The entered package ID does not exist.")
+                    return render(request, "admin/blog/edit_blog.html", {"blog": blog, "categories": categories})
+            else:
+                package_id_value = None
             
             blog.title = title
             blog.slug = slug
@@ -3080,14 +2962,8 @@ def destination_list(request):
     destinations = destinations.order_by('-created_at')
     domestic_count = Destination.objects.filter(category='Domestic').count()
     international_count = Destination.objects.filter(category='International').count()
-
-    paginator = Paginator(destinations, 9)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
     context = {
-        'destinations': page_obj,
-        'page_obj': page_obj,
+        'destinations': destinations,
         'selected_category': category,
         'domestic_count': domestic_count,
         'international_count': international_count,
@@ -3165,7 +3041,7 @@ def edit_destination(request, destination_id):
         destination.name = name
         destination.country = country
         destination.category = category
-        destination.description = request.POST.get('description', '').strip() or None
+        destination.description = request.POST.get('description')
         destination.is_popular = request.POST.get('is_popular') == 'on'
         packages_start_from = request.POST.get('packages_start_from', '').strip()
         destination.packages_start_from = packages_start_from if packages_start_from else None
@@ -3183,12 +3059,6 @@ def delete_destination(request, destination_id):
     destination.delete()
     messages.success(request, "Destination deleted successfully!")
     return redirect('admin_panel:destinations')
-
-def toggle_destination_status(request, destination_id):
-    destination = get_object_or_404(Destination, id=destination_id)
-    destination.is_active = not destination.is_active
-    destination.save()
-    return redirect(f"{reverse('admin_panel:destinations')}?cat={destination.category}")
 
 # FEEDBACK MANAGEMENT
 def feedback_list(request):
@@ -3271,39 +3141,6 @@ def view_feedback(request, feedback_id):
     feedback = get_object_or_404(Feedback, id=feedback_id)
     return render(request, 'admin/feedback/view_feedback.html', {'feedback': feedback})
 
-def edit_feedback(request, feedback_id):
-    feedback_obj = get_object_or_404(Feedback, id=feedback_id)
-    if request.method == 'POST':
-        try:
-            name          = (request.POST.get('name') or '').strip()
-            email         = (request.POST.get('email') or '').strip()
-            mobile_number = (request.POST.get('mobile_number') or '').strip()
-            feedback_type = (request.POST.get('feedback_type') or '').strip()
-            rating        = (request.POST.get('rating') or '').strip()
-            feedback_text = (request.POST.get('feedback') or '').strip()
-            if not all([name, email, rating, feedback_text, feedback_type]):
-                messages.error(request, 'Name, Email, Feedback Type, Rating and Feedback are required.')
-                return render(request, 'admin/feedback/edit_feedback.html', {
-                    'feedback': feedback_obj,
-                    'feedback_type_choices': Feedback.FEEDBACK_TYPE_CHOICES,
-                })
-            feedback_obj.name          = name
-            feedback_obj.email         = email
-            feedback_obj.mobile_number = mobile_number
-            feedback_obj.feedback_type = feedback_type
-            feedback_obj.rating        = int(rating)
-            feedback_obj.feedback      = feedback_text
-            feedback_obj.featured      = request.POST.get('featured') == '1'
-            feedback_obj.save()
-            messages.success(request, 'Feedback updated successfully!')
-            return redirect('feedback:feedback_list')
-        except Exception as e:
-            messages.error(request, f'Error updating feedback: {str(e)}')
-    return render(request, 'admin/feedback/edit_feedback.html', {
-        'feedback': feedback_obj,
-        'feedback_type_choices': Feedback.FEEDBACK_TYPE_CHOICES,
-    })
-
 def delete_feedback(request, feedback_id):
     if request.method != 'POST':
         return redirect('feedback:feedback_list')
@@ -3347,73 +3184,118 @@ def get_next_package_id(request):
     
     return JsonResponse({'next_id': next_id})
 
-
-def check_meal_name(request):
-    name = (request.GET.get('name') or '').strip()
-    exclude_id = request.GET.get('exclude_id')
-    qs = Meal.objects.filter(name__iexact=name)
-    if exclude_id:
-        qs = qs.exclude(id=exclude_id)
-    exists = qs.exists() if name else False
-    return JsonResponse({'exists': exists})
-
-
 def check_account_number(request):
-    number = (request.GET.get('number') or '').strip()
-    exists = Account.objects.filter(account_number=number).exists() if number else False
+    """API endpoint to check if account number already exists"""
+    number = request.GET.get('number', '').strip()
+    
+    if not number:
+        return JsonResponse({'exists': False})
+    
+    exists = Account.objects.filter(account_number=number).exists()
     return JsonResponse({'exists': exists})
-
-
-def check_package_name(request):
-    name = (request.GET.get('name') or '').strip()
-    category = (request.GET.get('category') or '').strip()
-    exists = TravelPackage.objects.filter(name__iexact=name, category=category).exists() if name else False
-    return JsonResponse({'exists': exists})
-
 
 def check_resort_duplicate(request):
-    name = (request.GET.get('name') or '').strip()
-    place = (request.GET.get('place') or '').strip()
-    exclude_id = request.GET.get('exclude_id')
-    qs = Resort.objects.filter(resort_name__iexact=name, location__iexact=place)
+    """API endpoint to check if resort with same name and location already exists"""
+    name = request.GET.get('name', '').strip()
+    place = request.GET.get('place', '').strip()
+    
+    if not name or not place:
+        return JsonResponse({'exists': False})
+    
+    exists = Resort.objects.filter(resort_name=name, location=place).exists()
+    return JsonResponse({'exists': exists})
+
+def check_meal_name(request):
+    """API endpoint to check if meal name already exists"""
+    name = request.GET.get('name', '').strip()
+    exclude_id = request.GET.get('exclude_id', None)
+    
+    if not name:
+        return JsonResponse({'exists': False})
+    
+    queryset = Meal.objects.filter(name=name)
+    
+    # If exclude_id is provided (for edit), exclude that meal from the check
     if exclude_id:
-        qs = qs.exclude(id=exclude_id)
-    exists = qs.exists() if name and place else False
+        try:
+            queryset = queryset.exclude(id=int(exclude_id))
+        except (ValueError, TypeError):
+            pass
+    
+    exists = queryset.exists()
     return JsonResponse({'exists': exists})
 
-
-def check_employee_duplicate(request):
-    field = request.GET.get('field', '')
-    value = (request.GET.get('value') or '').strip()
-    if field == 'email' and value:
-        exists = Employee.objects.filter(email__iexact=value).exists()
-    elif field == 'phone' and value:
-        exists = Employee.objects.filter(phone=value).exists()
-    else:
-        exists = False
-    return JsonResponse({'exists': exists})
-
-
-def manage_employee_roles(request):
+def toggle_meal_status(request, meal_id):
+    """Toggle available/unavailable status of a meal"""
     if request.method == 'POST':
-        name = (request.POST.get('name') or '').strip()
-        if not name:
-            return redirect('employee:manage_roles')
-        if EmployeeRole.objects.filter(name__iexact=name).exists():
-            return redirect('employee:manage_roles')
-        EmployeeRole.objects.create(name=name)
-        messages.success(request, f'Role "{name}" added successfully!')
-        return redirect(reverse('employee:manage_roles'))
-    roles = EmployeeRole.objects.all()
-    return render(request, 'admin/employee/manage_roles.html', {'roles': roles})
+        try:
+            meal = get_object_or_404(Meal, id=meal_id)
+            # Toggle between Available and Unavailable
+            meal.status = 'Unavailable' if meal.status == 'Available' else 'Available'
+            meal.save()
+            
+            # Check if it's an AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'status': meal.status})
+            else:
+                # Regular form submission - redirect back
+                messages.success(request, f'Meal status updated to {meal.status}')
+                return redirect('admin_panel:meal_list')
+        except Exception as e:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': str(e)})
+            else:
+                messages.error(request, f'Error updating status: {str(e)}')
+                return redirect('admin_panel:meal_list')
+    
+    return redirect('admin_panel:meal_list')
 
+def edit_feedback(request, feedback_id):
+    """Edit existing feedback"""
+    feedback = get_object_or_404(Feedback, id=feedback_id)
+    
+    if request.method == 'POST':
+        try:
+            name = (request.POST.get('name') or '').strip()
+            email = (request.POST.get('email') or '').strip()
+            mobile_number = (request.POST.get('mobile_number') or '').strip()
+            feedback_type = (request.POST.get('feedback_type') or '').strip()
+            rating = (request.POST.get('rating') or '').strip()
+            feedback_text = (request.POST.get('feedback') or '').strip()
 
-def delete_employee_role(request, role_id):
-    if request.method != 'POST':
-        return redirect('employee:manage_roles')
-    role = get_object_or_404(EmployeeRole, id=role_id)
-    role_name = role.name
-    role.delete()
-    messages.success(request, f'Role "{role_name}" deleted successfully.')
-    return redirect('employee:manage_roles')
+            if not all([name, email, rating, feedback_text, feedback_type]):
+                messages.error(request, "Name, Email, Feedback Type, Rating and Feedback are required.")
+                return render(request, 'admin/feedback/edit_feedback.html', {
+                    'feedback': feedback,
+                    'feedback_type_choices': Feedback.FEEDBACK_TYPE_CHOICES
+                })
 
+            feedback.name = name
+            feedback.email = email
+            feedback.mobile_number = mobile_number
+            feedback.feedback_type = feedback_type
+            feedback.rating = int(rating)
+            feedback.feedback = feedback_text
+            feedback.featured = request.POST.get('featured') == '1'
+            feedback.save()
+
+            # Handle image uploads
+            from admin_panel.models import FeedbackImage
+            images = request.FILES.getlist('images')
+            for img in images:
+                FeedbackImage.objects.create(feedback=feedback, image=img)
+
+            messages.success(request, "Feedback updated successfully!")
+            return redirect('feedback:feedback_list')
+
+        except Exception as e:
+            messages.error(request, f"Error updating feedback: {str(e)}")
+            return render(request, 'admin/feedback/edit_feedback.html', {
+                'feedback': feedback,
+                'feedback_type_choices': Feedback.FEEDBACK_TYPE_CHOICES
+            })
+
+    return render(request, 'admin/feedback/edit_feedback.html', {
+        'feedback': feedback,
+        'feedback_type_choices': Feedback.FEEDBACK_TYPE_CHOICES
+    })
