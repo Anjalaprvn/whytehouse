@@ -48,6 +48,9 @@ employee_patterns = [
     path('<int:pk>/', views.view_employee, name='view_employee'),
     path('edit/<int:pk>/', views.edit_employee, name='edit_employee'),
     path('delete/<int:pk>/', views.delete_employee, name='delete_employee'),
+    path('manage-roles/', views.manage_employee_roles, name='manage_roles'),
+    path('manage-roles/<int:role_id>/delete/', views.delete_employee_role, name='delete_role'),
+    path('check-duplicate/', views.check_employee_duplicate, name='check_employee_duplicate'),
 ]
 
 # SALES URL PATTERNS (to be included with 'sales' namespace in main urls.py)

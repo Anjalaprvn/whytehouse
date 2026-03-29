@@ -1795,12 +1795,23 @@ def voucher_list(request):
     if search_query:
         vouchers = vouchers.filter(
             Q(voucher_no__icontains=search_query) |
-            Q(customer_display_name_icontains=search_query) |
-            Q(resort_resort_name_icontains=search_query)
+            Q(customer__display_name__icontains=search_query) |
+            Q(resort__resort_name__icontains=search_query)
         )
     
     vouchers = vouchers.order_by('-voucher_date', '-id')
-    return render(request, "admin/sales/vouchers/vouchers.html", {"vouchers": vouchers, "search_query": search_query})
+    
+    # Pagination
+    paginator = Paginator(vouchers, 20)  # 20 vouchers per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, "admin/sales/vouchers/vouchers.html", {
+        "page_obj": page_obj,
+        "paginator": paginator,
+        "vouchers": page_obj,
+        "search_query": search_query
+    })
 
 def add_voucher(request):
     customers = Customer.objects.all()
@@ -1947,6 +1958,65 @@ def delete_voucher(request, voucher_id):
     except Exception as e:
         messages.error(request, f"Error deleting voucher: {str(e)}")
     return redirect("sales:voucher_list")
+
+def send_voucher(request, voucher_id):
+    """Send voucher details via WhatsApp or Email"""
+    import urllib.parse
+    try:
+        voucher = get_object_or_404(Voucher, id=voucher_id)
+        channel = request.GET.get('channel', 'email').lower()
+        
+        # Prepare voucher details
+        customer_name = voucher.customer.display_name if voucher.customer else "Guest"
+        resort_name = voucher.resort.resort_name if voucher.resort else "N/A"
+        checkin = voucher.checkin_date.strftime("%d %b %Y") if voucher.checkin_date else "N/A"
+        checkout = voucher.checkout_date.strftime("%d %b %Y") if voucher.checkout_date else "N/A"
+        
+        message = f"""Voucher Details:
+Voucher No: {voucher.voucher_no}
+Customer: {customer_name}
+Resort: {resort_name}
+Check-in: {checkin}
+Check-out: {checkout}
+Total Amount: ₹{voucher.total_amount}
+Guests: {voucher.adults} Adults, {voucher.children} Children
+Room Type: {voucher.room_type}
+Number of Rooms: {voucher.no_of_rooms}
+
+Thank you for choosing Whytehouse Holidays!"""
+        
+        if channel == 'whatsapp':
+            # Generate WhatsApp link
+            customer_phone = voucher.customer.contact_number if voucher.customer else ""
+            if customer_phone:
+                # Format phone number for WhatsApp (remove spaces/dashes)
+                phone = ''.join(filter(str.isdigit, customer_phone))
+                # Add India country code if not present
+                if not phone.startswith('91'):
+                    phone = '91' + phone
+                whatsapp_url = f"https://wa.me/{phone}?text={urllib.parse.quote(message)}"
+                return redirect(whatsapp_url)
+            else:
+                messages.warning(request, "Customer phone number not available for WhatsApp.")
+                return redirect('sales:voucher_list')
+        
+        elif channel == 'email':
+            customer_email = voucher.customer.email if voucher.customer else None
+            if customer_email:
+                # Redirect to Gmail compose with pre-filled fields
+                subject = f"Whytehouse Holidays - Voucher {voucher.voucher_no}"
+                gmail_compose_url = f"https://mail.google.com/mail/?view=cm&fs=1&to={urllib.parse.quote(customer_email)}&su={urllib.parse.quote(subject)}&body={urllib.parse.quote(message)}"
+                return redirect(gmail_compose_url)
+            else:
+                messages.warning(request, "Customer email not available.")
+                return redirect('sales:voucher_list')
+        
+        else:
+            messages.error(request, "Invalid channel specified.")
+            return redirect('sales:voucher_list')
+    except Exception as e:
+        messages.error(request, f"Error sending voucher: {str(e)}")
+        return redirect('sales:voucher_list')
 
 
 # INVOICE VIEWS
@@ -2139,6 +2209,57 @@ def delete_invoice(request, invoice_id):
     except Exception as e:
         messages.error(request, f"Error deleting invoice: {str(e)}")
     return redirect("sales:invoice_list")
+
+def send_invoice(request, invoice_id):
+    """Send invoice details via WhatsApp or Email"""
+    import urllib.parse
+    try:
+        invoice = get_object_or_404(Invoice, id=invoice_id)
+        channel = request.GET.get('channel', 'email').lower()
+        
+        # Prepare invoice details
+        customer_name = invoice.customer.display_name if invoice.customer else "Guest"
+        
+        message = f"""Invoice Details:
+Invoice No: {invoice.invoice_no}
+Customer: {customer_name}
+Invoice Date: {invoice.invoice_date.strftime("%d %b %Y") if invoice.invoice_date else "N/A"}
+Total Amount: ₹{invoice.total_amount}
+
+Thank you for your business!"""
+        
+        if channel == 'whatsapp':
+            # Generate WhatsApp link
+            customer_phone = invoice.customer.contact_number if invoice.customer else ""
+            if customer_phone:
+                # Format phone number for WhatsApp (remove spaces/dashes)
+                phone = ''.join(filter(str.isdigit, customer_phone))
+                # Add India country code if not present
+                if not phone.startswith('91'):
+                    phone = '91' + phone
+                whatsapp_url = f"https://wa.me/{phone}?text={urllib.parse.quote(message)}"
+                return redirect(whatsapp_url)
+            else:
+                messages.warning(request, "Customer phone number not available for WhatsApp.")
+                return redirect('sales:invoice_list')
+        
+        elif channel == 'email':
+            customer_email = invoice.customer.email if invoice.customer else None
+            if customer_email:
+                # Redirect to Gmail compose with pre-filled fields
+                subject = f"Whytehouse Holidays - Invoice {invoice.invoice_no}"
+                gmail_compose_url = f"https://mail.google.com/mail/?view=cm&fs=1&to={urllib.parse.quote(customer_email)}&su={urllib.parse.quote(subject)}&body={urllib.parse.quote(message)}"
+                return redirect(gmail_compose_url)
+            else:
+                messages.warning(request, "Customer email not available.")
+                return redirect('sales:invoice_list')
+        
+        else:
+            messages.error(request, "Invalid channel specified.")
+            return redirect('sales:invoice_list')
+    except Exception as e:
+        messages.error(request, f"Error sending invoice: {str(e)}")
+        return redirect('sales:invoice_list')
 
 def blog_list(request):
     blogs = Blog.objects.all()
