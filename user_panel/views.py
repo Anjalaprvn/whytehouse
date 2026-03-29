@@ -647,26 +647,31 @@ def package_detail(request, slug):
                     }
                 })
             
-            # If validation passes, create customer and lead
             # Split name into first and last
             name_parts = name.split(' ', 1)
             first_name = name_parts[0]
             last_name = name_parts[1] if len(name_parts) > 1 else ''
-            
-            # Check if customer already exists with this phone number
-            customer, created = Customer.objects.get_or_create(
-                contact_number=phone,
-                defaults={
-                    'first_name': first_name,
-                    'last_name': last_name,
-                    'display_name': name,
-                    'whatsapp_number': phone,
-                    'same_as_whatsapp': True,
-                    'customer_type': 'Individual',
-                    'place': f'Booking: {package.name}'
-                }
-            )
-            
+
+            try:
+                customer, created = Customer.objects.get_or_create(
+                    contact_number=phone,
+                    defaults={
+                        'first_name': first_name,
+                        'last_name': last_name,
+                        'display_name': name,
+                        'email': email,
+                        'whatsapp_number': phone,
+                        'same_as_whatsapp': True,
+                        'customer_type': 'Individual',
+                        'place': ''
+                    }
+                )
+                if not created and email and not customer.email:
+                    customer.email = email
+                    customer.save()
+            except Exception:
+                pass
+
             Lead.objects.create(
                 full_name=name,
                 mobile_number=phone,
@@ -722,25 +727,29 @@ def package_detail(request, slug):
                 })
             
             # If validation passes, create customer and lead
-            # Split name into first and last
             name_parts = message_name.split(' ', 1)
             first_name = name_parts[0]
             last_name = name_parts[1] if len(name_parts) > 1 else ''
-            
-            # Check if customer already exists with this phone number
-            customer, created = Customer.objects.get_or_create(
-                contact_number=message_phone,
-                defaults={
-                    'first_name': first_name,
-                    'last_name': last_name,
-                    'display_name': message_name,
-                    'email': message_email,
-                    'whatsapp_number': message_phone,
-                    'same_as_whatsapp': True,
-                    'customer_type': 'Individual',
-                    'place': ''
-                }
-            )
+
+            try:
+                customer, created = Customer.objects.get_or_create(
+                    contact_number=message_phone,
+                    defaults={
+                        'first_name': first_name,
+                        'last_name': last_name,
+                        'display_name': message_name,
+                        'email': message_email,
+                        'whatsapp_number': message_phone,
+                        'same_as_whatsapp': True,
+                        'customer_type': 'Individual',
+                        'place': ''
+                    }
+                )
+                if not created and message_email and not customer.email:
+                    customer.email = message_email
+                    customer.save()
+            except Exception:
+                pass
             
             # Create lead with the message
             Lead.objects.create(

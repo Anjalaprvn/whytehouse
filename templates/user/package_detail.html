@@ -701,6 +701,14 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        // Auto-dismiss messages after 3 seconds
+        document.querySelectorAll('.message-success, .message-error, .message-warning, .message-info').forEach(function(msg) {
+            setTimeout(function() {
+                msg.style.transition = 'opacity 0.5s ease';
+                msg.style.opacity = '0';
+                setTimeout(function() { msg.remove(); }, 500);
+            }, 3000);
+        });
         const forms = document.querySelectorAll('form');
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

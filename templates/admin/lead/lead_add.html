@@ -310,7 +310,9 @@
                     <select name="employee">
                         <option value="">Select Employee</option>
                         {% for employee in employees %}
-                            <option value="{{ employee.id }}">{{ employee.name }}</option>
+                            <option value="{{ employee.id }}" {% if employee.id == next_emp_id %}selected{% endif %}>
+                                {{ employee.name }}{% if employee.id == next_emp_id %} ← Next{% endif %}
+                            </option>
                         {% endfor %}
                     </select>
                 </div>

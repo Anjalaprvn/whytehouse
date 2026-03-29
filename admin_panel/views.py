@@ -402,15 +402,15 @@ def add_lead(request):
         messages.success(request, "Lead added successfully!")
         return redirect('admin_panel:leads')
     
-    all_employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive', 'Customer Care Support']).order_by('name')
     next_emp = get_next_employee_for_lead()
+    all_employees = Employee.objects.filter(status='Active').order_by('name')
     
     employees_list = list(all_employees)
     if next_emp and next_emp in employees_list:
         employees_list.remove(next_emp)
         employees_list.insert(0, next_emp)
     
-    return render(request, 'admin/lead/lead_add.html', {'employees': employees_list})
+    return render(request, 'admin/lead/lead_add.html', {'employees': employees_list, 'next_emp_id': next_emp.id if next_emp else None})
 
 def edit_lead(request, id):
     lead = get_object_or_404(Lead, id=id)
@@ -426,10 +426,29 @@ def edit_lead(request, id):
         lead.remarks = request.POST.get('remarks')
         lead.employee_id = employee_id if employee_id else None
         lead.save()
+
+        # If converted, create customer record
+        if lead.status == 'Converted':
+            from admin_panel.models import Customer
+            name_parts = lead.full_name.split(' ', 1)
+            Customer.objects.get_or_create(
+                contact_number=lead.mobile_number,
+                defaults={
+                    'first_name': name_parts[0],
+                    'last_name': name_parts[1] if len(name_parts) > 1 else '',
+                    'display_name': lead.full_name,
+                    'email': lead.email or '',
+                    'whatsapp_number': lead.mobile_number,
+                    'same_as_whatsapp': True,
+                    'customer_type': 'Individual',
+                    'place': lead.place or '',
+                }
+            )
+
         messages.success(request, "Lead updated successfully!")
         return redirect('admin_panel:view_lead', lead_id=id)
     
-    all_employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive', 'Customer Care Support']).order_by('name')
+    all_employees = Employee.objects.filter(status='Active').order_by('name')
     assigned_employee_ids = set(Lead.objects.exclude(id=id).filter(employee__isnull=False).values_list('employee_id', flat=True))
     
     current_employee = lead.employee
@@ -450,7 +469,8 @@ def edit_lead(request, id):
         if e.id in assigned_employee_ids:
             employees_list.append(e)
     
-    return render(request, 'admin/lead/lead_edit.html', {'lead': lead, 'employees': employees_list})
+    next_emp = get_next_employee_for_lead()
+    return render(request, 'admin/lead/lead_edit.html', {'lead': lead, 'employees': employees_list, 'next_emp_id': next_emp.id if next_emp else None})
 
 def delete_lead(request, lead_id):
     if request.method != 'POST':
@@ -941,6 +961,25 @@ def update_inquiry_status(request, inquiry_id):
             inquiry.status = new_status
             inquiry.save()
             print(f"DEBUG: Inquiry saved, new status is {inquiry.status}")
+
+            # If converted, create customer record
+            if new_status == 'Converted':
+                from admin_panel.models import Customer
+                name_parts = inquiry.name.split(' ', 1)
+                Customer.objects.get_or_create(
+                    contact_number=inquiry.phone,
+                    defaults={
+                        'first_name': name_parts[0],
+                        'last_name': name_parts[1] if len(name_parts) > 1 else '',
+                        'display_name': inquiry.name,
+                        'email': inquiry.email or '',
+                        'whatsapp_number': inquiry.phone,
+                        'same_as_whatsapp': True,
+                        'customer_type': 'Individual',
+                        'place': '',
+                    }
+                )
+
             messages.success(request, f'Inquiry status updated to {new_status}')
             return redirect('admin_panel:view_inquiry', inquiry_id=inquiry_id)
     
