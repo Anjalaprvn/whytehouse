@@ -35,6 +35,7 @@ urlpatterns = [
     path('destinations/<int:destination_id>/', views.view_destination, name='view_destination'),
     path('destinations/edit/<int:destination_id>/', views.edit_destination, name='edit_destination'),
     path('destinations/delete/<int:destination_id>/', views.delete_destination, name='delete_destination'),
+    path('destinations/<int:destination_id>/toggle/', views.toggle_destination_status, name='toggle_destination_status'),
     path('customer-inquiries/', views.customer_inquiries, name='customer_inquiries'),
     path('customer-inquiries/<int:inquiry_id>/', views.view_inquiry, name='view_inquiry'),
     path('customer-inquiries/<int:inquiry_id>/update-status/', views.update_inquiry_status, name='update_inquiry_status'),
@@ -47,6 +48,8 @@ employee_patterns = [
     path('<int:pk>/', views.view_employee, name='view_employee'),
     path('edit/<int:pk>/', views.edit_employee, name='edit_employee'),
     path('delete/<int:pk>/', views.delete_employee, name='delete_employee'),
+    path('manage-roles/', views.manage_employee_roles, name='manage_roles'),
+    path('manage-roles/<int:role_id>/delete/', views.delete_employee_role, name='delete_role'),
 ]
 
 # SALES URL PATTERNS (to be included with 'sales' namespace in main urls.py)
