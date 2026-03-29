@@ -21,28 +21,6 @@ def enquire_now(request):
             if not full_name or not mobile_number:
                 return JsonResponse({'success': False, 'error': 'Name and mobile number are required'})
             
-            # Create Customer record
-            from admin_panel.models import Customer
-            
-            # Split name into first and last
-            name_parts = full_name.split(' ', 1)
-            first_name = name_parts[0]
-            last_name = name_parts[1] if len(name_parts) > 1 else ''
-            
-            # Check if customer already exists with this phone number
-            customer, created = Customer.objects.get_or_create(
-                contact_number=mobile_number,
-                defaults={
-                    'first_name': first_name,
-                    'last_name': last_name,
-                    'display_name': full_name,
-                    'whatsapp_number': mobile_number,
-                    'same_as_whatsapp': True,
-                    'customer_type': 'Individual',
-                    'place': place if place else ''
-                }
-            )
-            
             # Create lead with enquiry type based on page
             Lead.objects.create(
                 full_name=full_name,
@@ -357,34 +335,6 @@ def contact(request):
                 }
             })
 
-        # Create Customer record
-        from admin_panel.models import Customer
-        
-        # Split name into first and last
-        name_parts = name.split(' ', 1)
-        first_name = name_parts[0]
-        last_name = name_parts[1] if len(name_parts) > 1 else ''
-        
-        # Check if customer already exists with this phone number
-        customer, created = Customer.objects.get_or_create(
-            contact_number=full_phone,
-            defaults={
-                'first_name': first_name,
-                'last_name': last_name,
-                'display_name': name,
-                'email': email,
-                'whatsapp_number': full_phone,
-                'same_as_whatsapp': True,
-                'customer_type': 'Individual',
-                'place': ''
-            }
-        )
-        
-        # Update email if customer already exists
-        if not created and email and not customer.email:
-            customer.email = email
-            customer.save()
-
         # Create Lead record
         try:
             lead = Lead.objects.create(
@@ -672,16 +622,6 @@ def package_detail(request, slug):
             except Exception:
                 pass
 
-            Lead.objects.create(
-                full_name=name,
-                mobile_number=phone,
-                email=email,
-                source='Website',
-                enquiry_type=package.category,  # Use package category (Domestic/International)
-                package_name=package.name,
-                remarks=f'Package: {package.name} | Email: {email} | Guests: {guests} | Start Date: {start_date}'
-            )
-            
             messages.success(request, 'Booking request submitted! Our team will contact you soon.')
             return redirect('user_panel:package_detail', slug=slug)
         
@@ -731,37 +671,29 @@ def package_detail(request, slug):
             first_name = name_parts[0]
             last_name = name_parts[1] if len(name_parts) > 1 else ''
 
-            try:
-                customer, created = Customer.objects.get_or_create(
-                    contact_number=message_phone,
-                    defaults={
-                        'first_name': first_name,
-                        'last_name': last_name,
-                        'display_name': message_name,
-                        'email': message_email,
-                        'whatsapp_number': message_phone,
-                        'same_as_whatsapp': True,
-                        'customer_type': 'Individual',
-                        'place': ''
-                    }
-                )
-                if not created and message_email and not customer.email:
-                    customer.email = message_email
-                    customer.save()
-            except Exception:
-                pass
-            
-            # Create lead with the message
-            Lead.objects.create(
+            lead = Lead.objects.create(
                 full_name=message_name,
                 mobile_number=message_phone,
                 email=message_email,
                 source='Website',
-                enquiry_type=package.category,  # Use package category (Domestic/International)
+                enquiry_type=package.category,
                 package_name=package.name,
                 message=message_text,
                 remarks=f'Package Inquiry: {package.name}\n\nMessage: {message_text}'
             )
+
+            try:
+                Inquiry.objects.create(
+                    lead=lead,
+                    name=message_name,
+                    email=message_email,
+                    phone=message_phone,
+                    package=package.name,
+                    message=message_text,
+                    status='New'
+                )
+            except Exception:
+                pass
             
             messages.success(request, 'Your message has been sent successfully! Our team will contact you soon.')
             return redirect('user_panel:package_detail', slug=slug)
@@ -811,34 +743,6 @@ def hospitality_enquiry(request):
             for error in errors:
                 messages.error(request, error)
             return redirect('user_panel:hospitality_enquiry')
-
-        # Create Customer record
-        from admin_panel.models import Customer
-        
-        # Split name into first and last
-        name_parts = name.split(' ', 1)
-        first_name = name_parts[0]
-        last_name = name_parts[1] if len(name_parts) > 1 else ''
-        
-        # Check if customer already exists with this phone number
-        customer, created = Customer.objects.get_or_create(
-            contact_number=phone,
-            defaults={
-                'first_name': first_name,
-                'last_name': last_name,
-                'display_name': name,
-                'email': email,
-                'whatsapp_number': phone,
-                'same_as_whatsapp': True,
-                'customer_type': 'Individual',
-                'place': ''
-            }
-        )
-        
-        # Update email if customer already exists
-        if not created and email and not customer.email:
-            customer.email = email
-            customer.save()
 
         # Find existing lead by phone (or create new)
         lead = Lead.objects.filter(mobile_number=phone).first()
@@ -944,28 +848,6 @@ def property_enquiry(request, property_id):
             for error in errors:
                 messages.error(request, error)
             return render(request, 'user/property_enquiry.html', {'property': property})
-        
-        name_parts = name.split(' ', 1)
-        first_name = name_parts[0]
-        last_name = name_parts[1] if len(name_parts) > 1 else ''
-        
-        customer, created = Customer.objects.get_or_create(
-            contact_number=phone,
-            defaults={
-                'first_name': first_name,
-                'last_name': last_name,
-                'display_name': name,
-                'email': email,
-                'whatsapp_number': phone,
-                'same_as_whatsapp': True,
-                'customer_type': 'Individual',
-                'place': property.location
-            }
-        )
-        
-        if not created and email and not customer.email:
-            customer.email = email
-            customer.save()
         
         lead = Lead.objects.filter(mobile_number=phone).first()
         
