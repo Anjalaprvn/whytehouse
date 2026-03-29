@@ -672,68 +672,88 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('contactForm');
-    const successMessage = document.getElementById('successMessage');
 
-    form.addEventListener('submit', function(e) {
-        // Clear previous errors
-        document.querySelectorAll('.form-group').forEach(group => {
-            group.classList.remove('error');
-        });
-        successMessage.classList.remove('show');
+    function setError(field) {
+        field.closest('.form-group').classList.add('error');
+    }
+    function clearError(field) {
+        field.closest('.form-group').classList.remove('error');
+    }
 
-        // Get form values
-        const name = form.querySelector('input[name="name"]').value.trim();
-        const email = form.querySelector('input[name="email"]').value.trim();
-        const phone = form.querySelector('input[name="phone"]').value.trim();
-        const subject = form.querySelector('select[name="subject"]').value;
-        const package_name = form.querySelector('input[name="package"]').value.trim();
-        const message = form.querySelector('textarea[name="message"]').value.trim();
-
-        let isValid = true;
-
-        // Validate name - required and only letters
-        if (!name || name.length < 2) {
-            form.querySelector('input[name="name"]').closest('.form-group').classList.add('error');
-            isValid = false;
-        } else {
-            const nameRegex = /^[a-zA-Z\s]+$/;
-            if (!nameRegex.test(name)) {
-                form.querySelector('input[name="name"]').closest('.form-group').classList.add('error');
-                isValid = false;
-            }
-        }
-
-        // Validate phone - required and exactly 10 digits
-        if (!phone || phone.length !== 10) {
-            form.querySelector('input[name="phone"]').closest('.form-group').classList.add('error');
-            isValid = false;
-        }
-
-        // If validation fails, prevent form submission
-        if (!isValid) {
-            e.preventDefault();
-            return false;
-        }
-
-        // If validation passes, allow normal form submission
-        // The form will submit normally to the server
-    });
-
-    // Prevent numbers in name field
-    form.querySelector('input[name="name"]').addEventListener('input', function() {
+    // Name - letters only, live
+    const nameInput = form.querySelector('input[name="name"]');
+    nameInput.addEventListener('input', function() {
         this.value = this.value.replace(/[0-9]/g, '');
+        if (!this.value.trim() || this.value.trim().length < 2 || !/^[a-zA-Z\s]+$/.test(this.value.trim())) {
+            setError(this);
+        } else {
+            clearError(this);
+        }
     });
 
-    // Phone number - only allow digits
+    // Email - live
+    const emailInput = form.querySelector('input[name="email"]');
+    emailInput.addEventListener('input', function() {
+        if (!this.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value.trim())) {
+            setError(this);
+        } else {
+            clearError(this);
+        }
+    });
+
+    // Phone - digits only, live
     const phoneInput = form.querySelector('input[name="phone"]');
     phoneInput.addEventListener('input', function() {
-        const value = this.value.replace(/\D/g, '');
-        this.value = value;
+        this.value = this.value.replace(/\D/g, '');
+        if (this.value.length !== 10) {
+            setError(this);
+        } else {
+            clearError(this);
+        }
     });
 
-    // Message - only allow letters, numbers, spaces, commas, and &
-    form.querySelector('textarea[name="message"]').addEventListener('input', function() {
-        this.value = this.value.replace(/[^a-zA-Z0-9 ,&]/g, '');
+    // Subject - live
+    const subjectSelect = form.querySelector('select[name="subject"]');
+    subjectSelect.addEventListener('change', function() {
+        if (!this.value) {
+            setError(this);
+        } else {
+            clearError(this);
+        }
+    });
+
+    // Message - live
+    const messageInput = form.querySelector('textarea[name="message"]');
+    messageInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^a-zA-Z0-9 ,&.!?'\-\n]/g, '');
+        if (!this.value.trim() || this.value.trim().length < 10) {
+            setError(this);
+        } else {
+            clearError(this);
+        }
+    });
+
+    // Submit - final check
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+
+        if (!nameInput.value.trim() || nameInput.value.trim().length < 2 || !/^[a-zA-Z\s]+$/.test(nameInput.value.trim())) {
+            setError(nameInput); isValid = false;
+        }
+        if (!emailInput.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
+            setError(emailInput); isValid = false;
+        }
+        if (phoneInput.value.length !== 10) {
+            setError(phoneInput); isValid = false;
+        }
+        if (!subjectSelect.value) {
+            setError(subjectSelect); isValid = false;
+        }
+        if (!messageInput.value.trim() || messageInput.value.trim().length < 10) {
+            setError(messageInput); isValid = false;
+        }
+
+        if (!isValid) e.preventDefault();
     });
 });
 </script>
