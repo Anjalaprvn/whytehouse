@@ -1,8 +1,6 @@
 from . import views
 from django.urls import path
 
-app_name = 'admin_panel'
-
 urlpatterns = [
     # Auth and main dashboard
     path('login/', views.login, name='login'), 
@@ -29,6 +27,7 @@ urlpatterns = [
     path('travel-packages/delete/<int:package_id>/', views.travel_package_delete, name='travel_package_delete'),
     path('travel-packages/toggle/<int:package_id>/', views.toggle_package_status, name='toggle_package_status'),
     path('api/get-next-package-id/', views.get_next_package_id, name='get_next_package_id'),
+    path('api/check-package-name/', views.check_package_name, name='check_package_name'),
     # Destinations
     path('destinations/', views.destination_list, name='destinations'),
     path('destinations/add/', views.add_destination, name='add_destination'),

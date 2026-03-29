@@ -23,7 +23,7 @@ from admin_panel.urls import sales_patterns, employee_patterns, blog_patterns, f
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(('user_panel.urls', 'user_panel'))),
-    path('', include(('admin_panel.urls', 'admin_panel'))),
+    path('', include(('admin_panel.urls', 'admin_panel'), namespace='admin_panel')),
     
     # Sales URLs 
     path('sales/', include((sales_patterns, 'sales'))),
