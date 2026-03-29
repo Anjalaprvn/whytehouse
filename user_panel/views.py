@@ -322,7 +322,7 @@ def contact(request):
         name = (request.POST.get('name') or '').strip()
         email = (request.POST.get('email') or '').strip()
         phone = (request.POST.get('phone') or '').strip()
-        country_code = (request.POST.get('country') or '+91').strip()
+        country_code = '+91'
         package = (request.POST.get('package') or '').strip()
         message = (request.POST.get('message') or '').strip()
         subject = (request.POST.get('subject') or 'General').strip()
@@ -396,7 +396,8 @@ def contact(request):
                 enquiry_type=enquiry_type,
                 message=message,
                 package=package,
-                remarks=f'Subject: {subject}\nPackage: {package}\nMessage: {message}'
+                package_name=package if subject in ('Package related', 'Holiday Package') else None,
+                remarks=f'Subject: {subject}\n{message}'
             )
             print(f"DEBUG: Created new lead {lead.id} with enquiry_type={enquiry_type}")
         except Exception as e:

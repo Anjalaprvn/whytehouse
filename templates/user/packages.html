@@ -216,10 +216,23 @@
 
     .categories-container{
         display:flex;
-        justify-content:center;
         align-items:center;
-        flex-wrap:wrap;
+        flex-wrap:nowrap;
         gap:12px;
+        overflow-x:auto;
+        padding-bottom:6px;
+        scrollbar-width:none;
+        -ms-overflow-style:none;
+        cursor:grab;
+    }
+
+    .categories-container::-webkit-scrollbar{
+        display:none;
+    }
+
+    .categories-container.dragging{
+        cursor:grabbing;
+        user-select:none;
     }
 
     .cat-pill{
@@ -536,15 +549,7 @@
         }
 
         .categories-container{
-            justify-content:flex-start;
-            overflow-x:auto;
-            flex-wrap:nowrap;
             padding-bottom:4px;
-            scrollbar-width:none;
-        }
-
-        .categories-container::-webkit-scrollbar{
-            display:none;
         }
 
         .cat-pill{
@@ -738,6 +743,26 @@ document.addEventListener('DOMContentLoaded', function () {
     const searchForm = document.getElementById('searchForm');
     const searchInput = document.getElementById('searchInput');
     const clearBtn = document.getElementById('clearSearch');
+
+    // Drag-to-scroll for categories
+    const catContainer = document.querySelector('.categories-container');
+    if (catContainer) {
+        let isDown = false, startX, scrollLeft;
+        catContainer.addEventListener('mousedown', e => {
+            isDown = true;
+            catContainer.classList.add('dragging');
+            startX = e.pageX - catContainer.offsetLeft;
+            scrollLeft = catContainer.scrollLeft;
+        });
+        catContainer.addEventListener('mouseleave', () => { isDown = false; catContainer.classList.remove('dragging'); });
+        catContainer.addEventListener('mouseup', () => { isDown = false; catContainer.classList.remove('dragging'); });
+        catContainer.addEventListener('mousemove', e => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - catContainer.offsetLeft;
+            catContainer.scrollLeft = scrollLeft - (x - startX);
+        });
+    }
 
     if (searchForm) {
         searchForm.addEventListener('submit', function (e) {
