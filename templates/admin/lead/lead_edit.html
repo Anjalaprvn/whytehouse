@@ -232,7 +232,11 @@
                     <select name="employee">
                         <option value="">Select Employee</option>
                         {% for employee in employees %}
-                            <option value="{{ employee.id }}" {% if lead.employee and lead.employee.id == employee.id %}selected{% endif %}>{{ employee.name }}</option>
+                            <option value="{{ employee.id }}"
+                                {% if lead.employee and lead.employee.id == employee.id %}selected
+                                {% elif not lead.employee and employee.id == next_emp_id %}selected{% endif %}>
+                                {{ employee.name }}{% if employee.id == next_emp_id and not lead.employee %} ← Next{% endif %}
+                            </option>
                         {% endfor %}
                     </select>
                 </div>
@@ -253,8 +257,9 @@
                 </div>
 
                 <div class="form-group full-width">
-                    <label>Message</label>
-                    <textarea name="message" readonly>{{ lead.message|default:'' }}</textarea>
+                    <label>Subject</label>
+                    <input type="text" id="lead_subject" name="lead_subject" readonly
+                           style="padding:12px 14px;border-radius:8px;border:1px solid #e2e8f0;background:#f0f0f0;font-size:14px;color:#666;cursor:not-allowed;">
                 </div>
 
                 <div class="form-group full-width">
@@ -273,6 +278,49 @@
 </div>
 
 <script>
+(function() {
+    const mobileField = document.getElementById('edit_mobile');
+    if (mobileField) {
+        let val = mobileField.value.replace(/^\+\d{1,3}/, '').replace(/\D/g, '');
+        mobileField.value = val;
+    }
+})();
+
+(function() {
+    const raw = `{{ lead.remarks|default:''|escapejs }}`;
+    let subject = '';
+    let message = '';
+
+    if (raw.startsWith('Subject:')) {
+        // Format: "Subject: xxx\nmessage text"
+        const lines = raw.split('\n');
+        for (const line of lines) {
+            if (line.startsWith('Subject:')) {
+                subject = line.replace('Subject:', '').trim();
+            } else if (line.trim()) {
+                message += (message ? '\n' : '') + line.trim();
+            }
+        }
+    } else if (raw.includes('Package:') && raw.includes('|')) {
+        // Format: "Package: xxx | Email: yyy | Guests: z | Start Date: ..."
+        subject = 'Package Booking';
+        message = raw.trim();
+    } else if (raw.includes('Message:')) {
+        // Format: "Package Inquiry: xxx\n\nMessage: yyy"
+        const msgMatch = raw.match(/Message:\s*([\s\S]*)/);
+        const subjectMatch = raw.match(/^([^\n]+)/);
+        subject = subjectMatch ? subjectMatch[1].trim() : '';
+        message = msgMatch ? msgMatch[1].trim() : raw.trim();
+    } else {
+        message = raw.trim();
+    }
+
+    const subjectField = document.getElementById('lead_subject');
+    if (subjectField) subjectField.value = subject || '—';
+
+    const remarksField = document.getElementById('edit_remarks');
+    if (remarksField) remarksField.value = message;
+})();
 function validateLetters(input, errorId) {
     const valid = /^[a-zA-Z\s]*$/.test(input.value);
     input.classList.toggle('invalid', !valid);
@@ -280,7 +328,7 @@ function validateLetters(input, errorId) {
 }
 
 function validateRemarks(input) {
-    const valid = /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
+    const valid = /^[a-zA-Z0-9\s!.,&@|:\-\/]*$/.test(input.value);
     input.classList.toggle('invalid', !valid);
     document.getElementById('remarks-error').style.display = valid ? 'none' : 'block';
 }
@@ -300,7 +348,7 @@ document.querySelector('form').addEventListener('submit', function(e) {
         valid = false;
     }
     const remarks = document.getElementById('edit_remarks');
-    if (remarks.value && !/^[a-zA-Z0-9\s!.,&]*$/.test(remarks.value)) {
+    if (remarks.value && !/^[a-zA-Z0-9\s!.,&@|:\-\/]*$/.test(remarks.value)) {
         remarks.classList.add('invalid');
         document.getElementById('remarks-error').style.display = 'block';
         valid = false;
