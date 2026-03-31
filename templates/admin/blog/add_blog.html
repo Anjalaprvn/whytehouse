@@ -308,6 +308,25 @@
       </div>
     </div>
 
+    {% if errors %}
+    <div class="error-summary" style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+      <h3 style="color: #991b1b; font-size: 16px; margin-bottom: 12px;">⚠️ Please fix the following errors:</h3>
+      <ul style="color: #7f1d1d; padding-left: 20px; line-height: 1.8;">
+        {% for field, error in errors.items %}
+          <li><strong>{{ field|title }}:</strong> {{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="message-alert" style="background: {% if message.tags == 'error' %}#fef2f2{% else %}#f0fdf4{% endif %}; border: 1px solid; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
     <form method="POST" enctype="multipart/form-data" {% if blog %}action="{% url 'blog:edit_blog' blog.id %}"{% endif %}>
       {% csrf_token %}
 
@@ -345,7 +364,7 @@
            <div class="row-2">
           <div class="field">
             <div class="label">Link to Package (Optional)</div>
-            <input type="text" name="package_id" id="package_id" placeholder="Package ID (e.g., PKG001)" value="{% if blog %}{{ blog.package_id }}{% endif %}" pattern="PKG\d{3}" title="Package ID must be in format PKG followed by 3 digits (e.g., PKG001)">
+            <input type="text" name="package_id" id="package_id" placeholder="Package ID (e.g., PKG001) or 'none'" value="{% if blog %}{{ blog.package_id }}{% endif %}" title="Package ID must be in format PKG followed by 3 digits (e.g., PKG001) or type 'none'">
             <div id="package-id-error" style="color: #ef4444; font-size: 13px; margin-top: 6px; display: none;"></div>
           </div>
         </div>
@@ -719,8 +738,8 @@ if (packageIdInput) {
         clearTimeout(packageValidationTimeout);
         const value = this.value.trim();
         
-        // Clear error if empty
-        if (!value) {
+        // Clear error if empty or "none"
+        if (!value || value.toLowerCase() === 'none') {
             packageIdError.style.display = 'none';
             packageIdError.textContent = '';
             return;
@@ -730,7 +749,7 @@ if (packageIdInput) {
         const formatRegex = /^PKG\d{3}$/i;
         if (!formatRegex.test(value)) {
             packageIdError.style.display = 'block';
-            packageIdError.textContent = 'Package ID must be in format PKG followed by 3 digits (e.g., PKG001)';
+            packageIdError.textContent = 'Package ID must be in format PKG followed by 3 digits (e.g., PKG001) or type "none"';
             return;
         }
         
@@ -767,10 +786,18 @@ if (packageIdInput) {
         if (value) {
             // Force immediate validation on blur
             clearTimeout(packageValidationTimeout);
+            
+            // Allow "none" as a valid value
+            if (value.toLowerCase() === 'none') {
+                packageIdError.style.display = 'none';
+                packageIdError.textContent = '';
+                return;
+            }
+            
             const formatRegex = /^PKG\d{3}$/i;
             if (!formatRegex.test(value)) {
                 packageIdError.style.display = 'block';
-                packageIdError.textContent = 'Package ID must be in format PKG followed by 3 digits (e.g., PKG001)';
+                packageIdError.textContent = 'Package ID must be in format PKG followed by 3 digits (e.g., PKG001) or type "none"';
                 packageIdError.style.color = '#ef4444';
             } else {
                 fetch(`/api/validate-package-id/${value.toUpperCase()}/`)

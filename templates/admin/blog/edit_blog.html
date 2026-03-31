@@ -349,7 +349,7 @@
           </div>
           <div class="field">
             <div class="label">Link to Package (Optional)</div>
-            <input type="text" name="package_id" id="package_id" placeholder="Package ID (e.g., PKG001)" value="{{ blog.package_id }}">
+            <input type="text" name="package_id" id="package_id" placeholder="Package ID (e.g., PKG001) or 'none'" value="{{ blog.package_id }}" title="Package ID must be in format PKG followed by 3 digits (e.g., PKG001) or type 'none'">
             <div id="package-id-error" style="color: #ef4444; font-size: 13px; margin-top: 6px; display: none;"></div>
           </div>
         </div>
@@ -763,10 +763,18 @@ if (packageIdInput) {
         if (value) {
             // Force immediate validation on blur
             clearTimeout(packageValidationTimeout);
+            
+            // Allow "none" as a valid value
+            if (value.toLowerCase() === 'none') {
+                packageIdError.style.display = 'none';
+                packageIdError.textContent = '';
+                return;
+            }
+            
             const formatRegex = /^PKG\d{3}$/i;
             if (!formatRegex.test(value)) {
                 packageIdError.style.display = 'block';
-                packageIdError.textContent = 'Package ID must be in format PKG followed by 3 digits (e.g., PKG001)';
+                packageIdError.textContent = 'Package ID must be in format PKG followed by 3 digits (e.g., PKG001) or type "none"';
                 packageIdError.style.color = '#ef4444';
             } else {
                 fetch(`/api/validate-package-id/${value.toUpperCase()}/`)

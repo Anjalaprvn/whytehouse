@@ -2260,7 +2260,7 @@ def send_invoice(request, invoice_id):
 Invoice No: {invoice.invoice_no}
 Customer: {customer_name}
 Invoice Date: {invoice.invoice_date.strftime("%d %b %Y") if invoice.invoice_date else "N/A"}
-Total Amount: ₹{invoice.total_amount}
+Total Amount: ₹{invoice.total}
 
 Thank you for your business!"""
         
@@ -2402,8 +2402,9 @@ def add_blog(request):
             if not publish_date:
                 errors['publish_date'] = "Publish date is required."
 
-            # Package ID is optional
-            package_id_value = (request.POST.get("package_id") or "").strip() or None
+            # Package ID is optional - handle "none" as empty/null
+            package_id_input = (request.POST.get("package_id") or "").strip()
+            package_id_value = None if not package_id_input or package_id_input.lower() == 'none' else package_id_input
 
             # If there are validation errors, return with form data and errors
             if errors:
@@ -2414,13 +2415,21 @@ def add_blog(request):
                 })
 
             # If no errors, proceed with creation
+            category_slug = request.POST.get("category", "").strip()
+            category_instance = None
+            if category_slug:
+                try:
+                    category_instance = BlogCategory.objects.get(slug=category_slug)
+                except BlogCategory.DoesNotExist:
+                    pass
+            
             blog = Blog.objects.create(
                 title=title,
                 slug=slug,
                 excerpt=excerpt,
                 content=content,
                 status=request.POST.get("status", "draft"),
-                category=request.POST.get("category", ""),
+                category=category_instance,
                 package_id=package_id_value,
                 author_name=author_name,
                 author_summary=author_summary,
@@ -2468,17 +2477,24 @@ def edit_blog(request, blog_id):
             hashtags_value = (request.POST.get("hashtags") or "").strip()
             
             # Get category slug from dropdown
-            category_slug = request.POST.get("category", "")
+            category_slug_input = request.POST.get("category", "")
+            category_instance = None
+            if category_slug_input:
+                try:
+                    category_instance = BlogCategory.objects.get(slug=category_slug_input)
+                except BlogCategory.DoesNotExist:
+                    pass
             
-            # Package ID is optional
-            package_id_value = (request.POST.get("package_id") or "").strip() or None
+            # Package ID is optional - handle "none" as empty/null
+            package_id_input = (request.POST.get("package_id") or "").strip()
+            package_id_value = None if not package_id_input or package_id_input.lower() == 'none' else package_id_input
             
             blog.title = title
             blog.slug = slug
             blog.excerpt = excerpt
             blog.content = content
             blog.status = request.POST.get("status", "draft")
-            blog.category = category_slug
+            blog.category = category_instance
             blog.package_id = package_id_value
 
             blog.author_name = author_name

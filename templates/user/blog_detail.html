@@ -151,6 +151,15 @@ body > nav {
     align-items: start;
 }
 
+/* Hide sidebar when no images */
+.main-container.no-gallery {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.main-container.no-gallery .image-sidebar {
+    display: none;
+}
+
 .article-wrapper {
     min-width: 0;
 }
@@ -665,6 +674,10 @@ body > nav {
         padding: 40px 25px;
     }
 
+    .main-container.no-gallery {
+        /* Already single column on mobile, but ensure sidebar is hidden */
+    }
+
     .image-sidebar {
         position: relative !important;
         top: 0 !important;
@@ -672,6 +685,11 @@ body > nav {
         height: auto;
         margin-top: 40px;
         box-shadow: var(--shadow-md);
+    }
+
+    .main-container.no-gallery .image-sidebar {
+        display: none !important;
+        margin-top: 0;
     }
 
     .image-gallery {
@@ -836,6 +854,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!images.length) {
         console.log('No images found in article body'); // Debug log
+        
+        // Hide the entire gallery sidebar
+        const mainContainer = document.querySelector('.main-container');
+        if (mainContainer) {
+            mainContainer.classList.add('no-gallery');
+        }
         
         // If database has images but we didn't find them, show a message
         if (debugImageCount && parseInt(debugImageCount.textContent) > 0) {
