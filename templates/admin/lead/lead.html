@@ -148,9 +148,18 @@ tbody tr:last-child td{border-bottom:none}
               <select name="employee" onchange="this.form.submit()" style="padding:6px 10px;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;color:#111;font-size:12px;outline:none;cursor:pointer;max-width:130px;">
                 <option value="">-- Unassigned --</option>
                 {% for emp in employees %}
-                  <option value="{{ emp.id }}" {% if lead.employee and lead.employee.id == emp.id %}selected{% endif %}>
-                    {{ emp.name }}{% if not lead.employee and emp.id == next_emp_id %} ←{% endif %}
-                  </option>
+                  {% if not lead.employee and emp.id == next_emp_id %}
+                    <option value="{{ emp.id }}">{{ emp.name }} ←</option>
+                  {% endif %}
+                {% endfor %}
+                {% for emp in employees %}
+                  {% if lead.employee and lead.employee.id == emp.id %}
+                    <option value="{{ emp.id }}" selected>{{ emp.name }}</option>
+                  {% elif not lead.employee and emp.id != next_emp_id %}
+                    <option value="{{ emp.id }}">{{ emp.name }}</option>
+                  {% elif lead.employee and lead.employee.id != emp.id %}
+                    <option value="{{ emp.id }}">{{ emp.name }}</option>
+                  {% endif %}
                 {% endfor %}
               </select>
             </form>
