@@ -235,18 +235,28 @@
         animation: slideOut 0.3s ease forwards;
     }
 
+    .field-error {
+        display: none;
+        font-size: 11px;
+        color: #e74c3c;
+        margin-top: 5px;
+        font-weight: 500;
+    }
+
+    .form-group input.invalid,
+    .form-group textarea.invalid {
+        border-color: #e74c3c;
+        background: #fff5f5;
+    }
+
+    .form-group input.valid,
+    .form-group textarea.valid {
+        border-color: #27ae60;
+    }
+
     .back-link {
         display: inline-block;
         margin-bottom: 30px;
-        color: #d4a017;
-        text-decoration: none;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-
-    .back-link:hover {
-        color: #b88a14;
-    }
 
     /* =========================
        RESPONSIVE
@@ -313,21 +323,6 @@
         {% endfor %}
     {% endif %}
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const successMessage = document.getElementById('successMessage');
-            if (successMessage && successMessage.classList.contains('success')) {
-                // Auto-hide after 3 seconds
-                setTimeout(function() {
-                    successMessage.classList.add('fade-out');
-                    setTimeout(function() {
-                        successMessage.style.display = 'none';
-                    }, 300); // Wait for animation to complete
-                }, 3000); // 3 seconds
-            }
-        });
-    </script>
-
     <!-- Form -->
     {% if not success %}
     <div class="form-card">
@@ -337,22 +332,26 @@
             <div class="form-group">
                 <label for="name">Full Name <span class="required">*</span></label>
                 <input type="text" id="name" name="name" required placeholder="Your full name">
+                <div class="field-error" id="name-error">Only letters and spaces are allowed.</div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label for="phone">Phone Number <span class="required">*</span></label>
-                    <input type="tel" id="phone" name="phone" required placeholder="+91 XXXXX XXXXX">
+                    <input type="tel" id="phone" name="phone" required placeholder="10-digit number" maxlength="10">
+                    <div class="field-error" id="phone-error">Enter a valid 10-digit number.</div>
                 </div>
                 <div class="form-group">
                     <label for="email">Email Address <span class="required">*</span></label>
                     <input type="email" id="email" name="email" required placeholder="your@email.com">
+                    <div class="field-error" id="email-error">Enter a valid email address.</div>
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="message">Message <span class="required">*</span></label>
                 <textarea id="message" name="message" required placeholder="Tell us about your requirements, preferences, or any special requests..."></textarea>
+                <div class="field-error" id="message-error">Message must be at least 10 characters.</div>
             </div>
 
             <button type="submit" class="submit-btn">Submit Inquiry</button>
@@ -360,5 +359,68 @@
     </div>
     {% endif %}
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nameInput  = document.getElementById('name');
+    const phoneInput = document.getElementById('phone');
+    const emailInput = document.getElementById('email');
+    const msgInput   = document.getElementById('message');
+
+    function showErr(input, errId, msg) {
+        input.classList.add('invalid'); input.classList.remove('valid');
+        const el = document.getElementById(errId);
+        if (el) { el.textContent = msg; el.style.display = 'block'; }
+    }
+    function clearErr(input, errId) {
+        input.classList.remove('invalid'); input.classList.add('valid');
+        const el = document.getElementById(errId);
+        if (el) el.style.display = 'none';
+    }
+
+    nameInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
+        if (!this.value.trim() || this.value.trim().length < 2)
+            showErr(this, 'name-error', 'Name must be at least 2 characters.');
+        else clearErr(this, 'name-error');
+    });
+
+    phoneInput.addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '');
+        if (this.value.length !== 10)
+            showErr(this, 'phone-error', 'Enter a valid 10-digit number.');
+        else clearErr(this, 'phone-error');
+    });
+
+    emailInput.addEventListener('input', function() {
+        if (!this.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value))
+            showErr(this, 'email-error', 'Enter a valid email address.');
+        else clearErr(this, 'email-error');
+    });
+
+    msgInput.addEventListener('input', function() {
+        if (!this.value.trim() || this.value.trim().length < 10)
+            showErr(this, 'message-error', 'Message must be at least 10 characters.');
+        else clearErr(this, 'message-error');
+    });
+
+    document.querySelector('form').addEventListener('submit', function(e) {
+        let valid = true;
+        if (!nameInput.value.trim() || nameInput.value.trim().length < 2) { showErr(nameInput, 'name-error', 'Name must be at least 2 characters.'); valid = false; }
+        if (phoneInput.value.length !== 10) { showErr(phoneInput, 'phone-error', 'Enter a valid 10-digit number.'); valid = false; }
+        if (!emailInput.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value)) { showErr(emailInput, 'email-error', 'Enter a valid email address.'); valid = false; }
+        if (!msgInput.value.trim() || msgInput.value.trim().length < 10) { showErr(msgInput, 'message-error', 'Message must be at least 10 characters.'); valid = false; }
+        if (!valid) e.preventDefault();
+    });
+
+    const successMessage = document.getElementById('successMessage');
+    if (successMessage && successMessage.classList.contains('success')) {
+        setTimeout(function() {
+            successMessage.classList.add('fade-out');
+            setTimeout(function() { successMessage.style.display = 'none'; }, 300);
+        }, 3000);
+    }
+});
+</script>
 
 {% endblock %}

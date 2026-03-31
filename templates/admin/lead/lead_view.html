@@ -52,6 +52,13 @@
                 <div class="info-value">{{ lead.mobile_number }}</div>
             </div>
 
+            {% if lead.alternate_number %}
+            <div class="info-row">
+                <div class="info-label">Alternate Number</div>
+                <div class="info-value">{{ lead.alternate_number }}</div>
+            </div>
+            {% endif %}
+
             <div class="info-row">
                 <div class="info-label">Place</div>
                 <div class="info-value">{{ lead.place|default:"Not provided" }}</div>
