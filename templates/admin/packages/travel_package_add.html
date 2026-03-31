@@ -86,10 +86,8 @@
             <div class="grid-row">
                 <div>
                     <label>Category <span class="required-star">*</span></label>
-                    <select name="category" id="category" required class="form-control">
-                        <option value="Domestic" {% if default_category == 'Domestic' or package.category == 'Domestic' %}selected{% endif %}>Domestic</option>
-                        <option value="International" {% if default_category == 'International' or package.category == 'International' %}selected{% endif %}>International</option>
-                    </select>
+                    <input type="text" value="{{ default_category }}" readonly class="form-control" style="background-color: #f3f4f6; cursor: not-allowed;">
+                    <input type="hidden" name="category" value="{{ default_category }}">
                 </div>
 
                 <div>
