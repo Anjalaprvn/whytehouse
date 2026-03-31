@@ -323,13 +323,41 @@ class Resort(models.Model):
         ('Active', 'Active'),
         ('Inactive', 'Inactive'),
     ]
-    
+
+    # Basic Information
     resort_name = models.CharField(max_length=255, unique=True)
-    location = models.CharField(max_length=255)
-    contact_person = models.CharField(max_length=100, blank=True, null=True)
-    contact_number = models.CharField(max_length=20, blank=True, null=True)
+    resort_place = models.CharField(max_length=255)
+    full_address = models.TextField(blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    pin_code = models.CharField(max_length=10, blank=True, null=True)
+    location_map_link = models.URLField(blank=True, null=True, help_text="Google Map Link")
+
+    # Contact Details
+    mobile = models.CharField(max_length=15, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
+    cc_emails = models.TextField(blank=True, null=True, help_text="Comma-separated CC email addresses")
+
+    # Owner / Legal Details
+    owner_manager_name = models.CharField(max_length=200, blank=True, null=True)
+    gst_number = models.CharField(max_length=15, blank=True, null=True)
+    business_registration_number = models.CharField(max_length=50, blank=True, null=True)
+    registration_certificate = models.FileField(upload_to='resorts/certificates/', blank=True, null=True)
+    id_proof = models.FileField(upload_to='resorts/id_proofs/', blank=True, null=True, help_text="Aadhaar/PAN Upload")
+
+    # Property Details
+    description = models.TextField(blank=True, null=True)
+    number_of_rooms = models.PositiveIntegerField(blank=True, null=True)
+    amenities = models.TextField(blank=True, null=True, help_text="Comma-separated amenities")
+    resort_images = models.FileField(upload_to='resorts/images/', blank=True, null=True, help_text="Multiple images can be uploaded separately")
+    resort_video = models.FileField(upload_to='resorts/videos/', blank=True, null=True)
+
+    # Online Presence (Optional)
+    website_url = models.URLField(blank=True, null=True)
+    social_media_links = models.TextField(blank=True, null=True, help_text="Comma-separated social media links")
+    google_listing_link = models.URLField(blank=True, null=True)
+
+    # Status and timestamps
     status = models.CharField(
         max_length=20,
         choices=RESORT_STATUS_CHOICES,
@@ -337,12 +365,91 @@ class Resort(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
         return self.resort_name
-    
+
+    @property
+    def amenity_list(self):
+        if self.amenities:
+            return [a.strip() for a in self.amenities.split(",") if a.strip()]
+        return []
+
+    @property
+    def cc_emails_list(self):
+        if self.cc_emails:
+            return [email.strip() for email in self.cc_emails.split(",") if email.strip()]
+        return []
+
+    @property
+    def social_media_list(self):
+        if self.social_media_links:
+            return [link.strip() for link in self.social_media_links.split(",") if link.strip()]
+        return []
+
     class Meta:
         ordering = ['-created_at']
+
+
+class ResortRoomType(models.Model):
+    resort = models.ForeignKey('Resort', on_delete=models.CASCADE, related_name='room_types')
+    room_type_name = models.CharField(max_length=150)
+    total_rooms = models.PositiveIntegerField(default=0)
+    price_per_night = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    max_guests = models.PositiveIntegerField(default=1)
+    room_size = models.CharField(max_length=100, blank=True, null=True)
+    amenities = models.TextField(blank=True, null=True, help_text='Comma-separated amenity values (AC, WiFi, Balcony, etc.)')
+    room_images = models.FileField(upload_to='resorts/room_types/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.room_type_name} ({self.resort.resort_name})"
+
+    @property
+    def amenities_list(self):
+        if self.amenities:
+            return [x.strip() for x in self.amenities.split(',') if x.strip()]
+        return []
+
+    @property
+    def room_type_image_list(self):
+        # Support both new multiple room type image records and legacy single room_images field
+        if self.room_type_images.exists():
+            return self.room_type_images.all()
+        if self.room_images:
+            class LegacyImageObject:
+                def __init__(self, image):
+                    self.image = image
+            return [LegacyImageObject(self.room_images)]
+        return []
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+class ResortRoomTypeImage(models.Model):
+    room_type = models.ForeignKey('ResortRoomType', on_delete=models.CASCADE, related_name='room_type_images')
+    image = models.ImageField(upload_to='resorts/room_type_images/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.room_type.room_type_name} - {self.image.name}"
+
+    class Meta:
+        ordering = ['-uploaded_at']
+
+
+class ResortImage(models.Model):
+    resort = models.ForeignKey('Resort', on_delete=models.CASCADE, related_name='resort_images_list')
+    image = models.ImageField(upload_to='resorts/images/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.resort.resort_name} - {self.image.name}"
+
+    class Meta:
+        ordering = ['-uploaded_at']
 
 
 class Meal(models.Model):
@@ -351,9 +458,27 @@ class Meal(models.Model):
         ('Unavailable', 'Unavailable'),
     ]
     
+    MEAL_TYPE_CHOICES = [
+        ('veg', 'Vegetarian'),
+        ('non-veg', 'Non-Vegetarian'),
+        ('both', 'Both'),
+    ]
+    
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True, null=True)
     included_meals = models.CharField(max_length=500, blank=True, null=True)
+    meal_type = models.CharField(
+        max_length=20,
+        choices=MEAL_TYPE_CHOICES,
+        default='both'
+    )
+    price_per_person = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="Price per person in INR"
+    )
     status = models.CharField(
         max_length=20,
         choices=MEAL_STATUS_CHOICES,
@@ -371,70 +496,6 @@ class Meal(models.Model):
             return [m.strip() for m in self.included_meals.split(',') if m.strip()]
         return []
     
-    class Meta:
-        ordering = ['-created_at']
-
-
-class Voucher(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True)
-
-    voucher_no = models.CharField(max_length=50, unique=True, blank=True)
-    voucher_date = models.DateField(null=True, blank=True)
-
-    sales_person = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True)
-    resort = models.ForeignKey(Resort, on_delete=models.SET_NULL, null=True, blank=True)
-
-    checkin_date = models.DateField(null=True, blank=True)
-    checkout_date = models.DateField(null=True, blank=True)
-
-    # ✅ stop migration prompts
-    checkin_time = models.TimeField(default=time(0, 0))
-    checkout_time = models.TimeField(default=time(0, 0))
-
-    adults = models.IntegerField(default=0)
-    children = models.IntegerField(default=0)
-    nights = models.IntegerField(default=1)
-
-    # ✅ safer (avoid non-null issues)
-    pax_notes = models.TextField(blank=True, default="")
-
-    room_type = models.CharField(max_length=100, blank=True, default="")
-    no_of_rooms = models.IntegerField(default=1)
-
-    meals_plan = models.ForeignKey(Meal, on_delete=models.SET_NULL, null=True, blank=True)
-    bank_account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True)
-
-    package_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    resort_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    received = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    pending = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    from_whytehouse = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    profit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-
-    note_for_resort = models.TextField(max_length=130, blank=True, default="")
-    note_for_guest = models.TextField(max_length=130, blank=True, default="")
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.voucher_no} - {self.customer.display_name if self.customer else 'N/A'}"
-
-    def save(self, *args, **kwargs):
-        # Auto-generate voucher number if not provided
-        if not self.voucher_no:
-            last_voucher = Voucher.objects.filter(voucher_no__startswith='VCH').order_by('-voucher_no').first()
-            if last_voucher and last_voucher.voucher_no:
-                try:
-                    last_num = int(last_voucher.voucher_no[3:])
-                    self.voucher_no = f'VCH{str(last_num + 1).zfill(3)}'
-                except (ValueError, IndexError):
-                    self.voucher_no = 'VCH001'
-            else:
-                self.voucher_no = 'VCH001'
-        super().save(*args, **kwargs)
-
     class Meta:
         ordering = ['-created_at']
 

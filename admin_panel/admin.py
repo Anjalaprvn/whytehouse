@@ -1,8 +1,8 @@
 from django.contrib import admin
 from .models import (
-    Lead, Inquiry, TravelPackage, Destination, Property, 
+    Lead, Inquiry, TravelPackage, Destination, Property,
     BlogCategory, Blog, BlogImage, Feedback, FeedbackImage,
-    Customer, Employee, Account, Resort, Meal, Voucher, Invoice
+    Customer, Employee, Account, Resort, ResortRoomType, ResortRoomTypeImage, ResortImage, Meal, Invoice
 )
 
 # Inquiry Admin Inline
@@ -137,9 +137,33 @@ class AccountAdmin(admin.ModelAdmin):
 # Resort Admin
 @admin.register(Resort)
 class ResortAdmin(admin.ModelAdmin):
-    list_display = ('resort_name', 'location', 'contact_person', 'status')
+    list_display = ('resort_name', 'resort_place', 'owner_manager_name', 'status')
     list_filter = ('status',)
-    search_fields = ('resort_name', 'location')
+    search_fields = ('resort_name', 'resort_place')
+
+# Resort Room Type Admin
+@admin.register(ResortRoomType)
+class ResortRoomTypeAdmin(admin.ModelAdmin):
+    list_display = ('room_type_name', 'resort', 'total_rooms', 'price_per_night', 'max_guests')
+    list_filter = ('resort',)
+    search_fields = ('room_type_name', 'resort__resort_name')
+
+
+# Resort Room Type Image Admin
+@admin.register(ResortRoomTypeImage)
+class ResortRoomTypeImageAdmin(admin.ModelAdmin):
+    list_display = ('room_type', 'image', 'uploaded_at')
+    list_filter = ('room_type', 'uploaded_at')
+    search_fields = ('room_type__room_type_name',)
+
+
+# Resort Image Admin
+@admin.register(ResortImage)
+class ResortImageAdmin(admin.ModelAdmin):
+    list_display = ('resort', 'image', 'uploaded_at')
+    list_filter = ('resort', 'uploaded_at')
+    search_fields = ('resort__resort_name',)
+
 
 # Meal Admin
 @admin.register(Meal)
@@ -147,13 +171,6 @@ class MealAdmin(admin.ModelAdmin):
     list_display = ('name', 'status')
     list_filter = ('status',)
     search_fields = ('name',)
-
-# Voucher Admin
-@admin.register(Voucher)
-class VoucherAdmin(admin.ModelAdmin):
-    list_display = ('voucher_no', 'customer', 'resort', 'checkin_date', 'checkout_date')
-    list_filter = ('checkin_date', 'checkout_date')
-    search_fields = ('voucher_no', 'customer__display_name')
 
 # Invoice Admin
 @admin.register(Invoice)

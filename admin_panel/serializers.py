@@ -15,7 +15,6 @@ from .models import (
     Inquiry,
     Employee,
     Resort,
-    Voucher,
     Invoice,
     Feedback,
     FeedbackImage,
@@ -895,65 +894,6 @@ class ResortSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         validated_data.pop('cc_emails', None)
         return super().update(instance, validated_data)
-
-
-# ==================== VOUCHER SERIALIZER ====================
-class VoucherSerializer(serializers.ModelSerializer):
-    customer_name = serializers.CharField(source="customer.display_name", read_only=True)
-    sales_person_name = serializers.CharField(source="sales_person.name", read_only=True)
-    resort_name = serializers.CharField(source="resort.resort_name", read_only=True)
-    meals_plan_name = serializers.CharField(source="meals_plan.name", read_only=True)
-    bank_account_name = serializers.CharField(source="bank_account.account_name", read_only=True)
-
-    class Meta:
-        model = Voucher
-        fields = [
-            "id",
-            "customer",
-            "customer_name",
-            "voucher_no",
-            "voucher_date",
-            "sales_person",
-            "sales_person_name",
-            "resort",
-            "resort_name",
-            "checkin_date",
-            "checkout_date",
-            "checkin_time",
-            "checkout_time",
-            "adults",
-            "children",
-            "nights",
-            "pax_notes",
-            "room_type",
-            "no_of_rooms",
-            "meals_plan",
-            "meals_plan_name",
-            "bank_account",
-            "bank_account_name",
-            "package_price",
-            "resort_price",
-            "total_amount",
-            "received",
-            "pending",
-            "from_whytehouse",
-            "profit",
-            "note_for_resort",
-            "note_for_guest",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = [
-            "id",
-            "voucher_no",
-            "created_at",
-            "updated_at",
-            "customer_name",
-            "sales_person_name",
-            "resort_name",
-            "meals_plan_name",
-            "bank_account_name",
-        ]
 
 
 # ==================== INVOICE SERIALIZER ====================

@@ -154,10 +154,87 @@
       margin-bottom:10px;
     }
 
-    .meals-grid{
-      display:grid;
-      grid-template-columns: repeat(2, minmax(240px, 1fr));
-      gap:16px;
+    .meals-categories{
+      display:flex;
+      flex-direction:column;
+      gap:20px;
+      margin-top:16px;
+    }
+
+    .meal-category{
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:#fff;
+      padding:16px;
+      box-shadow:0 4px 12px rgba(17,19,24,.04);
+    }
+
+    .category-line{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:12px;
+      padding-bottom:8px;
+      border-bottom:1px solid var(--border);
+    }
+
+    .category-title{
+      font-size:16px;
+      font-weight:600;
+      color:var(--text);
+      margin:0;
+    }
+
+    .add-category-btn{
+      background:var(--accent);
+      color:#111;
+      border:none;
+      border-radius:8px;
+      padding:6px 12px;
+      font-size:13px;
+      font-weight:600;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+
+    .add-category-btn:hover{
+      transform:translateY(-1px);
+      box-shadow:0 4px 12px rgba(212,164,47,.3);
+    }
+
+    .meals-list{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .meal-option{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 12px;
+      border-radius:8px;
+      cursor:pointer;
+      transition:.2s ease;
+      border:1px solid transparent;
+    }
+
+    .meal-option:hover{
+      background:#f8f9fa;
+      border-color:#e9ecef;
+    }
+
+    .meal-option input{
+      width:16px;
+      height:16px;
+      accent-color:var(--accent);
+      margin:0;
+    }
+
+    .meal-option span{
+      font-size:14px;
+      font-weight:500;
+      color:var(--text);
     }
 
     .meal-option{
@@ -295,53 +372,126 @@
             <span class="field-err" id="err_meal_description"></span>
           </div>
 
+          <div class="field">
+            <label>Meal Type</label>
+            <select class="input" name="meal_type" id="meal_type">
+              <option value="both" selected>Both (Vegetarian & Non-Vegetarian)</option>
+              <option value="veg">Vegetarian Only</option>
+              <option value="non-veg">Non-Vegetarian Only</option>
+            </select>
+            <span class="field-err" id="err_meal_type"></span>
+          </div>
+
+          <div class="field">
+            <label>Price Per Person (INR)</label>
+            <input
+              class="input"
+              type="number"
+              id="price_per_person"
+              name="price_per_person"
+              placeholder="e.g., 500.00"
+              step="0.01"
+              min="0"
+              value="{{ form.price_per_person.value|default_if_none:'' }}"
+            />
+            <span class="field-err" id="err_price_per_person"></span>
+          </div>
+
           <div class="meals-block">
             <div class="meals-title">Included Meals</div>
 
-            <div class="add-meal-row">
-              <input
-                type="text"
-                id="newMealItem"
-                class="input add-meal-input"
-                placeholder="Enter new meal item"
-              />
-              <button type="button" id="addMealBtn" class="add-meal-btn">Add Item</button>
-            </div>
+           
 
             <div id="mealError" class="meal-error">Please enter a valid unique meal item.</div>
 
-            <div class="meals-grid" id="mealsGrid">
+            <div class="meals-categories">
+              <!-- Morning Meals -->
+              <div class="meal-category">
+                <div class="category-line">
+                  <h4 class="category-title">Morning</h4>
+                  <div class="add-controls">
+                    <input type="text" class="input category-input" id="morning-input" placeholder="Add custom meal" style="width:150px;margin-right:8px;">
+                    <button type="button" class="add-category-btn" data-category="morning">Add</button>
+                  </div>
+                </div>
+                <div class="meals-list" id="morning-meals">
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="Breakfast">
+                    <span>Breakfast</span>
+                  </label>
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="Morning Snacks">
+                    <span>Morning Snacks</span>
+                  </label>
+                </div>
+              </div>
 
-              <label class="meal-option">
-                <input type="checkbox" name="included_meals" value="Breakfast">
-                <span>Breakfast</span>
-              </label>
+              <!-- Afternoon Meals -->
+              <div class="meal-category">
+                <div class="category-line">
+                  <h4 class="category-title">Afternoon</h4>
+                  <div class="add-controls">
+                    <input type="text" class="input category-input" id="afternoon-input" placeholder="Add custom meal" style="width:150px;margin-right:8px;">
+                    <button type="button" class="add-category-btn" data-category="afternoon">Add</button>
+                  </div>
+                </div>
+                <div class="meals-list" id="afternoon-meals">
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="Lunch">
+                    <span>Lunch</span>
+                  </label>
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="High Tea">
+                    <span>High Tea</span>
+                  </label>
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="Evening Snacks">
+                    <span>Evening Snacks</span>
+                  </label>
+                </div>
+              </div>
 
-              <label class="meal-option">
-                <input type="checkbox" name="included_meals" value="Lunch">
-                <span>Lunch</span>
-              </label>
+              <!-- Night Meals -->
+              <div class="meal-category">
+                <div class="category-line">
+                  <h4 class="category-title">Night</h4>
+                  <div class="add-controls">
+                    <input type="text" class="input category-input" id="night-input" placeholder="Add custom meal" style="width:150px;margin-right:8px;">
+                    <button type="button" class="add-category-btn" data-category="night">Add</button>
+                  </div>
+                </div>
+                <div class="meals-list" id="night-meals">
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="Dinner">
+                    <span>Dinner</span>
+                  </label>
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="Late Night Snacks">
+                    <span>Late Night Snacks</span>
+                  </label>
+                </div>
+              </div>
 
-              <label class="meal-option">
-                <input type="checkbox" name="included_meals" value="Dinner">
-                <span>Dinner</span>
-              </label>
-
-              <label class="meal-option">
-                <input type="checkbox" name="included_meals" value="Snacks">
-                <span>Snacks</span>
-              </label>
-
-              <label class="meal-option">
-                <input type="checkbox" name="included_meals" value="High Tea">
-                <span>High Tea</span>
-              </label>
-
-              <label class="meal-option">
-                <input type="checkbox" name="included_meals" value="All Meals">
-                <span>All Meals</span>
-              </label>
-
+              <!-- Special Meals -->
+              <div class="meal-category">
+                <div class="category-line">
+                  <h4 class="category-title">Special</h4>
+                  <div class="add-controls">
+                    <input type="text" class="input category-input" id="special-input" placeholder="Add custom meal" style="width:150px;margin-right:8px;">
+                    <button type="button" class="add-category-btn" data-category="special">Add</button>
+                  </div>
+                </div>
+                <div class="meals-list" id="special-meals">
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="All Meals">
+                    <span>All Meals</span>
+                  </label>
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="Welcome Drink">
+                    <span>Welcome Drink</span>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -396,6 +546,67 @@
       else showErr('meal_description', '');
     });
 
+    // Price validation
+    document.getElementById('price_per_person').addEventListener('input', function() {
+      const val = this.value.trim();
+      if (!val) { showErr('price_per_person', ''); return; }
+      const price = parseFloat(val);
+      if (isNaN(price) || price < 0) {
+        showErr('price_per_person', 'Please enter a valid positive price.');
+      } else {
+        showErr('price_per_person', '');
+      }
+    });
+
+    // Add button functionality for categories
+    document.querySelectorAll('.add-category-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const category = this.getAttribute('data-category');
+        const input = document.getElementById(category + '-input');
+        const mealsList = document.getElementById(category + '-meals');
+        
+        const mealName = input.value.trim();
+        if (mealName) {
+          // Check if meal already exists
+          const existingMeals = Array.from(mealsList.querySelectorAll('input[type="checkbox"]')).map(cb => cb.value);
+          if (existingMeals.includes(mealName)) {
+            showErr('meal_name', 'This meal item already exists in this category.');
+            return;
+          }
+          
+          // Create checkbox for the new meal
+          const label = document.createElement('label');
+          label.className = 'meal-option';
+          label.innerHTML = `
+            <input type="checkbox" name="included_meals" value="${mealName}" checked>
+            <span>${mealName}</span>
+          `;
+          mealsList.appendChild(label);
+          
+          // Clear input
+          input.value = '';
+          input.focus();
+          
+          // Clear any error message
+          showErr('meal_name', '');
+        } else {
+          showErr('meal_name', 'Please enter a meal name.');
+        }
+      });
+    });
+
+    // Handle Enter key in category inputs
+    document.querySelectorAll('.category-input').forEach(input => {
+      input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const category = this.id.replace('-input', '');
+          const btn = document.querySelector(`[data-category="${category}"]`);
+          btn.click();
+        }
+      });
+    });
+
     document.getElementById('mealForm').addEventListener('submit', function(e) {
       let valid = true;
 
@@ -409,6 +620,15 @@
       if (desc && !/^[A-Za-z0-9\s.,!&]+$/.test(desc)) {
         showErr('meal_description', 'Description may only contain letters, numbers, spaces, . , ! &');
         valid = false;
+      }
+
+      const price = document.getElementById('price_per_person').value.trim();
+      if (price) {
+        const priceNum = parseFloat(price);
+        if (isNaN(priceNum) || priceNum < 0) {
+          showErr('price_per_person', 'Please enter a valid positive price.');
+          valid = false;
+        }
       }
 
       if (!valid) e.preventDefault();

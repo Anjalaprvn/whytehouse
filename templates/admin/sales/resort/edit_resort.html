@@ -22,12 +22,13 @@
       padding:30px 40px 70px;
     }
 
+    /* Header */
     .header{
       display:flex;
       align-items:flex-start;
       gap:14px;
       margin-bottom:18px;
-      max-width:1100px;
+      max-width:1200px;
     }
 
     .back-btn{
@@ -51,21 +52,26 @@
       font-size:15px;
     }
 
+    /* Card */
     .card{
-      max-width:1100px;
+      max-width:1200px;
       background:var(--card);
       border:1px solid var(--border);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
       padding:24px;
+      margin-bottom:20px;
     }
 
     .card h3{
       font-size:18px;
       font-weight:600;
       margin-bottom:18px;
+      padding-bottom:12px;
+      border-bottom:1px solid var(--border);
     }
 
+    /* Grid */
     .grid{
       display:grid;
       grid-template-columns:1fr 1fr;
@@ -81,7 +87,7 @@
     }
     .req{color:#d13b3b;margin-left:4px}
 
-    input, select, textarea{
+    input, textarea, select {
       width:100%;
       border:1px solid transparent;
       background:var(--input);
@@ -93,15 +99,20 @@
       font-family:"Poppins",sans-serif;
     }
 
-    input:focus, select:focus, textarea:focus{
+    input:focus, textarea:focus, select:focus {
       background:#fff;
       border-color:#d9dbe4;
       box-shadow:0 0 0 4px rgba(212,164,47,.12);
     }
 
-    input.input-error, select.input-error, textarea.input-error{
+    input.input-error, textarea.input-error, select.input-error {
       border-color:#d13b3b;
       background:#fff;
+    }
+
+    textarea{
+      resize:vertical;
+      min-height:80px;
     }
 
     .field-error{
@@ -110,28 +121,55 @@
       margin-top:5px;
     }
 
-    textarea{
-      min-height:100px;
-      resize:vertical;
-    }
-
-    .cc-row{
+    /* File upload */
+    .file-preview{
       display:flex;
+      align-items:center;
       gap:10px;
+      margin-bottom:10px;
+      padding:10px;
+      background:rgba(212,164,47,.1);
+      border-radius:8px;
     }
-    .cc-row input{flex:1}
 
-    .btn-add{
-      background:var(--accent);
-      border:none;
+    .file-preview span{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .file-upload{
+      position:relative;
+      border:2px dashed var(--border);
       border-radius:12px;
-      padding:12px 18px;
-      font-weight:600;
+      padding:20px;
+      text-align:center;
       cursor:pointer;
-      white-space:nowrap;
-      box-shadow:0 10px 18px rgba(212,164,47,.22);
+      transition:.2s ease;
     }
 
+    .file-upload:hover{
+      border-color:var(--accent);
+      background:rgba(212,164,47,.05);
+    }
+
+    .file-upload input[type="file"]{
+      display:none;
+    }
+
+    .file-upload span{
+      display:block;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .file-name{
+      color:green;
+      font-size:12px;
+      margin-top:8px;
+      font-weight:500;
+    }
+
+    /* Footer buttons */
     .btn-row{
       display:flex;
       gap:14px;
@@ -154,26 +192,10 @@
       box-shadow:0 10px 18px rgba(212,164,47,.22);
     }
 
-    .help-fab{
-      position:fixed;
-      right:18px;
-      bottom:18px;
-      width:44px;height:44px;
-      border-radius:14px;
-      border:1px solid var(--border);
-      background:#fff;
-      display:grid;
-      place-items:center;
-      box-shadow:0 14px 26px rgba(0,0,0,.10);
-      cursor:pointer;
-    }
-    .help-fab span{font-weight:700;color:#2a2d36}
-
     @media (max-width: 720px){
       .main{padding:22px 16px 60px}
       .grid{grid-template-columns:1fr}
       .title h1{font-size:32px}
-      .cc-row{flex-direction:column}
     }
 </style>
 {% endblock %}
@@ -194,15 +216,20 @@
       </div>
     </div>
 
-    <section class="card">
-      <h3>Resort Information</h3>
+    {% if error %}
+      <div class="card" style="background:#fff5f5;border-color:#ffcccc;">
+        <p style="color:#d13b3b;">{{ error }}</p>
+      </div>
+    {% endif %}
 
-      <form method="post">
-        {% csrf_token %}
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
 
+      <!-- BASIC INFORMATION -->
+      <section class="card">
+        <h3>🔹 Basic Information</h3>
         <div class="grid">
-          <!-- Resort Name -->
-          <div class="field span-2">
+          <div class="field">
             <label>Resort Name <span class="req">*</span></label>
             <input type="text" name="resort_name" placeholder="Paradise Beach Resort" required
               value="{{ form_data.resort_name|default:resort.resort_name }}"
@@ -210,228 +237,473 @@
             {% if errors.resort_name %}<div class="field-error">{{ errors.resort_name }}</div>{% endif %}
           </div>
 
-          <!-- Resort Place -->
-          <div class="field span-2">
+          <div class="field">
             <label>Resort Place <span class="req">*</span></label>
-            <input type="text" name="resort_place" placeholder="Goa, India" required
-              value="{{ form_data.resort_place|default:resort.location }}"
+            <input type="text" name="resort_place" placeholder="e.g., Goa" required
+              value="{{ form_data.resort_place|default:resort.resort_place }}"
               class="{% if errors.resort_place %}input-error{% endif %}">
             {% if errors.resort_place %}<div class="field-error">{{ errors.resort_place }}</div>{% endif %}
           </div>
 
-          <!-- Mobile -->
           <div class="field span-2">
-            <label>Mobile</label>
-            <input type="text" name="mobile" id="mobile" placeholder="9876543210" maxlength="10"
-              value="{{ form_data.mobile|default:resort.contact_number }}">
-            <div class="field-error" id="mobile-error" style="display:none"></div>
+            <label>Full Address</label>
+            <textarea name="full_address" placeholder="Enter complete address">{{ form_data.full_address|default:resort.full_address }}</textarea>
           </div>
 
-          <!-- Email -->
-          <div class="field span-2">
-            <label>Email <span class="req">*</span></label>
-            <input type="text" name="email" id="email" placeholder="resort@example.com" required
-              value="{{ form_data.email|default:resort.email }}">
-            <div class="field-error" id="email-error" style="display:none"></div>
+          <div class="field">
+            <label>City</label>
+            <input type="text" name="city" placeholder="e.g., Panaji" value="{{ form_data.city|default:resort.city }}">
           </div>
 
-          <!-- CC Emails -->
+          <div class="field">
+            <label>State</label>
+            <input type="text" name="state" placeholder="e.g., Goa" value="{{ form_data.state|default:resort.state }}">
+          </div>
+
+          <div class="field">
+            <label>PIN Code</label>
+            <input type="text" name="pin_code" placeholder="e.g., 403001" maxlength="6" 
+              value="{{ form_data.pin_code|default:resort.pin_code }}"
+              class="{% if errors.pin_code %}input-error{% endif %}">
+            {% if errors.pin_code %}<div class="field-error">{{ errors.pin_code }}</div>{% endif %}
+          </div>
+
+          <div class="field span-2">
+            <label>Location (Google Map Link)</label>
+            <input type="url" name="location_map_link" placeholder="https://maps.google.com/..." 
+              value="{{ form_data.location_map_link|default:resort.location_map_link }}">
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTACT DETAILS -->
+      <section class="card">
+        <h3>🔹 Contact Details</h3>
+        <div class="grid">
+          <div class="field">
+            <label>Mobile <span class="req">*</span></label>
+            <input type="text" name="mobile" placeholder="9876543210" maxlength="15"
+              value="{{ form_data.mobile|default:resort.mobile }}"
+              class="{% if errors.mobile %}input-error{% endif %}">
+            {% if errors.mobile %}<div class="field-error">{{ errors.mobile }}</div>{% endif %}
+          </div>
+
+          <div class="field">
+            <label>Email</label>
+            <input type="email" name="email" placeholder="resort@example.com"
+              value="{{ form_data.email|default:resort.email }}"
+              class="{% if errors.email %}input-error{% endif %}">
+            {% if errors.email %}<div class="field-error">{{ errors.email }}</div>{% endif %}
+          </div>
+
           <div class="field span-2">
             <label>CC Emails</label>
-            <div id="cc-container">
-              <div class="cc-entry">
-                <div class="cc-row">
-                  <input type="email" name="cc_email[]" placeholder="cc@example.com">
-                  <button type="button" class="btn-add" onclick="addCCEmail()">Add</button>
-                </div>
-                <div class="field-error cc-error" style="display:none"></div>
-              </div>
+            <div class="cc-entry-row" style="display:flex;gap:8px;align-items:center;">
+              <input id="cc-email-input" type="email" placeholder="user@example.com" style="flex:1;" />
+              <button type="button" id="cc-email-add" class="btn">Add</button>
+            </div>
+            <input type="hidden" name="cc_emails" id="cc_emails_hidden" value="{{ form_data.cc_emails|default:resort.cc_emails }}" />
+            <div id="cc-email-tags" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;"></div>
+            <small style="color:#6b7280;display:block;margin-top:6px;">Add multiple CC email addresses one-by-one.</small>
+          </div>
+        </div>
+      </section>
+
+      <!-- OWNER / LEGAL DETAILS -->
+      <section class="card">
+        <h3>🔹 Owner / Legal Details</h3>
+        <div class="grid">
+          <div class="field span-2">
+            <label>Owner / Manager Name</label>
+            <input type="text" name="owner_manager_name" placeholder="John Doe"
+              value="{{ form_data.owner_manager_name|default:resort.owner_manager_name }}">
+          </div>
+
+          <div class="field">
+            <label>GST Number</label>
+            <input type="text" name="gst_number" placeholder="22AAAAA0000A1Z5" maxlength="15"
+              value="{{ form_data.gst_number|default:resort.gst_number }}"
+              class="{% if errors.gst_number %}input-error{% endif %}">
+            {% if errors.gst_number %}<div class="field-error">{{ errors.gst_number }}</div>{% endif %}
+          </div>
+
+          <div class="field">
+            <label>Business Registration Number</label>
+            <input type="text" name="business_registration_number" placeholder="Enter registration number"
+              value="{{ form_data.business_registration_number|default:resort.business_registration_number }}">
+          </div>
+
+          <div class="field">
+            <label>Registration Certificate (Upload)</label>
+            <div id="reg-cert-preview" class="file-preview" style="display:none;"></div>
+              <div class="file-upload" onclick="document.getElementById('reg-cert').click()">
+              <input type="file" id="reg-cert" name="registration_certificate" accept=".pdf,.doc,.docx,.jpg,.png">
+              <span>Click to upload or change certificate</span>
             </div>
           </div>
 
-          <!-- Location -->
-          <div class="field span-2">
-            <label>Location <span class="req">*</span></label>
-            <input type="text" name="location" id="location" placeholder="https://maps.google.com/..." required
-              value="{{ form_data.location|default:resort.address }}">
-            <div class="field-error" id="location-error" style="display:none"></div>
+          <div class="field">
+            <label>ID Proof (Aadhaar / PAN Upload)</label>
+            <div id="id-proof-preview" class="file-preview" style="display:none;"></div>
+            <div class="file-upload" onclick="document.getElementById('id-proof').click()">
+              <input type="file" id="id-proof" name="id_proof" accept=".pdf,.jpg,.png">
+              <span>Click to upload or change ID proof</span>
+            </div>
           </div>
         </div>
+      </section>
 
-        <div class="btn-row">
-          <button type="button" class="btn" onclick="history.back()">Cancel</button>
-          <button type="submit" class="btn primary">Update</button>
+      <!-- PROPERTY DETAILS -->
+      <section class="card">
+        <h3>🔹 Property Details</h3>
+        <div class="grid">
+          <div class="field">
+            <label>Number of Rooms</label>
+            <input type="number" name="number_of_rooms" placeholder="50" min="1"
+              value="{{ form_data.number_of_rooms|default:resort.number_of_rooms }}"
+              class="{% if errors.number_of_rooms %}input-error{% endif %}">
+            {% if errors.number_of_rooms %}<div class="field-error">{{ errors.number_of_rooms }}</div>{% endif %}
+          </div>
+
+          <div class="field">
+            <label>Amenities (comma-separated)</label>
+            <textarea name="amenities" placeholder="WiFi, Swimming Pool, Gym, Restaurant">{{ form_data.amenities|default:resort.amenities }}</textarea>
+          </div>
+
+          <div class="field span-2">
+            <label>Resort Description</label>
+            <textarea name="description" placeholder="Describe your resort...">{{ form_data.description|default:resort.description }}</textarea>
+          </div>
+
+          <div class="field">
+            <label>Resort Images (Upload)</label>
+            <div id="resort-images-preview" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;"></div>
+            <div class="file-upload" onclick="document.getElementById('images').click()">
+              <input type="file" id="images" name="resort_images" accept="image/*" multiple>
+              <span>Click to upload or change images</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Resort Video (Optional)</label>
+            <div id="video-preview" class="file-preview" style="display:none;"></div>
+            <div class="file-upload" onclick="document.getElementById('video').click()">
+              <input type="file" id="video" name="resort_video" accept="video/*">
+              <span>Click to upload or change video</span>
+            </div>
+          </div>
         </div>
-      </form>
-    </section>
+      </section>
+
+      <!-- ROOM TYPE DETAILS -->
+      <section class="card">
+        <h3>🔹 Primary Room Type Details (Optional)</h3>
+        <div style="margin-bottom:10px; display:flex; align-items:center; justify-content:flex-end; gap:10px;">
+          <button type="button" id="add-room-type-btn" class="btn">Add Row</button>
+        </div>
+        <div style="overflow:auto;">
+          <table id="room-type-table" style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="padding:8px;border:1px solid #d9dbe4;">Room Type</th>
+                <th style="padding:8px;border:1px solid #d9dbe4;">Total Rooms</th>
+                <th style="padding:8px;border:1px solid #d9dbe4;">Price/Night</th>
+                <th style="padding:8px;border:1px solid #d9dbe4;">Max Guests</th>
+                <th style="padding:8px;border:1px solid #d9dbe4;">Size</th>
+                <th style="padding:8px;border:1px solid #d9dbe4;">Amenities</th>
+                <th style="padding:8px;border:1px solid #d9dbe4;">Image</th>
+                <th style="padding:8px;border:1px solid #d9dbe4;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="room-type-body">
+              {% for room in resort.room_types.all %}
+              <tr data-room-uid="room-{{ room.id }}">
+                <input type="hidden" name="room_type_uid[]" value="room-{{ room.id }}" />
+                <td style="border:1px solid #d9dbe4;"><input type="text" name="room_type_name[]" value="{{ room.room_type_name }}" style="width:100%;" /></td>
+                <td style="border:1px solid #d9dbe4;"><input type="number" name="total_rooms[]" value="{{ room.total_rooms }}" min="0" style="width:100%;" /></td>
+                <td style="border:1px solid #d9dbe4;"><input type="number" step="0.01" name="price_per_night[]" value="{{ room.price_per_night }}" style="width:100%;" /></td>
+                <td style="border:1px solid #d9dbe4;"><input type="number" name="max_guests[]" value="{{ room.max_guests }}" min="1" style="width:100%;" /></td>
+                <td style="border:1px solid #d9dbe4;"><input type="text" name="room_size[]" value="{{ room.room_size }}" style="width:100%;" /></td>
+                <td style="border:1px solid #d9dbe4;"><input type="text" name="room_type_amenities[]" value="{{ room.amenities }}" style="width:100%;" /></td>
+                <td style="border:1px solid #d9dbe4;">
+                  <input type="file" name="room_type_images_room-{{ room.id }}[]" data-room-uid="room-{{ room.id }}" class="room-type-images-input" accept="image/*" multiple />
+                  <div class="room-type-images-preview" data-room-id="room-{{ room.id }}" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
+                  {% for image in room.room_type_image_list %}
+                    <div style="position:relative;width:70px;height:70px;border:1px solid #ccc;border-radius:8px;overflow:hidden;margin-top:6px;">
+                      <img src="{{ image.image.url }}" style="width:100%;height:100%;object-fit:cover;" />
+                    </div>
+                  {% empty %}{% endfor %}
+                </td>
+                <td style="border:1px solid #d9dbe4; text-align:center;"><button type="button" class="btn remove-room-type-row">Remove</button></td>
+              </tr>
+              {% empty %}
+              <tr data-room-uid="room-0">
+                <input type="hidden" name="room_type_uid[]" value="room-0" />
+                <td style="border:1px solid #d9dbe4;"><input type="text" name="room_type_name[]" style="width:100%;" /></td>
+                <td style="border:1px solid #d9dbe4;"><input type="number" name="total_rooms[]" min="0" style="width:100%;" /></td>
+                <td style="border:1px solid #d9dbe4;"><input type="number" step="0.01" name="price_per_night[]" style="width:100%;" /></td>
+                <td style="border:1px solid #d9dbe4;"><input type="number" name="max_guests[]" min="1" style="width:100%;" /></td>
+                <td style="border:1px solid #d9dbe4;"><input type="text" name="room_size[]" style="width:100%;" /></td>
+                <td style="border:1px solid #d9dbe4;"><input type="text" name="room_type_amenities[]" style="width:100%;" /></td>
+                <td style="border:1px solid #d9dbe4;">
+                  <input type="file" name="room_type_images_room-0[]" data-room-uid="room-0" class="room-type-images-input" accept="image/*" multiple />
+                  <div class="room-type-images-preview" data-room-id="room-0" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
+                </td>
+                <td style="border:1px solid #d9dbe4; text-align:center;"><button type="button" class="btn remove-room-type-row">Remove</button></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ONLINE PRESENCE -->
+      <section class="card">
+        <h3>🔹 Online Presence (Optional)</h3>
+        <div class="grid">
+          <div class="field">
+            <label>Website URL</label>
+            <input type="url" name="website_url" placeholder="https://www.resort.com"
+              value="{{ form_data.website_url|default:resort.website_url }}">
+          </div>
+
+          <div class="field">
+            <label>Google Listing Link</label>
+            <input type="url" name="google_listing_link" placeholder="https://maps.google.com/?..."
+              value="{{ form_data.google_listing_link|default:resort.google_listing_link }}">
+          </div>
+
+          <div class="field span-2">
+            <label>Social Media Links (comma-separated)</label>
+            <textarea name="social_media_links" placeholder="https://facebook.com/resort, https://instagram.com/resort">{{ form_data.social_media_links|default:resort.social_media_links }}</textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- FORM BUTTONS -->
+      <div class="btn-row">
+        <button type="button" class="btn" onclick="history.back()">Cancel</button>
+        <button type="submit" class="btn primary">Update Resort</button>
+      </div>
+    </form>
 
   </main>
 
-  <button class="help-fab"><span>?</span></button>
-
   <script>
-    function addCCEmail() {
-      const container = document.getElementById('cc-container');
-      const entry = document.createElement('div');
-      entry.className = 'cc-entry';
-      entry.style.marginTop = '10px';
-      entry.innerHTML = '<div class="cc-row"><input type="email" name="cc_email[]" placeholder="cc@example.com"></div><div class="field-error cc-error" style="display:none"></div>';
-      container.appendChild(entry);
-    }
-
-    const nameInput  = document.querySelector('input[name="resort_name"]');
-    const placeInput = document.querySelector('input[name="resort_place"]');
-
-    function showFieldError(input, msg) {
-      input.classList.add('input-error');
-      let err = input.parentElement.querySelector('.field-error');
-      if (!err) { err = document.createElement('div'); err.className = 'field-error'; input.parentElement.appendChild(err); }
-      err.textContent = msg;
-    }
-
-    function clearFieldError(input) {
-      input.classList.remove('input-error');
-      const err = input.parentElement.querySelector('.field-error');
-      if (err) err.remove();
-    }
-
-    let debounceTimer;
-    function checkDuplicate() {
-      const name  = nameInput.value.trim();
-      const place = placeInput.value.trim();
-      if (!name || !place) return;
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        fetch(`/sales/resorts/check-duplicate/?name=${encodeURIComponent(name)}&place=${encodeURIComponent(place)}&exclude_id={{ resort.id }}`)
-          .then(r => r.json())
-          .then(data => {
-            if (data.exists) {
-              showFieldError(nameInput,  'A resort with this name and place already exists.');
-              showFieldError(placeInput, 'A resort with this name and place already exists.');
-            } else {
-              clearFieldError(nameInput);
-              clearFieldError(placeInput);
-            }
-          });
-      }, 400);
-    }
-
-    // Name & Place: letters, spaces, commas only
-    const nameRegex = /^[A-Za-z ,]+$/;
-    nameInput.addEventListener('input', function () {
-      this.value = this.value.replace(/[^A-Za-z ,]/g, '');
-      if (this.value && !nameRegex.test(this.value)) {
-        showFieldError(this, 'Only letters, spaces, and commas are allowed.');
-      } else { clearFieldError(this); }
-      checkDuplicate();
-    });
-    placeInput.addEventListener('input', function () {
-      this.value = this.value.replace(/[^A-Za-z ,]/g, '');
-      if (this.value && !nameRegex.test(this.value)) {
-        showFieldError(this, 'Only letters, spaces, and commas are allowed.');
-      } else { clearFieldError(this); }
-      checkDuplicate();
-    });
-
-    // Location: Google Maps links only
-    const locationInput = document.getElementById('location');
-    const locationError = document.getElementById('location-error');
-    const mapsRegex = /^https?:\/\/(www\.)?(google\.[a-z.]+\/maps|maps\.google\.[a-z.]+|goo\.gl\/maps|maps\.app\.goo\.gl)/i;
-    locationInput.addEventListener('input', () => {
-      if (locationInput.value && !mapsRegex.test(locationInput.value)) {
-        locationError.textContent = 'Only Google Maps links are allowed.';
-        locationError.style.display = 'block';
-        locationInput.classList.add('input-error');
-      } else {
-        locationError.style.display = 'none';
-        locationInput.classList.remove('input-error');
-      }
-    });
-
-    // Mobile: digits only, exactly 10
-    const mobileInput = document.getElementById('mobile');
-    const mobileError = document.getElementById('mobile-error');
-    mobileInput.addEventListener('input', () => {
-      mobileInput.value = mobileInput.value.replace(/\D/g, '').slice(0, 10);
-      if (mobileInput.value && mobileInput.value.length !== 10) {
-        mobileError.textContent = 'Mobile number must be exactly 10 digits.';
-        mobileError.style.display = 'block';
-        mobileInput.classList.add('input-error');
-      } else {
-        mobileError.style.display = 'none';
-        mobileInput.classList.remove('input-error');
-      }
-    });
-
-    // Email format
-    const emailInput = document.getElementById('email');
-    const emailError = document.getElementById('email-error');
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    emailInput.addEventListener('input', () => {
-      if (emailInput.value && !emailRegex.test(emailInput.value)) {
-        emailError.textContent = 'Enter a valid email address.';
-        emailError.style.display = 'block';
-        emailInput.classList.add('input-error');
-      } else {
-        emailError.style.display = 'none';
-        emailInput.classList.remove('input-error');
-      }
-    });
-
-    // CC email format (live, on each input)
-    document.getElementById('cc-container').addEventListener('input', e => {
-      if (!e.target.matches('input[name="cc_email[]"]')) return;
-      const entry = e.target.closest('.cc-entry');
-      const err = entry.querySelector('.cc-error');
-      if (e.target.value && !emailRegex.test(e.target.value)) {
-        err.textContent = 'Enter a valid email address.';
-        err.style.display = 'block';
-        e.target.classList.add('input-error');
-      } else {
-        err.style.display = 'none';
-        e.target.classList.remove('input-error');
-      }
-    });
-
-    // Block submit if any validation errors
-    document.querySelector('form').addEventListener('submit', e => {
-      let valid = true;
-      if (!nameRegex.test(nameInput.value.trim())) {
-        showFieldError(nameInput, 'Only letters, spaces, and commas are allowed.');
-        valid = false;
-      }
-      if (!nameRegex.test(placeInput.value.trim())) {
-        showFieldError(placeInput, 'Only letters, spaces, and commas are allowed.');
-        valid = false;
-      }
-      if (locationInput.value && !mapsRegex.test(locationInput.value)) {
-        locationError.textContent = 'Only Google Maps links are allowed.';
-        locationError.style.display = 'block';
-        locationInput.classList.add('input-error');
-        valid = false;
-      }
-      if (mobileInput.value && mobileInput.value.length !== 10) {
-        mobileError.textContent = 'Mobile number must be exactly 10 digits.';
-        mobileError.style.display = 'block';
-        mobileInput.classList.add('input-error');
-        valid = false;
-      }
-      if (emailInput.value && !emailRegex.test(emailInput.value)) {
-        emailError.textContent = 'Enter a valid email address.';
-        emailError.style.display = 'block';
-        emailInput.classList.add('input-error');
-        valid = false;
-      }
-      document.querySelectorAll('input[name="cc_email[]"]').forEach(inp => {
-        if (inp.value && !emailRegex.test(inp.value)) {
-          const err = inp.closest('.cc-entry').querySelector('.cc-error');
-          err.textContent = 'Enter a valid email address.';
-          err.style.display = 'block';
-          inp.classList.add('input-error');
-          valid = false;
+    // File upload visual feedback
+    document.querySelectorAll('.file-upload input[type="file"]').forEach(input => {
+      input.addEventListener('change', e => {
+        const label = e.target.closest('.file-upload').querySelector('span');
+        if (e.target.files.length > 0) {
+          const fileName = e.target.files[0].name;
+          label.innerHTML = `<strong>✓ ${fileName}</strong>`;
+          label.style.color = 'green';
         }
       });
-      if (!valid) e.preventDefault();
+    });
+
+    // PIN Code: digits only
+    document.querySelector('input[name="pin_code"]').addEventListener('input', function() {
+      this.value = this.value.replace(/\D/g, '').slice(0, 6);
+    });
+
+    // Mobile: digits only
+    document.querySelector('input[name="mobile"]').addEventListener('input', function() {
+      this.value = this.value.replace(/\D/g, '').slice(0, 15);
+    });
+
+    // Number of rooms: positive integers only
+    document.querySelector('input[name="number_of_rooms"]').addEventListener('input', function() {
+      if (this.value < 0) this.value = '';
+    });
+
+    // CC Email chip input
+    const ccInput = document.getElementById('cc-email-input');
+    const ccAddBtn = document.getElementById('cc-email-add');
+    const ccTags = document.getElementById('cc-email-tags');
+    const ccHidden = document.getElementById('cc_emails_hidden');
+    let ccEmails = (ccHidden.value || '').split(',').map(e => e.trim()).filter(Boolean);
+
+    function renderCCTags() {
+      ccTags.innerHTML = '';
+      ccEmails.forEach((email, idx) => {
+        const tag = document.createElement('span');
+        tag.style.cssText = 'background:#e0f2ff; color:#003366; padding:4px 8px; border-radius:12px; display:inline-flex; align-items:center; gap:4px;';
+        tag.textContent = email;
+        const cross = document.createElement('button');
+        cross.type = 'button';
+        cross.style.cssText = 'border:none;background:transparent;color:#ff4d4f;cursor:pointer;font-weight:bold;';
+        cross.textContent = '×';
+        cross.addEventListener('click', () => {
+          ccEmails.splice(idx, 1);
+          ccHidden.value = ccEmails.join(',');
+          renderCCTags();
+        });
+        tag.appendChild(cross);
+        ccTags.appendChild(tag);
+      });
+    }
+
+    function addCCEmail() {
+      const value = ccInput.value.trim();
+      if (!value) return;
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(value)) {
+        alert('Enter a valid email address.');
+        return;
+      }
+      if (!ccEmails.includes(value)) {
+        ccEmails.push(value);
+      }
+      ccHidden.value = ccEmails.join(',');
+      ccInput.value = '';
+      renderCCTags();
+    }
+
+    ccAddBtn.addEventListener('click', addCCEmail);
+    ccInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addCCEmail();
+      }
+    });
+    renderCCTags();
+
+    // File previews
+    function setupFilePreview(inputId, previewId, type) {
+      const input = document.getElementById(inputId);
+      const preview = document.getElementById(previewId);
+      if (!input || !preview) return;
+      input.addEventListener('change', () => {
+        const file = input.files[0];
+        if (!file) {
+          preview.style.display = 'none';
+          preview.innerHTML = '';
+          return;
+        }
+        preview.style.display = 'block';
+        if (type === 'file') {
+          preview.innerHTML = `<div>📄 ${file.name}</div>`;
+        } else if (type === 'video') {
+          const url = URL.createObjectURL(file);
+          preview.innerHTML = `<video controls style="max-width:100%; height:auto;"><source src="${url}" type="${file.type}">Your browser does not support video.</video>`;
+        }
+      });
+    }
+
+    setupFilePreview('reg-cert', 'reg-cert-preview', 'file');
+    setupFilePreview('id-proof', 'id-proof-preview', 'file');
+    setupFilePreview('video', 'video-preview', 'video');
+
+    // Resort images multiple preview + remove
+    const resortImagesInput = document.getElementById('images');
+    const resortImagesPreview = document.getElementById('resort-images-preview');
+
+    function refreshResortImagesPreview(files) {
+      resortImagesPreview.innerHTML = '';
+      Array.from(files).forEach((file, index) => {
+        const card = document.createElement('div');
+        card.style.cssText = 'position:relative;width:90px;height:90px;border:1px solid #ccc;border-radius:8px;overflow:hidden;';
+        const img = document.createElement('img');
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+        img.src = URL.createObjectURL(file);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = '×';
+        btn.style.cssText = 'position:absolute;top:2px;right:2px;background:rgba(255,0,0,.7);border:none;color:#fff;border-radius:50%;width:20px;height:20px;cursor:pointer;';
+        btn.addEventListener('click', () => {
+          const dt = new DataTransfer();
+          Array.from(resortImagesInput.files).forEach((f, i) => { if (i !== index) dt.items.add(f); });
+          resortImagesInput.files = dt.files;
+          refreshResortImagesPreview(dt.files);
+        });
+        card.appendChild(img);
+        card.appendChild(btn);
+        resortImagesPreview.appendChild(card);
+      });
+    }
+
+    if (resortImagesInput) {
+      resortImagesInput.addEventListener('change', () => refreshResortImagesPreview(resortImagesInput.files));
+    }
+
+    // Room type rows
+    const addRoomTypeBtn = document.getElementById('add-room-type-btn');
+    const roomTypeBody = document.getElementById('room-type-body');
+    let nextRoomTypeUid = Date.now();
+
+    function initRoomTypeFileInput(input) {
+      const roomUid = input.dataset.roomUid;
+      const previewContainer = document.querySelector(`.room-type-images-preview[data-room-id="${roomUid}"]`);
+
+      const renderPreviews = () => {
+        previewContainer.innerHTML = '';
+        const files = Array.from(input.files);
+
+        files.forEach((file, index) => {
+          const card = document.createElement('div');
+          card.style.cssText = 'position:relative;width:70px;height:70px;border:1px solid #ccc;border-radius:8px;overflow:hidden;margin:4px 0;';
+
+          const img = document.createElement('img');
+          img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+          img.src = URL.createObjectURL(file);
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.textContent = '×';
+          btn.style.cssText = 'position:absolute;top:2px;right:2px;background:rgba(255,0,0,0.8);border:none;color:#fff;border-radius:50%;width:18px;height:18px;cursor:pointer;';
+          btn.addEventListener('click', () => {
+            const dt = new DataTransfer();
+            files.filter((_, i) => i !== index).forEach(f => dt.items.add(f));
+            input.files = dt.files;
+            renderPreviews();
+          });
+
+          card.appendChild(img);
+          card.appendChild(btn);
+          previewContainer.appendChild(card);
+        });
+      };
+
+      input.addEventListener('change', renderPreviews);
+      renderPreviews();
+    }
+
+    function createRoomTypeRow(data = {}) {
+      const uid = `room-${nextRoomTypeUid++}`;
+      const tr = document.createElement('tr');
+      tr.dataset.roomUid = uid;
+      tr.innerHTML = `
+        <input type="hidden" name="room_type_uid[]" value="${uid}" />
+        <td style="border:1px solid #d9dbe4;"><input type="text" name="room_type_name[]" value="${data.name || ''}" style="width:100%;" /></td>
+        <td style="border:1px solid #d9dbe4;"><input type="number" name="total_rooms[]" min="0" value="${data.total || ''}" style="width:100%;" /></td>
+        <td style="border:1px solid #d9dbe4;"><input type="number" step="0.01" name="price_per_night[]" value="${data.price || ''}" style="width:100%;" /></td>
+        <td style="border:1px solid #d9dbe4;"><input type="number" name="max_guests[]" min="1" value="${data.max || ''}" style="width:100%;" /></td>
+        <td style="border:1px solid #d9dbe4;"><input type="text" name="room_size[]" value="${data.size || ''}" style="width:100%;" /></td>
+        <td style="border:1px solid #d9dbe4;"><input type="text" name="room_type_amenities[]" value="${data.amenities || ''}" style="width:100%;" /></td>
+        <td style="border:1px solid #d9dbe4;">
+          <input type="file" name="room_type_images_${uid}[]" data-room-uid="${uid}" class="room-type-images-input" accept="image/*" multiple />
+          <div class="room-type-images-preview" data-room-id="${uid}" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
+        </td>
+        <td style="border:1px solid #d9dbe4; text-align:center;"><button type="button" class="btn remove-room-type-row">Remove</button></td>
+      `;
+
+      const removeBtn = tr.querySelector('.remove-room-type-row');
+      removeBtn.addEventListener('click', () => tr.remove());
+
+      const fileInput = tr.querySelector('.room-type-images-input');
+      initRoomTypeFileInput(fileInput);
+
+      roomTypeBody.appendChild(tr);
+    }
+
+    addRoomTypeBtn && addRoomTypeBtn.addEventListener('click', () => createRoomTypeRow());
+
+    document.querySelectorAll('.room-type-images-input').forEach(input => initRoomTypeFileInput(input));
+    document.querySelectorAll('.remove-room-type-row').forEach(button => {
+      button.addEventListener('click', function() {
+        this.closest('tr').remove();
+      });
     });
   </script>
 {% endblock %}

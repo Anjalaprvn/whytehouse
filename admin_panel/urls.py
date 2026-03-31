@@ -85,13 +85,6 @@ sales_patterns = [
     path('meals/<int:meal_id>/delete/', views.delete_meal, name='delete_meal'),
     path('meals/check-name/', views.check_meal_name, name='check_meal_name'),
     path('meals/<int:meal_id>/toggle-status/', views.toggle_meal_status, name='toggle_meal_status'),
-    #VOUCHER URLS---------------------------------
-    path('vouchers/', views.voucher_list, name='voucher_list'),
-    path('vouchers/add/', views.add_voucher, name='add_voucher'),
-    path('vouchers/<int:voucher_id>/', views.view_voucher, name='view_voucher'),
-    path('vouchers/<int:voucher_id>/edit/', views.edit_voucher, name='edit_voucher'),
-    path('vouchers/<int:voucher_id>/delete/', views.delete_voucher, name='delete_voucher'),
-    path('vouchers/<int:voucher_id>/send/', views.send_voucher, name='send_voucher'),
     #INVOICE URLS---------------------------------
     path('invoices/', views.invoice_list, name='invoice_list'),
     path('invoices/add/', views.add_invoice, name='add_invoice'),
@@ -101,7 +94,6 @@ sales_patterns = [
     path('invoices/<int:invoice_id>/send/', views.send_invoice, name='send_invoice'),
     #REPORT URLS---------------------------------
     path('reports/invoice/', views.invoice_report, name='invoice_report'),
-    path('reports/voucher/', views.voucher_report, name='voucher_report'),
     path('reports/leads/', views.leads_report, name='leads_report'),
     path('reports/profit/', views.profit_report, name='profit_report'),
     path('reports/customer/', views.customer_report, name='customer_report'),
@@ -125,6 +117,5 @@ feedback_patterns = [
     path('add/', views.add_feedback, name='add_feedback'),
     path('<int:feedback_id>/', views.view_feedback, name='view_feedback'),
     path('<int:feedback_id>/edit/', views.edit_feedback, name='edit_feedback'),
-    path('<int:feedback_id>/delete/', views.delete_feedback, name='delete_feedback'),
     path('<int:feedback_id>/toggle-featured/', views.toggle_featured_feedback, name='toggle_featured_feedback'),
 ]

@@ -141,18 +141,13 @@ th{color:#777;font-weight:500}
         <h2>Upcoming Bookings</h2>
         <p>Next check-ins scheduled</p>
       </div>
-      <a href="{% url 'sales:voucher_list' %}" class="view-btn" style="text-decoration:none;color:inherit;">View All</a>
     </div>
 
-    {% for booking in upcoming_bookings %}
     <div class="row">
       <div>
-        <strong>{{ booking.customer.display_name }}</strong><br>
-        <small>{{ booking.resort.resort_name|default:"N/A" }}</small>
+        <em>Voucher module removed.</em>
       </div>
-      <div>
-        <strong>{{ booking.checkin_date|date:"m/d/Y" }}</strong><br>
-        <small>{{ booking.adults|add:booking.children }} Pax</small>
+    </div>
       </div>
     </div>
     {% empty %}

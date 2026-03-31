@@ -50,7 +50,6 @@ from .models import (
     Inquiry,
     Employee,
     Resort,
-    Voucher,
     Invoice,
     Feedback,
     FeedbackImage,
@@ -72,7 +71,6 @@ from .serializers import (
     InquirySerializer,
     EmployeeSerializer,
     ResortSerializer,
-    VoucherSerializer,
     InvoiceSerializer,
     FeedbackSerializer,
     FeedbackImageSerializer,
@@ -1052,64 +1050,6 @@ class ResortViewSet(viewsets.ModelViewSet):
         })
 
 
-# ==================== VOUCHER VIEWSET ====================
-class VoucherViewSet(viewsets.ModelViewSet):
-    http_method_names = ["get", "post", "put", "delete", "head", "options"]
-    queryset = Voucher.objects.all().order_by("-created_at")
-    serializer_class = VoucherSerializer
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-
-        customer_id = (self.request.query_params.get("customer") or "").strip()
-        if customer_id:
-            qs = qs.filter(customer_id=customer_id)
-
-        resort_id = (self.request.query_params.get("resort") or "").strip()
-        if resort_id:
-            qs = qs.filter(resort_id=resort_id)
-
-        sales_person_id = (self.request.query_params.get("sales_person") or "").strip()
-        if sales_person_id:
-            qs = qs.filter(sales_person_id=sales_person_id)
-
-        check_in = (self.request.query_params.get("checkin_date") or "").strip()
-        if check_in:
-            qs = qs.filter(checkin_date__gte=check_in)
-
-        check_out = (self.request.query_params.get("checkout_date") or "").strip()
-        if check_out:
-            qs = qs.filter(checkout_date__lte=check_out)
-
-        search = (self.request.query_params.get("search") or "").strip()
-        if search:
-            qs = qs.filter(
-                Q(voucher_no__icontains=search) |
-                Q(customer__display_name__icontains=search) |
-                Q(resort__resort_name__icontains=search) |
-                Q(sales_person__name__icontains=search) |
-                Q(room_type__icontains=search)
-            )
-
-        return qs
-
-    @action(detail=False, methods=["get"])
-    def summary(self, request):
-        qs = self.get_queryset()
-        total_amount = qs.aggregate(total=Sum("total_amount"))["total"] or 0
-        received_amount = qs.aggregate(total=Sum("received"))["total"] or 0
-        pending_amount = qs.aggregate(total=Sum("pending"))["total"] or 0
-        profit_amount = qs.aggregate(total=Sum("profit"))["total"] or 0
-
-        return Response({
-            "total": qs.count(),
-            "total_amount": float(total_amount),
-            "received_amount": float(received_amount),
-            "pending_amount": float(pending_amount),
-            "profit_amount": float(profit_amount),
-        })
-
-
 # ==================== INVOICE VIEWSET ====================
 class InvoiceViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put", "delete", "head", "options"]
@@ -1310,18 +1250,4 @@ def get_next_invoice_id(request):
     return Response({"next_id": next_id})
 
 
-# ==================== VOUCHER ID GENERATION ENDPOINT ====================
-@api_view(["GET"])
-def get_next_voucher_id(request):
-    last_voucher = Voucher.objects.filter(voucher_no__startswith="VCH").order_by("-voucher_no").first()
 
-    if last_voucher and last_voucher.voucher_no:
-        try:
-            last_num = int(last_voucher.voucher_no[3:])
-            next_id = f"VCH{str(last_num + 1).zfill(3)}"
-        except (ValueError, IndexError):
-            next_id = "VCH001"
-    else:
-        next_id = "VCH001"
-
-    return Response({"next_id": next_id})

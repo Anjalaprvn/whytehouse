@@ -438,44 +438,58 @@
 const holder = document.getElementById('image-inputs-holder');
 const addBtn = document.getElementById('add-images-label');
 const previewGrid = document.getElementById('image-preview-grid');
-let inputCounter = 0;
+let allFiles = []; // Array to hold all selected files
 
-function createFileInput() {
-    const inp = document.createElement('input');
-    inp.type = 'file'; inp.name = 'images'; inp.accept = 'image/*'; inp.multiple = true; inp.style.display = 'none';
-    const idx = inputCounter++;
-    inp.dataset.idx = idx;
-    inp.addEventListener('change', function() {
-        const self = this;
-        Array.from(this.files).forEach(function(file) {
-            const reader = new FileReader();
-            reader.onload = function(ev) { addThumb(ev.target.result, file.name, self.dataset.idx); };
-            reader.readAsDataURL(file);
-        });
-    });
-    holder.appendChild(inp);
-    return inp;
+// Create a single file input
+const fileInput = document.createElement('input');
+fileInput.type = 'file';
+fileInput.name = 'images';
+fileInput.accept = 'image/*';
+fileInput.multiple = true;
+fileInput.style.display = 'none';
+holder.appendChild(fileInput);
+
+function updateInputFiles() {
+    const dt = new DataTransfer();
+    allFiles.forEach(file => dt.items.add(file));
+    fileInput.files = dt.files;
 }
 
-function addThumb(src, name, inputIdx) {
+function addThumb(file, index) {
     previewGrid.style.display = 'grid';
-    const thumb = document.createElement('div');
-    thumb.className = 'img-thumb';
-    thumb.dataset.inputIdx = inputIdx;
-    thumb.innerHTML = '<img src="' + src + '" alt="' + name + '"><div class="img-thumb-name">' + name + '</div><button type="button" class="img-remove-btn" onclick="removeThumb(this)">&#x2715;</button>';
-    previewGrid.appendChild(thumb);
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        const thumb = document.createElement('div');
+        thumb.className = 'img-thumb';
+        thumb.dataset.fileIndex = index;
+        thumb.innerHTML = '<img src="' + ev.target.result + '" alt="' + file.name + '"><div class="img-thumb-name">' + file.name + '</div><button type="button" class="img-remove-btn" onclick="removeThumb(this)">&#x2715;</button>';
+        previewGrid.appendChild(thumb);
+    };
+    reader.readAsDataURL(file);
 }
 
 function removeThumb(btn) {
     const thumb = btn.closest('.img-thumb');
-    const idx = thumb.dataset.inputIdx;
-    const inp = holder.querySelector('[data-idx="' + idx + '"]');
-    if (inp) inp.disabled = true;
+    const index = parseInt(thumb.dataset.fileIndex);
+    allFiles.splice(index, 1); // Remove the file from the array
+    updateInputFiles(); // Update the input's files
     thumb.remove();
-    if (!previewGrid.querySelectorAll('.img-thumb').length) previewGrid.style.display = 'none';
+    // Update indices for remaining thumbs
+    const thumbs = previewGrid.querySelectorAll('.img-thumb');
+    thumbs.forEach((t, i) => t.dataset.fileIndex = i);
+    if (!thumbs.length) previewGrid.style.display = 'none';
 }
 
-addBtn.addEventListener('click', function() { createFileInput().click(); });
+fileInput.addEventListener('change', function() {
+    const newFiles = Array.from(this.files);
+    newFiles.forEach(file => {
+        allFiles.push(file);
+        addThumb(file, allFiles.length - 1);
+    });
+    updateInputFiles(); // Ensure the input has all files
+});
+
+addBtn.addEventListener('click', function() { fileInput.click(); });
 
 function showErr(id, msg) {
     const el = document.getElementById(id);

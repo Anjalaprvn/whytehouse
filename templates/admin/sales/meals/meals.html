@@ -69,7 +69,9 @@ tbody tr:last-child td{border-bottom:none}
           <thead>
             <tr>
               <th class="sl">Sl No</th>
-              <th>Meals</th>
+              <th>Meal Plan</th>
+              <th>Meal Type</th>
+              <th>Price/Person</th>
               <th style="width:160px;">Status</th>
               <th style="width:200px;">Actions</th>
             </tr>
@@ -79,7 +81,35 @@ tbody tr:last-child td{border-bottom:none}
             {% for meal in meals %}
             <tr>
               <td class="sl">{{ forloop.counter }}</td>
-              <td class="meal">{{ meal.name }}</td>
+              <td>
+                <div>
+                  <div class="meal-name">{{ meal.name }}</div>
+                  {% if meal.description %}
+                  <div style="color:#666;font-size:12px;margin-top:2px;">{{ meal.description|truncatechars:50 }}</div>
+                  {% endif %}
+                  {% if meal.included_meals_list %}
+                  <div style="color:#888;font-size:11px;margin-top:2px;">
+                    {{ meal.included_meals_list|join:", " }}
+                  </div>
+                  {% endif %}
+                </div>
+              </td>
+              <td>
+                {% if meal.meal_type == 'veg' %}
+                  <span class="badge" style="background:#dcfce7;color:#15803d;">Vegetarian</span>
+                {% elif meal.meal_type == 'non-veg' %}
+                  <span class="badge" style="background:#fee2e2;color:#991b1b;">Non-Veg</span>
+                {% else %}
+                  <span class="badge" style="background:#fef3c7;color:#92400e;">Both</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if meal.price_per_person %}
+                  <span style="font-weight:600;color:#111;">₹{{ meal.price_per_person }}</span>
+                {% else %}
+                  <span style="color:#999;">Not set</span>
+                {% endif %}
+              </td>
               <td>
                 <div style="display:flex;align-items:center;gap:8px;">
                   <form method="POST" action="{% url 'sales:toggle_meal_status' meal.id %}" style="display:inline-flex;margin:0;">
@@ -128,7 +158,7 @@ tbody tr:last-child td{border-bottom:none}
             </tr>
             {% empty %}
             <tr>
-              <td colspan="4" style="text-align:center;padding:40px;color:var(--muted);">
+              <td colspan="6" style="text-align:center;padding:40px;color:var(--muted);">
                 No meal plans found. <a href="{% url 'sales:add_meal' %}" style="color:var(--accent);font-weight:600;text-decoration:none;">Add your first meal plan</a>.
               </td>
             </tr>

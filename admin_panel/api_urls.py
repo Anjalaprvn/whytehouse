@@ -12,14 +12,12 @@ from .api_views import (
     InquiryViewSet,
     EmployeeViewSet,
     ResortViewSet,
-    VoucherViewSet,
     InvoiceViewSet,
     FeedbackViewSet,
     validate_package_id,
     validate_blog_title,
     validate_blog_slug,
     get_next_invoice_id,
-    get_next_voucher_id,
 )
 
 def list_view(viewset):
@@ -77,11 +75,6 @@ urlpatterns = [
     path('invoices/add/', add_view(InvoiceViewSet), name='invoices-add'),
     path('invoices/<pk>/', detail_view(InvoiceViewSet), name='invoices-detail'),
 
-    # Vouchers
-    path('vouchers/', list_view(VoucherViewSet), name='vouchers-list'),
-    path('vouchers/add/', add_view(VoucherViewSet), name='vouchers-add'),
-    path('vouchers/<pk>/', detail_view(VoucherViewSet), name='vouchers-detail'),
-
     # Resorts
     path('resorts/', list_view(ResortViewSet), name='resorts-list'),
     path('resorts/add/', add_view(ResortViewSet), name='resorts-add'),
@@ -112,5 +105,4 @@ urlpatterns = [
     path('validate-blog-title/', validate_blog_title, name='validate-blog-title'),
     path('validate-blog-slug/', validate_blog_slug, name='validate-blog-slug'),
     path('get-next-invoice-id/', get_next_invoice_id, name='get-next-invoice-id'),
-    path('get-next-voucher-id/', get_next_voucher_id, name='get-next-voucher-id'),
 ]
