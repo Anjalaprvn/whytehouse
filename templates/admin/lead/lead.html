@@ -39,7 +39,11 @@ tbody tr:last-child td{border-bottom:none}
 .badge-domestic{background:#dcfce7;color:#16a34a}
 .badge-hospitality{background:#fce7f3;color:#be185d}
 .badge-assigned{background:#dcfce7;color:#16a34a}
-.badge-unassigned{background:#fee2e2;color:#dc2626}
+.status-select{padding:6px 10px;border-radius:8px;border:1px solid #e5e7eb;font-size:12px;outline:none;cursor:pointer;font-weight:600;}
+.status-New{background:#dbeafe;color:#1d4ed8;border-color:#93c5fd;}
+.status-Contacted{background:#fef3c7;color:#d97706;border-color:#fcd34d;}
+.status-Converted{background:#dcfce7;color:#16a34a;border-color:#86efac;}
+.status-Junk{background:#fee2e2;color:#dc2626;border-color:#fca5a5;}
 </style>
 
 <h1 class="page-title">Lead Management</h1>
@@ -102,7 +106,8 @@ tbody tr:last-child td{border-bottom:none}
           <th>Source</th>
           <th>Property/Package</th>
           <th>Assigned To</th>
-          <th style="min-width:160px;">Actions</th>
+          <th>Status</th>
+          <th style="min-width:100px;">Actions</th>
         </tr>
       </thead>
 
@@ -137,11 +142,28 @@ tbody tr:last-child td{border-bottom:none}
             {% endif %}
           </td>
           <td>
-            {% if lead.employee %}
-              <span class="badge badge-assigned">{{ lead.employee.name }}</span>
-            {% else %}
-              <span class="badge badge-unassigned">Not Assigned</span>
-            {% endif %}
+            <form method="POST" action="{% url 'admin_panel:assign_lead_employee' lead.id %}" class="assign-form">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <select name="employee" onchange="this.form.submit()" style="padding:6px 10px;border-radius:8px;border:1px solid #e5e7eb;background:{% if not lead.employee %}#fee2e2{% else %}#f9fafb{% endif %};color:{% if not lead.employee %}#dc2626{% else %}#111{% endif %};font-size:12px;outline:none;cursor:pointer;max-width:130px;">
+                <option value="">-- Unassigned --</option>
+                {% for emp in employees %}
+                  <option value="{{ emp.id }}" {% if lead.employee and lead.employee.id == emp.id %}selected{% endif %}>{{ emp.name }}</option>
+                {% endfor %}
+              </select>
+            </form>
+          </td>
+          <td>
+            <form method="POST" action="{% url 'admin_panel:update_lead_status' lead.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <select name="status" onchange="this.form.submit()" class="status-select status-{{ lead.status }}">
+                <option value="New" {% if lead.status == 'New' %}selected{% endif %}>New</option>
+                <option value="Contacted" {% if lead.status == 'Contacted' %}selected{% endif %}>Contacted</option>
+                <option value="Converted" {% if lead.status == 'Converted' %}selected{% endif %}>Converted</option>
+                <option value="Junk" {% if lead.status == 'Junk' %}selected{% endif %}>Junk</option>
+              </select>
+            </form>
           </td>
           <td>
             <div class="actions">
@@ -156,17 +178,6 @@ tbody tr:last-child td{border-bottom:none}
                   <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </a>
-              <form method="POST" action="{% url 'admin_panel:delete_lead' lead.id %}" class="delete-form" onsubmit="return confirm('Are you sure you want to delete this lead?');">
-                {% csrf_token %}
-                <button type="submit" class="delete-btn icon-btn delete" title="Delete">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M3 6h18" stroke="#e11d48" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <line x1="10" y1="11" x2="10" y2="17" stroke="#e11d48" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="14" y1="11" x2="14" y2="17" stroke="#e11d48" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
-                </button>
-              </form>
             </div>
           </td>
         </tr>

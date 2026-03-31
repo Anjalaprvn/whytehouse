@@ -187,7 +187,7 @@
 
                 <div class="form-group">
                     <label>Mobile Number *</label>
-                    <input type="tel" id="edit_mobile" name="mobile_number" value="{{ lead.mobile_number }}" required maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    <input type="tel" id="edit_mobile" name="mobile_number" value="{{ lead.mobile_number }}" required maxlength="10" readonly style="background:#f0f0f0;color:#666;cursor:not-allowed;border-color:#d0d0d0;">
                     <div class="field-error" id="mobile-error">Enter a valid 10-digit number.</div>
                 </div>
 
@@ -243,7 +243,7 @@
 
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" name="email" value="{{ lead.email|default:'' }}">
+                    <input type="email" name="email" value="{{ lead.email|default:'' }}" readonly style="background:#f0f0f0;color:#666;cursor:not-allowed;border-color:#d0d0d0;">
                 </div>
 
                 <div class="form-group">

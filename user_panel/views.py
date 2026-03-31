@@ -302,11 +302,11 @@ def contact(request):
         phone = (request.POST.get('phone') or '').strip()
         country_code = '+91'
         package = (request.POST.get('package') or '').strip()
+        place = (request.POST.get('place') or '').strip()
         message = (request.POST.get('message') or '').strip()
         subject = (request.POST.get('subject') or 'General').strip()
         
-        # Combine country code with phone number
-        full_phone = f"{country_code}{phone}" if phone else ''
+        full_phone = phone
         
         # Map contact form dropdown options to Lead model choices
         subject_mapping = {
@@ -341,7 +341,7 @@ def contact(request):
                 full_name=name,
                 mobile_number=full_phone,
                 email=email,
-                place=None,
+                place=place or None,
                 source='Website',
                 enquiry_type=enquiry_type,
                 message=message,
@@ -384,7 +384,7 @@ def contact(request):
         
         # If successful, add success message and redirect
         messages.success(request, 'Thank you! Your message has been sent successfully.')
-        return redirect('user_panel:contact')
+        return render(request, 'user/contact.html', {'success': True})
 
     return render(request, 'user/contact.html')
 

@@ -383,6 +383,7 @@ def lead_management(request):
         'domestic_count': domestic_count,
         'hospitality_count': hospitality_count,
         'new_leads_count': new_leads_count,
+        'employees': Employee.objects.filter(status='Active').order_by('name'),
     }
     return render(request, 'admin/lead/lead.html', context)
 
@@ -480,6 +481,39 @@ def delete_lead(request, lead_id):
     lead.delete()
     messages.success(request, 'Lead deleted successfully!')
     return redirect('admin_panel:leads')
+
+def assign_lead_employee(request, lead_id):
+    if request.method == 'POST':
+        lead = get_object_or_404(Lead, id=lead_id)
+        employee_id = request.POST.get('employee')
+        lead.employee_id = employee_id if employee_id else None
+        lead.save()
+    return redirect(request.POST.get('next', 'admin_panel:leads'))
+
+def update_lead_status(request, lead_id):
+    if request.method == 'POST':
+        lead = get_object_or_404(Lead, id=lead_id)
+        status = request.POST.get('status')
+        if status in ['New', 'Contacted', 'Converted', 'Junk']:
+            lead.status = status
+            lead.save()
+            if status == 'Converted':
+                from admin_panel.models import Customer
+                name_parts = lead.full_name.split(' ', 1)
+                Customer.objects.get_or_create(
+                    contact_number=lead.mobile_number,
+                    defaults={
+                        'first_name': name_parts[0],
+                        'last_name': name_parts[1] if len(name_parts) > 1 else '',
+                        'display_name': lead.full_name,
+                        'email': lead.email or '',
+                        'whatsapp_number': lead.mobile_number,
+                        'same_as_whatsapp': True,
+                        'customer_type': 'Individual',
+                        'place': lead.place or '',
+                    }
+                )
+    return redirect(request.POST.get('next', 'admin_panel:leads'))
 
 def view_lead(request, lead_id):
     lead = get_object_or_404(Lead, id=lead_id)
