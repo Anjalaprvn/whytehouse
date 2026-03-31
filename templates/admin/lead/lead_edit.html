@@ -181,8 +181,7 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label>Full Name *</label>
-                    <input type="text" id="edit_full_name" name="full_name" value="{{ lead.full_name }}" required oninput="validateLetters(this, 'full-name-error')">
-                    <div class="field-error" id="full-name-error">Only letters and spaces are allowed.</div>
+                    <input type="text" name="full_name" value="{{ lead.full_name }}" readonly style="background:#f0f0f0;color:#666;cursor:not-allowed;border-color:#d0d0d0;">
                 </div>
 
                 <div class="form-group">
@@ -192,53 +191,37 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Alternate Number</label>
+                    <input type="tel" name="alternate_number" value="{{ lead.alternate_number|default:'' }}" maxlength="10" placeholder="Optional" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                </div>
+
+                <div class="form-group">
                     <label>Place</label>
-                    <input type="text" name="place" value="{{ lead.place }}" oninput="validateLetters(this, 'place-error')">
-                    <div class="field-error" id="place-error">Only letters and spaces are allowed.</div>
+                    <input type="text" name="place" value="{{ lead.place|default:'' }}" readonly style="background:#f0f0f0;color:#666;cursor:not-allowed;border-color:#d0d0d0;">
                 </div>
 
                 <div class="form-group">
                     <label>Enquiry Type *</label>
-                    <select name="enquiry_type" required>
-                        <option value="General" {% if lead.enquiry_type == "General" %}selected{% endif %}>General Enquiry</option>
-                        <option value="International" {% if lead.enquiry_type == "International" %}selected{% endif %}>International</option>
-                        <option value="Domestic" {% if lead.enquiry_type == "Domestic" %}selected{% endif %}>Domestic</option>
-                        <option value="Hospitality" {% if lead.enquiry_type == "Hospitality" %}selected{% endif %}>Hospitality</option>
-                    </select>
+                    <input type="text" value="{{ lead.get_enquiry_type_display }}" readonly style="background:#f0f0f0;color:#666;cursor:not-allowed;border-color:#d0d0d0;">
+                    <input type="hidden" name="enquiry_type" value="{{ lead.enquiry_type }}">
                 </div>
 
                 <div class="form-group">
                     <label>Source *</label>
-                    <select name="source" required>
-                        <option value="Direct" {% if lead.source == "Direct" %}selected{% endif %}>Direct Contact</option>
-                        <option value="Manual" {% if lead.source == "Manual" %}selected{% endif %}>Manual Entry</option>
-                        <option value="Website" {% if lead.source == "Website" %}selected{% endif %}>Website</option>
-                        <option value="Referral" {% if lead.source == "Referral" %}selected{% endif %}>Referral</option>
-                    </select>
+                    <input type="text" value="{{ lead.get_source_display }}" readonly style="background:#f0f0f0;color:#666;cursor:not-allowed;border-color:#d0d0d0;">
+                    <input type="hidden" name="source" value="{{ lead.source }}">
                 </div>
 
                 <div class="form-group">
                     <label>Status</label>
-                    <select name="status">
-                        <option value="New" {% if lead.status == "New" %}selected{% endif %}>New</option>
-                        <option value="Contacted" {% if lead.status == "Contacted" %}selected{% endif %}>Contacted</option>
-                        <option value="Converted" {% if lead.status == "Converted" %}selected{% endif %}>Converted</option>
-                        <option value="Junk" {% if lead.status == "Junk" %}selected{% endif %}>Junk</option>
-                    </select>
+                    <input type="text" value="{{ lead.status }}" readonly style="background:#f0f0f0;color:#666;cursor:not-allowed;border-color:#d0d0d0;">
+                    <input type="hidden" name="status" value="{{ lead.status }}">
                 </div>
 
                 <div class="form-group">
                     <label>Assign Employee</label>
-                    <select name="employee">
-                        <option value="">Select Employee</option>
-                        {% for employee in employees %}
-                            <option value="{{ employee.id }}"
-                                {% if lead.employee and lead.employee.id == employee.id %}selected
-                                {% elif not lead.employee and employee.id == next_emp_id %}selected{% endif %}>
-                                {{ employee.name }}{% if employee.id == next_emp_id and not lead.employee %} ← Next{% endif %}
-                            </option>
-                        {% endfor %}
-                    </select>
+                    <input type="text" value="{{ lead.employee.name|default:'Not Assigned' }}" readonly style="background:#f0f0f0;color:#666;cursor:not-allowed;border-color:#d0d0d0;">
+                    <input type="hidden" name="employee" value="{{ lead.employee.id|default:'' }}">
                 </div>
 
                 <div class="form-group">
@@ -264,7 +247,7 @@
 
                 <div class="form-group full-width">
                     <label>Remarks</label>
-                    <textarea name="remarks" id="edit_remarks" oninput="validateRemarks(this)">{{ lead.remarks|default:'' }}</textarea>
+                    <textarea name="remarks" id="edit_remarks" oninput="validateRemarks(this)"></textarea>
                     <div class="field-error" id="remarks-error">Only letters, numbers, !, ., , and &amp; are allowed.</div>
                 </div>
             </div>

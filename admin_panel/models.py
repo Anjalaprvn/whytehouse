@@ -46,6 +46,7 @@ class Lead(models.Model):
     )
     full_name = models.CharField(max_length=100)
     mobile_number = models.CharField(max_length=15)
+    alternate_number = models.CharField(max_length=15, blank=True, null=True)
     place = models.CharField(max_length=100, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     message = models.TextField(blank=True, null=True)

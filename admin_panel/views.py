@@ -425,6 +425,7 @@ def edit_lead(request, id):
         lead.enquiry_type = request.POST.get('enquiry_type', 'General')
         lead.status = request.POST.get('status', 'New')
         lead.remarks = request.POST.get('remarks')
+        lead.alternate_number = request.POST.get('alternate_number') or None
         lead.employee_id = employee_id if employee_id else None
         lead.save()
 
