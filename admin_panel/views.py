@@ -803,12 +803,25 @@ def travel_package_add(request):
             })
 
         package_id = request.POST.get('package_id')
+        
+        # Parse pricing fields
+        base_price = request.POST.get('base_price', '').strip() or None
+        discount_price = request.POST.get('discount_price', '').strip() or 0
+        tax_percentage = request.POST.get('tax_percentage', '0').strip() or 0
+        final_price = request.POST.get('final_price_display', '').strip() or None
+        price_type = request.POST.get('price_type', 'Per Package').strip()
+
         TravelPackage.objects.create(
             package_id=package_id,
             name=name,
             category=category,
             destination=destination,
             price=price,
+            price_type=price_type,
+            base_price=base_price,
+            discount_price=discount_price,
+            tax_percentage=tax_percentage,
+            final_price=final_price,
             duration=duration,
             location=location,
             country=request.POST.get('country'),
@@ -834,6 +847,7 @@ def travel_package_add(request):
         'default_category': default_category,
         'selected_destination_id': int(destination_id) if destination_id else None,
         'selected_destination_obj': selected_destination_obj,
+        'package': None,
     }
     return render(request, 'admin/packages/travel_package_add.html', context)
 

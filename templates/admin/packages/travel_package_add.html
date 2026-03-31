@@ -17,12 +17,16 @@
         background-color: #f3f4f6;
         margin-bottom: 20px;
         box-sizing: border-box;
+        outline: none;
+    }
+
+    .form-control:focus {
+        box-shadow: 0 0 0 2px rgba(200, 155, 45, 0.15);
     }
 
     textarea.form-control { min-height: 100px; resize: vertical; }
     .grid-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
-    /* Switch Styling */
     .switch { position: relative; display: inline-block; width: 44px; height: 22px; vertical-align: middle; margin-right: 10px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider {
@@ -39,15 +43,47 @@
     .btn-group { display: flex; gap: 15px; margin-top: 20px; }
     .btn-submit { padding: 12px 30px; background: #c89b2d; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: 600; }
     .btn-cancel { padding: 12px 30px; background: #fff; border: 1px solid #ddd; border-radius: 8px; text-decoration: none; color: #333; font-weight: 600; }
-    
-    .img-preview { width: 150px; height: 100px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; }
 
     .field-error {
         color: #ef4444;
         font-size: 12px;
-        margin-top: 5px;
-        margin-bottom: 10px;
+        margin-top: -12px;
+        margin-bottom: 12px;
         display: none;
+    }
+
+    .invalid-field {
+        border: 1px solid #ef4444 !important;
+        background: #fff5f5 !important;
+    }
+
+    .readonly-box {
+        padding: 12px 16px;
+        border-radius: 8px;
+        background-color: #f3f4f6;
+        margin-bottom: 20px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .muted-box {
+        padding: 12px 16px;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        margin-bottom: 20px;
+        color: #999;
+        font-style: italic;
+    }
+
+    .pricing-note {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: -10px;
+        margin-bottom: 14px;
+    }
+
+    @media (max-width: 768px) {
+        .grid-row { grid-template-columns: 1fr; }
     }
 </style>
 
@@ -61,7 +97,7 @@
         </div>
     </div>
 
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST" enctype="multipart/form-data" id="package-form">
         {% csrf_token %}
 
         <div class="card">
@@ -70,15 +106,32 @@
             <div class="grid-row">
                 <div>
                     <label>Package ID</label>
-                    <input type="text" name="package_id" id="package_id" value="{{ package.package_id|default:'' }}" class="form-control" placeholder="{% if package %}{{ package.package_id }}{% else %}Auto-generated{% endif %}" readonly style="background-color: #e8e8e8; cursor: not-allowed;">
+                    <input type="text"
+                           name="package_id"
+                           id="package_id"
+                           value="{{ package.package_id|default:'' }}"
+                           class="form-control"
+                           placeholder="{% if package %}{{ package.package_id }}{% else %}Auto-generated{% endif %}"
+                           readonly
+                           style="background-color: #e8e8e8; cursor: not-allowed;">
                 </div>
+
                 <div>
                     <label>Package Title <span class="required-star">*</span></label>
-                    <input type="text" id="packageName" name="name" value="{{ form_name|default:'' }}" required class="form-control" {% if name_error %}style="margin-bottom:6px;"{% endif %} oninput="validateLettersField(this, 'title-letters-error')">                    
-                    <div id="title-letters-error" class="field-error">Only letters, spaces, &amp;, and commas are allowed.</div>
+                    <input type="text"
+                           id="packageName"
+                           name="name"
+                           value="{{ form_name|default:'' }}"
+                           required
+                           class="form-control"
+                           oninput="validateLettersField(this, 'title-letters-error')">
+                    <div id="title-letters-error" class="field-error">Only letters, spaces, &amp;, commas and hyphens are allowed.</div>
+
                     <div id="name-error-box" style="background:#fef2f2; border:1px solid #fca5a5; border-radius:6px; padding:8px 12px; margin-bottom:14px; display:{% if name_error %}flex{% else %}none{% endif %}; align-items:center; gap:8px;">
                         <span style="color:#ef4444; font-size:14px;">&#9888;</span>
-                        <span id="name-error-msg" style="color:#dc2626; font-size:0.82rem; font-weight:500;">{% if name_error %}{{ name_error }}{% else %}A package with this title already exists. Use another title.{% endif %}</span>
+                        <span id="name-error-msg" style="color:#dc2626; font-size:0.82rem; font-weight:500;">
+                            {% if name_error %}{{ name_error }}{% else %}A package with this title already exists. Use another title.{% endif %}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -86,45 +139,65 @@
             <div class="grid-row">
                 <div>
                     <label>Category <span class="required-star">*</span></label>
-                    <input type="text" value="{{ default_category }}" readonly class="form-control" style="background-color: #f3f4f6; cursor: not-allowed;">
-                    <input type="hidden" name="category" value="{{ default_category }}">
+                    <input type="text" id="category_display" value="{{ default_category }}" readonly class="form-control" style="background-color: #f3f4f6; cursor: not-allowed;">
+                    <input type="hidden" id="category" name="category" value="{{ default_category }}">
                 </div>
 
                 <div>
+                    <label>Destination <span class="required-star">*</span></label>
                     {% if selected_destination_obj %}
-                    <label>Destination</label>
-                    <div style="padding: 12px 16px; border-radius: 8px; background-color: #f3f4f6; margin-bottom: 20px; font-weight: 500; color: #333;">
-                        {{ selected_destination_obj.name }}, {{ selected_destination_obj.country }}
-                    </div>
-                    <input type="hidden" name="destination" value="{{ selected_destination_id }}">
+                        <div class="readonly-box">
+                            {{ selected_destination_obj.name }}, {{ selected_destination_obj.country }}
+                        </div>
+                        <input type="hidden" name="destination" value="{{ selected_destination_id }}">
                     {% else %}
-                    <label>Destination</label>
-                    <div style="padding: 12px 16px; border-radius: 8px; background-color: #f9f9f9; margin-bottom: 20px; color: #999; font-style: italic;">
-                        No destination selected
-                    </div>
+                        <div class="muted-box">No destination selected</div>
                     {% endif %}
                 </div>
             </div>
 
             <div class="grid-row">
                 <div>
-                    <label>Price <span class="required-star">*</span></label>
-                    <input type="text" name="price" value="{{ package.price|default:'' }}" required class="form-control" onkeydown="return /[\d.]/.test(event.key)||event.key==='Backspace'||event.key==='Delete'||event.key==='ArrowLeft'||event.key==='ArrowRight'||event.key==='Tab'" oninput="this.value=this.value.replace(/[^\d.]/g,'').replace(/(\..*)\./g,'$1')">
+                    <label>Location <span class="required-star">*</span></label>
+                    <input type="text"
+                           name="location"
+                           value="{{ package.location|default:'' }}"
+                           required
+                           class="form-control"
+                           placeholder="e.g. Wayanad, Kerala"
+                           oninput="validateLettersOnly(this, 'location-error')">
+                    <div id="location-error" class="field-error">Only letters, spaces, commas and hyphens are allowed.</div>
                 </div>
 
+                <div>
+                    <label>Country <span class="required-star">*</span></label>
+                    <input type="text"
+                           name="country"
+                           value="{{ package.country|default:'' }}"
+                           required
+                           class="form-control"
+                           placeholder="e.g. India"
+                           oninput="validateLettersOnly(this, 'country-error')">
+                    <div id="country-error" class="field-error">Only letters, spaces, commas and hyphens are allowed.</div>
+                </div>
+            </div>
+
+            <div class="grid-row">
                 <div>
                     <label>Duration <span class="required-star">*</span></label>
                     <div style="display:flex; gap:10px; align-items:center; margin-bottom:20px;">
                         <div style="display:flex; align-items:center; background:#f3f4f6; border-radius:8px; overflow:hidden; flex:1;">
                             <button type="button" onclick="changeDuration('days',-1)" style="padding:10px 14px; background:none; border:none; font-size:18px; cursor:pointer; color:#555;">−</button>
-                            <input type="number" id="days-input" min="1" value="1" style="width:40px; text-align:center; border:none; background:transparent; font-size:15px; font-weight:600; outline:none;" oninput="syncDuration()">
+                            <input type="number" id="days-input" min="1" value="1" style="width:50px; text-align:center; border:none; background:transparent; font-size:15px; font-weight:600; outline:none;" oninput="syncDuration()">
                             <span style="font-size:13px; color:#666; padding-right:10px;">Days</span>
                             <button type="button" onclick="changeDuration('days',1)" style="padding:10px 14px; background:none; border:none; font-size:18px; cursor:pointer; color:#555;">+</button>
                         </div>
+
                         <span style="color:#999;">/</span>
+
                         <div style="display:flex; align-items:center; background:#f3f4f6; border-radius:8px; overflow:hidden; flex:1;">
                             <button type="button" onclick="changeDuration('nights',-1)" style="padding:10px 14px; background:none; border:none; font-size:18px; cursor:pointer; color:#555;">−</button>
-                            <input type="number" id="nights-input" min="0" value="0" style="width:40px; text-align:center; border:none; background:transparent; font-size:15px; font-weight:600; outline:none;" oninput="syncDuration()">
+                            <input type="number" id="nights-input" min="0" value="0" style="width:50px; text-align:center; border:none; background:transparent; font-size:15px; font-weight:600; outline:none;" oninput="syncDuration()">
                             <span style="font-size:13px; color:#666; padding-right:10px;">Nights</span>
                             <button type="button" onclick="changeDuration('nights',1)" style="padding:10px 14px; background:none; border:none; font-size:18px; cursor:pointer; color:#555;">+</button>
                         </div>
@@ -132,93 +205,157 @@
                     <input type="hidden" id="duration" name="duration" value="{{ package.duration|default:'' }}">
                     <div id="duration-error" class="field-error">Duration is required.</div>
                 </div>
-            </div>
-
-            <div class="grid-row">
-                <div>
-                    <label>Location <span class="required-star">*</span></label>
-                    <input type="text" name="location" value="{{ package.location|default:'' }}" required class="form-control" placeholder="e.g. Wayanad, Kerala" oninput="validateLettersOnly(this, 'location-error')">
-                    <div id="location-error" class="field-error">Only letters, spaces, and commas are allowed.</div>
-                </div>
 
                 <div>
-                    <label>Country <span class="required-star">*</span></label>
-                    <input type="text" name="country" value="{{ package.country|default:'' }}" required class="form-control" placeholder="e.g. India" oninput="validateLettersOnly(this, 'country-error')">
-                    <div id="country-error" class="field-error">Only letters, spaces, and commas are allowed.</div>
+                    <label>Price Type <span class="required-star">*</span></label>
+                    <select name="price_type" id="price_type" class="form-control" required>
+                        <option value="">Select price type</option>
+                        <option value="Per Person" {% if package.price_type == 'Per Person' %}selected{% endif %}>Per Person</option>
+                        <option value="Per Couple" {% if package.price_type == 'Per Couple' %}selected{% endif %}>Per Couple</option>
+                        <option value="Per Family" {% if package.price_type == 'Per Family' %}selected{% endif %}>Per Family</option>
+                        <option value="Per Package" {% if package.price_type == 'Per Package' or not package.price_type %}selected{% endif %}>Per Package</option>
+                    </select>
+                    <div id="price-type-error" class="field-error">Price type is required.</div>
                 </div>
             </div>
 
             <label>Description</label>
             <textarea name="description" class="form-control" oninput="validateDescField(this)">{{ package.description|default:'' }}</textarea>
-            <div id="desc-letters-error" class="field-error">Only letters, numbers, !, ., , and &amp; are allowed.</div>
+            <div id="desc-letters-error" class="field-error">Only letters, numbers, !, ., commas, ampersand and hyphens are allowed.</div>
 
             <label>Package Image <span class="required-star">*</span></label>
             <div id="pkg-preview-wrapper" style="display:{% if package.image %}block{% else %}none{% endif %}; position:relative; width:fit-content; margin-bottom:10px;">
-                <img id="pkg-preview-img" src="{% if package.image %}{{ package.image.url }}{% endif %}" alt="Preview" style="width:150px; height:100px; object-fit:cover; border-radius:8px; border:1px solid #ddd; display:block;">
+                <img id="pkg-preview-img"
+                     src="{% if package.image %}{{ package.image.url }}{% endif %}"
+                     alt="Preview"
+                     style="width:150px; height:100px; object-fit:cover; border-radius:8px; border:1px solid #ddd; display:block;">
                 <button type="button" id="pkg-remove-img" style="position:absolute; top:-8px; right:-8px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:22px; height:22px; font-size:13px; cursor:pointer; line-height:1;">&times;</button>
             </div>
+
             <div id="pkg-upload-box" onclick="document.getElementById('pkg-file-upload').click()" style="{% if package.image %}display:none;{% endif %}border:2px dashed #e2e8f0; border-radius:12px; padding:30px; text-align:center; background:#fff; cursor:pointer;">
-                <div style="font-size:28px; color:#94a3b8;"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                <div style="font-size:28px; color:#94a3b8;">⬆</div>
                 <div style="font-size:14px; color:#64748b; margin-top:8px;">Click to upload package image</div>
             </div>
-            <input type="file" id="pkg-file-upload" name="image" accept="image/*" style="display:none;" {% if not package %}required{% endif %}>
 
-            <div style="margin-top: 10px; display: flex; align-items: center;">
+            <input type="file" id="pkg-file-upload" name="image" accept="image/*" style="display:none;" {% if not package %}required{% endif %}>
+            <div id="image-error" class="field-error">Package image is required.</div>
+
+            <div style="margin-top:10px; display:flex; align-items:center;">
                 <label class="switch">
                     <input type="checkbox" name="active" {% if package.active or not package %}checked{% endif %}>
                     <span class="slider"></span>
                 </label>
-                <span style="font-weight: 500; font-size: 0.9rem;">Active Package</span>
+                <span style="font-weight:500; font-size:0.9rem;">Active Package</span>
             </div>
         </div>
 
         <div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h4 style="margin:0;">Itinerary <span id="day-limit" style="font-size: 0.9rem; color: #6b7280;"></span></h4>
-        <button type="button" id="add-day-btn" onclick="addDay()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer;">+ Add Day</button>
-    </div>
+            <h4>Pricing Details</h4>
 
-    <div id="itinerary-container">
-        <div class="itinerary-item">
-            <label>Day 1</label>
-            <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateItinerary(this)"></textarea>
+            <div class="grid-row">
+                <div>
+                    <label>Base Price <span class="required-star">*</span></label>
+                    <input type="text"
+                           id="base_price"
+                           name="base_price"
+                           value="{{ package.base_price|default:'' }}"
+                           class="form-control"
+                           required
+                           placeholder="e.g. 25000"
+                           oninput="sanitizeAmount(this); calculateFinalPrice();">
+                    <div id="base-price-error" class="field-error">Base price is required.</div>
+                </div>
+
+                <div>
+                    <label>Discount Amount</label>
+                    <input type="text"
+                           id="discount_price"
+                           name="discount_price"
+                           value="{{ package.discount_price|default:'' }}"
+                           class="form-control"
+                           placeholder="e.g. 2000"
+                           oninput="sanitizeAmount(this); calculateFinalPrice();">
+                </div>
+            </div>
+
+            <div class="grid-row">
+                <div>
+                    <label>Tax Percentage <span class="required-star">*</span></label>
+                    <input type="text"
+                           id="tax_percentage"
+                           name="tax_percentage"
+                           value="{{ package.tax_percentage|default:'0' }}"
+                           class="form-control"
+                           required
+                           placeholder="e.g. 5"
+                           oninput="sanitizePercent(this); calculateFinalPrice();">
+                    <div id="tax-error" class="field-error">Tax percentage is required.</div>
+                </div>
+
+                <div>
+                    <label>Final Price <span class="required-star">*</span></label>
+                    <input type="text"
+                           id="final_price"
+                           name="final_price_display"
+                           value="{{ package.final_price|default:'' }}"
+                           class="form-control"
+                           required
+                           readonly
+                           style="background:#e8e8e8; cursor:not-allowed;">
+                    <div class="pricing-note">Final price = (Base Price - Discount) + Tax</div>
+                </div>
+            </div>
+
+            <!-- Hidden field to keep your current backend price working -->
+            <input type="hidden" name="price" id="price-hidden" value="{{ package.price|default:'' }}">
         </div>
-    </div>
-</div>
-
 
         <div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h4 style="margin:0;">Inclusions</h4>
-        <button type="button" onclick="addInclusion()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer;">+ Add Inclusion</button>
-    </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h4 style="margin:0;">Itinerary <span id="day-limit" style="font-size:0.9rem; color:#6b7280;"></span></h4>
+                <button type="button" id="add-day-btn" onclick="addDay()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer;">+ Add Day</button>
+            </div>
 
-    <div id="inclusion-container">
-        <input type="text" name="inclusions[]" class="form-control" placeholder="e.g., Hotel accommodation" oninput="validateLettersField(this, null); checkDuplicate(this, 'inclusion')">
-    </div>
-</div>
-<div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h4 style="margin:0;">Exclusions</h4>
-        <button type="button" onclick="addExclusion()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer;">+ Add Exclusion</button>
-    </div>
+            <div id="itinerary-container">
+                <div class="itinerary-item">
+                    <label>Day 1 <span class="required-star">*</span></label>
+                    <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateItinerary(this)" required></textarea>
+                </div>
+            </div>
+        </div>
 
-    <div id="exclusion-container">
-        <input type="text" name="exclusions[]" class="form-control" placeholder="e.g., Flight tickets" oninput="validateLettersField(this, null); checkDuplicate(this, 'exclusion')">
-    </div>
-</div>
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h4 style="margin:0;">Inclusions</h4>
+                <button type="button" onclick="addInclusion()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer;">+ Add Inclusion</button>
+            </div>
 
+            <div id="inclusion-container">
+                <input type="text" name="inclusions[]" class="form-control" placeholder="e.g., Hotel accommodation" oninput="validateLettersField(this, null); checkDuplicate(this, 'inclusion')">
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h4 style="margin:0;">Exclusions</h4>
+                <button type="button" onclick="addExclusion()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer;">+ Add Exclusion</button>
+            </div>
+
+            <div id="exclusion-container">
+                <input type="text" name="exclusions[]" class="form-control" placeholder="e.g., Flight tickets" oninput="validateLettersField(this, null); checkDuplicate(this, 'exclusion')">
+            </div>
+        </div>
 
         <div class="card">
             <h4>SEO Settings</h4>
 
             <label>Meta Title</label>
             <input type="text" id="meta_title" name="meta_title" value="{{ package.meta_title|default:'' }}" class="form-control" oninput="validateMetaTitle(this)">
-            <div id="meta-title-error" class="field-error">Only letters and hyphens (-) are allowed.</div>
+            <div id="meta-title-error" class="field-error">Only letters, spaces and hyphens (-) are allowed.</div>
 
             <label>Meta Description</label>
             <textarea id="meta_description" name="meta_description" class="form-control" oninput="validateMetaDesc(this)">{{ package.meta_description|default:'' }}</textarea>
-            <div id="meta-desc-error" class="field-error">Only letters, numbers, !, , . and &amp; are allowed.</div>
+            <div id="meta-desc-error" class="field-error">Only letters, numbers, !, commas, dots, ampersand and hyphens are allowed.</div>
 
             <div class="btn-group">
                 <a href="{% url 'admin_panel:travel_packages' %}" class="btn-cancel">Cancel</a>
@@ -228,38 +365,46 @@
 
     </form>
 </div>
+
 <script>
 let dayCount = 1;
 let maxDays = 0;
 
 window.addEventListener('DOMContentLoaded', function() {
-    var nameInput = document.getElementById('packageName');
-    var nameErrorBox = document.getElementById('name-error-box');
-    var checkTimeout;
-    var nameIsDuplicate = {% if name_error %}true{% else %}false{% endif %};
+    const nameInput = document.getElementById('packageName');
+    const nameErrorBox = document.getElementById('name-error-box');
+    let checkTimeout;
+    let nameIsDuplicate = {% if name_error %}true{% else %}false{% endif %};
 
     function checkPackageName() {
-        var name = nameInput.value.trim();
-        var category = document.getElementById('category').value;
-        if (!name) { hideNameError(); return; }
+        const name = nameInput.value.trim();
+        const categoryEl = document.getElementById('category');
+        const category = categoryEl ? categoryEl.value : '';
+
+        if (!name) {
+            hideNameError();
+            return;
+        }
+
         fetch('{% url "admin_panel:check_package_name" %}?name=' + encodeURIComponent(name) + '&category=' + encodeURIComponent(category))
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.exists) {
                     nameIsDuplicate = true;
-                    nameInput.style.border = '1.5px solid #ef4444';
-                    nameInput.style.background = '#fff5f5';
+                    nameInput.classList.add('invalid-field');
                     nameErrorBox.style.display = 'flex';
                 } else {
                     hideNameError();
                 }
+            })
+            .catch(function() {
+                hideNameError();
             });
     }
 
     function hideNameError() {
         nameIsDuplicate = false;
-        nameInput.style.border = '';
-        nameInput.style.background = '';
+        nameInput.classList.remove('invalid-field');
         nameErrorBox.style.display = 'none';
     }
 
@@ -268,57 +413,18 @@ window.addEventListener('DOMContentLoaded', function() {
         checkTimeout = setTimeout(checkPackageName, 400);
     });
 
-    document.getElementById('category').addEventListener('change', function() {
-        if (nameInput.value.trim()) checkPackageName();
-    });
-
-    document.querySelector('form').addEventListener('submit', function(e) {
-        if (nameIsDuplicate) {
-            e.preventDefault();
-            nameErrorBox.style.display = 'flex';
-            nameInput.focus();
-            return;
-        }
-        const durationVal = document.getElementById('duration').value.trim();
-        if (!durationVal) {
-            e.preventDefault();
-            document.getElementById('duration-error').style.display = 'block';
-            return;
-        }
-        // Validate all itinerary fields
-        let itinValid = true;
-        document.querySelectorAll('#itinerary-container textarea').forEach(function(ta) {
-            if (!validateItinerary(ta)) itinValid = false;
+    const categoryField = document.getElementById('category');
+    if (categoryField) {
+        categoryField.addEventListener('change', function() {
+            if (nameInput.value.trim()) checkPackageName();
         });
-        if (!itinValid) {
-            e.preventDefault();
-            document.querySelector('#itinerary-container .itin-err').scrollIntoView({behavior:'smooth', block:'center'});
-            return;
-        }
-        const metaTitleEl = document.getElementById('meta_title');
-        const metaDescEl = document.getElementById('meta_description');
-        if (metaTitleEl.value && !/^[a-zA-Z\s-]*$/.test(metaTitleEl.value)) {
-            e.preventDefault();
-            document.getElementById('meta-title-error').style.display = 'block';
-            metaTitleEl.focus();
-            return;
-        }
-        if (metaDescEl.value && !/^[a-zA-Z0-9\s!,\.&]*$/.test(metaDescEl.value)) {
-            e.preventDefault();
-            document.getElementById('meta-desc-error').style.display = 'block';
-            metaDescEl.focus();
-            return;
-        }
-    });
+    }
 
     const packageIdField = document.getElementById('package_id');
-    const durationField = document.getElementById('duration');
-
     if (!packageIdField.value) {
         generateNextPackageId();
     }
 
-    // Init duration spinners from existing value
     const existingDuration = document.getElementById('duration').value;
     if (existingDuration) {
         const dMatch = existingDuration.match(/(\d+)\s*days?/i);
@@ -341,16 +447,114 @@ window.addEventListener('DOMContentLoaded', function() {
                 pkgPreviewImg.src = e.target.result;
                 pkgPreviewWrapper.style.display = 'block';
                 pkgUploadBox.style.display = 'none';
+                document.getElementById('image-error').style.display = 'none';
             };
             reader.readAsDataURL(file);
         }
     });
 
-    document.getElementById('pkg-remove-img').addEventListener('click', function() {
-        pkgFileInput.value = '';
-        pkgPreviewImg.src = '';
-        pkgPreviewWrapper.style.display = 'none';
-        pkgUploadBox.style.display = 'block';
+    const removeBtn = document.getElementById('pkg-remove-img');
+    if (removeBtn) {
+        removeBtn.addEventListener('click', function() {
+            pkgFileInput.value = '';
+            pkgPreviewImg.src = '';
+            pkgPreviewWrapper.style.display = 'none';
+            pkgUploadBox.style.display = 'block';
+        });
+    }
+
+    calculateFinalPrice();
+
+    document.getElementById('package-form').addEventListener('submit', function(e) {
+        let formValid = true;
+
+        if (nameIsDuplicate) {
+            e.preventDefault();
+            nameErrorBox.style.display = 'flex';
+            nameInput.focus();
+            return;
+        }
+
+        const durationVal = document.getElementById('duration').value.trim();
+        if (!durationVal) {
+            document.getElementById('duration-error').style.display = 'block';
+            formValid = false;
+        } else {
+            document.getElementById('duration-error').style.display = 'none';
+        }
+
+        const priceType = document.getElementById('price_type');
+        if (!priceType.value.trim()) {
+            document.getElementById('price-type-error').style.display = 'block';
+            priceType.classList.add('invalid-field');
+            formValid = false;
+        } else {
+            document.getElementById('price-type-error').style.display = 'none';
+            priceType.classList.remove('invalid-field');
+        }
+
+        const basePrice = document.getElementById('base_price');
+        if (!basePrice.value.trim()) {
+            document.getElementById('base-price-error').style.display = 'block';
+            basePrice.classList.add('invalid-field');
+            formValid = false;
+        } else {
+            document.getElementById('base-price-error').style.display = 'none';
+            basePrice.classList.remove('invalid-field');
+        }
+
+        const taxPercentage = document.getElementById('tax_percentage');
+        if (taxPercentage.value.trim() === '') {
+            document.getElementById('tax-error').style.display = 'block';
+            taxPercentage.classList.add('invalid-field');
+            formValid = false;
+        } else {
+            document.getElementById('tax-error').style.display = 'none';
+            taxPercentage.classList.remove('invalid-field');
+        }
+
+        calculateFinalPrice();
+
+        const finalPrice = document.getElementById('final_price').value.trim();
+        if (!finalPrice || Number(finalPrice) < 0) {
+            formValid = false;
+        }
+
+        const pkgFileInput = document.getElementById('pkg-file-upload');
+        const pkgPreviewWrapper = document.getElementById('pkg-preview-wrapper');
+        const hasExistingImage = pkgPreviewWrapper && pkgPreviewWrapper.style.display !== 'none';
+
+        if (!pkgFileInput.files.length && !hasExistingImage) {
+            document.getElementById('image-error').style.display = 'block';
+            formValid = false;
+        } else {
+            document.getElementById('image-error').style.display = 'none';
+        }
+
+        let itinValid = true;
+        document.querySelectorAll('#itinerary-container textarea').forEach(function(ta) {
+            if (!validateItinerary(ta)) itinValid = false;
+        });
+        if (!itinValid) {
+            formValid = false;
+        }
+
+        const metaTitleEl = document.getElementById('meta_title');
+        const metaDescEl = document.getElementById('meta_description');
+
+        if (metaTitleEl.value && !/^[a-zA-Z\s-]*$/.test(metaTitleEl.value)) {
+            document.getElementById('meta-title-error').style.display = 'block';
+            formValid = false;
+        }
+
+        if (metaDescEl.value && !/^[a-zA-Z0-9\s!,.&-]*$/.test(metaDescEl.value)) {
+            document.getElementById('meta-desc-error').style.display = 'block';
+            formValid = false;
+        }
+
+        if (!formValid) {
+            e.preventDefault();
+        }
     });
 });
 
@@ -367,45 +571,61 @@ function generateNextPackageId() {
         });
 }
 
+function sanitizeAmount(input) {
+    input.value = input.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1');
+}
+
+function sanitizePercent(input) {
+    input.value = input.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1');
+    if (parseFloat(input.value) > 100) input.value = 100;
+}
+
+function calculateFinalPrice() {
+    const base = parseFloat(document.getElementById('base_price').value) || 0;
+    const discount = parseFloat(document.getElementById('discount_price').value) || 0;
+    const tax = parseFloat(document.getElementById('tax_percentage').value) || 0;
+
+    const discountedAmount = Math.max(base - discount, 0);
+    const taxAmount = (discountedAmount * tax) / 100;
+    const finalAmount = discountedAmount + taxAmount;
+
+    document.getElementById('final_price').value = finalAmount ? finalAmount.toFixed(2) : '';
+    document.getElementById('price-hidden').value = finalAmount ? finalAmount.toFixed(2) : '';
+}
+
 function updateItineraryDays() {
     const durationField = document.getElementById('duration');
     const durationValue = durationField.value;
-    
-    // Extract number of days from duration (e.g., "7 Days / 6 Nights" -> 7)
+
     const match = durationValue.match(/(\d+)\s*(?:day|days)/i);
     const extractedDays = match ? parseInt(match[1]) : 0;
-    
+
     if (extractedDays > 0) {
         maxDays = extractedDays;
         const container = document.getElementById('itinerary-container');
         const currentDays = container.querySelectorAll('.itinerary-item').length;
-        
-        // Update day limit display
+
         document.getElementById('day-limit').textContent = `(Max ${maxDays} days)`;
-        
-        // Add or remove days to match the duration
+
         if (currentDays < maxDays) {
-            // Add missing days
             for (let i = currentDays + 1; i <= maxDays; i++) {
                 const div = document.createElement('div');
                 div.classList.add('itinerary-item');
                 div.innerHTML = `
-                    <label>Day ${i}</label>
-                    <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateItinerary(this)"></textarea>
+                    <label>Day ${i} <span class="required-star">*</span></label>
+                    <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateItinerary(this)" required></textarea>
                 `;
                 container.appendChild(div);
             }
             dayCount = maxDays;
         } else if (currentDays > maxDays) {
-            // Remove extra days
             const items = container.querySelectorAll('.itinerary-item');
             for (let i = items.length - 1; i >= maxDays; i--) {
                 items[i].remove();
             }
             dayCount = maxDays;
         }
-        
-        // Disable add button if max days reached
+
         const addBtn = document.getElementById('add-day-btn');
         if (dayCount >= maxDays) {
             addBtn.disabled = true;
@@ -424,21 +644,19 @@ function addDay() {
         alert(`You can only add ${maxDays} days based on the duration.`);
         return;
     }
-    
+
     dayCount++;
     const container = document.getElementById('itinerary-container');
 
     const div = document.createElement('div');
     div.classList.add('itinerary-item');
-
     div.innerHTML = `
-        <label>Day ${dayCount}</label>
-        <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateItinerary(this)"></textarea>
+        <label>Day ${dayCount} <span class="required-star">*</span></label>
+        <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateItinerary(this)" required></textarea>
     `;
 
     container.appendChild(div);
-    
-    // Disable add button if max days reached
+
     const addBtn = document.getElementById('add-day-btn');
     if (maxDays > 0 && dayCount >= maxDays) {
         addBtn.disabled = true;
@@ -449,27 +667,29 @@ function addDay() {
 
 function addInclusion() {
     const container = document.getElementById('inclusion-container');
-
     const input = document.createElement('input');
     input.type = 'text';
     input.name = 'inclusions[]';
     input.className = 'form-control';
     input.placeholder = 'e.g., Breakfast included';
-    input.addEventListener('input', function() { validateLettersField(this, null); checkDuplicate(this, 'inclusion'); });
-
+    input.addEventListener('input', function() {
+        validateLettersField(this, null);
+        checkDuplicate(this, 'inclusion');
+    });
     container.appendChild(input);
 }
 
 function addExclusion() {
     const container = document.getElementById('exclusion-container');
-
     const input = document.createElement('input');
     input.type = 'text';
     input.name = 'exclusions[]';
     input.className = 'form-control';
     input.placeholder = 'e.g., Personal expenses';
-    input.addEventListener('input', function() { validateLettersField(this, null); checkDuplicate(this, 'exclusion'); });
-
+    input.addEventListener('input', function() {
+        validateLettersField(this, null);
+        checkDuplicate(this, 'exclusion');
+    });
     container.appendChild(input);
 }
 
@@ -483,32 +703,27 @@ function changeDuration(type, delta) {
 function syncDuration() {
     const days = Math.max(1, parseInt(document.getElementById('days-input').value) || 1);
     const nights = Math.max(0, parseInt(document.getElementById('nights-input').value) || 0);
+
     document.getElementById('days-input').value = days;
     document.getElementById('nights-input').value = nights;
+
     const val = `${days} Days / ${nights} Nights`;
     document.getElementById('duration').value = val;
-    updateItineraryDays();
-}
+    document.getElementById('duration-error').style.display = 'none';
 
-function validateDuration(input) {
-    const err = document.getElementById('duration-error');
-    if (!input.value.trim()) {
-        err.style.display = 'block';
-        return false;
-    }
-    err.style.display = 'none';
-    return true;
+    updateItineraryDays();
 }
 
 function validateItinerary(input) {
     const val = input.value.trim();
     let errorMsg = '';
+
     if (!val) {
         errorMsg = 'Itinerary for this day is required.';
     } else if (val.length < 10) {
         errorMsg = 'Please enter at least 10 characters.';
-    } else if (!/^[a-zA-Z0-9\s!.,&-]*$/.test(val)) {
-        errorMsg = 'Only letters, numbers, !, ., ,, - and & are allowed.';
+    } else if (!/^[a-zA-Z0-9\s!.,&()-]*$/.test(val)) {
+        errorMsg = 'Only letters, numbers, spaces and ! . , & ( ) - are allowed.';
     } else {
         const allTextareas = document.querySelectorAll('#itinerary-container textarea');
         allTextareas.forEach(function(other) {
@@ -517,7 +732,9 @@ function validateItinerary(input) {
             }
         });
     }
-    input.classList.toggle('invalid', !!errorMsg);
+
+    input.classList.toggle('invalid-field', !!errorMsg);
+
     let msg = input.nextElementSibling;
     if (errorMsg) {
         if (!msg || !msg.classList.contains('itin-err')) {
@@ -530,7 +747,7 @@ function validateItinerary(input) {
     } else if (msg && msg.classList.contains('itin-err')) {
         msg.remove();
     }
-    // Re-validate others to clear stale duplicate errors
+
     document.querySelectorAll('#itinerary-container textarea').forEach(function(other) {
         if (other !== input) {
             const otherMsg = other.nextElementSibling;
@@ -538,23 +755,28 @@ function validateItinerary(input) {
                 const otherVal = other.value.trim();
                 const isDup = Array.from(document.querySelectorAll('#itinerary-container textarea'))
                     .some(function(t) { return t !== other && t.value.trim().toLowerCase() === otherVal.toLowerCase(); });
-                if (!isDup) { otherMsg.remove(); other.classList.remove('invalid'); }
+                if (!isDup) {
+                    otherMsg.remove();
+                    other.classList.remove('invalid-field');
+                }
             }
         }
     });
+
     return !errorMsg;
 }
 
 function validateDescField(input) {
-    const valid = /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
+    const valid = /^[a-zA-Z0-9\s!,.&-]*$/.test(input.value);
     document.getElementById('desc-letters-error').style.display = valid ? 'none' : 'block';
 }
 
 function validateLettersOnly(input, errorId) {
-    const invalid = /[0-9]/.test(input.value);
+    const valid = /^[a-zA-Z\s,-]*$/.test(input.value);
     const err = document.getElementById(errorId);
-    if (invalid) {
-        input.value = input.value.replace(/[0-9]/g, '');
+
+    if (!valid) {
+        input.value = input.value.replace(/[^a-zA-Z\s,-]/g, '');
         err.style.display = 'block';
     } else {
         err.style.display = 'none';
@@ -563,15 +785,16 @@ function validateLettersOnly(input, errorId) {
 
 function validateLettersField(input, errorId) {
     const valid = errorId === 'title-letters-error'
-        ? /^[a-zA-Z\s&,]*$/.test(input.value)
-        : /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
+        ? /^[a-zA-Z\s,&-]*$/.test(input.value)
+        : /^[a-zA-Z0-9\s!,.&-]*$/.test(input.value);
+
     if (!valid) {
         if (!errorId) {
             let msg = input.nextElementSibling;
             if (!msg || !msg.classList.contains('letters-msg')) {
                 msg = document.createElement('div');
                 msg.className = 'letters-msg field-error';
-                msg.textContent = 'Only letters, numbers, !, ., , and & are allowed.';
+                msg.textContent = 'Only letters, numbers, !, ., commas, ampersand and hyphens are allowed.';
                 msg.style.display = 'block';
                 input.insertAdjacentElement('afterend', msg);
             }
@@ -594,7 +817,7 @@ function validateMetaTitle(input) {
 }
 
 function validateMetaDesc(input) {
-    const valid = /^[a-zA-Z0-9\s!,\.&]*$/.test(input.value);
+    const valid = /^[a-zA-Z0-9\s!,.&-]*$/.test(input.value);
     document.getElementById('meta-desc-error').style.display = valid ? 'none' : 'block';
 }
 
@@ -613,7 +836,9 @@ function checkDuplicate(input, type) {
     }
 
     let msg = input.nextElementSibling;
+
     if (isDuplicate) {
+        input.classList.add('invalid-field');
         if (!msg || !msg.classList.contains('dup-msg')) {
             msg = document.createElement('div');
             msg.className = 'dup-msg field-error';
@@ -622,9 +847,7 @@ function checkDuplicate(input, type) {
             input.insertAdjacentElement('afterend', msg);
         }
     } else {
-        input.style.border = '';
-        input.style.background = '';
-        input.style.marginBottom = '';
+        input.classList.remove('invalid-field');
         if (msg && msg.classList.contains('dup-msg')) msg.remove();
     }
 }
