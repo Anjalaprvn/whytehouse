@@ -145,10 +145,12 @@ tbody tr:last-child td{border-bottom:none}
             <form method="POST" action="{% url 'admin_panel:assign_lead_employee' lead.id %}" class="assign-form">
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <select name="employee" onchange="this.form.submit()" style="padding:6px 10px;border-radius:8px;border:1px solid #e5e7eb;background:{% if not lead.employee %}#fee2e2{% else %}#f9fafb{% endif %};color:{% if not lead.employee %}#dc2626{% else %}#111{% endif %};font-size:12px;outline:none;cursor:pointer;max-width:130px;">
+              <select name="employee" onchange="this.form.submit()" style="padding:6px 10px;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;color:#111;font-size:12px;outline:none;cursor:pointer;max-width:130px;">
                 <option value="">-- Unassigned --</option>
                 {% for emp in employees %}
-                  <option value="{{ emp.id }}" {% if lead.employee and lead.employee.id == emp.id %}selected{% endif %}>{{ emp.name }}</option>
+                  <option value="{{ emp.id }}" {% if lead.employee and lead.employee.id == emp.id %}selected{% endif %}>
+                    {{ emp.name }}{% if not lead.employee and emp.id == next_emp_id %} ←{% endif %}
+                  </option>
                 {% endfor %}
               </select>
             </form>

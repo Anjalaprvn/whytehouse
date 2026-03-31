@@ -384,6 +384,7 @@ def lead_management(request):
         'hospitality_count': hospitality_count,
         'new_leads_count': new_leads_count,
         'employees': Employee.objects.filter(status='Active').order_by('name'),
+        'next_emp_id': get_next_employee_for_lead().id if get_next_employee_for_lead() else None,
     }
     return render(request, 'admin/lead/lead.html', context)
 
