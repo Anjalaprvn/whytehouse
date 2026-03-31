@@ -39,13 +39,16 @@ tbody tr:last-child td{border-bottom:none}
     <h3>Invoice List</h3>
 
     <div class="tools">
-      <div class="search">
-        <svg viewBox="0 0 24 24" fill="none">
+      <form method="GET" action="{% url 'sales:invoice_list' %}" style="position:relative;min-width:280px;flex:1;max-width:400px;display:flex;align-items:center;gap:8px;">
+        <svg viewBox="0 0 24 24" fill="none" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;opacity:0.5;pointer-events:none;">
           <path d="M21 21L16.6 16.6" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
           <path d="M10.8 18.2C14.887 18.2 18.2 14.887 18.2 10.8C18.2 6.713 14.887 3.4 10.8 3.4C6.713 3.4 3.4 6.713 3.4 10.8C3.4 14.887 6.713 18.2 10.8 18.2Z" stroke="#111" stroke-width="2.2"/>
         </svg>
-        <input type="text" placeholder="Search invoices..." />
-      </div>
+        <input type="text" name="search" placeholder="Search invoices..." value="{{ search_query }}" style="width:100%;border:1px solid #e5e7eb;background:#f9fafb;border-radius:10px;padding:10px 12px 10px 40px;outline:none;font-size:14px" />
+        {% if search_query %}
+          <a href="{% url 'sales:invoice_list' %}" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#fee2e2;color:#dc2626;text-decoration:none;font-size:18px;font-weight:bold;">&times;</a>
+        {% endif %}
+      </form>
 
       <a href="{% url 'sales:add_invoice' %}" class="btn-add">
         <svg viewBox="0 0 24 24" fill="none">
