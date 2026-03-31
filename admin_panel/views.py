@@ -34,7 +34,7 @@ def get_next_employee_for_lead():
     if not active_employees.exists():
         return None
     
-    last_lead = Lead.objects.filter(employee__isnull=False).order_by('-created_at').first()
+    last_lead = Lead.objects.filter(employee__isnull=False).order_by('-updated_at').first()
     if not last_lead or not last_lead.employee:
         return active_employees.first()
     
@@ -372,6 +372,7 @@ def lead_management(request):
     hospitality_count = Lead.objects.filter(enquiry_type='Hospitality').count()
     new_leads_count = Lead.objects.filter(is_viewed=False).count()
     
+    next_emp = get_next_employee_for_lead()
     context = {
         'leads': leads,
         'selected_type': enquiry_type,
@@ -383,8 +384,8 @@ def lead_management(request):
         'domestic_count': domestic_count,
         'hospitality_count': hospitality_count,
         'new_leads_count': new_leads_count,
-        'employees': Employee.objects.filter(status='Active').order_by('name'),
-        'next_emp_id': get_next_employee_for_lead().id if get_next_employee_for_lead() else None,
+        'employees': Employee.objects.filter(status='Active').order_by('id'),
+        'next_emp_id': next_emp.id if next_emp else None,
     }
     return render(request, 'admin/lead/lead.html', context)
 
@@ -488,9 +489,10 @@ def assign_lead_employee(request, lead_id):
     if request.method == 'POST':
         lead = get_object_or_404(Lead, id=lead_id)
         employee_id = request.POST.get('employee')
-        lead.employee_id = employee_id if employee_id else None
+        lead.employee_id = int(employee_id) if employee_id else None
         lead.save()
-    return redirect(request.POST.get('next', 'admin_panel:leads'))
+    next_url = request.POST.get('next', '')
+    return redirect(next_url if next_url else 'admin_panel:leads')
 
 def update_lead_status(request, lead_id):
     if request.method == 'POST':
