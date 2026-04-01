@@ -16,7 +16,8 @@ from django.http import JsonResponse
 import re
 
 from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry, Destination, Feedback
-from .models import Employee,Blog,BlogImage,EmployeeRole,ResortRoomType,ResortRoomTypeImage
+from .models import Employee, Blog, BlogImage, EmployeeRole, ResortRoomType, ResortRoomTypeImage
+from .models import PackageTransportOption
 
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
@@ -835,6 +836,7 @@ def travel_package_add(request):
             name=name,
             category=category,
             destination=destination,
+            resort_id=request.POST.get('resort') or None,
             price=price,
             price_type=price_type,
             base_price=base_price,
@@ -854,6 +856,21 @@ def travel_package_add(request):
             image=request.FILES.get('image')
         )
         messages.success(request, "Package added successfully!")
+
+        # Save transport options and meal plans
+        pkg_obj = TravelPackage.objects.get(name=name, category=category)
+        meal_plan_ids = request.POST.getlist('meal_plans')
+        if meal_plan_ids:
+            pkg_obj.meal_plans.set(meal_plan_ids)
+        for i, tname in enumerate(request.POST.getlist('transport_option_name[]')):
+            tname = tname.strip()
+            if tname:
+                prices = request.POST.getlist('transport_option_price[]')
+                PackageTransportOption.objects.create(
+                    package=pkg_obj,
+                    name=tname,
+                    price_per_person=prices[i] if i < len(prices) else 0,
+                )
         
         # Redirect back to the same category and destination
         url = reverse('admin_panel:travel_packages')
@@ -867,6 +884,8 @@ def travel_package_add(request):
         'selected_destination_id': int(destination_id) if destination_id else None,
         'selected_destination_obj': selected_destination_obj,
         'package': None,
+        'resorts': Resort.objects.filter(status='Active').order_by('resort_name'),
+        'meals': Meal.objects.filter(status='Available').order_by('name'),
     }
     return render(request, 'admin/packages/travel_package_add.html', context)
 
@@ -898,6 +917,7 @@ def travel_package_edit(request, package_id):
         package.name = request.POST.get('name')
         package.category = new_category
         package.destination = destination
+        package.resort_id = request.POST.get('resort') or None
         package.price = request.POST.get('price')
         package.duration = request.POST.get('duration')
         package.location = request.POST.get('location')
@@ -918,6 +938,21 @@ def travel_package_edit(request, package_id):
         if request.FILES.get('story_side_image2'):
             package.story_side_image2 = request.FILES.get('story_side_image2')
         package.save()
+
+        # Update transport options — clear and rebuild
+        package.transport_options.all().delete()
+        meal_plan_ids = request.POST.getlist('meal_plans')
+        package.meal_plans.set(meal_plan_ids)
+        for i, tname in enumerate(request.POST.getlist('transport_option_name[]')):
+            tname = tname.strip()
+            if tname:
+                prices = request.POST.getlist('transport_option_price[]')
+                PackageTransportOption.objects.create(
+                    package=package,
+                    name=tname,
+                    price_per_person=prices[i] if i < len(prices) else 0,
+                )
+
         messages.success(request, "Package updated successfully!")
         
         # Redirect back to the same category and destination using the NEW category
@@ -930,6 +965,8 @@ def travel_package_edit(request, package_id):
     context = {
         'package': package,
         'destinations': destinations,
+        'resorts': Resort.objects.filter(status='Active').order_by('resort_name'),
+        'meals': Meal.objects.filter(status='Available').order_by('name'),
     }
     return render(request, 'admin/packages/travel_package_edit.html', context)
 
