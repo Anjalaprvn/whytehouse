@@ -3,400 +3,449 @@
 
 {% block extra_css %}
 <style>
-  :root {
-    --bg: #f6f7fb;
-    --card: #ffffff;
-    --border: #ececf2;
-    --text: #111318;
-    --muted: #7a7f8c;
-    --input: #f3f4f6;
-    --shadow: 0 10px 24px rgba(17, 19, 24, .06);
-    --accent: #d4a42f;
-    --radius: 22px;
-    --danger: #e11d48;
+  .resorts-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Inter', sans-serif;
   }
 
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: "Poppins", sans-serif;
-  }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-  }
-
-  .main {
-    padding: 34px 40px 70px;
-  }
-
-  .page-title {
-    font-size: 40px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: var(--text);
-  }
-
-  .page-sub {
-    color: var(--muted);
-    font-size: 16px;
-    margin-bottom: 24px;
-  }
-
-  .card-head {
+  .page-header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 28px;
-    flex-wrap: wrap;
-  }
-
-  .card-head h3 {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text);
-  }
-
-  .tools {
-    display: flex;
     align-items: center;
-    gap: 12px;
+    margin-bottom: 30px;
+    gap: 16px;
     flex-wrap: wrap;
   }
 
-  .search {
-    position: relative;
-    min-width: 280px;
-    flex: 1;
-    max-width: 400px;
+  .page-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
   }
 
-  .search input {
-    width: 100%;
-    border: 1px solid var(--border);
-    background: var(--input);
-    border-radius: 14px;
-    padding: 12px 14px 12px 40px;
-    outline: none;
-    font-size: 14px;
-    transition: .2s ease;
-  }
-
-  .search input:focus {
-    border-color: var(--accent);
-    background: #fff;
-    box-shadow: 0 0 0 4px rgba(212, 164, 47, .14);
-  }
-
-  .search svg {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 18px;
-    height: 18px;
-    opacity: 0.5;
-  }
-
-  .btn-add {
+  .add-btn {
+    background: #d4a017;
+    color: #ffffff;
+    padding: 12px 24px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: var(--accent);
-    color: #111;
-    border: none;
-    border-radius: 14px;
-    padding: 12px 18px;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    font-size: 15px;
-    box-shadow: 0 10px 18px rgba(212, 164, 47, .22);
-    transition: .2s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(212, 160, 23, 0.18);
   }
 
-  .btn-add:hover {
+  .add-btn:hover {
+    background: #b8901a;
+    color: #ffffff;
     transform: translateY(-1px);
   }
 
-  .btn-add svg {
-    width: 16px;
-    height: 16px;
+  .search-box {
+    margin-bottom: 24px;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 13px 18px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s ease;
+  }
+
+  .search-box input:focus {
+    border-color: #d4a017;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(212, 160, 23, 0.08);
   }
 
   .resorts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
-    margin-top: 20px;
   }
 
   .resort-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 22px;
-    box-shadow: var(--shadow);
+    background: #ffffff;
+    border-radius: 20px;
     overflow: hidden;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    border: 1px solid #edf2f7;
     transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
+    cursor: pointer;
   }
 
   .resort-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 15px 35px rgba(17, 19, 24, 0.12);
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.10);
   }
 
-  .resort-card-header {
-    padding: 22px;
-    border-bottom: 1px solid var(--border);
-    background: linear-gradient(135deg, var(--input) 0%, #f9fafb 100%);
+  .card-image-container {
+    position: relative;
+    overflow: hidden;
   }
 
-  .resort-card-name {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 6px;
-    word-break: break-word;
+  .image-slider {
+    display: flex;
+    transition: transform 0.35s ease;
+    height: 210px;
   }
 
-  .resort-card-place {
-    font-size: 14px;
-    color: var(--muted);
+  .image-slider img {
+    min-width: 100%;
+    width: 100%;
+    height: 210px;
+    object-fit: cover;
+    flex-shrink: 0;
+    display: block;
+  }
+
+  .resort-image {
+    width: 100%;
+    height: 210px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .image-placeholder {
+    width: 100%;
+    height: 210px;
+    background: #f1f5f9;
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 48px;
   }
 
-  .resort-card-content {
-    padding: 22px;
-    flex: 1;
-  }
-
-  .resort-info-row {
+  .slider-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.85);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 14px;
-    font-size: 14px;
-  }
-
-  .resort-info-label {
-    color: var(--muted);
-    font-weight: 500;
-    min-width: 70px;
-  }
-
-  .resort-info-value {
-    color: var(--text);
-    word-break: break-all;
-    flex: 1;
-  }
-
-  .resort-card-footer {
-    padding: 16px 22px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    gap: 10px;
-    background: #fafbfc;
-  }
-
-  .card-action-btn {
-    flex: 1;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    background: #fff;
-    border-radius: 10px;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    transition: background 0.2s;
+    padding: 0;
+  }
+
+  .slider-btn:hover { background: #fff; }
+  .slider-btn.prev { left: 8px; }
+  .slider-btn.next { right: 8px; }
+
+  .slider-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: #111827;
+    stroke-width: 2.5;
+    fill: none;
+  }
+
+  .slider-dots {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+    z-index: 10;
+  }
+
+  .slider-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.6);
+    transition: background 0.2s;
+  }
+
+  .slider-dot.active { background: #fff; }
+
+  .status-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+
+  .status-badge.active { background: #d4a017; color: #fff; }
+  .status-badge.inactive { background: #94a3b8; color: #fff; }
+
+  .rooms-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: rgba(15,23,42,0.6);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .card-body {
+    padding: 20px;
+  }
+
+  .card-body h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    color: #111827;
+    line-height: 1.35;
+  }
+
+  .place-text {
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .contact-text {
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+
+  .card-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #edf0f3;
+  }
+
+  .btn-view {
+    flex: 1;
+    height: 42px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #111827;
     text-decoration: none;
-    display: inline-flex;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
+    transition: all 0.25s ease;
+  }
+
+  .btn-view:hover {
+    background: #f9fafb;
+    border-color: #d4a017;
+    color: #111827;
+  }
+
+  .btn-edit {
+    flex: 1;
+    height: 42px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #111827;
+    text-decoration: none;
     font-size: 13px;
     font-weight: 600;
-    color: var(--text);
-    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.25s ease;
   }
 
-  .card-action-btn:hover {
-    border-color: var(--accent);
-    background: var(--input);
+  .btn-edit:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    color: #111827;
   }
 
-  .card-action-btn.delete {
-    color: var(--danger);
+  .btn-delete {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border: 1px solid #f5d0d0;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #ff5a5f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
   }
 
-  .card-action-btn.delete:hover {
-    border-color: var(--danger);
+  .btn-delete:hover {
     background: #fff5f5;
-  }
-
-  .card-action-btn svg {
-    width: 16px;
-    height: 16px;
+    border-color: #f1b5b5;
+    color: #ef4444;
   }
 
   .empty-state {
     text-align: center;
-    padding: 80px 20px;
-    color: var(--muted);
+    padding: 70px 20px;
+    color: #64748b;
+    background: #ffffff;
+    border: 1px dashed #dbe2ea;
+    border-radius: 20px;
+    grid-column: 1 / -1;
   }
 
   .empty-state a {
-    color: var(--accent);
+    color: #d4a017;
     text-decoration: none;
     font-weight: 600;
   }
 
-  .delete-form {
-    display: contents;
-  }
-
   @media (max-width: 1024px) {
-    .resorts-grid {
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    }
+    .resorts-grid { grid-template-columns: repeat(2, 1fr); }
   }
 
-  @media (max-width: 768px) {
-    .main {
-      padding: 26px 18px 60px;
-    }
-
-    .page-title {
-      font-size: 32px;
-    }
-
-    .card-head {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .card-head h3 {
-      order: 1;
-    }
-
-    .tools {
-      order: 2;
-      flex-direction: column;
-    }
-
-    .search {
-      max-width: 100%;
-    }
-
-    .btn-add {
-      width: 100%;
-      justify-content: center;
-    }
-
-    .resorts-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .resort-card-footer {
-      flex-direction: column;
-    }
-
-    .card-action-btn {
-      width: 100%;
-    }
+  @media (max-width: 640px) {
+    .resorts-container { padding: 16px; }
+    .resorts-grid { grid-template-columns: 1fr; }
+    .page-header h2 { font-size: 20px; }
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<main class="main">
-  <h1 class="page-title">Resorts</h1>
-  <p class="page-sub">Manage resort partnerships</p>
-
-  <div class="card-head">
-    <h3>Resort List</h3>
-
-    <div class="tools">
-      <form method="GET" action="{% url 'sales:resort_list' %}" class="search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input type="text" name="search" placeholder="Search resorts..." value="{{ search_query }}" id="searchInput">
-      </form>
-
-      <a href="{% url 'sales:add_resort' %}" class="btn-add">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M12 5V19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
-          <path d="M5 12H19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
-        </svg>
-        Add Resort
-      </a>
-    </div>
+<div class="resorts-container">
+  <div class="page-header">
+    <h2>Resorts Management</h2>
+    <a href="{% url 'sales:add_resort' %}" class="add-btn">
+      <i class="fas fa-plus"></i> Add Resort
+    </a>
   </div>
 
-  {% if resorts %}
+  <div class="search-box">
+    <form method="GET" action="{% url 'sales:resort_list' %}" id="searchForm">
+      <input type="text" name="search" placeholder="Search resorts..." value="{{ search_query }}" id="searchInput">
+    </form>
+  </div>
+
   <div class="resorts-grid">
     {% for resort in resorts %}
-    <div class="resort-card">
-      <div class="resort-card-header">
-        <h3 class="resort-card-name">{{ resort.resort_name }}</h3>
-        <p class="resort-card-place">
-          📍 {{ resort.resort_place|default:"Not specified" }}
-        </p>
-      </div>
+    <div class="resort-card" onclick="window.location.href='{% url 'sales:view_resort' resort.id %}'">
+      <div class="card-image-container" data-slider="{{ resort.id }}">
 
-      <div class="resort-card-content">
-        <div class="resort-info-row">
-          <span class="resort-info-label">Email:</span>
-          <span class="resort-info-value">{{ resort.email|default:"—" }}</span>
+        {% with images=resort.resort_images_list.all %}
+          {% if images %}
+            <div class="image-slider" id="slider-{{ resort.id }}">
+              {% for img in images %}
+                <img src="{{ img.image.url }}" alt="{{ resort.resort_name }}">
+              {% endfor %}
+            </div>
+            {% if images|length > 1 %}
+              <button class="slider-btn prev" onclick="event.stopPropagation(); slideImage('{{ resort.id }}', -1)">
+                <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button class="slider-btn next" onclick="event.stopPropagation(); slideImage('{{ resort.id }}', 1)">
+                <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+              <div class="slider-dots" id="dots-{{ resort.id }}">
+                {% for img in images %}
+                  <div class="slider-dot {% if forloop.first %}active{% endif %}"></div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% elif resort.resort_images %}
+            <img src="{{ resort.resort_images.url }}" alt="{{ resort.resort_name }}" class="resort-image">
+          {% else %}
+            <div class="image-placeholder">🏨</div>
+          {% endif %}
+        {% endwith %}
+
+        <div class="status-badge {% if resort.status == 'Active' %}active{% else %}inactive{% endif %}">
+          {{ resort.status }}
         </div>
 
-        <div class="resort-info-row">
-          <span class="resort-info-label">Phone:</span>
-          <span class="resort-info-value">{{ resort.contact_number|default:"—" }}</span>
+        {% if resort.number_of_rooms %}
+          <div class="rooms-badge">🛏 {{ resort.number_of_rooms }} Rooms</div>
+        {% endif %}
+      </div>
+
+      <div class="card-body">
+        <h3>{{ resort.resort_name }}</h3>
+        <p class="place-text">📍 {{ resort.resort_place }}{% if resort.city %}, {{ resort.city }}{% endif %}</p>
+        {% if resort.mobile %}
+          <p class="contact-text">📞 {{ resort.mobile }}</p>
+        {% endif %}
+        {% if resort.email %}
+          <p class="contact-text">✉️ {{ resort.email }}</p>
+        {% endif %}
+
+        <div class="card-actions">
+          <a href="{% url 'sales:view_resort' resort.id %}" class="btn-view" onclick="event.stopPropagation()">
+            <i class="fas fa-eye"></i> View
+          </a>
+          <a href="{% url 'sales:edit_resort' resort.id %}" class="btn-edit" onclick="event.stopPropagation()">
+            <i class="fas fa-pen-to-square"></i> Edit
+          </a>
+          <form method="POST" action="{% url 'sales:delete_resort' resort.id %}" style="display:contents;"
+                onsubmit="event.stopPropagation(); return confirm('Delete {{ resort.resort_name }}?');">
+            {% csrf_token %}
+            <button type="submit" class="btn-delete" onclick="event.stopPropagation()" title="Delete">
+              <i class="fas fa-trash"></i>
+            </button>
+          </form>
         </div>
       </div>
-
-      <div class="resort-card-footer">
-        <a href="{% url 'sales:view_resort' resort.id %}" class="card-action-btn" title="View Details">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/>
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
-          View
-        </a>
-
-        <a href="{% url 'sales:edit_resort' resort.id %}" class="card-action-btn" title="Edit">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
-          </svg>
-          Edit
-        </a>
-
-        <form method="POST" action="{% url 'sales:delete_resort' resort.id %}" class="delete-form" onsubmit="return confirm('Delete {{ resort.resort_name }}?');">
-          {% csrf_token %}
-          <button type="submit" class="card-action-btn delete" title="Delete">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <polyline points="3 6 5 6 21 6"/>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-              <line x1="10" y1="11" x2="10" y2="17"/>
-              <line x1="14" y1="11" x2="14" y2="17"/>
-            </svg>
-            Delete
-          </button>
-        </form>
-      </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+      <p>No resorts found. <a href="{% url 'sales:add_resort' %}">Add your first resort</a>.</p>
     </div>
     {% endfor %}
   </div>
-  {% else %}
-  <div class="empty-state">
-    <p>No resorts found. <a href="{% url 'sales:add_resort' %}">Add your first resort</a>.</p>
-  </div>
-  {% endif %}
-</main>
+</div>
+
+<script>
+  const sliderState = {};
+
+  function slideImage(id, dir) {
+    const slider = document.getElementById('slider-' + id);
+    const dots = document.querySelectorAll('#dots-' + id + ' .slider-dot');
+    const total = slider.children.length;
+    if (sliderState[id] === undefined) sliderState[id] = 0;
+    sliderState[id] = (sliderState[id] + dir + total) % total;
+    const offset = sliderState[id] * slider.parentElement.offsetWidth;
+    slider.style.transform = 'translateX(-' + offset + 'px)';
+    dots.forEach((d, i) => d.classList.toggle('active', i === sliderState[id]));
+  }
+
+  let searchTimeout;
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => document.getElementById('searchForm').submit(), 500);
+    });
+  }
+</script>
 {% endblock %}

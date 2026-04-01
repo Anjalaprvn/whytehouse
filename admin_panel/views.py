@@ -16,7 +16,7 @@ from django.http import JsonResponse
 import re
 
 from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry, Destination, Feedback
-from .models import Employee, Blog, BlogImage, EmployeeRole, ResortRoomType, ResortRoomTypeImage
+from .models import Employee, Blog, BlogImage, EmployeeRole, ResortRoomType, ResortRoomTypeImage, ResortImage
 from .models import PackageTransportOption
 
 from openpyxl import Workbook
@@ -1994,15 +1994,12 @@ def edit_resort(request, resort_id):
                     "resort_name": resort_name, "resort_place": resort_place,
                     "full_address": full_address, "city": city, "state": state,
                     "pin_code": pin_code, "location_map_link": location_map_link,
-                    "mobile": mobile, "email": email, "cc_emails": cc_emails,
+                    "mobile": mobile, "email": email, "cc_emails": cc_emails or "",
                     "owner_manager_name": owner_manager_name, "gst_number": gst_number,
                     "business_registration_number": business_registration_number,
                     "description": description, "number_of_rooms": number_of_rooms_str,
                     "amenities": amenities, "website_url": website_url,
                     "social_media_links": social_media_links, "google_listing_link": google_listing_link,
-                    "room_type_names": room_type_names, "total_rooms_list": total_rooms_list,
-                    "price_per_night_list": price_per_night_list, "max_guests_list": max_guests_list,
-                    "room_size_list": room_size_list, "room_type_amenities_list": room_type_amenities_list,
                 }
                 return render(request, "admin/sales/resort/edit_resort.html", {
                     "resort": resort, "errors": errors, "form_data": form_data

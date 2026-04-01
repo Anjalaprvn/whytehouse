@@ -802,46 +802,30 @@
     function initRoomTypeFileInput(input) {
       const roomUid = input.dataset.roomUid;
       const previewContainer = document.querySelector(`.room-type-images-preview[data-room-id="${roomUid}"]`);
+      if (!previewContainer) return;
 
-      // Initialize files array for this room type if not exists
       if (!roomTypeFilesMap[roomUid]) {
-        roomTypeFilesMap[roomUid] = Array.from(input.files);
+        roomTypeFilesMap[roomUid] = [];
       }
 
       const renderPreviews = () => {
         previewContainer.innerHTML = '';
         const allFiles = roomTypeFilesMap[roomUid];
-        
-        // Add all existing images
         allFiles.forEach((file, index) => {
           const card = createImageCard(file, index, input);
           previewContainer.appendChild(card);
         });
-        
-        // Always show "Add Image" box at the end
         const addBox = createAddImageButton(input);
         previewContainer.appendChild(addBox);
       };
 
       input.addEventListener('change', (e) => {
         e.stopPropagation();
-        
-        // Add new files to the existing array
-        const newFiles = Array.from(input.files);
-        newFiles.forEach(file => {
-          roomTypeFilesMap[roomUid].push(file);
-        });
-        
-        // Update the input's files property with all accumulated files
+        Array.from(input.files).forEach(file => roomTypeFilesMap[roomUid].push(file));
         const dt = new DataTransfer();
         roomTypeFilesMap[roomUid].forEach(file => dt.items.add(file));
         input.files = dt.files;
-        
-        // Clear the input value so the same file can be selected again
-        setTimeout(() => {
-          input.value = '';
-        }, 0);
-        
+        setTimeout(() => { input.value = ''; }, 0);
         renderPreviews();
       });
 
@@ -865,25 +849,19 @@
           <input type="file" name="room_type_images_${uid}[]" data-room-uid="${uid}" class="room-type-images-input" accept="image/*" multiple style="margin-bottom:6px;" />
           <div class="room-type-images-preview" data-room-id="${uid}" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
         </td>
-        <td style="border:1px solid #d9dbe4; text-align:center;"><span class="delete-icon" onclick="this.closest('tr').remove()" style="cursor:pointer;font-size:18px;color:#ef4444;">🗑</span></td>
+        <td style="border:1px solid #d9dbe4; text-align:center;"><span class="delete-icon" style="cursor:pointer;font-size:18px;color:#ef4444;">🗑</span></td>
       `;
 
-      const removeBtn = tr.querySelector('.delete-icon');
-      removeBtn.addEventListener('click', () => tr.remove());
-
-      const fileInput = tr.querySelector('.room-type-images-input');
-      initRoomTypeFileInput(fileInput);
-
+      tr.querySelector('.delete-icon').addEventListener('click', () => tr.remove());
+      initRoomTypeFileInput(tr.querySelector('.room-type-images-input'));
       roomTypeBody.appendChild(tr);
     }
 
-    addRoomTypeBtn.addEventListener('click', () => createRoomTypeRow());
+    document.getElementById('add-room-type-btn').addEventListener('click', () => createRoomTypeRow());
 
     document.querySelectorAll('.room-type-images-input').forEach(input => initRoomTypeFileInput(input));
-    document.querySelectorAll('.delete-icon').forEach(button => {
-      button.addEventListener('click', function() {
-        this.closest('tr').remove();
-      });
-    });
+    document.querySelectorAll('.delete-icon').forEach(btn => btn.addEventListener('click', function() {
+      this.closest('tr').remove();
+    }));
   </script>
 {% endblock %}

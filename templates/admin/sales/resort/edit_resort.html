@@ -232,7 +232,7 @@
           <div class="field">
             <label>Resort Name <span class="req">*</span></label>
             <input type="text" name="resort_name" placeholder="Paradise Beach Resort" required
-              value="{{ form_data.resort_name|default:resort.resort_name }}"
+              value="{% if form_data %}{{ form_data.resort_name }}{% else %}{{ resort.resort_name }}{% endif %}"
               class="{% if errors.resort_name %}input-error{% endif %}">
             {% if errors.resort_name %}<div class="field-error">{{ errors.resort_name }}</div>{% endif %}
           </div>
@@ -240,38 +240,38 @@
           <div class="field">
             <label>Resort Place <span class="req">*</span></label>
             <input type="text" name="resort_place" placeholder="e.g., Goa" required
-              value="{{ form_data.resort_place|default:resort.resort_place }}"
+              value="{% if form_data %}{{ form_data.resort_place }}{% else %}{{ resort.resort_place }}{% endif %}"
               class="{% if errors.resort_place %}input-error{% endif %}">
             {% if errors.resort_place %}<div class="field-error">{{ errors.resort_place }}</div>{% endif %}
           </div>
 
           <div class="field span-2">
             <label>Full Address</label>
-            <textarea name="full_address" placeholder="Enter complete address">{{ form_data.full_address|default:resort.full_address }}</textarea>
+            <textarea name="full_address" placeholder="Enter complete address">{% if form_data %}{{ form_data.full_address }}{% else %}{{ resort.full_address }}{% endif %}</textarea>
           </div>
 
           <div class="field">
             <label>City</label>
-            <input type="text" name="city" placeholder="e.g., Panaji" value="{{ form_data.city|default:resort.city }}">
+            <input type="text" name="city" placeholder="e.g., Panaji" value="{% if form_data %}{{ form_data.city }}{% else %}{{ resort.city }}{% endif %}">
           </div>
 
           <div class="field">
             <label>State</label>
-            <input type="text" name="state" placeholder="e.g., Goa" value="{{ form_data.state|default:resort.state }}">
+            <input type="text" name="state" placeholder="e.g., Goa" value="{% if form_data %}{{ form_data.state }}{% else %}{{ resort.state }}{% endif %}">
           </div>
 
           <div class="field">
             <label>PIN Code</label>
-            <input type="text" name="pin_code" placeholder="e.g., 403001" maxlength="6" 
-              value="{{ form_data.pin_code|default:resort.pin_code }}"
+            <input type="text" name="pin_code" placeholder="e.g., 403001" maxlength="6"
+              value="{% if form_data %}{{ form_data.pin_code }}{% else %}{{ resort.pin_code }}{% endif %}"
               class="{% if errors.pin_code %}input-error{% endif %}">
             {% if errors.pin_code %}<div class="field-error">{{ errors.pin_code }}</div>{% endif %}
           </div>
 
           <div class="field span-2">
             <label>Location (Google Map Link)</label>
-            <input type="url" name="location_map_link" placeholder="https://maps.google.com/..." 
-              value="{{ form_data.location_map_link|default:resort.location_map_link }}">
+            <input type="url" name="location_map_link" placeholder="https://maps.google.com/..."
+              value="{% if form_data %}{{ form_data.location_map_link }}{% else %}{{ resort.location_map_link }}{% endif %}">  
           </div>
         </div>
       </section>
@@ -283,7 +283,7 @@
           <div class="field">
             <label>Mobile <span class="req">*</span></label>
             <input type="text" name="mobile" placeholder="9876543210" maxlength="15"
-              value="{{ form_data.mobile|default:resort.mobile }}"
+              value="{% if form_data %}{{ form_data.mobile }}{% else %}{{ resort.mobile }}{% endif %}"
               class="{% if errors.mobile %}input-error{% endif %}">
             {% if errors.mobile %}<div class="field-error">{{ errors.mobile }}</div>{% endif %}
           </div>
@@ -291,7 +291,7 @@
           <div class="field">
             <label>Email</label>
             <input type="email" name="email" placeholder="resort@example.com"
-              value="{{ form_data.email|default:resort.email }}"
+              value="{% if form_data %}{{ form_data.email }}{% else %}{{ resort.email }}{% endif %}"
               class="{% if errors.email %}input-error{% endif %}">
             {% if errors.email %}<div class="field-error">{{ errors.email }}</div>{% endif %}
           </div>
@@ -302,7 +302,7 @@
               <input id="cc-email-input" type="email" placeholder="user@example.com" style="flex:1;" />
               <button type="button" id="cc-email-add" class="btn">Add</button>
             </div>
-            <input type="hidden" name="cc_emails" id="cc_emails_hidden" value="{{ form_data.cc_emails|default:resort.cc_emails }}" />
+            <input type="hidden" name="cc_emails" id="cc_emails_hidden" value="{% if form_data %}{{ form_data.cc_emails }}{% else %}{{ resort.cc_emails }}{% endif %}" />
             <div id="cc-email-tags" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;"></div>
             <small style="color:#6b7280;display:block;margin-top:6px;">Add multiple CC email addresses one-by-one.</small>
           </div>
@@ -316,13 +316,13 @@
           <div class="field span-2">
             <label>Owner / Manager Name</label>
             <input type="text" name="owner_manager_name" placeholder="John Doe"
-              value="{{ form_data.owner_manager_name|default:resort.owner_manager_name }}">
+              value="{% if form_data %}{{ form_data.owner_manager_name }}{% else %}{{ resort.owner_manager_name }}{% endif %}">
           </div>
 
           <div class="field">
             <label>GST Number</label>
             <input type="text" name="gst_number" placeholder="22AAAAA0000A1Z5" maxlength="15"
-              value="{{ form_data.gst_number|default:resort.gst_number }}"
+              value="{% if form_data %}{{ form_data.gst_number }}{% else %}{{ resort.gst_number }}{% endif %}"
               class="{% if errors.gst_number %}input-error{% endif %}">
             {% if errors.gst_number %}<div class="field-error">{{ errors.gst_number }}</div>{% endif %}
           </div>
@@ -330,23 +330,55 @@
           <div class="field">
             <label>Business Registration Number</label>
             <input type="text" name="business_registration_number" placeholder="Enter registration number"
-              value="{{ form_data.business_registration_number|default:resort.business_registration_number }}">
+              value="{% if form_data %}{{ form_data.business_registration_number }}{% else %}{{ resort.business_registration_number }}{% endif %}">
           </div>
 
           <div class="field">
             <label>Registration Certificate (Upload)</label>
-            <div id="reg-cert-preview" class="file-preview" style="display:none;"></div>
-              <div class="file-upload" onclick="document.getElementById('reg-cert').click()">
-              <input type="file" id="reg-cert" name="registration_certificate" accept=".pdf,.doc,.docx,.jpg,.png">
+            {% if resort.registration_certificate %}
+              {% with cert=resort.registration_certificate.name %}
+                {% if cert|lower|slice:"-4:" == ".jpg" or cert|lower|slice:"-5:" == ".jpeg" or cert|lower|slice:"-4:" == ".png" %}
+                  <div style="margin-bottom:8px;">
+                    <a href="{{ resort.registration_certificate.url }}" target="_blank">
+                      <img src="{{ resort.registration_certificate.url }}" style="max-width:100%;max-height:160px;border-radius:8px;border:1px solid #d1d5db;object-fit:contain;display:block;">
+                    </a>
+                  </div>
+                {% else %}
+                  <div style="margin-bottom:8px;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:28px;">📄</span>
+                    <a href="{{ resort.registration_certificate.url }}" target="_blank" style="color:#d4a42f;font-size:13px;font-weight:600;">View / Download saved file</a>
+                  </div>
+                {% endif %}
+              {% endwith %}
+            {% endif %}
+            <div id="reg-cert-preview" style="margin-bottom:8px;"></div>
+            <div class="file-upload" onclick="document.getElementById('reg-cert').click()">
+              <input type="file" id="reg-cert" name="registration_certificate" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
               <span>Click to upload or change certificate</span>
             </div>
           </div>
 
           <div class="field">
             <label>ID Proof (Aadhaar / PAN Upload)</label>
-            <div id="id-proof-preview" class="file-preview" style="display:none;"></div>
+            {% if resort.id_proof %}
+              {% with proof=resort.id_proof.name %}
+                {% if proof|lower|slice:"-4:" == ".jpg" or proof|lower|slice:"-5:" == ".jpeg" or proof|lower|slice:"-4:" == ".png" %}
+                  <div style="margin-bottom:8px;">
+                    <a href="{{ resort.id_proof.url }}" target="_blank">
+                      <img src="{{ resort.id_proof.url }}" style="max-width:100%;max-height:160px;border-radius:8px;border:1px solid #d1d5db;object-fit:contain;display:block;">
+                    </a>
+                  </div>
+                {% else %}
+                  <div style="margin-bottom:8px;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:28px;">📄</span>
+                    <a href="{{ resort.id_proof.url }}" target="_blank" style="color:#d4a42f;font-size:13px;font-weight:600;">View / Download saved file</a>
+                  </div>
+                {% endif %}
+              {% endwith %}
+            {% endif %}
+            <div id="id-proof-preview" style="margin-bottom:8px;"></div>
             <div class="file-upload" onclick="document.getElementById('id-proof').click()">
-              <input type="file" id="id-proof" name="id_proof" accept=".pdf,.jpg,.png">
+              <input type="file" id="id-proof" name="id_proof" accept=".pdf,.jpg,.jpeg,.png">
               <span>Click to upload or change ID proof</span>
             </div>
           </div>
@@ -360,33 +392,54 @@
           <div class="field">
             <label>Number of Rooms</label>
             <input type="number" name="number_of_rooms" placeholder="50" min="1"
-              value="{{ form_data.number_of_rooms|default:resort.number_of_rooms }}"
+              value="{% if form_data %}{{ form_data.number_of_rooms }}{% else %}{{ resort.number_of_rooms }}{% endif %}"
               class="{% if errors.number_of_rooms %}input-error{% endif %}">
             {% if errors.number_of_rooms %}<div class="field-error">{{ errors.number_of_rooms }}</div>{% endif %}
           </div>
 
           <div class="field">
             <label>Amenities (comma-separated)</label>
-            <textarea name="amenities" placeholder="WiFi, Swimming Pool, Gym, Restaurant">{{ form_data.amenities|default:resort.amenities }}</textarea>
+            <textarea name="amenities" placeholder="WiFi, Swimming Pool, Gym, Restaurant">{% if form_data %}{{ form_data.amenities }}{% else %}{{ resort.amenities }}{% endif %}</textarea>
           </div>
 
           <div class="field span-2">
             <label>Resort Description</label>
-            <textarea name="description" placeholder="Describe your resort...">{{ form_data.description|default:resort.description }}</textarea>
+            <textarea name="description" placeholder="Describe your resort...">{% if form_data %}{{ form_data.description }}{% else %}{{ resort.description }}{% endif %}</textarea>
           </div>
 
           <div class="field">
             <label>Resort Images (Upload)</label>
-            <div id="resort-images-preview" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;"></div>
+            {% with images=resort.resort_images_list.all %}
+            {% if images %}
+              <div style="margin-bottom:10px;">
+                <small style="color:#6b7280;display:block;margin-bottom:6px;">Saved images (uploading new ones will add to these):</small>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                  {% for img in images %}
+                    <a href="{{ img.image.url }}" target="_blank" style="display:block;width:80px;height:80px;border-radius:8px;overflow:hidden;border:1px solid #d1d5db;flex-shrink:0;">
+                      <img src="{{ img.image.url }}" style="width:100%;height:100%;object-fit:cover;display:block;">
+                    </a>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+            {% endwith %}
+            <div id="resort-images-preview" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px;"></div>
             <div class="file-upload" onclick="document.getElementById('images').click()">
               <input type="file" id="images" name="resort_images" accept="image/*" multiple>
-              <span>Click to upload or change images</span>
+              <span>Click to upload more images</span>
             </div>
           </div>
 
           <div class="field">
             <label>Resort Video (Optional)</label>
-            <div id="video-preview" class="file-preview" style="display:none;"></div>
+            {% if resort.resort_video %}
+              <div style="margin-bottom:8px;">
+                <video controls style="width:100%;max-height:200px;border-radius:8px;border:1px solid #d1d5db;background:#000;display:block;">
+                  <source src="{{ resort.resort_video.url }}">
+                </video>
+              </div>
+            {% endif %}
+            <div id="video-preview" style="margin-bottom:8px;"></div>
             <div class="file-upload" onclick="document.getElementById('video').click()">
               <input type="file" id="video" name="resort_video" accept="video/*">
               <span>Click to upload or change video</span>
@@ -426,13 +479,17 @@
                 <td style="border:1px solid #d9dbe4;"><input type="text" name="room_size[]" value="{{ room.room_size }}" style="width:100%;" /></td>
                 <td style="border:1px solid #d9dbe4;"><input type="text" name="room_type_amenities[]" value="{{ room.amenities }}" style="width:100%;" /></td>
                 <td style="border:1px solid #d9dbe4;">
+                  {% if room.room_type_image_list %}
+                    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">
+                      {% for image in room.room_type_image_list %}
+                        <a href="{{ image.image.url }}" target="_blank" style="display:block;width:60px;height:60px;border-radius:6px;overflow:hidden;border:1px solid #d1d5db;flex-shrink:0;">
+                          <img src="{{ image.image.url }}" style="width:100%;height:100%;object-fit:cover;display:block;">
+                        </a>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
                   <input type="file" name="room_type_images_room-{{ room.id }}[]" data-room-uid="room-{{ room.id }}" class="room-type-images-input" accept="image/*" multiple />
                   <div class="room-type-images-preview" data-room-id="room-{{ room.id }}" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
-                  {% for image in room.room_type_image_list %}
-                    <div style="position:relative;width:70px;height:70px;border:1px solid #ccc;border-radius:8px;overflow:hidden;margin-top:6px;">
-                      <img src="{{ image.image.url }}" style="width:100%;height:100%;object-fit:cover;" />
-                    </div>
-                  {% empty %}{% endfor %}
                 </td>
                 <td style="border:1px solid #d9dbe4; text-align:center;"><button type="button" class="btn remove-room-type-row">Remove</button></td>
               </tr>
@@ -464,18 +521,18 @@
           <div class="field">
             <label>Website URL</label>
             <input type="url" name="website_url" placeholder="https://www.resort.com"
-              value="{{ form_data.website_url|default:resort.website_url }}">
+              value="{% if form_data %}{{ form_data.website_url }}{% else %}{{ resort.website_url }}{% endif %}">
           </div>
 
           <div class="field">
             <label>Google Listing Link</label>
             <input type="url" name="google_listing_link" placeholder="https://maps.google.com/?..."
-              value="{{ form_data.google_listing_link|default:resort.google_listing_link }}">
+              value="{% if form_data %}{{ form_data.google_listing_link }}{% else %}{{ resort.google_listing_link }}{% endif %}">
           </div>
 
           <div class="field span-2">
             <label>Social Media Links (comma-separated)</label>
-            <textarea name="social_media_links" placeholder="https://facebook.com/resort, https://instagram.com/resort">{{ form_data.social_media_links|default:resort.social_media_links }}</textarea>
+            <textarea name="social_media_links" placeholder="https://facebook.com/resort, https://instagram.com/resort">{% if form_data %}{{ form_data.social_media_links }}{% else %}{{ resort.social_media_links }}{% endif %}</textarea>
           </div>
         </div>
       </section>
@@ -569,31 +626,30 @@
     });
     renderCCTags();
 
-    // File previews
-    function setupFilePreview(inputId, previewId, type) {
+    // New file previews for cert, id-proof, video
+    function setupNewFilePreview(inputId, previewId) {
       const input = document.getElementById(inputId);
       const preview = document.getElementById(previewId);
       if (!input || !preview) return;
       input.addEventListener('change', () => {
         const file = input.files[0];
-        if (!file) {
-          preview.style.display = 'none';
-          preview.innerHTML = '';
-          return;
-        }
-        preview.style.display = 'block';
-        if (type === 'file') {
-          preview.innerHTML = `<div>📄 ${file.name}</div>`;
-        } else if (type === 'video') {
+        preview.innerHTML = '';
+        if (!file) return;
+        if (file.type.startsWith('image/')) {
           const url = URL.createObjectURL(file);
-          preview.innerHTML = `<video controls style="max-width:100%; height:auto;"><source src="${url}" type="${file.type}">Your browser does not support video.</video>`;
+          preview.innerHTML = `<img src="${url}" style="max-width:100%;max-height:160px;border-radius:8px;border:1px solid #d1d5db;object-fit:contain;display:block;margin-bottom:4px;">`;
+        } else if (file.type.startsWith('video/')) {
+          const url = URL.createObjectURL(file);
+          preview.innerHTML = `<video controls style="width:100%;max-height:200px;border-radius:8px;border:1px solid #d1d5db;background:#000;display:block;margin-bottom:4px;"><source src="${url}" type="${file.type}"></video>`;
+        } else {
+          preview.innerHTML = `<div style="padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:24px;">📄</span><span style="font-size:13px;color:#374151;">${file.name}</span></div>`;
         }
       });
     }
 
-    setupFilePreview('reg-cert', 'reg-cert-preview', 'file');
-    setupFilePreview('id-proof', 'id-proof-preview', 'file');
-    setupFilePreview('video', 'video-preview', 'video');
+    setupNewFilePreview('reg-cert', 'reg-cert-preview');
+    setupNewFilePreview('id-proof', 'id-proof-preview');
+    setupNewFilePreview('video', 'video-preview');
 
     // Resort images multiple preview + remove
     const resortImagesInput = document.getElementById('images');
@@ -628,37 +684,32 @@
     }
 
     // Room type rows
-    const addRoomTypeBtn = document.getElementById('add-room-type-btn');
     const roomTypeBody = document.getElementById('room-type-body');
     let nextRoomTypeUid = Date.now();
 
     function initRoomTypeFileInput(input) {
       const roomUid = input.dataset.roomUid;
       const previewContainer = document.querySelector(`.room-type-images-preview[data-room-id="${roomUid}"]`);
+      if (!previewContainer) return;
 
       const renderPreviews = () => {
         previewContainer.innerHTML = '';
-        const files = Array.from(input.files);
-
-        files.forEach((file, index) => {
+        Array.from(input.files).forEach((file, index) => {
           const card = document.createElement('div');
           card.style.cssText = 'position:relative;width:70px;height:70px;border:1px solid #ccc;border-radius:8px;overflow:hidden;margin:4px 0;';
-
           const img = document.createElement('img');
           img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
           img.src = URL.createObjectURL(file);
-
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.textContent = '×';
-          btn.style.cssText = 'position:absolute;top:2px;right:2px;background:rgba(255,0,0,0.8);border:none;color:#fff;border-radius:50%;width:18px;height:18px;cursor:pointer;';
+          btn.style.cssText = 'position:absolute;top:2px;right:2px;background:rgba(255,0,0,0.8);border:none;color:#fff;border-radius:50%;width:18px;height:18px;cursor:pointer;font-size:14px;line-height:1;';
           btn.addEventListener('click', () => {
             const dt = new DataTransfer();
-            files.filter((_, i) => i !== index).forEach(f => dt.items.add(f));
+            Array.from(input.files).filter((_, i) => i !== index).forEach(f => dt.items.add(f));
             input.files = dt.files;
             renderPreviews();
           });
-
           card.appendChild(img);
           card.appendChild(btn);
           previewContainer.appendChild(card);
@@ -687,23 +738,22 @@
         </td>
         <td style="border:1px solid #d9dbe4; text-align:center;"><button type="button" class="btn remove-room-type-row">Remove</button></td>
       `;
-
-      const removeBtn = tr.querySelector('.remove-room-type-row');
-      removeBtn.addEventListener('click', () => tr.remove());
-
-      const fileInput = tr.querySelector('.room-type-images-input');
-      initRoomTypeFileInput(fileInput);
-
+      tr.querySelector('.remove-room-type-row').addEventListener('click', () => tr.remove());
+      initRoomTypeFileInput(tr.querySelector('.room-type-images-input'));
       roomTypeBody.appendChild(tr);
     }
 
-    addRoomTypeBtn && addRoomTypeBtn.addEventListener('click', () => createRoomTypeRow());
+    document.getElementById('add-room-type-btn').addEventListener('click', () => createRoomTypeRow());
 
     document.querySelectorAll('.room-type-images-input').forEach(input => initRoomTypeFileInput(input));
-    document.querySelectorAll('.remove-room-type-row').forEach(button => {
-      button.addEventListener('click', function() {
-        this.closest('tr').remove();
-      });
-    });
+    document.querySelectorAll('.remove-room-type-row').forEach(btn => btn.addEventListener('click', function() {
+      this.closest('tr').remove();
+    }));
+
+    // Scroll to first error on page load
+    const firstError = document.querySelector('.input-error, .field-error');
+    if (firstError) {
+      firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   </script>
 {% endblock %}
