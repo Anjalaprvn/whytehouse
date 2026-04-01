@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.db.models import Q
 from admin_panel.models import TravelPackage, Property, Inquiry, Lead, Blog, Destination
 from admin_panel.models import Feedback, BlogCategory, Property, PackageTransportOption
+from admin_panel.models import PackageBooking
 from django.shortcuts import render, get_object_or_404
 from admin_panel.models import Blog
 
@@ -535,8 +536,17 @@ def package_detail(request, slug):
             name = request.POST.get('name', '').strip()
             email = request.POST.get('email', '').strip()
             phone = request.POST.get('phone', '').strip()
-            guests = request.POST.get('guests', '1').strip()
+            adults = request.POST.get('adults', '1').strip()
+            children = request.POST.get('children', '0').strip()
             start_date = request.POST.get('start_date', '').strip()
+            
+            # Collect child ages
+            child_ages = []
+            children_count = int(children) if children.isdigit() else 0
+            for i in range(1, children_count + 1):
+                age = request.POST.get(f'child_age_{i}', '').strip()
+                if age:
+                    child_ages.append(age)
             
             # Validation
             errors = []
@@ -560,16 +570,6 @@ def package_detail(request, slug):
             elif not phone_digits.isdigit():
                 errors.append('Phone number must contain only digits.')
             
-            # Guests validation
-            try:
-                guests_int = int(guests)
-                if guests_int < 1:
-                    errors.append('Number of guests must be at least 1.')
-                elif guests_int > 50:
-                    errors.append('Number of guests cannot exceed 50.')
-            except ValueError:
-                errors.append('Please enter a valid number of guests.')
-            
             # Start date validation
             if not start_date:
                 errors.append('Start date is required.')
@@ -592,7 +592,8 @@ def package_detail(request, slug):
                         'name': name,
                         'email': email,
                         'phone': phone,
-                        'guests': guests,
+                        'adults': adults,
+                        'children': children,
                         'start_date': start_date
                     }
                 })
@@ -619,9 +620,24 @@ def package_detail(request, slug):
                 if not created and email and not customer.email:
                     customer.email = email
                     customer.save()
+                
+                adults_int = int(adults) if str(adults).isdigit() else 1
+                children_int = int(children) if str(children).isdigit() else 0
+                total_cost = float(package.adult_price or package.price or 0) * adults_int
+                PackageBooking.objects.create(
+                    customer=customer,
+                    package=package,
+                    package_name=package.name,
+                    email=email,
+                    phone=phone,
+                    start_date=start_date,
+                    adults=adults_int,
+                    children=children_int,
+                    total_cost=total_cost
+                )
             except Exception:
                 pass
-
+            
             messages.success(request, 'Booking request submitted! Our team will contact you soon.')
             return redirect('user_panel:package_detail', slug=slug)
         

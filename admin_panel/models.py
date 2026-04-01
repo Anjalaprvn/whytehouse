@@ -558,7 +558,8 @@ class PackageTransportOption(models.Model):
     package = models.ForeignKey(TravelPackage, on_delete=models.CASCADE, related_name='transport_options')
     name = models.CharField(max_length=150)
     price_per_person = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    max_persons = models.PositiveIntegerField(default=1, help_text='Maximum number of persons this transport can accommodate')
+    min_persons = models.PositiveIntegerField(default=1)
+    max_persons = models.PositiveIntegerField(default=1)
 
     def __str__(self):
         return f"{self.name} - ₹{self.price_per_person}/person ({self.package.name})"
@@ -769,3 +770,19 @@ class FeedbackImage(models.Model):
     
     def __str__(self):
         return f"Image for {self.feedback.name}"
+
+
+class PackageBooking(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='package_bookings')
+    package = models.ForeignKey(TravelPackage, on_delete=models.SET_NULL, null=True, blank=True, related_name='bookings')
+    package_name = models.CharField(max_length=200)
+    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=20)
+    start_date = models.DateField()
+    adults = models.PositiveIntegerField(default=1)
+    children = models.PositiveIntegerField(default=0)
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.customer.display_name} - {self.package_name}"

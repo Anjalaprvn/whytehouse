@@ -337,20 +337,6 @@
 
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h4 style="margin:0;">Meal Options <span style="font-size:0.85rem;color:#6b7280;font-weight:400;">(for price calculator)</span></h4>
-                <button type="button" onclick="addPricingRow('meal')" style="background:none;border:1px solid #ddd;padding:5px 12px;border-radius:6px;cursor:pointer;">+ Add Meal</button>
-            </div>
-            <div id="meal-options-container">
-                <div class="pricing-row" style="display:grid;grid-template-columns:2fr 1fr auto;gap:10px;margin-bottom:10px;">
-                    <input type="text" name="meal_option_name[]" class="form-control" placeholder="e.g. Breakfast Only" style="margin-bottom:0;">
-                    <input type="number" name="meal_option_price[]" class="form-control" placeholder="Price/person (&#8377;)" min="0" style="margin-bottom:0;">
-                    <button type="button" onclick="this.closest('.pricing-row').remove()" style="background:#fee2e2;border:none;border-radius:6px;padding:0 12px;cursor:pointer;color:#ef4444;font-size:18px;">&#215;</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <h4 style="margin:0;">Transport Options <span style="font-size:0.85rem;color:#6b7280;font-weight:400;">(for price calculator)</span></h4>
                 <button type="button" onclick="addPricingRow('transport')" style="background:none;border:1px solid #ddd;padding:5px 12px;border-radius:6px;cursor:pointer;">+ Add Transport</button>
             </div>
@@ -498,7 +484,19 @@ window.addEventListener('DOMContentLoaded', function() {
             document.getElementById('duration-error').style.display = 'block';
             formValid = false;
         } else {
-            document.getElementById('duration-error').style.display = 'none';
+            // Validate nights = days - 1
+            const days = parseInt(document.getElementById('days-input').value) || 1;
+            const nights = parseInt(document.getElementById('nights-input').value) || 0;
+            const expectedNights = days - 1;
+            
+            if (nights !== expectedNights) {
+                const durationError = document.getElementById('duration-error');
+                durationError.textContent = `Nights must be ${expectedNights} for ${days} days (nights = days - 1).`;
+                durationError.style.display = 'block';
+                formValid = false;
+            } else {
+                document.getElementById('duration-error').style.display = 'none';
+            }
         }
 
         const adultPriceEl = document.getElementById('adult_price');
@@ -670,9 +668,21 @@ function syncDuration() {
     document.getElementById('days-input').value = days;
     document.getElementById('nights-input').value = nights;
 
+    // Validate nights = days - 1
+    const expectedNights = days - 1;
+    const durationError = document.getElementById('duration-error');
+    
+    if (nights !== expectedNights) {
+        durationError.textContent = `Nights must be ${expectedNights} for ${days} days (nights = days - 1).`;
+        durationError.style.display = 'block';
+        document.getElementById('duration').classList.add('invalid-field');
+    } else {
+        durationError.style.display = 'none';
+        document.getElementById('duration').classList.remove('invalid-field');
+    }
+
     const val = `${days} Days / ${nights} Nights`;
     document.getElementById('duration').value = val;
-    document.getElementById('duration-error').style.display = 'none';
 
     updateItineraryDays();
 }
@@ -829,23 +839,6 @@ renderPkgChildPricing();
 
 function addPricingRow(type) {
     const configs = {
-        room: {
-            container: 'room-options-container',
-            html: `<div class="pricing-row" style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:10px;">
-                <input type="text" name="room_option_name[]" class="form-control" placeholder="e.g. Suite" style="margin-bottom:0;">
-                <input type="number" name="room_option_price[]" class="form-control" placeholder="Price/night (\u20b9)" min="0" style="margin-bottom:0;">
-                <input type="number" name="room_option_guests[]" class="form-control" placeholder="Max guests" min="1" value="2" style="margin-bottom:0;">
-                <button type="button" onclick="this.closest('.pricing-row').remove()" style="background:#fee2e2;border:none;border-radius:6px;padding:0 12px;cursor:pointer;color:#ef4444;font-size:18px;">\u00d7</button>
-            </div>`
-        },
-        meal: {
-            container: 'meal-options-container',
-            html: `<div class="pricing-row" style="display:grid;grid-template-columns:2fr 1fr auto;gap:10px;margin-bottom:10px;">
-                <input type="text" name="meal_option_name[]" class="form-control" placeholder="e.g. Full Board" style="margin-bottom:0;">
-                <input type="number" name="meal_option_price[]" class="form-control" placeholder="Price/person (\u20b9)" min="0" style="margin-bottom:0;">
-                <button type="button" onclick="this.closest('.pricing-row').remove()" style="background:#fee2e2;border:none;border-radius:6px;padding:0 12px;cursor:pointer;color:#ef4444;font-size:18px;">\u00d7</button>
-            </div>`
-        },
         transport: {
             container: 'transport-options-container',
             html: `<div class="pricing-row" style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:10px;">

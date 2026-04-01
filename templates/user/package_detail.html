@@ -557,9 +557,9 @@
                     <div class="form-group">
                         <label>Adults <span style="color: red;">*</span></label>
                         <div class="input-wrapper">
-                            <select name="adults" id="adults-select" required>
-                                <option value="1">1 Adult</option>
-                                <option value="2" selected>2 Adults</option>
+                            <select name="adults" id="adults-select" required onchange="document.getElementById('calc-adults').textContent='\u20b9 ' + (parseFloat('{{ package.adult_price|default:package.price }}') * parseInt(this.value)).toLocaleString('en-IN'); document.getElementById('total-price-value').textContent = (parseFloat('{{ package.adult_price|default:package.price }}') * parseInt(this.value)).toLocaleString('en-IN');">
+                                <option value="1" selected>1 Adult</option>
+                                <option value="2">2 Adults</option>
                                 <option value="3">3 Adults</option>
                                 <option value="4">4 Adults</option>
                                 <option value="5">5 Adults</option>
@@ -573,9 +573,19 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Children <span style="font-size:11px;color:#999;">(enter each child's age)</span></label>
-                        <div id="children-ages-container"></div>
-                        <button type="button" onclick="addChildAge()" style="background:none;border:1px dashed #ccc;border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer;color:#555;margin-top:4px;">+ Add Child</button>
+                        <label>Children</label>
+                        <div class="input-wrapper">
+                            <select name="children" id="children-count-select" onchange="updateChildAgeInputs();">
+                                <option value="0" selected>0 Children</option>
+                                <option value="1">1 Child</option>
+                                <option value="2">2 Children</option>
+                                <option value="3">3 Children</option>
+                                <option value="4">4 Children</option>
+                                <option value="5">5 Children</option>
+                                <option value="6">6 Children</option>
+                            </select>
+                        </div>
+                        <div id="children-ages-container" style="margin-top:8px;"></div>
                     </div>
 
                     <div class="form-group" id="nights-group" style="display:none;">
@@ -613,7 +623,7 @@
                     </div>
 
                     <div id="price-breakdown" style="background:#f9f5ec; border-radius:12px; padding:14px 16px; margin-bottom:10px; font-size:13px; color:#555;">
-                        <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Adults</span><span id="calc-adults">&#8377; 0</span></div>
+                        <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Adults</span><span id="calc-adults">&#8377; {{ package.adult_price|default:package.price|floatformat:0 }}</span></div>
                         <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Children</span><span id="calc-children">&#8377; 0</span></div>
                         <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Room</span><span id="calc-room">&#8377; 0</span></div>
                         <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Meals</span><span id="calc-meal">&#8377; 0</span></div>
@@ -682,6 +692,7 @@
     </aside>
 </div>
 
+{% autoescape off %}
 <script>
     // TAB SWITCHING
     const tabs = document.querySelectorAll('.tab');
@@ -724,8 +735,7 @@
     }
 
     function calculateTotal() {
-        var adultsEl = document.getElementById('adults-select');
-        var adults = adultsEl ? (parseInt(adultsEl.value) || 1) : 1;
+        var adults = parseInt(document.getElementById('adults-select').value) || 1;
         var childAges = getChildAges();
         var nightsEl = document.getElementById('nights-input');
         var nights = nightsEl ? (parseInt(nightsEl.value) || 1) : 1;
@@ -744,46 +754,62 @@
         var transportTotal = transportPrice * totalPax;
         var grandTotal = adultTotal + childTotal + roomTotal + mealTotal + transportTotal;
 
-        var tv = document.getElementById('total-price-value');
-        var pp = document.getElementById('price-per-person');
-        var ca = document.getElementById('calc-adults');
-        var cc = document.getElementById('calc-children');
-        var cr = document.getElementById('calc-room');
-        var cm = document.getElementById('calc-meal');
-        var ct = document.getElementById('calc-transport');
-
-        if (tv) tv.textContent = grandTotal.toLocaleString('en-IN');
-        if (pp) pp.textContent = adultPrice.toLocaleString('en-IN');
-        if (ca) ca.textContent = '\u20b9 ' + adultTotal.toLocaleString('en-IN');
-        if (cc) cc.textContent = '\u20b9 ' + childTotal.toLocaleString('en-IN');
-        if (cr) cr.textContent = '\u20b9 ' + roomTotal.toLocaleString('en-IN');
-        if (cm) cm.textContent = '\u20b9 ' + mealTotal.toLocaleString('en-IN');
-        if (ct) ct.textContent = '\u20b9 ' + transportTotal.toLocaleString('en-IN');
+        document.getElementById('calc-adults').textContent = '₹ ' + adultTotal.toLocaleString('en-IN');
+        document.getElementById('calc-children').textContent = '₹ ' + childTotal.toLocaleString('en-IN');
+        document.getElementById('calc-room').textContent = '₹ ' + roomTotal.toLocaleString('en-IN');
+        document.getElementById('calc-meal').textContent = '₹ ' + mealTotal.toLocaleString('en-IN');
+        document.getElementById('calc-transport').textContent = '₹ ' + transportTotal.toLocaleString('en-IN');
+        document.getElementById('total-price-value').textContent = grandTotal.toLocaleString('en-IN');
+        document.getElementById('price-per-person').textContent = adultPrice.toLocaleString('en-IN');
     }
 
-    function addChildAge() {
+    function updateChildAgeInputs() {
+        var count = parseInt(document.getElementById('children-count-select').value) || 0;
         var container = document.getElementById('children-ages-container');
-        var idx = container.children.length + 1;
-        var div = document.createElement('div');
-        div.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px;';
-        div.innerHTML = '<div class="input-wrapper" style="flex:1;"><input type="number" class="child-age-input" placeholder="Child ' + idx + ' age (years)" min="0" max="17" oninput="calculateTotal()"></div><button type="button" onclick="this.parentElement.remove();calculateTotal()" style="background:#fee2e2;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;color:#ef4444;font-size:16px;">&times;</button>';
-        container.appendChild(div);
+        if (!container) {
+            console.error('Container not found!');
+            return;
+        }
+        container.innerHTML = '';
+        for (var i = 1; i <= count; i++) {
+            var div = document.createElement('div');
+            div.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px;margin-top:6px;';
+            div.innerHTML = '<span style="font-size:12px;color:#555;min-width:65px;">Child ' + i + ' age</span><div class="input-wrapper" style="flex:1;"><input type="number" name="child_age_' + i + '" class="child-age-input" placeholder="0-17" min="0" max="17" required></div>';
+            container.appendChild(div);
+        }
+        var inputs = container.querySelectorAll('.child-age-input');
+        inputs.forEach(function(inp) {
+            inp.addEventListener('input', function() {
+                filterTransportByGroupSize();
+                calculateTotal();
+            });
+        });
+        filterTransportByGroupSize();
+        calculateTotal();
     }
 
     function filterTransportByGroupSize() {
         var transportEl = document.getElementById('transport-select');
         var transportGrp = document.getElementById('transport-group');
-        if (!transportEl || !transportGrp) return;
+        if (!transportEl || !transportGrp || transportOptions.length === 0) return;
         var adults = parseInt(document.getElementById('adults-select').value) || 1;
         var totalPax = adults + getChildAges().length;
-        var anyVisible = false;
+        var bestOpt = null;
         Array.from(transportEl.options).forEach(function(opt) {
-            if (opt.value === '0') return;
+            if (opt.value === '0') { opt.style.display = 'none'; return; }
             var maxP = parseInt(opt.dataset.maxPersons) || 1;
-            if (maxP >= totalPax) { opt.style.display = ''; anyVisible = true; }
-            else { opt.style.display = 'none'; if (opt.selected) transportEl.value = '0'; }
+            if (maxP >= totalPax) {
+                opt.style.display = '';
+                if (!bestOpt) bestOpt = opt;
+            } else {
+                opt.style.display = 'none';
+                if (opt.selected) transportEl.value = '0';
+            }
         });
-        transportGrp.style.display = (transportOptions.length > 0 && anyVisible) ? 'block' : 'none';
+        if (bestOpt && (transportEl.value === '0' || !transportEl.options[transportEl.selectedIndex] || transportEl.options[transportEl.selectedIndex].style.display === 'none')) {
+            transportEl.value = bestOpt.value;
+        }
+        calculateTotal();
     }
 
     // Populate dropdowns
@@ -817,13 +843,15 @@
         }
 
         if (transportSelect && transportOptions.length > 0) {
-            transportOptions.forEach(function(t) {
+            var sortedTransport = transportOptions.slice().sort(function(a, b) { return a.max_persons - b.max_persons; });
+            sortedTransport.forEach(function(t) {
                 var opt = document.createElement('option');
                 opt.value = t.price_per_person;
                 opt.dataset.maxPersons = t.max_persons;
                 opt.textContent = t.name + ' \u2014 \u20b9' + t.price_per_person + '/person (max ' + t.max_persons + ')';
                 transportSelect.appendChild(opt);
             });
+            document.getElementById('transport-group').style.display = 'block';
         }
 
         // Attach event listeners
@@ -839,7 +867,8 @@
 
         filterTransportByGroupSize();
         calculateTotal();
-    })();
+    }());
+    calculateTotal();
 
     // Itinerary accordion
     document.querySelectorAll('.itinerary-header').forEach(header => {
@@ -993,6 +1022,7 @@
         });
     });
 </script>
+{% endautoescape %}
 
 <section class="stories-section">
     <div class="stories-header">

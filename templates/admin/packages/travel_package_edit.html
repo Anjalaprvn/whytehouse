@@ -411,23 +411,6 @@ renderPkgChildPricing();
 
 function addPricingRow(type) {
     const configs = {
-        room: {
-            container: 'room-options-container',
-            html: `<div class="pricing-row" style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:10px;">
-                <input type="text" name="room_option_name[]" class="form-control" placeholder="e.g. Suite" style="margin-bottom:0;">
-                <input type="number" name="room_option_price[]" class="form-control" placeholder="Price/night (\u20b9)" min="0" style="margin-bottom:0;">
-                <input type="number" name="room_option_guests[]" class="form-control" placeholder="Max guests" min="1" value="2" style="margin-bottom:0;">
-                <button type="button" onclick="this.closest('.pricing-row').remove()" style="background:#fee2e2;border:none;border-radius:6px;padding:0 12px;cursor:pointer;color:#ef4444;font-size:18px;">\u00d7</button>
-            </div>`
-        },
-        meal: {
-            container: 'meal-options-container',
-            html: `<div class="pricing-row" style="display:grid;grid-template-columns:2fr 1fr auto;gap:10px;margin-bottom:10px;">
-                <input type="text" name="meal_option_name[]" class="form-control" placeholder="e.g. Full Board" style="margin-bottom:0;">
-                <input type="number" name="meal_option_price[]" class="form-control" placeholder="Price/person (\u20b9)" min="0" style="margin-bottom:0;">
-                <button type="button" onclick="this.closest('.pricing-row').remove()" style="background:#fee2e2;border:none;border-radius:6px;padding:0 12px;cursor:pointer;color:#ef4444;font-size:18px;">\u00d7</button>
-            </div>`
-        },
         transport: {
             container: 'transport-options-container',
             html: `<div class="pricing-row" style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:10px;">
@@ -566,6 +549,20 @@ function syncDuration() {
     const nights = Math.max(0, parseInt(document.getElementById('nights-input').value) || 0);
     document.getElementById('days-input').value = days;
     document.getElementById('nights-input').value = nights;
+    
+    // Validate nights = days - 1
+    const expectedNights = days - 1;
+    const durationError = document.getElementById('duration-error');
+    
+    if (nights !== expectedNights) {
+        durationError.textContent = `Nights must be ${expectedNights} for ${days} days (nights = days - 1).`;
+        durationError.style.display = 'block';
+        document.getElementById('edit_duration').classList.add('invalid');
+    } else {
+        durationError.style.display = 'none';
+        document.getElementById('edit_duration').classList.remove('invalid');
+    }
+    
     document.getElementById('edit_duration').value = `${days} Days / ${nights} Nights`;
     updateItineraryDays();
 }
@@ -725,6 +722,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelector('form').addEventListener('submit', function(e) {
         let valid = true;
+        
+        // Validate nights = days - 1
+        const days = parseInt(document.getElementById('days-input').value) || 1;
+        const nights = parseInt(document.getElementById('nights-input').value) || 0;
+        const expectedNights = days - 1;
+        
+        if (nights !== expectedNights) {
+            const durationError = document.getElementById('duration-error');
+            durationError.textContent = `Nights must be ${expectedNights} for ${days} days (nights = days - 1).`;
+            durationError.style.display = 'block';
+            valid = false;
+        }
+        
         const checks = [
             { id: 'edit_pkg_name', errId: 'title-error', pattern: /^[a-zA-Z\s&,]+$/ },
             { id: 'edit_location', errId: 'location-error', pattern: /^[a-zA-Z\s,]+$/ },
