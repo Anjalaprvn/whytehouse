@@ -588,12 +588,7 @@
                         <div id="children-ages-container" style="margin-top:8px;"></div>
                     </div>
 
-                    <div class="form-group" id="nights-group" style="display:none;">
-                        <label>Nights</label>
-                        <div class="input-wrapper">
-                            <input type="number" id="nights-input" name="nights" min="1" value="1" placeholder="Number of nights">
-                        </div>
-                    </div>
+
 
                     <div class="form-group" id="room-group" style="display:none;">
                         <label>Room Type</label>
@@ -828,7 +823,6 @@
                 roomSelect.appendChild(opt);
             });
             roomGroup.style.display = 'block';
-            document.getElementById('nights-group').style.display = 'block';
         }
 
         if (mealSelect && mealOptions.length > 0) {
@@ -839,7 +833,6 @@
                 mealSelect.appendChild(opt);
             });
             mealGroup.style.display = 'block';
-            document.getElementById('nights-group').style.display = 'block';
         }
 
         if (transportSelect && transportOptions.length > 0) {

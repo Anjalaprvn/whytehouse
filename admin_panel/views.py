@@ -880,9 +880,9 @@ def travel_package_add(request):
 
         # Save transport options and meal plans
         pkg_obj = TravelPackage.objects.get(name=name, category=category)
-        meal_plan_id = request.POST.get('meal_plans')
-        if meal_plan_id:
-            pkg_obj.meal_plans.set([meal_plan_id])
+        meal_plan_ids = request.POST.getlist('meal_plans')
+        if meal_plan_ids:
+            pkg_obj.meal_plans.set(meal_plan_ids)
         else:
             pkg_obj.meal_plans.clear()
         for i, tname in enumerate(request.POST.getlist('transport_option_name[]')):
@@ -992,9 +992,9 @@ def travel_package_edit(request, package_id):
 
         # Update transport options — clear and rebuild
         package.transport_options.all().delete()
-        meal_plan_id = request.POST.get('meal_plans')
-        if meal_plan_id:
-            package.meal_plans.set([meal_plan_id])
+        meal_plan_ids = request.POST.getlist('meal_plans')
+        if meal_plan_ids:
+            package.meal_plans.set(meal_plan_ids)
         else:
             package.meal_plans.clear()
         for i, tname in enumerate(request.POST.getlist('transport_option_name[]')):
