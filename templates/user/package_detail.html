@@ -461,19 +461,36 @@
             <p>{{ package.description|default:"Explore this amazing destination with us." }}</p>
         </div>
 
-        <div class="includes-section">
-            <h3>Includes:</h3>
-            <ul class="includes-list">
-                {% if package.inclusions %}
-                    {% for inclusion in package.inclusions.splitlines %}
-                        {% if inclusion.strip %}
-                            <li><i class="fas fa-check-circle"></i> {{ inclusion }}</li>
-                        {% endif %}
-                    {% endfor %}
-                {% else %}
-                    <li><i class="fas fa-check-circle"></i> Contact us for package details</li>
-                {% endif %}
-            </ul>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 60px;">
+            <div class="includes-section">
+                <h3>Includes:</h3>
+                <ul class="includes-list">
+                    {% if package.inclusions %}
+                        {% for inclusion in package.inclusions.splitlines %}
+                            {% if inclusion.strip %}
+                                <li><i class="fas fa-check-circle"></i> {{ inclusion }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <li><i class="fas fa-check-circle"></i> Contact us for package details</li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <div class="includes-section">
+                <h3>Excludes:</h3>
+                <ul class="includes-list">
+                    {% if package.exclusions %}
+                        {% for exclusion in package.exclusions.splitlines %}
+                            {% if exclusion.strip %}
+                                <li><i class="fas fa-times-circle" style="color: #ef4444;"></i> {{ exclusion }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <li><i class="fas fa-times-circle" style="color: #ef4444;"></i> Contact us for exclusion details</li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
 
         <section class="itinerary-section">
@@ -588,12 +605,7 @@
                         <div id="children-ages-container" style="margin-top:8px;"></div>
                     </div>
 
-                    <div class="form-group" id="nights-group" style="display:none;">
-                        <label>Nights</label>
-                        <div class="input-wrapper">
-                            <input type="number" id="nights-input" name="nights" min="1" value="1" placeholder="Number of nights">
-                        </div>
-                    </div>
+
 
                     <div class="form-group" id="room-group" style="display:none;">
                         <label>Room Type</label>
@@ -828,7 +840,6 @@
                 roomSelect.appendChild(opt);
             });
             roomGroup.style.display = 'block';
-            document.getElementById('nights-group').style.display = 'block';
         }
 
         if (mealSelect && mealOptions.length > 0) {
@@ -839,7 +850,6 @@
                 mealSelect.appendChild(opt);
             });
             mealGroup.style.display = 'block';
-            document.getElementById('nights-group').style.display = 'block';
         }
 
         if (transportSelect && transportOptions.length > 0) {

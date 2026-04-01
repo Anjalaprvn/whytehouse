@@ -141,11 +141,9 @@
                             <button type="button" onclick="changeDuration('days',1)" style="padding:10px 14px; background:none; border:none; font-size:18px; cursor:pointer; color:#555;">+</button>
                         </div>
                         <span style="color:#999;">/</span>
-                        <div style="display:flex; align-items:center; background:#f3f4f6; border-radius:8px; overflow:hidden; flex:1;">
-                            <button type="button" onclick="changeDuration('nights',-1)" style="padding:10px 14px; background:none; border:none; font-size:18px; cursor:pointer; color:#555;">−</button>
-                            <input type="number" id="nights-input" min="0" value="0" style="width:40px; text-align:center; border:none; background:transparent; font-size:15px; font-weight:600; outline:none;" oninput="syncDuration()">
+                        <div style="display:flex; align-items:center; background:#e8e8e8; border-radius:8px; overflow:hidden; flex:1;">
+                            <input type="number" id="nights-input" min="0" value="0" readonly style="width:100%; text-align:center; border:none; background:transparent; font-size:15px; font-weight:600; outline:none; cursor:not-allowed; padding:10px;" title="Nights are automatically calculated as Days - 1">
                             <span style="font-size:13px; color:#666; padding-right:10px;">Nights</span>
-                            <button type="button" onclick="changeDuration('nights',1)" style="padding:10px 14px; background:none; border:none; font-size:18px; cursor:pointer; color:#555;">+</button>
                         </div>
                     </div>
                     <input type="hidden" id="edit_duration" name="duration" value="{{ package.duration|default:'' }}">
@@ -313,13 +311,18 @@
 
                 <div>
                     <label>Meal Plans</label>
-                    <select name="meal_plans" class="form-control">
-                        <option value="">-- No meal plan --</option>
+                    <div style="background:#f8f9fa;border:1px solid #e5e7eb;border-radius:8px;padding:12px;max-height:200px;overflow-y:auto;">
                         {% for m in meals %}
-                        <option value="{{ m.id }}" {% if m in package.meal_plans.all %}selected{% endif %}>{{ m.name }} &mdash; &#8377;{{ m.price_per_person }}/person</option>
+                        <label style="display:flex;align-items:center;gap:8px;padding:8px;cursor:pointer;margin-bottom:4px;border-radius:6px;transition:background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'">
+                            <input type="checkbox" name="meal_plans" value="{{ m.id }}" {% if m in package.meal_plans.all %}checked{% endif %} style="width:16px;height:16px;cursor:pointer;">
+                            <span style="flex:1;font-size:14px;font-weight:500;">{{ m.name }}</span>
+                            <span style="color:#6b7280;font-size:13px;">&#8377;{{ m.price_per_person }}/person</span>
+                        </label>
+                        {% empty %}
+                        <div style="color:#9ca3af;font-size:13px;text-align:center;padding:8px;">No meal plans available</div>
                         {% endfor %}
-                    </select>
-                    <div style="font-size:12px;color:#6b7280;margin-top:-14px;margin-bottom:14px;">Meal price will be pulled from this plan.</div>
+                    </div>
+                    <div style="font-size:12px;color:#6b7280;margin-top:8px;margin-bottom:14px;">Meal prices will be pulled from selected plans.</div>
                 </div>
             </div>
         </div>
@@ -546,22 +549,10 @@ function changeDuration(type, delta) {
 
 function syncDuration() {
     const days = Math.max(1, parseInt(document.getElementById('days-input').value) || 1);
-    const nights = Math.max(0, parseInt(document.getElementById('nights-input').value) || 0);
+    const nights = days - 1; // Auto-calculate nights
+    
     document.getElementById('days-input').value = days;
     document.getElementById('nights-input').value = nights;
-    
-    // Validate nights = days - 1
-    const expectedNights = days - 1;
-    const durationError = document.getElementById('duration-error');
-    
-    if (nights !== expectedNights) {
-        durationError.textContent = `Nights must be ${expectedNights} for ${days} days (nights = days - 1).`;
-        durationError.style.display = 'block';
-        document.getElementById('edit_duration').classList.add('invalid');
-    } else {
-        durationError.style.display = 'none';
-        document.getElementById('edit_duration').classList.remove('invalid');
-    }
     
     document.getElementById('edit_duration').value = `${days} Days / ${nights} Nights`;
     updateItineraryDays();
@@ -722,18 +713,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelector('form').addEventListener('submit', function(e) {
         let valid = true;
-        
-        // Validate nights = days - 1
-        const days = parseInt(document.getElementById('days-input').value) || 1;
-        const nights = parseInt(document.getElementById('nights-input').value) || 0;
-        const expectedNights = days - 1;
-        
-        if (nights !== expectedNights) {
-            const durationError = document.getElementById('duration-error');
-            durationError.textContent = `Nights must be ${expectedNights} for ${days} days (nights = days - 1).`;
-            durationError.style.display = 'block';
-            valid = false;
-        }
         
         const checks = [
             { id: 'edit_pkg_name', errId: 'title-error', pattern: /^[a-zA-Z\s&,]+$/ },
