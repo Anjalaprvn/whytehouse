@@ -2,420 +2,530 @@
 {% load static %}
 
 {% block title %}{{ package.name }} | Whyte House Holidays{% endblock %}
-
 {% block nav_packages %}class="active"{% endblock %}
 
 {% block content %}
 <style>
-    :root {
-        --brand-gold: #D4A373;
-        --brand-black: #000000;
-        --text-gray: #777777;
-        --white: #ffffff;
-        --soft-bg: #F3F4F6;
+    :root{
+        --brand-gold:#D8942E;
+        --brand-black:#111111;
+        --text-dark:#1E1E1E;
+        --text-gray:#7B7B7B;
+        --soft-gray:#ECEAE8;
+        --soft-gray-2:#E7E5E3;
+        --card-border:rgba(255,255,255,0.42);
+        --card-bg:rgba(255,255,255,0.22);
+        --white:#ffffff;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-
-    body {
-        background: url("{% static 'images/wavy-bg.png' %}") !important;
-        background-size: cover;
-        background-attachment: fixed;
-        background-repeat: repeat;
-        color: var(--brand-black);
-        line-height: 1.6;
+    *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+        font-family:'Inter',sans-serif;
     }
 
-    .navbar {
-        position: absolute;
-        top: 20px;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 30px 80px;
-        z-index: 100;
-        background: transparent;
+    body{
+        background:url("{% static 'images/wavy-bg.png' %}") no-repeat center center fixed !important;
+        background-size:cover !important;
+        color:var(--brand-black);
     }
 
-    .nav-links {
-        display: flex;
-        gap: 30px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(15px);
-        padding: 12px 40px;
-        border-radius: 50px;
-        border: 1px solid rgba(255,255,255,0.1);
+    .detail-hero{
+        height:72vh;
+        background:
+            linear-gradient(rgba(0,0,0,0.14), rgba(0,0,0,0.20)),
+            url("{% if package.image %}{{ package.image.url }}{% else %}{% static 'images/default-package.jpg' %}{% endif %}");
+        background-size:cover;
+        background-position:center;
+        position:relative;
+        display:flex;
+        align-items:flex-end;
+        padding:0 80px 42px;
     }
 
-    .nav-links a {
-        text-decoration: none;
-        color: white;
-        font-size: 14px;
-        transition: 0.3s;
+    .back-btn{
+        display:inline-flex;
+        align-items:center;
+        gap:10px;
+        text-decoration:none;
+        padding:12px 24px;
+        border-radius:999px;
+        background:var(--brand-gold);
+        color:#111;
+        font-size:14px;
+        font-weight:600;
     }
 
-    .nav-links a:hover { color: var(--brand-gold); }
-
-    .detail-hero {
-        height: 70vh;
-        background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.2)),
-                    url("{% if package.image %}{{ package.image.url }}{% else %}{% static 'images/default-package.jpg' %}{% endif %}");
-        background-size: cover;
-        background-position: center;
-        position: relative;
-        display: flex;
-        align-items: flex-end;
-        padding: 0 80px 40px;
+    .detail-wrap{
+        max-width:1320px;
+        margin:0 auto;
+        padding:62px 80px 90px;
+        display:grid;
+        grid-template-columns:minmax(0, 1.6fr) 430px;
+        gap:58px;
+        align-items:start;
     }
 
-    .back-btn {
-        background: var(--brand-gold);
-        color: black;
-        padding: 12px 25px;
-        border-radius: 50px;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 14px;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        transition: 0.3s;
+    .package-header h1{
+        font-size:44px;
+        line-height:1.1;
+        font-weight:700;
+        margin-bottom:16px;
+        letter-spacing:-0.02em;
     }
 
-    .container {
-        max-width: 1300px;
-        margin: 0 auto;
-        padding: 60px 80px;
-        display: grid;
-        grid-template-columns: 1.8fr 1fr;
-        gap: 60px;
+    .location-meta{
+        display:flex;
+        align-items:center;
+        flex-wrap:wrap;
+        gap:22px;
+        margin-bottom:34px;
+        color:#666;
+        font-size:15px;
     }
 
-    .package-header h1 {
-        font-size: 42px;
-        font-weight: 700;
-        margin-bottom: 10px;
+    .location-meta i{
+        color:var(--brand-gold);
+        margin-right:8px;
     }
 
-    .location-meta {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        color: var(--text-gray);
-        margin-bottom: 40px;
-        font-size: 15px;
+    .price-stats{
+        display:flex;
+        gap:42px;
+        flex-wrap:wrap;
+        margin-bottom:34px;
+        padding-bottom:26px;
+        border-bottom:1px solid rgba(0,0,0,0.08);
     }
 
-    .location-meta i { color: var(--brand-gold); }
-
-    .price-stats {
-        display: flex;
-        gap: 40px;
-        margin-bottom: 40px;
-        padding-bottom: 30px;
-        border-bottom: 1px solid #eee;
+    .stat-item label{
+        display:block;
+        font-size:14px;
+        color:#777;
+        margin-bottom:6px;
     }
 
-    .stat-item label {
-        display: block;
-        color: var(--text-gray);
-        font-size: 14px;
-        margin-bottom: 5px;
+    .stat-item span{
+        font-size:18px;
+        font-weight:700;
+        color:#111;
     }
 
-    .stat-item span {
-        font-weight: 700;
-        font-size: 18px;
+    .description-text{
+        color:#555;
+        font-size:16px;
+        line-height:1.9;
+        margin-bottom:42px;
+        max-width:760px;
     }
 
-    .description-text {
-        color: #555;
-        margin-bottom: 40px;
-        font-size: 16px;
-        line-height: 1.8;
+    .includes-grid{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:40px;
+        margin-bottom:62px;
     }
 
-    .includes-section h3 {
-        font-size: 24px;
-        margin-bottom: 20px;
+    .includes-section h3{
+        font-size:24px;
+        font-weight:700;
+        margin-bottom:20px;
     }
 
-    .includes-list {
-        list-style: none;
-        margin-bottom: 60px;
+    .includes-list{
+        list-style:none;
     }
 
-    .includes-list li {
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        color: #444;
+    .includes-list li{
+        display:flex;
+        align-items:flex-start;
+        gap:12px;
+        margin-bottom:14px;
+        color:#444;
+        line-height:1.7;
     }
 
-    .includes-list li i {
-        color: var(--brand-gold);
-        font-size: 14px;
+    .includes-list li i{
+        margin-top:4px;
+        color:var(--brand-gold);
+        font-size:14px;
     }
 
-    .itinerary-section h2 {
-        font-size: 28px;
-        margin-bottom: 30px;
+    .itinerary-section h2{
+        font-size:30px;
+        font-weight:700;
+        margin-bottom:26px;
     }
 
-    .itinerary-item {
-        background: rgba(255, 255, 255, 0.6);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        border-radius: 15px;
-        margin-bottom: 15px;
-        overflow: hidden;
-        transition: all 0.3s ease;
+    .itinerary-item{
+        background:rgba(255,255,255,0.42);
+        backdrop-filter:blur(14px);
+        -webkit-backdrop-filter:blur(14px);
+        border:1px solid rgba(255,255,255,0.55);
+        border-radius:16px;
+        margin-bottom:16px;
+        overflow:hidden;
     }
 
-    .itinerary-header {
-        color: var(--brand-black);
-        padding: 20px 30px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        cursor: pointer;
-        font-weight: 600;
+    .itinerary-header{
+        padding:20px 24px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        cursor:pointer;
+        font-weight:600;
+        color:#111;
     }
 
-    .itinerary-header .day-label {
-        color: #333;
-        margin-right: 20px;
-        font-weight: 700;
+    .itinerary-header .day-label{
+        font-weight:800;
+        margin-right:16px;
     }
 
-    .itinerary-content {
-        padding: 0 30px 25px;
-        display: none;
+    .itinerary-content{
+        padding:0 24px 22px;
+        display:none;
+        color:#555;
+        line-height:1.8;
     }
 
-    .booking-card {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        border-radius: 25px;
-        padding: 35px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
-        position: sticky;
-        top: 20px;
-        max-height: 90vh;
-        overflow-y: auto;
+    aside{
+        align-self:start;
     }
 
-    .form-tabs {
-        display: flex;
-        gap: 25px;
-        margin-bottom: 25px;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 10px;
+    /* ===== FIGMA BOOK TOUR CARD ===== */
+    .booking-card{
+        position:sticky;
+        top:24px;
+        width:100%;
+        padding:24px 22px 22px;
+        border-radius:26px;
+        background:var(--card-bg);
+        border:1px solid var(--card-border);
+        backdrop-filter:blur(18px);
+        -webkit-backdrop-filter:blur(18px);
+        box-shadow:0 10px 30px rgba(0,0,0,0.06);
+        overflow:hidden;
     }
 
-    .tab {
-        cursor: pointer;
-        font-weight: 600;
-        color: #BBB;
-        font-size: 15px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid transparent;
-        transition: 0.3s ease;
+    .booking-card::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        background:
+            linear-gradient(135deg, rgba(255,255,255,0.24), rgba(255,255,255,0.08)),
+            url("{% static 'images/wavy-bg.png' %}") center/cover no-repeat;
+        opacity:.22;
+        pointer-events:none;
     }
 
-    .tab.active {
-        color: var(--brand-black);
-        border-bottom: 2px solid var(--brand-black);
+    .booking-card > *{
+        position:relative;
+        z-index:1;
     }
 
-    .tab-content {
-        display: none;
+    .booking-title{
+        font-size:18px;
+        font-weight:600;
+        color:#111;
+        margin-bottom:2px;
     }
 
-    .tab-content.active {
-        display: block;
+    .booking-title-underline{
+        width:76px;
+        height:2px;
+        background:#111;
+        border-radius:20px;
+        margin-bottom:22px;
     }
 
-    .form-group {
-        margin-bottom: 20px;
+    .form-tabs{
+        display:flex;
+        align-items:center;
+        gap:26px;
+        margin-bottom:18px;
     }
 
-    .form-group label {
-        display: block;
-        font-size: 13px;
-        font-weight: 600;
-        margin-bottom: 8px;
-        color: #333;
+    .tab{
+        border:none;
+        background:none;
+        padding:0 0 8px;
+        font-size:12px;
+        font-weight:500;
+        color:#8A8A8A;
+        cursor:pointer;
+        border-bottom:1.6px solid transparent;
     }
 
-    .input-wrapper {
-        background: #F3F4F6;
-        border: 1px solid #F0F0F0;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        padding: 0 15px;
-        transition: 0.3s ease;
+    .tab.active{
+        color:#111;
+        border-bottom-color:#111;
     }
 
-    .input-wrapper input,
-    .input-wrapper select,
-    .input-wrapper textarea {
-        width: 100%;
-        background: transparent;
-        border: none;
-        padding: 14px 10px;
-        outline: none;
-        font-size: 14px;
-        resize: none;
+    .tab-content{
+        display:none;
     }
 
-    .input-wrapper.textarea-box {
-        align-items: flex-start;
-        padding-top: 8px;
+    .tab-content.active{
+        display:block;
     }
 
-    .total-price-box {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px dashed #DDD;
+    .form-group{
+        margin-bottom:12px;
     }
 
-    .total-price-box h4 {
-        font-size: 22px;
-        color: var(--brand-gold);
+    .figma-field{
+        position:relative;
+        border:none;
+        border-radius:12px;
+        background:rgba(243,241,239,0.94);
+        min-height:74px;
+        padding:13px 16px 10px;
+        display:flex;
+        align-items:flex-start;
+        justify-content:center;
+        flex-direction:column;
+        box-shadow:inset 0 0 0 1px rgba(255,255,255,0.26);
+    }
+
+    .figma-field.has-icon{
+        padding-right:50px;
+    }
+
+    .figma-field .field-label{
+        font-size:13px;
+        line-height:1.2;
+        font-weight:500;
+        color:#111;
+        margin-bottom:8px;
+    }
+
+    .figma-field input,
+    .figma-field select,
+    .figma-field textarea{
+        width:100%;
+        border:none;
+        outline:none;
+        background:transparent;
+        font-size:14px;
+        color:#6F6F6F;
+        font-weight:400;
+        padding:0;
+        margin:0;
+        appearance:none;
+        -webkit-appearance:none;
+        -moz-appearance:none;
+    }
+
+    .figma-field input::placeholder,
+    .figma-field textarea::placeholder{
+        color:#9A9A9A;
+    }
+
+    .field-icon{
+        position:absolute;
+        right:16px;
+        top:50%;
+        transform:translateY(-50%);
+        font-size:20px;
+        color:#111;
+        pointer-events:none;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+    }
+
+    .field-icon.small{
+        font-size:16px;
+    }
+
+    .readonly-field{
+        color:#7A7A7A;
+        pointer-events:none;
+    }
+
+    .booking-extra-fields{
+        margin-top:12px;
+        padding-top:2px;
+    }
+
+    .booking-extra-fields .figma-field{
+        min-height:70px;
+    }
+
+    .price-summary{
+        margin-top:14px;
+        padding:6px 2px 0;
+    }
+
+    .price-row{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:20px;
+        font-size:15px;
+        margin-bottom:8px;
+        color:#8A8A8A;
+    }
+
+    .price-row span:last-child{
+        color:#111;
+        font-weight:600;
+    }
+
+    .price-row.total{
+        margin-top:4px;
+    }
+
+    .price-row.total span:first-child{
+        color:#7C7C7C;
+    }
+
+    .price-row.total span:last-child{
+        font-size:18px;
+        font-weight:700;
     }
 
     .book-now-btn,
-    .send-message-btn {
-        width: 100%;
-        background: var(--brand-gold);
-        color: white;
-        border: none;
-        padding: 16px;
-        border-radius: 50px;
-        font-weight: 700;
-        margin-top: 25px;
-        cursor: pointer;
-        transition: 0.3s ease;
+    .send-message-btn{
+        width:100%;
+        height:46px;
+        border:none;
+        border-radius:8px;
+        background:var(--brand-gold);
+        color:#111;
+        font-size:17px;
+        font-weight:700;
+        cursor:pointer;
+        margin-top:18px;
+        transition:0.25s ease;
     }
 
     .book-now-btn:hover,
-    .send-message-btn:hover {
-        opacity: 0.9;
+    .send-message-btn:hover{
+        transform:translateY(-1px);
     }
 
-    .stories-section {
-        padding: 80px;
-        background: transparent;
+    .booking-note{
+        margin-top:10px;
+        font-size:11px;
+        text-align:center;
+        color:#7A7A7A;
     }
 
-    .stories-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 40px;
+    .message-success{
+        background:#eefbf1;
+        border:1px solid #bbf0c5;
+        color:#16a34a;
     }
 
-    .stories-grid {
-        display: grid;
-        grid-template-columns: 1.5fr 1fr;
-        gap: 30px;
+    .message-error{
+        background:#fff1f2;
+        border:1px solid #fda0a6;
+        color:#dc2626;
     }
 
-    .main-story {
-        position: relative;
-        border-radius: 20px;
-        overflow: hidden;
-        height: 500px;
+    .message-warning,
+    .message-info{
+        background:#fff6e8;
+        border:1px solid #fde096;
+        color:#d97706;
     }
 
-    .main-story img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+    .stories-section{
+        max-width:1320px;
+        margin:0 auto;
+        padding:0 80px 90px;
     }
 
-    .story-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding: 40px;
-        background: linear-gradient(transparent, rgba(0,0,0,0.8));
-        color: white;
+    .stories-header{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:34px;
     }
 
-    .side-imgs {
-        display: flex;
-        flex-direction: column;
-        gap: 30px;
+    .stories-header h2{
+        font-size:32px;
+        font-weight:700;
     }
 
-    .side-imgs img {
-        height: 235px;
-        width: 100%;
-        object-fit: cover;
-        border-radius: 20px;
+    .stories-grid{
+        display:grid;
+        grid-template-columns:1.5fr 1fr;
+        gap:28px;
     }
 
-    .message-success {
-        background: #eefbf1;
-        border: 1px solid #bbf0c5;
-        color: #16a34a;
+    .main-story{
+        position:relative;
+        height:500px;
+        overflow:hidden;
+        border-radius:22px;
     }
 
-    .message-error {
-        background: #fff1f2;
-        border: 1px solid #fda0a6;
-        color: #dc2626;
+    .main-story img{
+        width:100%;
+        height:100%;
+        object-fit:cover;
     }
 
-    .message-warning, .message-info {
-        background: #fff6e8;
-        border: 1px solid #fde096;
-        color: #d97706;
+    .story-overlay{
+        position:absolute;
+        left:0;
+        right:0;
+        bottom:0;
+        padding:34px;
+        color:#fff;
+        background:linear-gradient(transparent, rgba(0,0,0,0.78));
     }
 
-    nav {
-        position: absolute;
-        top: 20px;
-        width: 100%;
-        background: transparent;
+    .side-imgs{
+        display:flex;
+        flex-direction:column;
+        gap:28px;
     }
 
-    aside {
-        align-self: flex-start;
+    .side-imgs img{
+        width:100%;
+        height:236px;
+        object-fit:cover;
+        border-radius:22px;
     }
 
-    @media (max-width: 991px) {
-        .container {
-            grid-template-columns: 1fr;
-            padding: 40px 20px;
+    @media (max-width:1100px){
+        .detail-wrap{
+            grid-template-columns:1fr;
         }
 
-        .detail-hero {
-            padding: 0 20px 30px;
+        .booking-card{
+            position:static;
+            max-width:520px;
+        }
+    }
+
+    @media (max-width:768px){
+        .detail-hero{
+            padding:0 20px 26px;
+            height:56vh;
         }
 
-        .stories-section {
-            padding: 40px 20px;
+        .detail-wrap{
+            padding:38px 20px 60px;
+            gap:36px;
         }
 
-        .stories-grid {
-            grid-template-columns: 1fr;
+        .stories-section{
+            padding:0 20px 60px;
         }
 
-        .booking-card {
-            position: static;
+        .package-header h1{
+            font-size:34px;
+        }
+
+        .includes-grid,
+        .stories-grid{
+            grid-template-columns:1fr;
         }
     }
 </style>
@@ -426,7 +536,7 @@
     </a>
 </header>
 
-<div class="container">
+<div class="detail-wrap">
     <main>
         <div class="package-header">
             <div class="location-meta">
@@ -439,7 +549,7 @@
         <div class="price-stats">
             <div class="stat-item">
                 <label>Adult Price</label>
-                <span>&#8377; {{ package.adult_price|default:package.price }}</span>
+                <span>₹ {{ package.adult_price|default:package.price }}</span>
             </div>
             {% if package.child_pricing and package.child_pricing != '[]' %}
             <div class="stat-item">
@@ -461,7 +571,7 @@
             <p>{{ package.description|default:"Explore this amazing destination with us." }}</p>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 60px;">
+        <div class="includes-grid">
             <div class="includes-section">
                 <h3>Includes:</h3>
                 <ul class="includes-list">
@@ -483,11 +593,11 @@
                     {% if package.exclusions %}
                         {% for exclusion in package.exclusions.splitlines %}
                             {% if exclusion.strip %}
-                                <li><i class="fas fa-times-circle" style="color: #ef4444;"></i> {{ exclusion }}</li>
+                                <li><i class="fas fa-times-circle" style="color:#ef4444;"></i> {{ exclusion }}</li>
                             {% endif %}
                         {% endfor %}
                     {% else %}
-                        <li><i class="fas fa-times-circle" style="color: #ef4444;"></i> Contact us for exclusion details</li>
+                        <li><i class="fas fa-times-circle" style="color:#ef4444;"></i> Contact us for exclusion details</li>
                     {% endif %}
                 </ul>
             </div>
@@ -500,227 +610,266 @@
                     {% if day.strip %}
                     <div class="itinerary-item">
                         <div class="itinerary-header">
-                            <span><span class="day-label">DAY {{ forloop.counter }}</span> {{ day|truncatewords:5 }}</span>
+                            <span><span class="day-label">DAY {{ forloop.counter }}</span>{{ day|truncatewords:5 }}</span>
                             <i class="fas fa-chevron-down"></i>
                         </div>
                         <div class="itinerary-content">
-                            <p style="color: #555; line-height: 1.6;">{{ day }}</p>
+                            <p>{{ day }}</p>
                         </div>
                     </div>
                     {% endif %}
                 {% endfor %}
             {% else %}
-                <p style="color: #666;">Detailed itinerary available upon request.</p>
+                <p style="color:#666;">Detailed itinerary available upon request.</p>
             {% endif %}
         </section>
     </main>
 
     <aside>
         <div class="booking-card">
+            <div class="booking-title">Book Tour</div>
+            <div class="booking-title-underline"></div>
+
+            {% if messages %}
+                {% for message in messages %}
+                <div style="padding:12px; border-radius:10px; margin-bottom:15px; font-size:14px;" class="message-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
             <div class="form-tabs">
-                <div class="tab active" data-tab="book-tour">Book Tour</div>
-                <div class="tab" data-tab="message-box">Message</div>
+                <button type="button" class="tab active" data-tab="booking-tab">Book Tour</button>
+                <button type="button" class="tab" data-tab="message-tab">Message</button>
             </div>
 
-            <!-- BOOK TOUR TAB -->
-            <div class="tab-content active" id="book-tour">
-                {% if messages %}
-                    {% for message in messages %}
-                    <div style="padding: 12px; border-radius: 10px; margin-bottom: 15px; font-size: 14px;" class="message-{{ message.tags }}">
-                        {{ message }}
-                    </div>
-                    {% endfor %}
-                {% endif %}
-
-                <form method="post">
+            <div class="tab-content active" id="booking-tab">
+                <form method="post" id="booking-form">
                     {% csrf_token %}
                     <input type="hidden" name="form_type" value="booking">
 
                     <div class="form-group">
-                        <label>Full Name <span style="color: red;">*</span></label>
-                        <div class="input-wrapper">
-                            <input type="text" name="name" placeholder="Enter your full name" value="{{ form_data.name|default:'' }}" required oninput="validateName(this)">
+                        <div class="figma-field">
+                            <div class="field-label">Full Name</div>
+                            <input type="text" name="name" placeholder="Name" value="{{ form_data.name|default:'' }}" required oninput="validateName(this)">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Email <span style="color: red;">*</span></label>
-                        <div class="input-wrapper">
-                            <input type="email" name="email" placeholder="your.email@example.com" value="{{ form_data.email|default:'' }}" required>
+                        <div class="figma-field has-icon">
+                            <div class="field-label">Tour package</div>
+                            <input type="text" value="{{ package.name }}" class="readonly-field" readonly>
+                            <span class="field-icon">↗</span>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Phone <span style="color: red;">*</span></label>
-                        <div class="input-wrapper">
-                            <input type="tel" name="phone" placeholder="Enter 10 digit phone number" value="{{ form_data.phone|default:'' }}" required maxlength="10" pattern="[0-9]{10}">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Tour package</label>
-                        <div class="input-wrapper">
-                            <input type="text" value="{{ package.name }}" readonly style="background: #f5f5f5; cursor: not-allowed;">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Starting Date <span style="color: red;">*</span></label>
-                        <div class="input-wrapper">
+                        <div class="figma-field has-icon">
+                            <div class="field-label">Starting Date</div>
                             <input type="date" name="start_date" value="{{ form_data.start_date|default:'' }}" required min="{{ today|date:'Y-m-d' }}">
+                            <span class="field-icon small"><i class="fas fa-calendar-alt"></i></span>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Number of Guests <span style="color: red;">*</span></label>
-                        <div class="input-wrapper">
+                        <div class="figma-field has-icon">
+                            <div class="field-label">Guests</div>
                             <select name="guests" id="guests-select" required onchange="calculateTotal()">
-                                <option value="1" selected>1 Guest</option>
-                                <option value="2">2 Guests</option>
-                                <option value="3">3 Guests</option>
-                                <option value="4">4 Guests</option>
-                                <option value="5">5 Guests</option>
-                                <option value="6">6 Guests</option>
-                                <option value="7">7 Guests</option>
-                                <option value="8">8 Guests</option>
-                                <option value="9">9 Guests</option>
-                                <option value="10">10 Guests</option>
+                                <option value="1">1 Adult(s)</option>
+                                <option value="2" selected>2 Adult(s)</option>
+                                <option value="3">3 Adult(s)</option>
+                                <option value="4">4 Adult(s)</option>
+                                <option value="5">5 Adult(s)</option>
+                                <option value="6">6 Adult(s)</option>
+                                <option value="7">7 Adult(s)</option>
+                                <option value="8">8 Adult(s)</option>
+                                <option value="9">9 Adult(s)</option>
+                                <option value="10">10 Adult(s)</option>
                             </select>
+                            <span class="field-icon small"><i class="fas fa-chevron-down"></i></span>
                         </div>
                     </div>
 
-                    <div class="total-price-box">
-                        <span>Total Cost</span>
-                        <h4 id="total-price">&#8377; <span id="total-price-value">{{ package.adult_price|default:package.price|floatformat:0 }}</span></h4>
+                    <!-- hidden but still submitted if you want current booking flow -->
+                    <div class="booking-extra-fields" style="display:none;">
+                        <div class="form-group">
+                            <div class="figma-field">
+                                <div class="field-label">Email</div>
+                                <input type="email" name="email" placeholder="your.email@example.com" value="{{ form_data.email|default:'' }}">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="figma-field">
+                                <div class="field-label">Phone</div>
+                                <input type="tel" name="phone" placeholder="Enter 10 digit phone number" value="{{ form_data.phone|default:'' }}" maxlength="10" pattern="[0-9]{10}">
+                            </div>
+                        </div>
                     </div>
 
-                    <div style="font-size: 12px; color: #666; margin-top: 10px; text-align: center;">
-                        Price per person: &#8377; <span id="price-per-person">{{ package.adult_price|default:package.price|floatformat:0 }}</span>
+                    <div class="price-summary">
+                        <div class="price-row">
+                            <span>Total Cost / Pax</span>
+                            <span>₹ <span id="per-person-cost">{{ package.adult_price|default:package.price|floatformat:1 }}</span></span>
+                        </div>
+                        <div class="price-row">
+                            <span>Tax%</span>
+                            <span>₹ <span id="tax-amount">0.0</span></span>
+                        </div>
+                        <div class="price-row total">
+                            <span>Total</span>
+                            <span>₹ <span id="total-price-value">{{ package.adult_price|default:package.price|floatformat:1 }}</span></span>
+                        </div>
                     </div>
 
                     <button type="submit" class="book-now-btn">Book Now</button>
+                    <div class="booking-note">Price updates automatically based on selected guests</div>
                 </form>
             </div>
 
-            <!-- MESSAGE TAB -->
-            <div class="tab-content" id="message-box">
-                {% if messages %}
-                    {% for message in messages %}
-                    <div style="padding: 12px; border-radius: 10px; margin-bottom: 15px; font-size: 14px;" class="message-{{ message.tags }}">
-                        {{ message }}
-                    </div>
-                    {% endfor %}
-                {% endif %}
-
-                <form method="post">
+            <div class="tab-content" id="message-tab">
+                <form method="post" id="message-form">
                     {% csrf_token %}
                     <input type="hidden" name="form_type" value="message">
 
                     <div class="form-group">
-                        <label>Full Name <span style="color: red;">*</span></label>
-                        <div class="input-wrapper">
-                            <input type="text" name="message_name" placeholder="Enter your full name" required oninput="validateName(this)">
+                        <div class="figma-field">
+                            <div class="field-label">Full Name</div>
+                            <input type="text" name="message_name" placeholder="Name" required>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Phone <span style="color: red;">*</span></label>
-                        <div class="input-wrapper">
-                            <input type="tel" name="message_phone" placeholder="Enter 10 digit phone number" maxlength="10" pattern="[0-9]{10}" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Email <span style="color: red;">*</span></label>
-                        <div class="input-wrapper">
+                        <div class="figma-field">
+                            <div class="field-label">Email</div>
                             <input type="email" name="message_email" placeholder="your.email@example.com" required>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Message <span style="color: red;">*</span></label>
-                        <div class="input-wrapper textarea-box">
-                            <textarea name="message_text" rows="5" placeholder="Write your message here..." required></textarea>
+                        <div class="figma-field">
+                            <div class="field-label">Phone</div>
+                            <input type="tel" name="message_phone" placeholder="Enter 10 digit phone number" maxlength="10" pattern="[0-9]{10}" required>
                         </div>
                     </div>
 
-                    <button type="submit" class="send-message-btn">Send</button>
+                    <div class="form-group">
+                        <div class="figma-field" style="min-height:120px;">
+                            <div class="field-label">Message</div>
+                            <textarea name="message" rows="4" placeholder="Type your message..." required></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="send-message-btn">Send Message</button>
                 </form>
             </div>
         </div>
     </aside>
 </div>
 
+<section class="stories-section">
+    <div class="stories-header">
+        <h2>Real Stories From Travelers</h2>
+    </div>
+
+    <div class="stories-grid">
+        <div class="main-story">
+            <img src="{% if package.story_main_image %}{{ package.story_main_image.url }}{% else %}{% static 'images/v2.png' %}{% endif %}" alt="Main Story">
+            <div class="story-overlay">
+                <p>"Whyte House leveraged our property's unique history, implementing a strategic vision..."</p>
+
+                <div style="display:flex; align-items:center; gap:15px; margin-top:15px;">
+                    <img src="{% static 'images/person.png' %}" alt="Traveler" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
+                    <div>
+                        <strong style="display:block; font-size:16px;">Evan Thomas</strong>
+                        <div style="color:#D9902B; font-size:12px;">⭐⭐⭐⭐⭐</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="side-imgs">
+            <img src="{% if package.story_side_image1 %}{{ package.story_side_image1.url }}{% else %}{% static 'images/a2.png' %}{% endif %}" alt="Side Story 1">
+            <img src="{% if package.story_side_image2 %}{{ package.story_side_image2.url }}{% else %}{% static 'images/a1.png' %}{% endif %}" alt="Side Story 2">
+        </div>
+    </div>
+</section>
+
 {% autoescape off %}
 <script>
-    // TAB SWITCHING
-    const tabs = document.querySelectorAll('.tab');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            const target = this.getAttribute('data-tab');
-
-            tabs.forEach(t => t.classList.remove('active'));
-            tabContents.forEach(content => content.classList.remove('active'));
-
-            this.classList.add('active');
-            document.getElementById(target).classList.add('active');
-        });
-    });
-
-    // Price calculation
     const pricePerPerson = parseFloat('{{ package.adult_price|default:package.price }}') || 0;
+    const taxPercent = parseFloat('{{ package.tax_percentage|default:0 }}') || 0;
 
     function calculateTotal() {
         const guests = parseInt(document.getElementById('guests-select').value) || 1;
-        const totalPrice = pricePerPerson * guests;
-        document.getElementById('total-price-value').textContent = totalPrice.toLocaleString('en-IN');
+        const subtotal = pricePerPerson * guests;
+        const taxAmount = (subtotal * taxPercent) / 100;
+        const total = subtotal + taxAmount;
+
+        document.getElementById('per-person-cost').textContent = pricePerPerson.toLocaleString('en-IN', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+        });
+
+        document.getElementById('tax-amount').textContent = taxAmount.toLocaleString('en-IN', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+        });
+
+        document.getElementById('total-price-value').textContent = total.toLocaleString('en-IN', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+        });
     }
 
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        calculateTotal();
-    });
-
-    // Itinerary accordion
-    document.querySelectorAll('.itinerary-header').forEach(header => {
-        header.addEventListener('click', function() {
-            const content = this.parentElement.querySelector('.itinerary-content');
-            const icon = this.querySelector('i');
-
-            if (content.style.display === 'block') {
-                content.style.display = 'none';
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
-            } else {
-                content.style.display = 'block';
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-up');
-            }
-        });
-    });
-
-    // Validation
     function validateName(input) {
         const valid = /^[a-zA-Z\s]*$/.test(input.value);
         const formGroup = input.closest('.form-group');
         let msg = formGroup.querySelector('.name-error');
+
         if (!valid && input.value !== '') {
             if (!msg) {
                 msg = document.createElement('div');
                 msg.className = 'name-error';
                 msg.style.cssText = 'color:#ef4444; font-size:12px; margin-top:5px;';
                 msg.textContent = 'Only letters and spaces are allowed.';
-                input.closest('.input-wrapper').insertAdjacentElement('afterend', msg);
+                formGroup.appendChild(msg);
             }
         } else {
             if (msg) msg.remove();
         }
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Auto-dismiss messages after 3 seconds
+    document.addEventListener('DOMContentLoaded', function () {
+        calculateTotal();
+
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+                this.classList.add('active');
+                document.getElementById(this.dataset.tab).classList.add('active');
+            });
+        });
+
+        document.querySelectorAll('.itinerary-header').forEach(header => {
+            header.addEventListener('click', function () {
+                const content = this.parentElement.querySelector('.itinerary-content');
+                const icon = this.querySelector('i');
+
+                if (content.style.display === 'block') {
+                    content.style.display = 'none';
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                } else {
+                    content.style.display = 'block';
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                }
+            });
+        });
+
         document.querySelectorAll('.message-success, .message-error, .message-warning, .message-info').forEach(function(msg) {
             setTimeout(function() {
                 msg.style.transition = 'opacity 0.5s ease';
@@ -728,6 +877,7 @@
                 setTimeout(function() { msg.remove(); }, 500);
             }, 3000);
         });
+
         const forms = document.querySelectorAll('form');
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -745,9 +895,6 @@
             errorDiv.style.marginTop = '5px';
             errorDiv.textContent = message;
             formGroup.appendChild(errorDiv);
-
-            const wrapper = input.closest('.input-wrapper');
-            if (wrapper) wrapper.style.borderColor = '#dc2626';
         }
 
         function clearError(input) {
@@ -756,26 +903,6 @@
 
             const existingError = formGroup.querySelector('.error-msg');
             if (existingError) existingError.remove();
-
-            const wrapper = input.closest('.input-wrapper');
-            if (wrapper) wrapper.style.borderColor = '#F0F0F0';
-        }
-
-        function validateName(input) {
-            const valid = /^[a-zA-Z\s]*$/.test(input.value);
-            const formGroup = input.closest('.form-group');
-            let msg = formGroup.querySelector('.name-error');
-            if (!valid) {
-                if (!msg) {
-                    msg = document.createElement('div');
-                    msg.className = 'name-error';
-                    msg.style.cssText = 'color:#ef4444; font-size:12px; margin-top:5px;';
-                    msg.textContent = 'Only letters and spaces are allowed.';
-                    input.closest('.input-wrapper').insertAdjacentElement('afterend', msg);
-                }
-            } else {
-                if (msg) msg.remove();
-            }
         }
 
         document.querySelectorAll('input[type="tel"]').forEach(phoneInput => {
@@ -803,7 +930,6 @@
         forms.forEach(form => {
             form.addEventListener('submit', function(e) {
                 let isValid = true;
-
                 const requiredInputs = form.querySelectorAll('input[required], textarea[required], select[required]');
 
                 requiredInputs.forEach(input => {
@@ -824,7 +950,7 @@
                         isValid = false;
                     }
 
-                    if (input.type === 'tel' && input.value.length !== 10) {
+                    if (input.type === 'tel' && input.value && input.value.length !== 10) {
                         showError(input, 'Phone number must be exactly 10 digits');
                         isValid = false;
                     }
@@ -836,35 +962,4 @@
     });
 </script>
 {% endautoescape %}
-
-<section class="stories-section">
-    <div class="stories-header">
-        <h2>Real Stories From Travelers</h2>
-        <!-- <div><i class="fas fa-arrow-left"></i> <i class="fas fa-arrow-right"></i></div> -->
-    </div>
-    <div class="stories-grid">
-        <div class="main-story">
-            <img src="{% if package.story_main_image %}{{ package.story_main_image.url }}{% else %}{% static 'images/v2.png' %}{% endif %}">
-            <div class="story-overlay">
-                <p>"Whyte House leveraged our property's unique history, implementing a strategic vision..."</p>
-
-                <div style="display: flex; align-items: center; gap: 15px; margin-top: 15px;">
-                    <img src="{% static 'images/person.png' %}"
-                         alt="Evan Thomas"
-                         style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;">
-
-                    <div>
-                        <strong style="display: block; font-size: 16px;">Evan Thomas</strong>
-                        <div style="color: #D9902B; font-size: 12px;">⭐⭐⭐⭐⭐</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="side-imgs">
-            <img src="{% if package.story_side_image1 %}{{ package.story_side_image1.url }}{% else %}{% static 'images/a2.png' %}{% endif %}">
-            <img src="{% if package.story_side_image2 %}{{ package.story_side_image2.url }}{% else %}{% static 'images/a1.png' %}{% endif %}">
-        </div>
-    </div>
-</section>
 {% endblock %}
