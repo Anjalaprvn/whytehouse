@@ -874,13 +874,16 @@ def travel_package_add(request):
             tname = tname.strip()
             if tname:
                 prices = request.POST.getlist('transport_option_price[]')
+                min_persons_list = request.POST.getlist('transport_option_min_persons[]')
                 max_persons_list = request.POST.getlist('transport_option_max_persons[]')
                 price_val = prices[i].strip() if i < len(prices) and prices[i].strip() else '0'
+                min_p = min_persons_list[i].strip() if i < len(min_persons_list) and min_persons_list[i].strip() else '1'
                 max_p = max_persons_list[i].strip() if i < len(max_persons_list) and max_persons_list[i].strip() else '1'
                 PackageTransportOption.objects.create(
                     package=pkg_obj,
                     name=tname,
                     price_per_person=price_val,
+                    min_persons=min_p,
                     max_persons=max_p,
                 )
         
@@ -965,13 +968,16 @@ def travel_package_edit(request, package_id):
             tname = tname.strip()
             if tname:
                 prices = request.POST.getlist('transport_option_price[]')
+                min_persons_list = request.POST.getlist('transport_option_min_persons[]')
                 max_persons_list = request.POST.getlist('transport_option_max_persons[]')
                 price_val = prices[i].strip() if i < len(prices) and prices[i].strip() else '0'
+                min_p = min_persons_list[i].strip() if i < len(min_persons_list) and min_persons_list[i].strip() else '1'
                 max_p = max_persons_list[i].strip() if i < len(max_persons_list) and max_persons_list[i].strip() else '1'
                 PackageTransportOption.objects.create(
                     package=package,
                     name=tname,
                     price_per_person=price_val,
+                    min_persons=min_p,
                     max_persons=max_p,
                 )
 

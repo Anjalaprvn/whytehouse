@@ -558,7 +558,8 @@ class PackageTransportOption(models.Model):
     package = models.ForeignKey(TravelPackage, on_delete=models.CASCADE, related_name='transport_options')
     name = models.CharField(max_length=150)
     price_per_person = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    max_persons = models.PositiveIntegerField(default=1, help_text='Maximum number of persons this transport can accommodate')
+    min_persons = models.PositiveIntegerField(default=1)
+    max_persons = models.PositiveIntegerField(default=1)
 
     def __str__(self):
         return f"{self.name} - ₹{self.price_per_person}/person ({self.package.name})"
