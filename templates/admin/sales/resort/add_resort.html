@@ -1,4 +1,4 @@
-g{% extends 'admin/sidebar.html' %}
+{% extends 'admin/sidebar.html' %}
 {% load static %}
 
 {% block extra_css %}
@@ -284,10 +284,10 @@ g{% extends 'admin/sidebar.html' %}
     <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
 
-      <!-- BASIC INFORMATION -->
       <section class="card">
-        <h3>🔹 Basic Information</h3>
-        <div class="grid">
+        <h3>🔹 Resort Details</h3>
+        <div class="grid" style="grid-template-columns:1fr;">
+
           <div class="field">
             <label>Resort Name <span class="req">*</span></label>
             <input type="text" name="resort_name" placeholder="Paradise Beach Resort" required
@@ -304,43 +304,8 @@ g{% extends 'admin/sidebar.html' %}
             {% if errors.resort_place %}<div class="field-error">{{ errors.resort_place }}</div>{% endif %}
           </div>
 
-          <div class="field span-2">
-            <label>Full Address</label>
-            <textarea name="full_address" placeholder="Enter complete address">{{ form_data.full_address }}</textarea>
-          </div>
-
           <div class="field">
-            <label>City</label>
-            <input type="text" name="city" placeholder="e.g., Panaji" value="{{ form_data.city }}">
-          </div>
-
-          <div class="field">
-            <label>State</label>
-            <input type="text" name="state" placeholder="e.g., Goa" value="{{ form_data.state }}">
-          </div>
-
-          <div class="field">
-            <label>PIN Code</label>
-            <input type="text" name="pin_code" placeholder="e.g., 403001" maxlength="6" 
-              value="{{ form_data.pin_code }}"
-              class="{% if errors.pin_code %}input-error{% endif %}">
-            {% if errors.pin_code %}<div class="field-error">{{ errors.pin_code }}</div>{% endif %}
-          </div>
-
-          <div class="field span-2">
-            <label>Location (Google Map Link)</label>
-            <input type="url" name="location_map_link" placeholder="https://maps.google.com/..." 
-              value="{{ form_data.location_map_link }}">
-          </div>
-        </div>
-      </section>
-
-      <!-- CONTACT DETAILS -->
-      <section class="card">
-        <h3>🔹 Contact Details</h3>
-        <div class="grid">
-          <div class="field">
-            <label>Mobile <span class="req">*</span></label>
+            <label>Mobile</label>
             <input type="text" name="mobile" placeholder="9876543210" maxlength="15"
               value="{{ form_data.mobile }}"
               class="{% if errors.mobile %}input-error{% endif %}">
@@ -355,169 +320,26 @@ g{% extends 'admin/sidebar.html' %}
             {% if errors.email %}<div class="field-error">{{ errors.email }}</div>{% endif %}
           </div>
 
-          <div class="field span-2">
+          <div class="field">
             <label>CC Emails</label>
             <div class="cc-entry-row" style="display:flex;gap:8px;align-items:center;">
               <input id="cc-email-input" type="email" placeholder="user@example.com" style="flex:1;" />
-              <button type="button" id="cc-email-add" class="btn">Add</button>
+              <button type="button" id="cc-email-add" class="btn primary">Add</button>
             </div>
             <input type="hidden" name="cc_emails" id="cc_emails_hidden" value="{{ form_data.cc_emails }}" />
             <div id="cc-email-tags" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;"></div>
             <small style="color:#6b7280;display:block;margin-top:6px;">Add multiple CC email addresses one-by-one.</small>
           </div>
+
+          <div class="field">
+            <label>Location (Google Map Link)</label>
+            <input type="url" name="location_map_link" placeholder="https://maps.google.com/..."
+              value="{{ form_data.location_map_link }}">
+          </div>
+
         </div>
       </section>
 
-      <!-- OWNER / LEGAL DETAILS -->
-      <section class="card">
-        <h3>🔹 Owner / Legal Details</h3>
-        <div class="grid">
-          <div class="field span-2">
-            <label>Owner / Manager Name</label>
-            <input type="text" name="owner_manager_name" placeholder="John Doe"
-              value="{{ form_data.owner_manager_name }}">
-          </div>
-
-          <div class="field">
-            <label>GST Number</label>
-            <input type="text" name="gst_number" placeholder="22AAAAA0000A1Z5" maxlength="15"
-              value="{{ form_data.gst_number }}"
-              class="{% if errors.gst_number %}input-error{% endif %}">
-            {% if errors.gst_number %}<div class="field-error">{{ errors.gst_number }}</div>{% endif %}
-          </div>
-
-          <div class="field">
-            <label>Business Registration Number</label>
-            <input type="text" name="business_registration_number" placeholder="Enter registration number"
-              value="{{ form_data.business_registration_number }}">
-          </div>
-
-          <div class="field">
-            <label>Registration Certificate (Upload)</label>
-            <div id="reg-cert-preview" class="file-preview" style="display:none;"></div>
-            <div class="file-upload" onclick="document.getElementById('reg-cert').click()">
-              <input type="file" id="reg-cert" name="registration_certificate" accept=".pdf,.doc,.docx,.jpg,.png">
-              <span>Click to upload certificate</span>
-            </div>
-          </div>
-
-          <div class="field">
-            <label>ID Proof (Aadhaar / PAN Upload)</label>
-            <div id="id-proof-preview" class="file-preview" style="display:none;"></div>
-            <div class="file-upload" onclick="document.getElementById('id-proof').click()">
-              <input type="file" id="id-proof" name="id_proof" accept=".pdf,.jpg,.png">
-              <span>Click to upload ID proof</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- PROPERTY DETAILS -->
-      <section class="card">
-        <h3>🔹 Property Details</h3>
-        <div class="grid">
-          <div class="field">
-            <label>Number of Rooms</label>
-            <input type="number" name="number_of_rooms" placeholder="50" min="1"
-              value="{{ form_data.number_of_rooms }}"
-              class="{% if errors.number_of_rooms %}input-error{% endif %}">
-            {% if errors.number_of_rooms %}<div class="field-error">{{ errors.number_of_rooms }}</div>{% endif %}
-          </div>
-
-          <div class="field">
-            <label>Amenities (comma-separated)</label>
-            <textarea name="amenities" placeholder="WiFi, Swimming Pool, Gym, Restaurant">{{ form_data.amenities }}</textarea>
-          </div>
-
-          <div class="field span-2">
-            <label>Resort Description</label>
-            <textarea name="description" placeholder="Describe your resort...">{{ form_data.description }}</textarea>
-          </div>
-
-          <div class="field">
-            <label>Resort Images (Upload)</label>
-            <small style="color:#6b7280;display:block;margin-bottom:8px;">Click + to add images or select multiple files. Click 🗑 on any preview to remove it.</small>
-            <div id="resort-images-preview" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;"></div>
-            <div id="resort-images-count" style="margin-top:8px; color:#1f2937; font-size:13px;"></div>
-            <div class="file-upload" onclick="document.getElementById('images').click()">
-              <input type="file" id="images" name="resort_images" accept="image/*" multiple>
-              <span>Click to upload images</span>
-            </div>
-          </div>
-
-          <div class="field">
-            <label>Resort Video (Optional)</label>
-            <div id="video-preview" class="file-preview" style="display:none;"></div>
-            <div class="file-upload" onclick="document.getElementById('video').click()">
-              <input type="file" id="video" name="resort_video" accept="video/*">
-              <span>Click to upload video</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ROOM TYPE DETAILS -->
-      <section class="card">
-        <h3>🔹 Primary Room Type Details (Optional)</h3>
-        <div style="margin-bottom:10px; display:flex; align-items:center; justify-content:flex-end; gap:10px;">
-          <button type="button" id="add-room-type-btn" class="btn">Add Row</button>
-        </div>
-        <div style="overflow:auto;">
-          <table id="room-type-table" style="width:100%; border-collapse:collapse;">
-            <thead>
-              <tr>
-                <th style="padding:8px;border:1px solid #d9dbe4;">Room Type</th>
-                <th style="padding:8px;border:1px solid #d9dbe4;">Total Rooms</th>
-                <th style="padding:8px;border:1px solid #d9dbe4;">Price/Night</th>
-                <th style="padding:8px;border:1px solid #d9dbe4;">Max Guests</th>
-                <th style="padding:8px;border:1px solid #d9dbe4;">Size</th>
-                <th style="padding:8px;border:1px solid #d9dbe4;">Amenities</th>
-                <th style="padding:8px;border:1px solid #d9dbe4;">Image</th>
-                <th style="padding:8px;border:1px solid #d9dbe4;">Action</th>
-              </tr>
-            </thead>
-            <tbody id="room-type-body">
-              <tr data-room-uid="room-0">
-                <input type="hidden" name="room_type_uid[]" value="room-0" />
-                <td style="border:1px solid #d9dbe4;"><input type="text" name="room_type_name[]" placeholder="Deluxe Suite" style="width:100%;" /></td>
-                <td style="border:1px solid #d9dbe4;"><input type="number" name="total_rooms[]" min="0" style="width:100%;" /></td>
-                <td style="border:1px solid #d9dbe4;"><input type="number" step="0.01" name="price_per_night[]" style="width:100%;" /></td>
-                <td style="border:1px solid #d9dbe4;"><input type="number" name="max_guests[]" min="1" style="width:100%;" /></td>
-                <td style="border:1px solid #d9dbe4;"><input type="text" name="room_size[]" style="width:100%;" /></td>
-                <td style="border:1px solid #d9dbe4;"><input type="text" name="room_type_amenities[]" style="width:100%;" /></td>
-                <td style="border:1px solid #d9dbe4;">
-                  <small style="color:#6b7280;display:block;margin-bottom:6px;font-size:11px;">Click + to add • 🗑 to remove</small>
-                  <input type="file" name="room_type_images_room-0[]" data-room-uid="room-0" class="room-type-images-input" accept="image/*" multiple style="margin-bottom:6px;" />
-                  <div class="room-type-images-preview" data-room-id="room-0" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
-                </td>
-                <td style="border:1px solid #d9dbe4; text-align:center;">
-                  <span class="delete-icon" onclick="this.closest('tr').remove()" style="cursor:pointer;font-size:18px;color:#ef4444;">🗑</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- ONLINE PRESENCE -->
-      <section class="card">
-        <h3>🔹 Online Presence (Optional)</h3>
-        <div class="grid">
-          <div class="field span-2">
-            <label>Website URL</label>
-            <input type="url" name="website_url" placeholder="https://www.resort.com"
-              value="{{ form_data.website_url }}">
-          </div>
-
-          <div class="field span-2">
-            <label>Social Media Links (comma-separated)</label>
-            <input type="text" name="social_media_links" placeholder="https://facebook.com/resort, https://instagram.com/resort"
-              value="{{ form_data.social_media_links }}">
-          </div>
-        </div>
-      </section>
-
-      <!-- FORM BUTTONS -->
       <div class="btn-row">
         <button type="button" class="btn" onclick="history.back()">Cancel</button>
         <button type="submit" class="btn primary">Submit Resort Registration</button>
@@ -527,31 +349,9 @@ g{% extends 'admin/sidebar.html' %}
   </main>
 
   <script>
-    // File upload visual feedback
-    document.querySelectorAll('.file-upload input[type="file"]').forEach(input => {
-      input.addEventListener('change', e => {
-        const label = e.target.closest('.file-upload').querySelector('span');
-        if (e.target.files.length > 0) {
-          const fileName = e.target.files[0].name;
-          label.innerHTML = `<strong>✓ ${fileName}</strong>`;
-          label.style.color = 'green';
-        }
-      });
-    });
-
-    // PIN Code: digits only
-    document.querySelector('input[name="pin_code"]').addEventListener('input', function() {
-      this.value = this.value.replace(/\D/g, '').slice(0, 6);
-    });
-
     // Mobile: digits only
     document.querySelector('input[name="mobile"]').addEventListener('input', function() {
       this.value = this.value.replace(/\D/g, '').slice(0, 15);
-    });
-
-    // Number of rooms: positive integers only
-    document.querySelector('input[name="number_of_rooms"]').addEventListener('input', function() {
-      if (this.value < 0) this.value = '';
     });
 
     // CC Email chip input
@@ -585,13 +385,8 @@ g{% extends 'admin/sidebar.html' %}
       const value = ccInput.value.trim();
       if (!value) return;
       const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailPattern.test(value)) {
-        alert('Enter a valid email address.');
-        return;
-      }
-      if (!ccEmails.includes(value)) {
-        ccEmails.push(value);
-      }
+      if (!emailPattern.test(value)) { alert('Enter a valid email address.'); return; }
+      if (!ccEmails.includes(value)) ccEmails.push(value);
       ccHidden.value = ccEmails.join(',');
       ccInput.value = '';
       renderCCTags();
@@ -599,264 +394,8 @@ g{% extends 'admin/sidebar.html' %}
 
     ccAddBtn.addEventListener('click', addCCEmail);
     ccInput.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        addCCEmail();
-      }
+      if (e.key === 'Enter') { e.preventDefault(); addCCEmail(); }
     });
-
     renderCCTags();
-
-    // File previews
-    function setupFilePreview(inputId, previewId, type) {
-      const input = document.getElementById(inputId);
-      const preview = document.getElementById(previewId);
-      input.addEventListener('change', () => {
-        const file = input.files[0];
-        if (!file) {
-          preview.style.display = 'none';
-          preview.innerHTML = '';
-          return;
-        }
-        preview.style.display = 'block';
-        
-        // Check if it's an image (jpg, png, jpeg)
-        if (file.type.startsWith('image/')) {
-          const url = URL.createObjectURL(file);
-          preview.innerHTML = `
-            <div style="position:relative;display:inline-block;">
-              <img src="${url}" alt="${file.name}" style="max-width:200px;max-height:200px;border-radius:8px;border:2px solid #e5e7eb;" />
-              <div style="margin-top:8px;font-size:13px;color:#6b7280;text-align:center;">${file.name}</div>
-            </div>
-          `;
-        } else if (type === 'pdf') {
-          preview.innerHTML = `
-            <div style="text-align:center;padding:20px;background:#f9fafb;border-radius:8px;border:2px solid #e5e7eb;">
-              <div style="font-size:48px;margin-bottom:8px;">📄</div>
-              <div style="font-size:14px;color:#6b7280;">${file.name}</div>
-              <div style="font-size:12px;color:#9ca3af;margin-top:4px;">PDF Document</div>
-            </div>
-          `;
-        } else {
-          // For other file types
-          preview.innerHTML = `
-            <div style="text-align:center;padding:20px;background:#f9fafb;border-radius:8px;border:2px solid #e5e7eb;">
-              <div style="font-size:48px;margin-bottom:8px;">📄</div>
-              <div style="font-size:14px;color:#6b7280;">${file.name}</div>
-            </div>
-          `;
-        }
-      });
-    }
-
-    setupFilePreview('reg-cert', 'reg-cert-preview', 'file');
-    setupFilePreview('id-proof', 'id-proof-preview', 'file');
-    setupFilePreview('video', 'video-preview', 'video');
-
-    // Resort images multiple preview + remove
-    const resortImagesInput = document.getElementById('images');
-    const resortImagesPreview = document.getElementById('resort-images-preview');
-
-    // Store file arrays for each input by UID
-    const roomTypeFilesMap = {};
-    let resortImagesFilesList = []; // Store accumulated resort images
-
-    function createImageCard(file, index, inputElement) {
-      let roomUid = inputElement.dataset.roomUid;
-      const isResortImage = !roomUid; // Resort images don't have roomUid
-      
-      const card = document.createElement('div');
-      card.className = 'image-preview-card';
-      card.style.position = 'relative';
-      
-      const img = document.createElement('img');
-      img.src = URL.createObjectURL(file);
-      img.alt = file.name;
-      img.style.width = '100%';
-      img.style.height = '100%';
-      img.style.objectFit = 'cover';
-      
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'image-remove-btn';
-      btn.innerHTML = '×'; // Red cross
-      btn.title = 'Remove image';
-      btn.style.background = 'rgba(239, 68, 68, 0.95)';
-      btn.style.border = 'none';
-      btn.style.color = 'white';
-      btn.style.cursor = 'pointer';
-      btn.style.fontSize = '18px';
-      btn.style.fontWeight = 'bold';
-      btn.style.display = 'flex';
-      btn.style.alignItems = 'center';
-      btn.style.justifyContent = 'center';
-      
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent triggering file input
-        
-        if (isResortImage) {
-          // Handle resort images removal
-          resortImagesFilesList.splice(index, 1);
-          // Update the input's files property
-          const dt = new DataTransfer();
-          resortImagesFilesList.forEach(f => dt.items.add(f));
-          inputElement.files = dt.files;
-          refreshResortImagesPreview(resortImagesFilesList);
-        } else {
-          // Handle room type images removal
-          const allFiles = roomTypeFilesMap[roomUid];
-          if (allFiles) {
-            allFiles.splice(index, 1);
-            // Update the input's files property
-            const dt = new DataTransfer();
-            allFiles.forEach(f => dt.items.add(f));
-            inputElement.files = dt.files;
-            // Re-render previews with updated indices
-            const previewContainer = document.querySelector(`.room-type-images-preview[data-room-id="${roomUid}"]`);
-            initRoomTypeFileInput(inputElement);
-          }
-        }
-      });
-      
-      card.appendChild(img);
-      card.appendChild(btn);
-      return card;
-    }
-
-    function createAddImageButton(inputElement) {
-      const addBox = document.createElement('div');
-      addBox.className = 'add-image-box';
-      addBox.innerHTML = '+';
-      addBox.title = 'Click to add more images';
-      addBox.addEventListener('click', (e) => {
-        e.stopPropagation();
-        // Trigger the hidden file input click
-        inputElement.click();
-      });
-      return addBox;
-    }
-
-    function updateResortImagesCount() {
-      const countEl = document.getElementById('resort-images-count');
-      const count = resortImagesFilesList.length;
-      if (count === 0) {
-        countEl.textContent = 'No files selected';
-      } else if (count === 1) {
-        countEl.textContent = '1 file selected';
-      } else {
-        countEl.textContent = count + ' files selected';
-      }
-    }
-
-    function refreshResortImagesPreview(files) {
-      resortImagesPreview.innerHTML = '';
-      
-      // Add all existing images
-      files.forEach((file, index) => {
-        const card = createImageCard(file, index, resortImagesInput);
-        resortImagesPreview.appendChild(card);
-      });
-      
-      // Always show "Add Image" box at the end
-      const addBox = createAddImageButton(resortImagesInput);
-      resortImagesPreview.appendChild(addBox);
-
-      updateResortImagesCount();
-    }
-
-    resortImagesInput.addEventListener('change', function(e) {
-      e.stopPropagation();
-      
-      // Add new files to the existing array
-      const newFiles = Array.from(this.files);
-      newFiles.forEach(file => {
-        resortImagesFilesList.push(file);
-      });
-      
-      // Update the input's files property with all accumulated files
-      const dt = new DataTransfer();
-      resortImagesFilesList.forEach(file => dt.items.add(file));
-      resortImagesInput.files = dt.files;
-      
-      // Clear the input value so the same file can be selected again
-      setTimeout(() => {
-        resortImagesInput.value = '';
-      }, 0);
-      
-      refreshResortImagesPreview(resortImagesFilesList);
-    });
-
-    // Initialize counter
-    updateResortImagesCount();
-
-    // Room type row actions
-    const addRoomTypeBtn = document.getElementById('add-room-type-btn');
-    const roomTypeBody = document.getElementById('room-type-body');
-    let nextRoomTypeUid = 1;
-
-    function initRoomTypeFileInput(input) {
-      const roomUid = input.dataset.roomUid;
-      const previewContainer = document.querySelector(`.room-type-images-preview[data-room-id="${roomUid}"]`);
-      if (!previewContainer) return;
-
-      if (!roomTypeFilesMap[roomUid]) {
-        roomTypeFilesMap[roomUid] = [];
-      }
-
-      const renderPreviews = () => {
-        previewContainer.innerHTML = '';
-        const allFiles = roomTypeFilesMap[roomUid];
-        allFiles.forEach((file, index) => {
-          const card = createImageCard(file, index, input);
-          previewContainer.appendChild(card);
-        });
-        const addBox = createAddImageButton(input);
-        previewContainer.appendChild(addBox);
-      };
-
-      input.addEventListener('change', (e) => {
-        e.stopPropagation();
-        Array.from(input.files).forEach(file => roomTypeFilesMap[roomUid].push(file));
-        const dt = new DataTransfer();
-        roomTypeFilesMap[roomUid].forEach(file => dt.items.add(file));
-        input.files = dt.files;
-        setTimeout(() => { input.value = ''; }, 0);
-        renderPreviews();
-      });
-
-      renderPreviews();
-    }
-
-    function createRoomTypeRow(data = {}) {
-      const uid = `room-${nextRoomTypeUid++}`;
-      const tr = document.createElement('tr');
-      tr.dataset.roomUid = uid;
-      tr.innerHTML = `
-        <input type="hidden" name="room_type_uid[]" value="${uid}" />
-        <td style="border:1px solid #d9dbe4;"><input type="text" name="room_type_name[]" value="${data.name || ''}" style="width:100%;" /></td>
-        <td style="border:1px solid #d9dbe4;"><input type="number" name="total_rooms[]" min="0" value="${data.total || ''}" style="width:100%;" /></td>
-        <td style="border:1px solid #d9dbe4;"><input type="number" step="0.01" name="price_per_night[]" value="${data.price || ''}" style="width:100%;" /></td>
-        <td style="border:1px solid #d9dbe4;"><input type="number" name="max_guests[]" min="1" value="${data.max || ''}" style="width:100%;" /></td>
-        <td style="border:1px solid #d9dbe4;"><input type="text" name="room_size[]" value="${data.size || ''}" style="width:100%;" /></td>
-        <td style="border:1px solid #d9dbe4;"><input type="text" name="room_type_amenities[]" value="${data.amenities || ''}" style="width:100%;" /></td>
-        <td style="border:1px solid #d9dbe4;">
-          <small style="color:#6b7280;display:block;margin-bottom:6px;font-size:11px;">Click + to add • 🗑 to remove</small>
-          <input type="file" name="room_type_images_${uid}[]" data-room-uid="${uid}" class="room-type-images-input" accept="image/*" multiple style="margin-bottom:6px;" />
-          <div class="room-type-images-preview" data-room-id="${uid}" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
-        </td>
-        <td style="border:1px solid #d9dbe4; text-align:center;"><span class="delete-icon" style="cursor:pointer;font-size:18px;color:#ef4444;">🗑</span></td>
-      `;
-
-      tr.querySelector('.delete-icon').addEventListener('click', () => tr.remove());
-      initRoomTypeFileInput(tr.querySelector('.room-type-images-input'));
-      roomTypeBody.appendChild(tr);
-    }
-
-    document.getElementById('add-room-type-btn').addEventListener('click', () => createRoomTypeRow());
-
-    document.querySelectorAll('.room-type-images-input').forEach(input => initRoomTypeFileInput(input));
-    document.querySelectorAll('.delete-icon').forEach(btn => btn.addEventListener('click', function() {
-      this.closest('tr').remove();
-    }));
   </script>
 {% endblock %}

@@ -3,322 +3,171 @@
 
 {% block extra_css %}
 <style>
-.page-title{font-size:32px;font-weight:600;margin-bottom:8px;color:#111}
-.page-sub{color:#666;font-size:15px;margin-bottom:24px}
-.messages{margin-bottom:20px}
-.alert{padding:12px 16px;border-radius:10px;border:1px solid;margin-bottom:10px;font-weight:500}
-.alert-success{background:#dcfce7;border-color:#86efac;color:#15803d}
-.alert-error{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
-.card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
-.card-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
-.card-head h2,.card-head h3{font-size:18px;font-weight:600;color:#111}
-.tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.search{position:relative;min-width:280px;flex:1;max-width:400px}
-.search input{width:100%;border:1px solid #e5e7eb;background:#f9fafb;border-radius:10px;padding:10px 12px 10px 40px;outline:none;font-size:14px}
-.search input:focus{border-color:#d4a017;background:#fff}
-.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;opacity:0.5}
-.btn-add{display:inline-flex;align-items:center;gap:8px;background:#d4a017;color:#000;border:none;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer;text-decoration:none;font-size:14px}
-.btn-add svg{width:16px;height:16px}
-.table-wrap{border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
-table{width:100%;border-collapse:collapse}
-thead th{text-align:left;font-size:13px;font-weight:600;padding:14px 16px;border-bottom:1px solid #e5e7eb;background:#f9fafb;color:#374151;white-space:nowrap}
-tbody td{padding:14px 16px;font-size:14px;border-bottom:1px solid #f3f4f6;color:#111}
-tbody tr:last-child td{border-bottom:none}
-.sl{width:80px}
-.actions{display:flex;gap:8px}
-.icon-btn{width:36px;height:36px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;display:grid;place-items:center;cursor:pointer;text-decoration:none}
-.icon-btn svg{width:16px;height:16px}
-.icon-btn.delete svg{stroke:#ef4444}
-.badge{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;transition:all 0.2s ease}
-.badge.available{background:linear-gradient(135deg, #dcfce7, #bbf7d0);color:#166534;border:1px solid #86efac}
-.badge.unavailable{background:linear-gradient(135deg, #fee2e2, #fecaca);color:#991b1b;border:1px solid #fca5a5}
-.toggle-btn{
-  width:44px;
-  height:44px;
-  border-radius:12px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  background:#f9fafb;
-  border:2px solid #eceff3;
-  cursor:pointer;
-  transition:.25s ease;
-  padding:0;
-  margin:0;
-  position:relative;
-  overflow:hidden;
-}
-.toggle-btn:hover{
-  border-color:#d4a017;
-  background:#fffaf0;
-  transform:translateY(-1px);
-  box-shadow:0 4px 12px rgba(212,160,23,.15);
-}
-.toggle-btn:active{
-  transform:translateY(0);
-}
-.toggle-btn.loading{
-  pointer-events:none;
-  opacity:0.7;
-}
-.toggle-btn .spinner{
-  display:none;
-  width:16px;
-  height:16px;
-  border:2px solid #d4a017;
-  border-top:2px solid transparent;
-  border-radius:50%;
-  animation:spin 1s linear infinite;
-}
-.toggle-btn.loading .spinner{display:block}
-.toggle-btn.loading i{display:none}
-@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-.status-container{display:flex;align-items:center;gap:12px;padding:8px 0}
-.status-container:hover .badge{transform:scale(1.05);transition:transform 0.2s ease}
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+
+  .page-title { font-size: 38px; font-weight: 700; margin-bottom: 14px; }
+  .page-subtitle { font-size: 18px; color: #667085; margin-bottom: 36px; }
+
+  .card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 24px;
+    padding: 36px 36px 18px;
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 42px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .card-title { font-size: 24px; font-weight: 700; }
+
+  .add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    background: #d4a437;
+    color: #000;
+    text-decoration: none;
+    border: none;
+    border-radius: 14px;
+    padding: 16px 24px;
+    font-size: 18px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .add-btn .plus { font-size: 32px; line-height: 1; font-weight: 400; }
+
+  .table-wrap { width: 100%; overflow-x: auto; }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead th {
+    text-align: left;
+    font-size: 22px;
+    font-weight: 700;
+    padding: 28px 22px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  tbody td {
+    padding: 24px 22px;
+    font-size: 20px;
+    font-weight: 500;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: middle;
+  }
+
+  tbody tr:hover td { background: #fef9e7; }
+
+  .col-sl { width: 140px; }
+  .col-actions { width: 200px; }
+
+  .actions { display: flex; gap: 12px; align-items: center; }
+
+  .icon-btn {
+    width: 56px;
+    height: 50px;
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .icon-btn svg { width: 23px; height: 23px; stroke: #111; fill: none; stroke-width: 2; }
+  .icon-btn.delete svg { stroke: #ff2147; }
+
+  @media (max-width: 768px) {
+    .page-title { font-size: 30px; }
+    .page-subtitle { font-size: 16px; }
+    .card { padding: 24px 18px 12px; }
+    .card-title { font-size: 22px; }
+    .add-btn { font-size: 16px; padding: 14px 18px; }
+    thead th, tbody td { font-size: 18px; padding: 20px 14px; }
+    .col-sl { width: 90px; }
+    .col-actions { width: 160px; }
+    .icon-btn { width: 48px; height: 46px; }
+  }
 </style>
 {% endblock %}
 
 {% block content %}
+
 <h1 class="page-title">Meals Plan</h1>
-    <p class="page-sub">Manage meal plan options</p>
+<p class="page-subtitle">Manage meal plan options</p>
 
-    <section class="card">
-      <div class="card-head">
-        <h3>Meal Plans</h3>
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Meal Plans</h2>
+    <a href="{% url 'sales:add_meal' %}" class="add-btn">
+      <span class="plus">+</span>
+      <span>Add Meal Plan</span>
+    </a>
+  </div>
 
-        <div class="tools">
-          <form method="GET" class="search" id="searchForm">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="m21 21-4.35-4.35"/>
-            </svg>
-            <input type="text" name="search" placeholder="Search meals..." value="{{ search_query }}" id="searchInput">
-          </form>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-sl">Sl No</th>
+          <th>Meals</th>
+          <th class="col-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for meal in meals %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ meal.name }}</td>
+          <td>
+            <div class="actions">
+              <a href="{% url 'sales:view_meal' meal.id %}" class="icon-btn" title="View">
+                <svg viewBox="0 0 24 24">
+                  <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </a>
+              <a href="{% url 'sales:edit_meal' meal.id %}" class="icon-btn" title="Edit">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 20H21"/>
+                  <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                </svg>
+              </a>
+              <form method="POST" action="{% url 'sales:delete_meal' meal.id %}" onsubmit="return confirm('Delete {{ meal.name }}?');" style="display:contents;">
+                {% csrf_token %}
+                <button type="submit" class="icon-btn delete" title="Delete">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M3 6h18"/>
+                    <path d="M8 6V4h8v2"/>
+                    <path d="M19 6l-1 14H6L5 6"/>
+                    <path d="M10 11v6"/>
+                    <path d="M14 11v6"/>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3" style="text-align:center;padding:40px;color:#777;">
+            No meal plans found.
+            <a href="{% url 'sales:add_meal' %}" style="color:#d4a437;font-weight:600;">Add your first meal plan</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 
-          <a href="{% url 'sales:add_meal' %}" class="btn-add">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 5V19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
-            <path d="M5 12H19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
-          </svg>
-          Add Meal Plan
-        </a>
-        </div>
-      </div>
-
-      <div class="table-wrap">
-        <table data-paginate="10">
-          <thead>
-            <tr>
-              <th class="sl">Sl No</th>
-              <th>Meal</th>
-              <th>Price/Person</th>
-              <th style="width:160px;">Status</th>
-              <th style="width:200px;">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {% for meal in meals %}
-            <tr>
-              <td class="sl">{{ forloop.counter }}</td>
-              <td>
-                <div>
-                  <div class="meal-name">{{ meal.name }}</div>
-                  <div style="margin-top:4px;">
-                    {% if meal.meal_type == 'veg' %}
-                      <span class="badge" style="background:#dcfce7;color:#15803d;font-size:11px;">Vegetarian</span>
-                    {% elif meal.meal_type == 'non-veg' %}
-                      <span class="badge" style="background:#fee2e2;color:#991b1b;font-size:11px;">Non-Veg</span>
-                    {% else %}
-                      <span class="badge" style="background:#fef3c7;color:#92400e;font-size:11px;">Both</span>
-                    {% endif %}
-                  </div>
-                </div>
-              </td>
-              <td>
-                {% if meal.price_per_person %}
-                  <span style="font-weight:600;color:#111;">₹{{ meal.price_per_person }}</span>
-                {% else %}
-                  <span style="color:#999;">Not set</span>
-                {% endif %}
-              </td>
-              <td>
-                <div class="status-container">
-                  <button type="button" class="toggle-btn toggle-status-btn" 
-                          data-meal-id="{{ meal.id }}" 
-                          data-current-status="{{ meal.status }}"
-                          title="Click to {% if meal.status == 'Available' %}disable{% else %}enable{% endif %} meal">
-                    {% if meal.status == 'Available' %}
-                      <i class="fas fa-check-circle" style="color:#10b981;font-size:18px;"></i>
-                    {% else %}
-                      <i class="fas fa-times-circle" style="color:#ef4444;font-size:18px;"></i>
-                    {% endif %}
-                    <div class="spinner"></div>
-                  </button>
-                  <span class="badge {% if meal.status == 'Available' %}available{% else %}unavailable{% endif %}">{{ meal.status }}</span>
-                </div>
-              </td>
-              <td>
-                <div class="actions">
-                  <a href="{% url 'sales:view_meal' meal.id %}" class="icon-btn" title="View" aria-label="View">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2">
-                      <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/>
-                      <circle cx="12" cy="12" r="3"/>
-                    </svg>
-                  </a>
-                  
-                  <a href="{% url 'sales:edit_meal' meal.id %}" class="icon-btn" title="Edit" aria-label="Edit">
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <path d="M12 20H21" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
-                      <path d="M16.5 3.5C17.328 2.672 18.672 2.672 19.5 3.5C20.328 4.328 20.328 5.672 19.5 6.5L8 18L3 19L4 14L16.5 3.5Z" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </a>
-
-                  <form method="POST" action="{% url 'sales:delete_meal' meal.id %}" style="display:inline;" onsubmit="return confirm('Delete {{ meal.name }}?');">
-                    {% csrf_token %}
-                    <button type="submit" class="icon-btn delete" title="Delete" aria-label="Delete">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path d="M3 6H21" stroke-width="2.2" stroke-linecap="round"/>
-                        <path d="M8 6V4C8 3.448 8.448 3 9 3H15C15.552 3 16 3.448 16 4V6" stroke-width="2.2" stroke-linecap="round"/>
-                        <path d="M19 6L18.2 20C18.137 20.552 17.668 21 17.113 21H6.887C6.332 21 5.863 20.552 5.8 20L5 6" stroke-width="2.2" stroke-linecap="round"/>
-                        <path d="M10 11V17" stroke-width="2.2" stroke-linecap="round"/>
-                        <path d="M14 11V17" stroke-width="2.2" stroke-linecap="round"/>
-                      </svg>
-                    </button>
-                  </form>
-                </div>
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="5" style="text-align:center;padding:40px;color:var(--muted);">
-                No meal plans found. <a href="{% url 'sales:add_meal' %}" style="color:var(--accent);font-weight:600;text-decoration:none;">Add your first meal plan</a>.
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-<script>
-let timeout;
-const input = document.getElementById('searchInput');
-const form = document.getElementById('searchForm');
-
-input.addEventListener('input', function() {
-  clearTimeout(timeout);
-  timeout = setTimeout(() => {
-    form.submit();
-  }, 500);
-});
-
-// AJAX status toggle functionality
-document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('.toggle-status-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const mealId = this.getAttribute('data-meal-id');
-      const currentStatus = this.getAttribute('data-current-status');
-      const button = this;
-      const statusBadge = button.nextElementSibling;
-      
-      // Add loading state
-      button.classList.add('loading');
-      
-      // Prepare form data
-      const formData = new FormData();
-      const csrfToken = getCSRFToken();
-      if (!csrfToken) {
-        console.error('CSRF token not found in cookie');
-        showStatusMessage('CSRF token not found. Please refresh the page.', 'error');
-        button.classList.remove('loading');
-        return;
-      }
-      formData.append('csrfmiddlewaretoken', csrfToken);
-      
-      // Make AJAX request
-      fetch(`/sales/meals/${mealId}/toggle-status/`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRFToken': csrfToken
-        }
-      })
-      .then(response => {
-        console.log('Response status:', response.status);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        console.log('Response data:', data);
-        if (data.success) {
-          // Update button appearance
-          const newStatus = data.new_status;
-          button.setAttribute('data-current-status', newStatus);
-          
-          if (newStatus === 'Available') {
-            button.innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;font-size:18px;"></i><div class="spinner"></div>';
-            statusBadge.className = 'badge available';
-            statusBadge.textContent = 'Available';
-            button.setAttribute('title', 'Click to disable meal');
-          } else {
-            button.innerHTML = '<i class="fas fa-times-circle" style="color:#ef4444;font-size:18px;"></i><div class="spinner"></div>';
-            statusBadge.className = 'badge unavailable';
-            statusBadge.textContent = 'Unavailable';
-            button.setAttribute('title', 'Click to enable meal');
-          }
-          
-          // Show success feedback (optional)
-          showStatusMessage('Status updated successfully!', 'success');
-        } else {
-          showStatusMessage('Failed to update status. Please try again.', 'error');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        console.error('Error details:', error.message);
-        showStatusMessage(`An error occurred: ${error.message}. Please try again.`, 'error');
-      })
-      .finally(() => {
-        // Remove loading state
-        button.classList.remove('loading');
-      });
-    });
-  });
-});
-
-// Function to get CSRF token from cookie
-function getCSRFToken() {
-  const name = 'csrftoken';
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-}
-
-// Add CSS animations for messages
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  @keyframes slideOut {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(100%); opacity: 0; }
-  }
-`;
-document.head.appendChild(style);
-</script>
 {% endblock %}

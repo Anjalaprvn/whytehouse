@@ -21,7 +21,8 @@ table{width:100%;border-collapse:collapse;min-width:900px}
 thead th{text-align:left;font-size:13px;font-weight:600;padding:14px 16px;border-bottom:1px solid #e5e7eb;background:#f9fafb;color:#374151;white-space:nowrap}
 tbody td{padding:14px 16px;font-size:14px;border-bottom:1px solid #f3f4f6;color:#111;white-space:nowrap}
 tbody tr:last-child td{border-bottom:none}
-tbody tr.data-row td{background:#fef9e7}
+tbody tr.data-row td{background:transparent}
+tbody tr.data-row:hover td{background:#fef9e7}
 .sl{width:80px}
 .name-cell{display:flex;align-items:center;gap:12px}
 .avatar{width:40px;height:40px;border-radius:50%;background:#f4ecd8;color:#b18a1e;display:grid;place-items:center;font-weight:700;font-size:16px}
@@ -63,14 +64,6 @@ tbody tr.data-row td{background:#fef9e7}
               <path d="M5 12H19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
             </svg>
             Add Employee
-          </a>
-
-          <a href="{% url 'employee:manage_roles' %}" class="btn-add" style="background:#fff;border:1px solid #d4a017;color:#111;">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;">
-              <path d="M12 5V19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
-              <path d="M5 12H19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
-            </svg>
-            Add Role
           </a>
         </div>
       </div>

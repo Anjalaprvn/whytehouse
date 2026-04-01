@@ -383,6 +383,8 @@ def lead_management(request):
         'domestic_count': domestic_count,
         'hospitality_count': hospitality_count,
         'new_leads_count': new_leads_count,
+        'employees': Employee.objects.filter(status='Active').order_by('name'),
+        'next_emp_id': get_next_employee_for_lead().id if get_next_employee_for_lead() else None,
     }
     return render(request, 'admin/lead/lead.html', context)
 
@@ -1275,7 +1277,7 @@ def add_employee(request):
             return redirect('employee:employee_list')
         except Exception as e:
             messages.error(request, f'Error adding employee: {str(e)}')
-    return render(request, "admin/employee/add_employee.html", {'roles': EmployeeRole.objects.all()})
+    return render(request, "admin/employee/add_employee.html", {'roles': []})
            
     
 
@@ -2377,11 +2379,10 @@ def add_voucher(request):
     customers = Customer.objects.all()
     resorts = Resort.objects.all()
     accounts = Account.objects.all()
-    employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive'])
+    employees = Employee.objects.filter(status='Active').order_by('name')
     meals = Meal.objects.filter(status='Available')
     
     # Get next voucher ID
-    last_voucher = Voucher.objects.filter(voucher_no__startswith='VCH').order_by('-voucher_no').first()
     if last_voucher and last_voucher.voucher_no:
         try:
             last_num = int(last_voucher.voucher_no[3:])
@@ -2476,7 +2477,7 @@ def edit_voucher(request, voucher_id):
         messages.error(request, "Voucher not found.")
         return redirect("sales:voucher_list")
 
-    employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive'])
+    employees = Employee.objects.filter(status='Active').order_by('name')
     customers = Customer.objects.all()
     resorts = Resort.objects.all()
     accounts = Account.objects.all()
@@ -2617,7 +2618,7 @@ def add_invoice(request):
     customers = Customer.objects.all()
     resorts = Resort.objects.all()
     accounts = Account.objects.all()
-    employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive'])
+    employees = Employee.objects.filter(status='Active').order_by('name')
     meals = Meal.objects.filter(status='Available')
     
     # Get next invoice ID
@@ -2716,7 +2717,7 @@ def edit_invoice(request, invoice_id):
     customers = Customer.objects.all()
     resorts = Resort.objects.all()
     accounts = Account.objects.all()
-    employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive'])
+    employees = Employee.objects.filter(status='Active').order_by('name')
     
     try:
         invoice = Invoice.objects.get(id=invoice_id)

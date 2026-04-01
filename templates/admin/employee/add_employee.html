@@ -256,9 +256,11 @@
             <label>Role</label>
             <select class="select" name="role">
               <option value="">Select role</option>
-              {% for role in roles %}
-              <option value="{{ role.name }}" {% if form_data.role == role.name %}selected{% endif %}>{{ role.name }}</option>
-              {% endfor %}
+              <option value="Manager" {% if form_data.role == 'Manager' %}selected{% endif %}>Manager</option>
+              <option value="Sales Executive" {% if form_data.role == 'Sales Executive' %}selected{% endif %}>Sales Executive</option>
+              <option value="Tour Guide" {% if form_data.role == 'Tour Guide' %}selected{% endif %}>Tour Guide</option>
+              <option value="Operation" {% if form_data.role == 'Operation' %}selected{% endif %}>Operation</option>
+              <option value="Customer Support" {% if form_data.role == 'Customer Support' %}selected{% endif %}>Customer Support</option>
             </select>
           </div>
 
@@ -272,13 +274,6 @@
               <option value="Finance" {% if form_data.department == "Finance" %}selected{% endif %}>Finance</option>
               <option value="HR" {% if form_data.department == "HR" %}selected{% endif %}>HR</option>
             </select>
-
-            <div class="dept-add-wrap">
-              <input type="text" id="newDepartment" class="input" placeholder="Enter new department">
-              <button type="button" class="btn dept-add-btn" id="addDepartmentBtn">Add</button>
-            </div>
-
-            <div class="error-msg" id="dept-msg"></div>
           </div>
 
           <div class="field">

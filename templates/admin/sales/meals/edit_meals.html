@@ -3,863 +3,203 @@
 
 {% block extra_css %}
 <style>
-:root{
-      --bg:#f6f7fb;
-      --card:#ffffff;
-      --border:#ececf2;
-      --text:#111318;
-      --muted:#7a7f8c;
-      --input:#f3f4f6;
-      --shadow:0 10px 24px rgba(17,19,24,.06);
-      --accent:#d4a42f;
-      --radius:22px;
-      --danger:#e11d48;
-    }
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
 
-    *{box-sizing:border-box;margin:0;padding:0;font-family:"Poppins",sans-serif}
-    body{background:var(--bg);color:var(--text)}
+  body { background: #f5f5f5; color: #111; }
 
-    /* main offset for sidebar */
-    .main{
-       /* match sidebar width */
-      padding:34px 40px 70px;
-    }
+  .main { padding: 30px 40px; }
 
-    /* Page top */
-    .page-top{
-      display:flex;
-      align-items:flex-start;
-      gap:14px;
-      margin-bottom:18px;
-    }
-    .back-btn{
-      width:44px;height:44px;
-      border-radius:14px;
-      border:1px solid var(--border);
-      background:#fff;
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-      box-shadow:0 10px 22px rgba(17,19,24,.06);
-      text-decoration:none;
-    }
-    .back-btn svg{width:20px;height:20px}
+  .page-top { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
 
-    .titles h1{
-      font-size:40px;
-      font-weight:600;
-      line-height:1.15;
-      margin-top:2px;
-    }
-    .titles p{
-      color:var(--muted);
-      font-size:16px;
-      margin-top:6px;
-    }
+  .back-btn {
+    width: 50px; height: 50px; border-radius: 12px;
+    border: 1px solid #e7e7ee; background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none;
+  }
 
-    /* Card */
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:22px;
-      box-shadow:var(--shadow);
-      padding:22px;
-      max-width:1100px;
-    }
+  .back-btn svg { width: 20px; height: 20px; }
 
-    .section-title{
-      font-size:18px;
-      font-weight:600;
-      margin:6px 0 16px;
-    }
+  .titles h1 { font-size: 28px; font-weight: 600; }
+  .titles p { color: #7b8190; font-size: 14px; }
 
-    /* Form grid */
-    .form-grid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:18px;
-    }
+  .card {
+    background: #fff; padding: 30px; border-radius: 20px;
+    border: 1px solid #e7e7ee; max-width: 900px;
+  }
 
-    .field label{
-      display:block;
-      font-size:14px;
-      font-weight:600;
-      margin:0 0 8px;
-    }
-    .req{
-      color:var(--danger);
-      margin-left:6px;
-      font-weight:700;
-    }
+  .section-title { font-size: 18px; font-weight: 600; margin-bottom: 25px; }
 
-    .input, .textarea{
-      width:100%;
-      border:1px solid var(--border);
-      background:var(--input);
-      border-radius:14px;
-      padding:14px 14px;
-      font-size:15px;
-      outline:none;
-      transition:.2s ease;
-    }
-    .input:focus, .textarea:focus{
-      background:#fff;
-      border-color:#d9d9e6;
-      box-shadow:0 0 0 4px rgba(212,164,47,.14);
-    }
-    .textarea{
-      min-height:90px;
-      resize:vertical;
-      padding-top:14px;
-      line-height:1.45;
-    }
+  .form-group { margin-bottom: 20px; }
 
-    /* Included Meals */
-    .meals-block{
-      margin-top:2px;
-    }
-    .meals-title{
-      font-size:14px;
-      font-weight:600;
-      margin:0 0 10px;
-    }
+  .form-group label { font-weight: 600; font-size: 14px; margin-bottom: 8px; display: block; }
 
-    .add-meal-row{
-      display:flex;
-      gap:12px;
-      align-items:center;
-      margin-bottom:16px;
-      flex-wrap:wrap;
-    }
-    .add-meal-input{
-      flex:1;
-      min-width:240px;
-    }
-    .add-meal-btn{
-      border:none;
-      background:var(--accent);
-      color:#111;
-      font-weight:600;
-      border-radius:14px;
-      padding:13px 18px;
-      cursor:pointer;
-      box-shadow:0 10px 18px rgba(212,164,47,.22);
-      transition:.2s ease;
-    }
-    .add-meal-btn:hover{ transform:translateY(-1px); }
-    .meal-error{
-      display:none;
-      color:var(--danger);
-      font-size:13px;
-      margin-top:-6px;
-      margin-bottom:10px;
-    }
+  .req { color: #e11d48; }
 
-    .meals-categories{
-      display:flex;
-      flex-direction:column;
-      gap:20px;
-      margin-top:16px;
-    }
+  .input, .textarea {
+    width: 100%; padding: 14px; border-radius: 12px;
+    border: none; background: #f3f4f7; font-size: 14px; outline: none;
+    font-family: Arial, sans-serif;
+  }
 
-    .meal-category{
-      border:1px solid var(--border);
-      border-radius:16px;
-      background:#fff;
-      padding:16px;
-      box-shadow:0 4px 12px rgba(17,19,24,.04);
-    }
+  .textarea { min-height: 90px; resize: none; }
 
-    .category-line{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      margin-bottom:12px;
-      padding-bottom:8px;
-      border-bottom:1px solid var(--border);
-    }
+  .meal-title { font-weight: 600; margin-bottom: 8px; font-size: 14px; }
 
-    .category-title{
-      font-size:16px;
-      font-weight:600;
-      color:var(--text);
-      margin:0;
-    }
+  .add-meal-row {
+    display: flex; gap: 10px; align-items: center; margin-bottom: 18px;
+  }
 
-    .add-category-btn{
-      background:var(--accent);
-      color:#111;
-      border:none;
-      border-radius:8px;
-      padding:6px 12px;
-      font-size:13px;
-      font-weight:600;
-      cursor:pointer;
-      transition:.2s ease;
-    }
+  .add-meal-row .input { max-width: 320px; }
 
-    .add-category-btn:hover{
-      transform:translateY(-1px);
-      box-shadow:0 4px 12px rgba(212,164,47,.3);
-    }
+  .add-meal-btn {
+    background: #d4a63a; color: #000; border: none;
+    border-radius: 12px; padding: 13px 20px;
+    font-weight: 600; cursor: pointer; white-space: nowrap;
+  }
 
-    .meals-list{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
+  .meal-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px;
+  }
 
-    .meal-option{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:8px 12px;
-      border-radius:8px;
-      cursor:pointer;
-      transition:.2s ease;
-      border:1px solid transparent;
-    }
+  .meal-option {
+    display: flex; align-items: center; gap: 12px;
+    padding: 18px; border: 1px solid #dcdfe6;
+    border-radius: 16px; background: #fff; cursor: pointer; transition: 0.2s;
+  }
 
-    .meal-option:hover{
-      background:#f8f9fa;
-      border-color:#e9ecef;
-    }
+  .meal-option:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.05); }
 
-    .meal-option input{
-      width:16px;
-      height:16px;
-      accent-color:var(--accent);
-      margin:0;
-    }
+  .meal-option input {
+    width: 22px; height: 22px; accent-color: #d4a63a;
+    flex-shrink: 0; margin: 0;
+  }
 
-    .meal-option span{
-      font-size:14px;
-      font-weight:500;
-      color:var(--text);
-    }
+  .meal-option span { font-size: 16px; font-weight: 600; line-height: 1; }
 
-    .meal-option{
-      position:relative;
-      border:1px solid var(--border);
-      border-radius:16px;
-      background:#fff;
-      padding:14px 14px;
-      display:flex;
-      align-items:center;
-      gap:12px;
-      cursor:pointer;
-      transition:.2s ease;
-      min-height:54px;
-    }
-    .meal-option:hover{
-      box-shadow:0 10px 22px rgba(17,19,24,.06);
-      transform:translateY(-1px);
-    }
+  .btn-row { margin-top: 25px; display: flex; gap: 15px; }
 
-    .meal-option input{
-      width:18px;height:18px;
-      accent-color:var(--accent);
-    }
-    .meal-option span{
-      font-size:16px;
-      font-weight:600;
-    }
+  .btn {
+    padding: 12px 25px; border-radius: 12px;
+    border: 1px solid #e7e7ee; background: #fff; cursor: pointer;
+    font-size: 14px; font-weight: 600; text-decoration: none;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
 
-    /* Buttons row */
-    .btn-row{
-      display:flex;
-      justify-content:flex-start;
-      gap:14px;
-      margin-top:18px;
-      padding-top:6px;
-    }
-    .btn{
-      border-radius:14px;
-      padding:12px 18px;
-      font-weight:600;
-      font-size:15px;
-      cursor:pointer;
-      border:1px solid var(--border);
-      background:#fff;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-width:120px;
-    }
-    .btn-primary{
-      background:var(--accent);
-      border-color:transparent;
-      color:#111;
-      box-shadow:0 10px 18px rgba(212,164,47,.22);
-    }
-    .btn:active{transform:translateY(1px)}
+  .btn-primary { background: #d4a63a; border: none; }
 
-    .field-err{
-      display:none;
-      color:var(--danger);
-      font-size:12px;
-      margin-top:5px;
-    }
-    .input.invalid, .textarea.invalid{
-      border-color:var(--danger) !important;
-      background:#fff5f5;
-    }
-
-    /* Responsive */
-    @media (max-width: 980px){
-      .titles h1{font-size:34px}
-      .main{padding:26px 18px 60px}
-      .meals-grid{grid-template-columns:1fr}
-      .card{max-width:100%}
-    }
-    @media (max-width: 720px){
-      .main{margin-left:0}
-      .add-meal-row{ flex-direction:column; align-items:stretch; }
-      .add-meal-btn{ width:100%; }
-    }
+  @media (max-width: 768px) {
+    .meal-grid { grid-template-columns: 1fr; }
+    .add-meal-row { flex-wrap: wrap; }
+    .add-meal-row .input { max-width: 100%; }
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 <main class="main">
 
-    <div class="page-top">
-      <!-- change URL name as your list page -->
-      <a class="back-btn" href="{% url 'sales:meal_list' %}" aria-label="Back">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M15 18L9 12L15 6" stroke="#111" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </a>
-
-      <div class="titles">
-        <h1>Edit Meal Plan</h1>
-        <p>Update meal plan details</p>
-      </div>
+  <div class="page-top">
+    <a href="{% url 'sales:meal_list' %}" class="back-btn">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M15 18L9 12L15 6" stroke="#111" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="titles">
+      <h1>Edit Meal Plan</h1>
+      <p>Update meal plan details</p>
     </div>
+  </div>
 
-    <section class="card">
-      <h3 class="section-title">Meal Plan Information</h3>
+  <div class="card">
+    <div class="section-title">Meal Plan Information</div>
 
-      <form method="POST" action="" id="mealForm" novalidate>
-        {% csrf_token %}
+    <form method="POST">
+      {% csrf_token %}
 
-        <div class="form-grid">
+      <div class="form-group">
+        <label>Meal Plan Name <span class="req">*</span></label>
+        <input type="text" name="name" class="input"
+               placeholder="e.g., EP (European Plan), CP, MAP, AP"
+               value="{{ meal.name|default:'' }}">
+      </div>
 
-          <div class="field">
-            <label>Meal Plan Name <span class="req">*</span></label>
-            <input
-              class="input"
-              type="text"
-              id="meal_name"
-              name="name"
-              placeholder="e.g., EP (European Plan), CP, MAP, AP"
-              value="{{ meal.name|default:'' }}"
-            />
-            <span class="field-err" id="err_meal_name"></span>
-          </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" class="textarea"
+          placeholder="Brief description of what's included in this meal plan">{{ meal.description|default:'' }}</textarea>
+      </div>
 
-          <div class="field">
-            <label>Description</label>
-            <textarea
-              class="textarea"
-              id="meal_description"
-              name="description"
-              placeholder="Brief description of what's included in this meal plan"
-            >{{ meal.description|default:'' }}</textarea>
-            <span class="field-err" id="err_meal_description"></span>
-          </div>
+      <div class="form-group">
+        <div class="meal-title">Included Meals</div>
 
-          <div class="field">
-            <label>Meal Type</label>
-            <select class="input" name="meal_type" id="meal_type">
-              <option value="both" {% if meal.meal_type == 'both' %}selected{% endif %}>Both (Vegetarian & Non-Vegetarian)</option>
-              <option value="veg" {% if meal.meal_type == 'veg' %}selected{% endif %}>Vegetarian Only</option>
-              <option value="non-veg" {% if meal.meal_type == 'non-veg' %}selected{% endif %}>Non-Vegetarian Only</option>
-            </select>
-            <span class="field-err" id="err_meal_type"></span>
-          </div>
-
-          <div class="field">
-            <label>Price Per Person (INR)</label>
-            <input
-              class="input"
-              type="number"
-              id="price_per_person"
-              name="price_per_person"
-              placeholder="e.g., 500.00"
-              step="0.01"
-              min="0"
-              value="{{ meal.price_per_person|default:'' }}"
-            />
-            <span class="field-err" id="err_price_per_person"></span>
-          </div>
-
-          <div class="field">
-            <label>Children's Age-Based Pricing</label>
-            <div style="background: #f8f9fa; border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-top: 8px;">
-              <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 120px;">
-                  <label style="font-size: 13px; font-weight: 600; margin-bottom: 4px; display: block;">Min Age (years)</label>
-                  <input type="number" id="child_min_age" class="input" placeholder="0" min="0" max="17" style="width: 100%;">
-                </div>
-                <div style="flex: 1; min-width: 120px;">
-                  <label style="font-size: 13px; font-weight: 600; margin-bottom: 4px; display: block;">Max Age (years)</label>
-                  <input type="number" id="child_max_age" class="input" placeholder="12" min="0" max="17" style="width: 100%;">
-                </div>
-                <div style="flex: 1; min-width: 120px;">
-                  <label style="font-size: 13px; font-weight: 600; margin-bottom: 4px; display: block;">Price (INR)</label>
-                  <input type="number" id="child_price" class="input" placeholder="0.00" step="0.01" min="0" style="width: 100%;">
-                </div>
-                <div style="padding-top: 24px;">
-                  <button type="button" id="add_child_pricing" class="add-category-btn" style="padding: 10px 16px; font-size: 14px;">Add</button>
-                </div>
-              </div>
-              <div id="children_pricing_list" style="display: flex; flex-direction: column; gap: 8px;">
-                <!-- Dynamic child pricing rows will be added here -->
-              </div>
-              <input type="hidden" id="children_pricing_json" name="children_pricing" value='[]'>
-            </div>
-            <span class="field-err" id="err_children_pricing"></span>
-          </div>
-
-          <div class="meals-block">
-            <div class="meals-title">Included Meals</div>
-
-            <div class="add-meal-row">
-              <input type="text" id="newMealItem" class="input add-meal-input" placeholder="Enter new meal item" />
-              <button type="button" id="addMealBtn" class="add-meal-btn">Add Item</button>
-            </div>
-            <div id="mealError" class="meal-error">Please enter a valid unique meal item.</div>
-
-            <div class="meals-categories">
-              <!-- Morning Meals -->
-              <div class="meal-category">
-                <div class="category-line">
-                  <h4 class="category-title">Morning</h4>
-                  <div class="add-controls">
-                    <input type="text" class="input category-input" id="morning-input" placeholder="Add custom meal" style="width:150px;margin-right:8px;">
-                    <button type="button" class="add-category-btn" data-category="morning">Add</button>
-                  </div>
-                </div>
-                <div class="meals-list">
-                  <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="Breakfast" {% if 'Breakfast' in meal.included_meals %}checked{% endif %}>
-                    <span>Breakfast</span>
-                  </label>
-                  <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="Morning Snacks" {% if 'Morning Snacks' in meal.included_meals %}checked{% endif %}>
-                    <span>Morning Snacks</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Afternoon Meals -->
-              <div class="meal-category">
-                <div class="category-line">
-                  <h4 class="category-title">Afternoon</h4>
-                  <div class="add-controls">
-                    <input type="text" class="input category-input" id="afternoon-input" placeholder="Add custom meal" style="width:150px;margin-right:8px;">
-                    <button type="button" class="add-category-btn" data-category="afternoon">Add</button>
-                  </div>
-                </div>
-                <div class="meals-list" id="afternoon-meals">
-                  <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="Lunch" {% if 'Lunch' in meal.included_meals %}checked{% endif %}>
-                    <span>Lunch</span>
-                  </label>
-                  <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="High Tea" {% if 'High Tea' in meal.included_meals %}checked{% endif %}>
-                    <span>High Tea</span>
-                  </label>
-                  <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="Evening Snacks" {% if 'Evening Snacks' in meal.included_meals %}checked{% endif %}>
-                    <span>Evening Snacks</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Night Meals -->
-              <div class="meal-category">
-                <div class="category-line">
-                  <h4 class="category-title">Night</h4>
-                  <div class="add-controls">
-                    <input type="text" class="input category-input" id="night-input" placeholder="Add custom meal" style="width:150px;margin-right:8px;">
-                    <button type="button" class="add-category-btn" data-category="night">Add</button>
-                  </div>
-                </div>
-                <div class="meals-list" id="night-meals">
-                  <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="Dinner" {% if 'Dinner' in meal.included_meals %}checked{% endif %}>
-                    <span>Dinner</span>
-                  </label>
-                  <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="Late Night Snacks" {% if 'Late Night Snacks' in meal.included_meals %}checked{% endif %}>
-                    <span>Late Night Snacks</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Special Meals -->
-              <div class="meal-category">
-                <div class="category-line">
-                  <h4 class="category-title">Special</h4>
-                  <div class="add-controls">
-                    <input type="text" class="input category-input" id="special-input" placeholder="Add custom meal" style="width:150px;margin-right:8px;">
-                    <button type="button" class="add-category-btn" data-category="special">Add</button>
-                  </div>
-                </div>
-                <div class="meals-list" id="special-meals">
-                  <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="All Meals" {% if 'All Meals' in meal.included_meals %}checked{% endif %}>
-                    <span>All Meals</span>
-                  </label>
-                  <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="Welcome Drink" {% if 'Welcome Drink' in meal.included_meals %}checked{% endif %}>
-                    <span>Welcome Drink</span>
-                  </label>
-                  {% for item in extra_meals %}
-                  <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="{{ item }}" checked>
-                    <span>{{ item }}</span>
-                  </label>
-                  {% endfor %}
-                </div>
-              </div>
-            </div>
-          </div>
-
+        <div class="add-meal-row">
+          <input type="text" id="new-meal-input" class="input" placeholder="e.g., Early Morning Tea">
+          <button type="button" onclick="addCustomMeal()" class="add-meal-btn">+ Add Meal</button>
         </div>
 
-        <div class="btn-row">
-          <a href="{% url 'sales:meal_list' %}" class="btn">Cancel</a>
-          <button type="submit" class="btn btn-primary">Update</button>
+        <div class="meal-grid" id="meal-grid">
+          <label class="meal-option">
+            <input type="checkbox" name="included_meals" value="Breakfast" {% if 'Breakfast' in meal.included_meals_list %}checked{% endif %}>
+            <span>Breakfast</span>
+          </label>
+          <label class="meal-option">
+            <input type="checkbox" name="included_meals" value="Lunch" {% if 'Lunch' in meal.included_meals_list %}checked{% endif %}>
+            <span>Lunch</span>
+          </label>
+          <label class="meal-option">
+            <input type="checkbox" name="included_meals" value="Dinner" {% if 'Dinner' in meal.included_meals_list %}checked{% endif %}>
+            <span>Dinner</span>
+          </label>
+          <label class="meal-option">
+            <input type="checkbox" name="included_meals" value="Snacks" {% if 'Snacks' in meal.included_meals_list %}checked{% endif %}>
+            <span>Snacks</span>
+          </label>
+          <label class="meal-option">
+            <input type="checkbox" name="included_meals" value="High Tea" {% if 'High Tea' in meal.included_meals_list %}checked{% endif %}>
+            <span>High Tea</span>
+          </label>
+          <label class="meal-option">
+            <input type="checkbox" name="included_meals" value="All Meals" {% if 'All Meals' in meal.included_meals_list %}checked{% endif %}>
+            <span>All Meals</span>
+          </label>
+          {% for item in extra_meals %}
+          <label class="meal-option">
+            <input type="checkbox" name="included_meals" value="{{ item }}" checked>
+            <span>{{ item }}</span>
+          </label>
+          {% endfor %}
         </div>
+      </div>
 
-      </form>
-    </section>
+      <div class="btn-row">
+        <a href="{% url 'sales:meal_list' %}" class="btn">Cancel</a>
+        <button type="submit" class="btn btn-primary">Update</button>
+      </div>
+    </form>
+  </div>
 
-  </main>
+</main>
 
-  <script>
-    function showErr(id, msg) {
-      const el = document.getElementById('err_' + id);
-      const inp = document.getElementById(id);
-      el.textContent = msg;
-      el.style.display = msg ? 'block' : 'none';
-      inp.classList.toggle('invalid', !!msg);
-    }
+<script>
+  function addCustomMeal() {
+    const input = document.getElementById('new-meal-input');
+    const val = input.value.trim();
+    if (!val) return;
+    const grid = document.getElementById('meal-grid');
+    const label = document.createElement('label');
+    label.className = 'meal-option';
+    label.innerHTML = `
+      <input type="checkbox" name="included_meals" value="${val}" checked style="width:22px;height:22px;accent-color:#d4a63a;flex-shrink:0;margin:0;">
+      <span style="font-size:16px;font-weight:600;line-height:1;">${val}</span>
+    `;
+    grid.appendChild(label);
+    input.value = '';
+    input.focus();
+  }
 
-    const MEAL_ID = '{{ meal.id }}';
-
-    // letters-only + duplicate check for meal plan name
-    let dupTimer = null;
-    let mealNameDuplicate = false;
-    document.getElementById('meal_name').addEventListener('input', function() {
-      mealNameDuplicate = false;
-      clearTimeout(dupTimer);
-      const val = this.value.trim();
-      if (!val) { showErr('meal_name', ''); return; }
-      if (/[0-9]/.test(val)) { showErr('meal_name', 'Meal Plan Name must not contain numbers.'); return; }
-      if (/[^A-Za-z\s]/.test(val)) { showErr('meal_name', 'Meal Plan Name must contain letters only.'); return; }
-      showErr('meal_name', '');
-      dupTimer = setTimeout(() => {
-        fetch('{% url "sales:check_meal_name" %}?name=' + encodeURIComponent(val) + '&exclude_id=' + MEAL_ID)
-          .then(r => r.json())
-          .then(data => {
-            mealNameDuplicate = data.exists;
-            showErr('meal_name', data.exists ? 'This meal plan name already exists.' : '');
-          });
-      }, 400);
-    });
-
-    // Description: letters, numbers, spaces, . , ! &
-    document.getElementById('meal_description').addEventListener('input', function() {
-      const val = this.value.trim();
-      if (!val) { showErr('meal_description', ''); return; }
-      if (!/^[A-Za-z0-9\s.,!&]+$/.test(val))
-        showErr('meal_description', 'Description may only contain letters, numbers, spaces, . , ! &');
-      else showErr('meal_description', '');
-    });
-
-    // Price validation
-    document.getElementById('price_per_person').addEventListener('input', function() {
-      const val = this.value.trim();
-      if (!val) { showErr('price_per_person', ''); return; }
-      const price = parseFloat(val);
-      if (isNaN(price) || price < 0) {
-        showErr('price_per_person', 'Please enter a valid positive price.');
-      } else {
-        showErr('price_per_person', '');
-      }
-    });
-
-    // Add button functionality for categories
-    document.querySelectorAll('.add-category-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const category = this.getAttribute('data-category');
-        const input = document.getElementById(category + '-input');
-        const mealsList = document.getElementById(category + '-meals');
-        
-        const mealName = input.value.trim();
-        if (mealName) {
-          // Check if meal already exists
-          const existingMeals = Array.from(mealsList.querySelectorAll('input[type="checkbox"]')).map(cb => cb.value);
-          if (existingMeals.includes(mealName)) {
-            showErr('meal_name', 'This meal item already exists in this category.');
-            return;
-          }
-          
-          // Create checkbox for the new meal
-          const label = document.createElement('label');
-          label.className = 'meal-option';
-          label.innerHTML = `
-            <input type="checkbox" name="included_meals" value="${mealName}" checked>
-            <span>${mealName}</span>
-          `;
-          mealsList.appendChild(label);
-          
-          // Clear input
-          input.value = '';
-          input.focus();
-          
-          // Clear any error message
-          showErr('meal_name', '');
-        } else {
-          showErr('meal_name', 'Please enter a meal name.');
-        }
-      });
-    });
-
-    // Handle Enter key in category inputs
-    document.querySelectorAll('.category-input').forEach(input => {
-      input.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          const category = this.id.replace('-input', '');
-          const btn = document.querySelector(`[data-category="${category}"]`);
-          btn.click();
-        }
-      });
-    });
-
-    document.getElementById('mealForm').addEventListener('submit', function(e) {
-      let valid = true;
-      const name = document.getElementById('meal_name').value.trim();
-      if (!name) { showErr('meal_name', 'Meal Plan Name is required.'); valid = false; }
-      else if (/[0-9]/.test(name)) { showErr('meal_name', 'Meal Plan Name must not contain numbers.'); valid = false; }
-      else if (/[^A-Za-z\s]/.test(name)) { showErr('meal_name', 'Meal Plan Name must contain letters only.'); valid = false; }
-      else if (mealNameDuplicate) { showErr('meal_name', 'This meal plan name already exists.'); valid = false; }
-      const desc = document.getElementById('meal_description').value.trim();
-      if (desc && !/^[A-Za-z0-9\s.,!&]+$/.test(desc)) {
-        showErr('meal_description', 'Description may only contain letters, numbers, spaces, . , ! &');
-        valid = false;
-      }
-      const price = document.getElementById('price_per_person').value.trim();
-      if (price) {
-        const priceNum = parseFloat(price);
-        if (isNaN(priceNum) || priceNum < 0) {
-          showErr('price_per_person', 'Please enter a valid positive price.');
-          valid = false;
-        }
-      }
-      
-      // Validate children's pricing ranges
-      const childMinAge = document.getElementById('child_min_age').value.trim();
-      const childMaxAge = document.getElementById('child_max_age').value.trim();
-      const childPrice = document.getElementById('child_price').value.trim();
-      if (childMinAge || childMaxAge || childPrice) {
-        const minAge = parseInt(childMinAge);
-        const maxAge = parseInt(childMaxAge);
-        const priceVal = parseFloat(childPrice);
-        if (isNaN(minAge) || isNaN(maxAge) || minAge >= maxAge || minAge < 0 || maxAge > 17) {
-          showErr('children_pricing', 'Please complete or clear the age range fields (0-17 years).');
-          valid = false;
-        } else if (isNaN(priceVal) || priceVal < 0) {
-          showErr('children_pricing', 'Please enter a valid price for the age range.');
-          valid = false;
-        }
-      }
-      if (!valid) e.preventDefault();
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-      const mealsGrid = document.getElementById('mealsGrid');
-      const allMealsCheckbox = document.querySelector('input[value="All Meals"]');
-      const addMealBtn = document.getElementById('addMealBtn');
-      const newMealInput = document.getElementById('newMealItem');
-      const mealError = document.getElementById('mealError');
-
-      function getIndividualMeals() {
-        return document.querySelectorAll('input[name="included_meals"]:not([value="All Meals"])');
-      }
-
-      function syncAllMealsState() {
-        const individualMeals = Array.from(getIndividualMeals());
-        allMealsCheckbox.checked = individualMeals.length > 0 && individualMeals.every(m => m.checked);
-      }
-
-      function bindIndividualMealEvents(checkbox) {
-        checkbox.addEventListener('change', syncAllMealsState);
-      }
-
-      function bindAllExistingIndividualMeals() {
-        getIndividualMeals().forEach(meal => {
-          if (!meal.dataset.bound) {
-            bindIndividualMealEvents(meal);
-            meal.dataset.bound = 'true';
-          }
-        });
-      }
-
-      allMealsCheckbox.addEventListener('change', function() {
-        getIndividualMeals().forEach(meal => { meal.checked = this.checked; });
-      });
-
-      bindAllExistingIndividualMeals();
-
-      function mealAlreadyExists(name) {
-        return Array.from(document.querySelectorAll('input[name="included_meals"]'))
-          .some(item => item.value.trim().toLowerCase() === name.trim().toLowerCase());
-      }
-
-      function createMealOption(mealName) {
-        const label = document.createElement('label');
-        label.className = 'meal-option';
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.name = 'included_meals';
-        checkbox.value = mealName;
-        const span = document.createElement('span');
-        span.textContent = mealName;
-        label.appendChild(checkbox);
-        label.appendChild(span);
-        mealsGrid.insertBefore(label, allMealsCheckbox.closest('.meal-option'));
-        bindIndividualMealEvents(checkbox);
-        if (allMealsCheckbox.checked) checkbox.checked = true;
-        syncAllMealsState();
-      }
-
-      addMealBtn.addEventListener('click', function() {
-        const mealName = newMealInput.value.trim();
-        if (!mealName) {
-          mealError.textContent = 'Please enter a meal item name.';
-          mealError.style.display = 'block';
-          return;
-        }
-        if (mealAlreadyExists(mealName)) {
-          mealError.textContent = 'This meal item already exists.';
-          mealError.style.display = 'block';
-          return;
-        }
-        createMealOption(mealName);
-        newMealInput.value = '';
-        mealError.style.display = 'none';
-        newMealInput.focus();
-      });
-
-      newMealInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') { e.preventDefault(); addMealBtn.click(); }
-      });
-
-      newMealInput.addEventListener('input', function() {
-        if (this.value.trim()) mealError.style.display = 'none';
-      });
-    });
-
-    // Children's pricing management
-    let childrenPricing = [];
-
-    function renderChildrenPricing() {
-      const container = document.getElementById('children_pricing_list');
-      container.innerHTML = '';
-      
-      childrenPricing.forEach((item, index) => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 10px; background: #fff; border: 1px solid var(--border); border-radius: 8px;';
-        row.innerHTML = `
-          <span style="flex: 1; font-size: 14px;"><strong>Ages ${item.min_age}-${item.max_age}:</strong></span>
-          <span style="flex: 1; font-size: 14px;">₹${parseFloat(item.price).toFixed(2)}</span>
-          <button type="button" onclick="removeChildPricing(${index})" style="background: var(--danger); color: #fff; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 13px;">Remove</button>
-        `;
-        container.appendChild(row);
-      });
-      
-      document.getElementById('children_pricing_json').value = JSON.stringify(childrenPricing);
-    }
-
-    function addChildPricing() {
-      const minAgeInput = document.getElementById('child_min_age');
-      const maxAgeInput = document.getElementById('child_max_age');
-      const priceInput = document.getElementById('child_price');
-      
-      const minAge = parseInt(minAgeInput.value);
-      const maxAge = parseInt(maxAgeInput.value);
-      const price = parseFloat(priceInput.value);
-      
-      if (isNaN(minAge) || isNaN(maxAge)) {
-        showErr('children_pricing', 'Please enter valid age values.');
-        return;
-      }
-      
-      if (minAge < 0 || maxAge > 17 || minAge >= maxAge) {
-        showErr('children_pricing', 'Invalid age range. Min age must be less than max age (0-17 years).');
-        return;
-      }
-      
-      if (isNaN(price) || price < 0) {
-        showErr('children_pricing', 'Please enter a valid price.');
-        return;
-      }
-      
-      // Check for overlapping ranges
-      for (let i = 0; i < childrenPricing.length; i++) {
-        const existing = childrenPricing[i];
-        if ((minAge >= existing.min_age && minAge <= existing.max_age) ||
-            (maxAge >= existing.min_age && maxAge <= existing.max_age) ||
-            (minAge <= existing.min_age && maxAge >= existing.max_age)) {
-          showErr('children_pricing', 'Age range overlaps with existing range.');
-          return;
-        }
-      }
-      
-      childrenPricing.push({ min_age: minAge, max_age: maxAge, price: price });
-      childrenPricing.sort((a, b) => a.min_age - b.min_age);
-      
-      minAgeInput.value = '';
-      maxAgeInput.value = '';
-      priceInput.value = '';
-      showErr('children_pricing', '');
-      renderChildrenPricing();
-    }
-
-    window.removeChildPricing = function(index) {
-      childrenPricing.splice(index, 1);
-      renderChildrenPricing();
-    }
-
-    document.getElementById('add_child_pricing').addEventListener('click', addChildPricing);
-    
-    // Allow Enter key to add child pricing
-    ['child_min_age', 'child_max_age', 'child_price'].forEach(id => {
-      document.getElementById(id).addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          addChildPricing();
-        }
-      });
-    });
-
-    // Load existing children's pricing from meal object
-    document.addEventListener('DOMContentLoaded', function() {
-      {% if meal.children_pricing and meal.children_pricing != '[]' %}
-        try {
-          childrenPricing = {{ meal.children_pricing|safe }};
-          renderChildrenPricing();
-        } catch(e) {
-          console.error('Error loading children pricing:', e);
-        }
-      {% endif %}
-    });
-  </script>
+  document.getElementById('new-meal-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); addCustomMeal(); }
+  });
+</script>
 {% endblock %}
