@@ -29,11 +29,52 @@ tbody tr:last-child td{border-bottom:none}
 .icon-btn{width:36px;height:36px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;display:grid;place-items:center;cursor:pointer;text-decoration:none}
 .icon-btn svg{width:16px;height:16px}
 .icon-btn.delete svg{stroke:#ef4444}
-.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
-.badge.available{background:#dcfce7;color:#15803d}
-.badge.unavailable{background:#fee2e2;color:#991b1b}
-.toggle-btn{width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:#f9fafb;border:1px solid #eceff3;cursor:pointer;transition:.25s ease;padding:0;margin:0}
-.toggle-btn:hover{color:#d4a017;border-color:rgba(212,160,23,.35);background:#fffaf0}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;transition:all 0.2s ease}
+.badge.available{background:linear-gradient(135deg, #dcfce7, #bbf7d0);color:#166534;border:1px solid #86efac}
+.badge.unavailable{background:linear-gradient(135deg, #fee2e2, #fecaca);color:#991b1b;border:1px solid #fca5a5}
+.toggle-btn{
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:#f9fafb;
+  border:2px solid #eceff3;
+  cursor:pointer;
+  transition:.25s ease;
+  padding:0;
+  margin:0;
+  position:relative;
+  overflow:hidden;
+}
+.toggle-btn:hover{
+  border-color:#d4a017;
+  background:#fffaf0;
+  transform:translateY(-1px);
+  box-shadow:0 4px 12px rgba(212,160,23,.15);
+}
+.toggle-btn:active{
+  transform:translateY(0);
+}
+.toggle-btn.loading{
+  pointer-events:none;
+  opacity:0.7;
+}
+.toggle-btn .spinner{
+  display:none;
+  width:16px;
+  height:16px;
+  border:2px solid #d4a017;
+  border-top:2px solid transparent;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+.toggle-btn.loading .spinner{display:block}
+.toggle-btn.loading i{display:none}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.status-container{display:flex;align-items:center;gap:12px;padding:8px 0}
+.status-container:hover .badge{transform:scale(1.05);transition:transform 0.2s ease}
 </style>
 {% endblock %}
 
@@ -102,17 +143,18 @@ tbody tr:last-child td{border-bottom:none}
                 {% endif %}
               </td>
               <td>
-                <div style="display:flex;align-items:center;gap:8px;">
-                  <form method="POST" action="{% url 'sales:toggle_meal_status' meal.id %}" style="display:inline-flex;margin:0;">
-                    {% csrf_token %}
-                    <button type="submit" class="toggle-btn" title="Toggle status">
-                      {% if meal.status == 'Available' %}
-                        <i class="fas fa-check-circle" style="color:green;font-size:16px;"></i>
-                      {% else %}
-                        <i class="fas fa-check" style="color:#9ca3af;font-size:16px;"></i>
-                      {% endif %}
-                    </button>
-                  </form>
+                <div class="status-container">
+                  <button type="button" class="toggle-btn toggle-status-btn" 
+                          data-meal-id="{{ meal.id }}" 
+                          data-current-status="{{ meal.status }}"
+                          title="Click to {% if meal.status == 'Available' %}disable{% else %}enable{% endif %} meal">
+                    {% if meal.status == 'Available' %}
+                      <i class="fas fa-check-circle" style="color:#10b981;font-size:18px;"></i>
+                    {% else %}
+                      <i class="fas fa-times-circle" style="color:#ef4444;font-size:18px;"></i>
+                    {% endif %}
+                    <div class="spinner"></div>
+                  </button>
                   <span class="badge {% if meal.status == 'Available' %}available{% else %}unavailable{% endif %}">{{ meal.status }}</span>
                 </div>
               </td>
@@ -170,5 +212,113 @@ input.addEventListener('input', function() {
     form.submit();
   }, 500);
 });
+
+// AJAX status toggle functionality
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.toggle-status-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const mealId = this.getAttribute('data-meal-id');
+      const currentStatus = this.getAttribute('data-current-status');
+      const button = this;
+      const statusBadge = button.nextElementSibling;
+      
+      // Add loading state
+      button.classList.add('loading');
+      
+      // Prepare form data
+      const formData = new FormData();
+      const csrfToken = getCSRFToken();
+      if (!csrfToken) {
+        console.error('CSRF token not found in cookie');
+        showStatusMessage('CSRF token not found. Please refresh the page.', 'error');
+        button.classList.remove('loading');
+        return;
+      }
+      formData.append('csrfmiddlewaretoken', csrfToken);
+      
+      // Make AJAX request
+      fetch(`/sales/meals/${mealId}/toggle-status/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': csrfToken
+        }
+      })
+      .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+          // Update button appearance
+          const newStatus = data.new_status;
+          button.setAttribute('data-current-status', newStatus);
+          
+          if (newStatus === 'Available') {
+            button.innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;font-size:18px;"></i><div class="spinner"></div>';
+            statusBadge.className = 'badge available';
+            statusBadge.textContent = 'Available';
+            button.setAttribute('title', 'Click to disable meal');
+          } else {
+            button.innerHTML = '<i class="fas fa-times-circle" style="color:#ef4444;font-size:18px;"></i><div class="spinner"></div>';
+            statusBadge.className = 'badge unavailable';
+            statusBadge.textContent = 'Unavailable';
+            button.setAttribute('title', 'Click to enable meal');
+          }
+          
+          // Show success feedback (optional)
+          showStatusMessage('Status updated successfully!', 'success');
+        } else {
+          showStatusMessage('Failed to update status. Please try again.', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        console.error('Error details:', error.message);
+        showStatusMessage(`An error occurred: ${error.message}. Please try again.`, 'error');
+      })
+      .finally(() => {
+        // Remove loading state
+        button.classList.remove('loading');
+      });
+    });
+  });
+});
+
+// Function to get CSRF token from cookie
+function getCSRFToken() {
+  const name = 'csrftoken';
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+// Add CSS animations for messages
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+`;
+document.head.appendChild(style);
 </script>
 {% endblock %}

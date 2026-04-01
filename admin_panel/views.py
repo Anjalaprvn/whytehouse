@@ -2382,9 +2382,20 @@ def add_voucher(request):
 def toggle_meal_status(request, meal_id):
     if request.method != 'POST':
         return redirect('sales:meal_list')
+
     meal = get_object_or_404(Meal, id=meal_id)
     meal.status = 'Unavailable' if meal.status == 'Available' else 'Available'
     meal.save()
+
+    # Check if this is an AJAX request
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        from django.http import JsonResponse
+        return JsonResponse({
+            'success': True,
+            'new_status': meal.status,
+            'meal_id': meal.id
+        })
+
     return redirect('sales:meal_list')
 
 
