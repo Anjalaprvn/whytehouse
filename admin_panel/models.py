@@ -150,13 +150,7 @@ class TravelPackage(models.Model):
     country = models.CharField(max_length=100, blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     adult_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
-    child_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
-    child_pricing = models.TextField(blank=True, null=True, default='[]', help_text="JSON age brackets: [{min_age, max_age, price}]")
     price_type = models.CharField(max_length=20, blank=True, null=True, default='Per Person')
-    base_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    discount_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
-    tax_percentage = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, default=0)
-    final_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     duration = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to='travel_packages/', blank=True, null=True)
@@ -166,19 +160,6 @@ class TravelPackage(models.Model):
     exclusions = models.TextField(blank=True, null=True)
     meta_title = models.CharField(max_length=255, blank=True, null=True)
     meta_description = models.TextField(blank=True, null=True)
-
-    resort = models.ForeignKey(
-        'Resort',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='packages'
-    )
-    meal_plans = models.ManyToManyField(
-        'Meal',
-        blank=True,
-        related_name='packages'
-    )
 
     story_main_image = models.ImageField(upload_to='package_stories/', blank=True, null=True)
     story_side_image1 = models.ImageField(upload_to='package_stories/', blank=True, null=True)
@@ -198,15 +179,6 @@ class TravelPackage(models.Model):
             else:
                 self.package_id = 'PKG001'
         super().save(*args, **kwargs)
-
-    def get_child_pricing(self):
-        import json
-        if not self.child_pricing or self.child_pricing == '[]':
-            return []
-        try:
-            return json.loads(self.child_pricing)
-        except (json.JSONDecodeError, TypeError):
-            return []
 
     def __str__(self):
         return self.name
