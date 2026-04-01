@@ -2081,6 +2081,7 @@ def add_meal(request):
             included_meals_str = ", ".join(included_meals) if included_meals else ""
             meal_type = request.POST.get("meal_type", "both")
             price_per_person = request.POST.get("price_per_person", "").strip()
+            children_pricing_json = request.POST.get("children_pricing", "[]")
             
             if not name:
                 messages.error(request, "Meal Plan Name is required.")
@@ -2109,17 +2110,38 @@ def add_meal(request):
             else:
                 price_per_person = None
             
+            # Parse and validate children's pricing
+            import json
+            children_pricing = []
+            if children_pricing_json and children_pricing_json != "[]":
+                try:
+                    children_pricing = json.loads(children_pricing_json)
+                    # Validate each pricing entry
+                    for item in children_pricing:
+                        if not all(k in item for k in ['min_age', 'max_age', 'price']):
+                            raise ValueError("Invalid pricing data structure")
+                        if item['min_age'] < 0 or item['max_age'] > 17 or item['min_age'] >= item['max_age']:
+                            raise ValueError(f"Invalid age range: {item['min_age']}-{item['max_age']}")
+                        if item['price'] < 0:
+                            raise ValueError(f"Invalid price: {item['price']}")
+                except (json.JSONDecodeError, ValueError) as e:
+                    messages.error(request, f"Invalid children's pricing: {str(e)}")
+                    return render(request, "admin/sales/meals/add_meals.html")
+            
             if Meal.objects.filter(name=name).exists():
                 messages.error(request, "Meal plan name already exists.")
                 return render(request, "admin/sales/meals/add_meals.html")
             
-            Meal.objects.create(
+            meal = Meal.objects.create(
                 name=name,
                 description=description,
                 included_meals=included_meals_str,
                 meal_type=meal_type,
                 price_per_person=price_per_person
             )
+            if children_pricing:
+                meal.set_children_pricing(children_pricing)
+                meal.save()
             messages.success(request, f"Meal plan '{name}' added successfully!")
             return redirect("sales:meal_list")
         except Exception as e:
@@ -2153,6 +2175,7 @@ def edit_meal(request, meal_id):
             meal.included_meals = ", ".join(included_meals) if included_meals else ""
             meal.meal_type = request.POST.get("meal_type", "both")
             price_per_person = request.POST.get("price_per_person", "").strip()
+            children_pricing_json = request.POST.get("children_pricing", "[]")
             
             # Validate price if provided
             if price_per_person:
@@ -2173,6 +2196,28 @@ def edit_meal(request, meal_id):
                     })
             else:
                 meal.price_per_person = None
+            
+            # Parse and validate children's pricing
+            import json
+            children_pricing = []
+            if children_pricing_json and children_pricing_json != "[]":
+                try:
+                    children_pricing = json.loads(children_pricing_json)
+                    # Validate each pricing entry
+                    for item in children_pricing:
+                        if not all(k in item for k in ['min_age', 'max_age', 'price']):
+                            raise ValueError("Invalid pricing data structure")
+                        if item['min_age'] < 0 or item['max_age'] > 17 or item['min_age'] >= item['max_age']:
+                            raise ValueError(f"Invalid age range: {item['min_age']}-{item['max_age']}")
+                        if item['price'] < 0:
+                            raise ValueError(f"Invalid price: {item['price']}")
+                except (json.JSONDecodeError, ValueError) as e:
+                    messages.error(request, f"Invalid children's pricing: {str(e)}")
+                    return render(request, "admin/sales/meals/edit_meals.html", {
+                        "meal": meal,
+                        "extra_meals": extra_meals
+                    })
+            meal.set_children_pricing(children_pricing if children_pricing else None)
             
             meal.status = request.POST.get("status", "Available")
             meal.save()

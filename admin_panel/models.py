@@ -484,6 +484,12 @@ class Meal(models.Model):
         null=True,
         help_text="Price per person in INR"
     )
+    children_pricing = models.TextField(
+        blank=True,
+        null=True,
+        default='[]',
+        help_text="JSON list of age ranges with prices: [{'min_age': 0, 'max_age': 5, 'price': 0}, {'min_age': 6, 'max_age': 12, 'price': 250}]"
+    )
     status = models.CharField(
         max_length=20,
         choices=MEAL_STATUS_CHOICES,
@@ -500,6 +506,24 @@ class Meal(models.Model):
         if self.included_meals:
             return [m.strip() for m in self.included_meals.split(',') if m.strip()]
         return []
+    
+    def get_children_pricing(self):
+        """Get children's pricing as a list of dictionaries"""
+        import json
+        if not self.children_pricing or self.children_pricing == '[]':
+            return []
+        try:
+            return json.loads(self.children_pricing)
+        except (json.JSONDecodeError, TypeError):
+            return []
+    
+    def set_children_pricing(self, pricing_list):
+        """Set children's pricing from a list of dictionaries"""
+        import json
+        if not pricing_list:
+            self.children_pricing = '[]'
+        else:
+            self.children_pricing = json.dumps(pricing_list)
     
     class Meta:
         ordering = ['-created_at']

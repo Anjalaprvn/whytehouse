@@ -397,6 +397,34 @@
             <span class="field-err" id="err_price_per_person"></span>
           </div>
 
+          <div class="field">
+            <label>Children's Age-Based Pricing</label>
+            <div style="background: #f8f9fa; border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-top: 8px;">
+              <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 120px;">
+                  <label style="font-size: 13px; font-weight: 600; margin-bottom: 4px; display: block;">Min Age (years)</label>
+                  <input type="number" id="child_min_age" class="input" placeholder="0" min="0" max="17" style="width: 100%;">
+                </div>
+                <div style="flex: 1; min-width: 120px;">
+                  <label style="font-size: 13px; font-weight: 600; margin-bottom: 4px; display: block;">Max Age (years)</label>
+                  <input type="number" id="child_max_age" class="input" placeholder="12" min="0" max="17" style="width: 100%;">
+                </div>
+                <div style="flex: 1; min-width: 120px;">
+                  <label style="font-size: 13px; font-weight: 600; margin-bottom: 4px; display: block;">Price (INR)</label>
+                  <input type="number" id="child_price" class="input" placeholder="0.00" step="0.01" min="0" style="width: 100%;">
+                </div>
+                <div style="padding-top: 24px;">
+                  <button type="button" id="add_child_pricing" class="add-category-btn" style="padding: 10px 16px; font-size: 14px;">Add</button>
+                </div>
+              </div>
+              <div id="children_pricing_list" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Dynamic child pricing rows will be added here -->
+              </div>
+              <input type="hidden" id="children_pricing_json" name="children_pricing" value='[]'>
+            </div>
+            <span class="field-err" id="err_children_pricing"></span>
+          </div>
+
           <div class="meals-block">
             <div class="meals-title">Included Meals</div>
 
@@ -558,6 +586,103 @@
       }
     });
 
+    // Children's pricing management
+    let childrenPricing = [];
+
+    function renderChildrenPricing() {
+      const container = document.getElementById('children_pricing_list');
+      container.innerHTML = '';
+      
+      childrenPricing.forEach((item, index) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 10px; background: #fff; border: 1px solid var(--border); border-radius: 8px;';
+        row.innerHTML = `
+          <span style="flex: 1; font-size: 14px;"><strong>Ages ${item.min_age}-${item.max_age}:</strong></span>
+          <span style="flex: 1; font-size: 14px;">₹${parseFloat(item.price).toFixed(2)}</span>
+          <button type="button" onclick="removeChildPricing(${index})" style="background: var(--danger); color: #fff; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 13px;">Remove</button>
+        `;
+        container.appendChild(row);
+      });
+      
+      document.getElementById('children_pricing_json').value = JSON.stringify(childrenPricing);
+    }
+
+    function addChildPricing() {
+      const minAgeInput = document.getElementById('child_min_age');
+      const maxAgeInput = document.getElementById('child_max_age');
+      const priceInput = document.getElementById('child_price');
+      
+      const minAge = parseInt(minAgeInput.value);
+      const maxAge = parseInt(maxAgeInput.value);
+      const price = parseFloat(priceInput.value);
+      
+      if (isNaN(minAge) || isNaN(maxAge)) {
+        showChildrenPricingError('Please enter valid age values.');
+        return;
+      }
+      
+      if (minAge < 0 || maxAge > 17 || minAge >= maxAge) {
+        showChildrenPricingError('Invalid age range. Min age must be less than max age (0-17 years).');
+        return;
+      }
+      
+      if (isNaN(price) || price < 0) {
+        showChildrenPricingError('Please enter a valid price.');
+        return;
+      }
+      
+      // Check for overlapping ranges
+      for (let i = 0; i < childrenPricing.length; i++) {
+        const existing = childrenPricing[i];
+        if ((minAge >= existing.min_age && minAge <= existing.max_age) ||
+            (maxAge >= existing.min_age && maxAge <= existing.max_age) ||
+            (minAge <= existing.min_age && maxAge >= existing.max_age)) {
+          showChildrenPricingError('Age range overlaps with existing range.');
+          return;
+        }
+      }
+      
+      childrenPricing.push({ min_age: minAge, max_age: maxAge, price: price });
+      childrenPricing.sort((a, b) => a.min_age - b.min_age);
+      
+      minAgeInput.value = '';
+      maxAgeInput.value = '';
+      priceInput.value = '';
+      showChildrenPricingError('');
+      renderChildrenPricing();
+    }
+
+    window.removeChildPricing = function(index) {
+      childrenPricing.splice(index, 1);
+      renderChildrenPricing();
+    }
+
+    document.getElementById('add_child_pricing').addEventListener('click', addChildPricing);
+    
+    // Allow Enter key to add child pricing
+    ['child_min_age', 'child_max_age', 'child_price'].forEach(id => {
+      document.getElementById(id).addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addChildPricing();
+        }
+      });
+    });
+
+    function showChildrenPricingError(msg) {
+      const el = document.getElementById('err_children_pricing');
+      const container = document.getElementById('children_pricing_list').parentElement;
+      el.textContent = msg;
+      el.style.display = msg ? 'block' : 'none';
+      if (msg) {
+        container.style.borderColor = '#e11d48';
+        container.style.background = '#fff5f5';
+      } else {
+        container.style.borderColor = '';
+        container.style.background = '';
+      }
+    }
+
     // Add button functionality for categories
     document.querySelectorAll('.add-category-btn').forEach(btn => {
       btn.addEventListener('click', function() {
@@ -627,6 +752,23 @@
         const priceNum = parseFloat(price);
         if (isNaN(priceNum) || priceNum < 0) {
           showErr('price_per_person', 'Please enter a valid positive price.');
+          valid = false;
+        }
+      }
+
+      // Validate children's pricing ranges
+      const childMinAge = document.getElementById('child_min_age').value.trim();
+      const childMaxAge = document.getElementById('child_max_age').value.trim();
+      const childPrice = document.getElementById('child_price').value.trim();
+      if (childMinAge || childMaxAge || childPrice) {
+        const minAge = parseInt(childMinAge);
+        const maxAge = parseInt(childMaxAge);
+        const priceVal = parseFloat(childPrice);
+        if (isNaN(minAge) || isNaN(maxAge) || minAge >= maxAge || minAge < 0 || maxAge > 17) {
+          showChildrenPricingError('Please complete or clear the age range fields (0-17 years).');
+          valid = false;
+        } else if (isNaN(priceVal) || priceVal < 0) {
+          showChildrenPricingError('Please enter a valid price for the age range.');
           valid = false;
         }
       }
