@@ -92,8 +92,16 @@ sales_patterns = [
     path('invoices/<int:invoice_id>/edit/', views.edit_invoice, name='edit_invoice'),
     path('invoices/<int:invoice_id>/delete/', views.delete_invoice, name='delete_invoice'),
     path('invoices/<int:invoice_id>/send/', views.send_invoice, name='send_invoice'),
+    #VOUCHER URLS---------------------------------
+    path('vouchers/', views.voucher_list, name='voucher_list'),
+    path('vouchers/add/', views.add_voucher, name='add_voucher'),
+    path('vouchers/<int:voucher_id>/', views.view_voucher, name='view_voucher'),
+    path('vouchers/<int:voucher_id>/edit/', views.edit_voucher, name='edit_voucher'),
+    path('vouchers/<int:voucher_id>/delete/', views.delete_voucher, name='delete_voucher'),
+    path('vouchers/<int:voucher_id>/send/', views.send_voucher, name='send_voucher'),
     #REPORT URLS---------------------------------
     path('reports/invoice/', views.invoice_report, name='invoice_report'),
+    path('reports/voucher/', views.voucher_report, name='voucher_report'),
     path('reports/leads/', views.leads_report, name='leads_report'),
     path('reports/profit/', views.profit_report, name='profit_report'),
     path('reports/customer/', views.customer_report, name='customer_report'),

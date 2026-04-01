@@ -505,6 +505,44 @@ class Meal(models.Model):
         ordering = ['-created_at']
 
 
+class Voucher(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    voucher_no = models.CharField(max_length=50, unique=True, blank=True)
+    voucher_date = models.DateField(null=True, blank=True)
+    sales_person = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True)
+    resort = models.ForeignKey(Resort, on_delete=models.SET_NULL, null=True, blank=True)
+    checkin_date = models.DateField(null=True, blank=True)
+    checkout_date = models.DateField(null=True, blank=True)
+    checkin_time = models.TimeField(null=True, blank=True)
+    checkout_time = models.TimeField(null=True, blank=True)
+    adults = models.IntegerField(default=0)
+    children = models.IntegerField(default=0)
+    pax_total = models.IntegerField(default=0)
+    pax_notes = models.TextField(blank=True, null=True)
+    nights = models.IntegerField(default=1)
+    room_type = models.CharField(max_length=100, blank=True)
+    no_of_rooms = models.IntegerField(default=1)
+    meals_plan = models.ForeignKey(Meal, on_delete=models.SET_NULL, null=True, blank=True)
+    bank_account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True)
+    package_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    resort_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    received = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    pending = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    from_whytehouse = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    profit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    note_for_resort = models.TextField(blank=True, null=True)
+    note_for_guest = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Voucher {self.voucher_no} - {self.customer.display_name if self.customer else 'N/A'}"
+    
+    class Meta:
+        ordering = ['-voucher_date', '-id']
+
+
 class Invoice(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     invoice_no = models.CharField(max_length=50, unique=True, blank=True)

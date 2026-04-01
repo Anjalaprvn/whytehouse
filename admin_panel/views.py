@@ -15,7 +15,7 @@ from .models import BlogCategory
 from django.http import JsonResponse
 import re
 
-from .models import Account, Customer, Resort, Meal, Invoice, Lead, Property, TravelPackage, Inquiry, Destination, Feedback
+from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry, Destination, Feedback
 from .models import Employee,Blog,BlogImage,EmployeeRole,ResortRoomType,ResortRoomTypeImage
 
 from openpyxl import Workbook
@@ -2204,6 +2204,99 @@ def delete_meal(request, meal_id):
 
 # VOUCHER VIEWS
 
+def voucher_list(request):
+    search_query = request.GET.get('search', '').strip()
+    vouchers = Voucher.objects.all()
+    
+    if search_query:
+        vouchers = vouchers.filter(
+            Q(voucher_no__icontains=search_query) |
+            Q(customer__display_name__icontains=search_query) |
+            Q(resort__resort_name__icontains=search_query)
+        )
+    
+    vouchers = vouchers.order_by('-voucher_date', '-id')
+    
+    # Pagination
+    paginator = Paginator(vouchers, 20)  # 20 vouchers per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, "admin/sales/vouchers/vouchers.html", {
+        "page_obj": page_obj,
+        "paginator": paginator,
+        "vouchers": page_obj,
+        "search_query": search_query
+    })
+
+def add_voucher(request):
+    customers = Customer.objects.all()
+    resorts = Resort.objects.all()
+    accounts = Account.objects.all()
+    employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive'])
+    meals = Meal.objects.filter(status='Available')
+    
+    # Get next voucher ID
+    last_voucher = Voucher.objects.filter(voucher_no__startswith='VCH').order_by('-voucher_no').first()
+    if last_voucher and last_voucher.voucher_no:
+        try:
+            last_num = int(last_voucher.voucher_no[3:])
+            next_voucher_id = f'VCH{str(last_num + 1).zfill(3)}'
+        except (ValueError, IndexError):
+            next_voucher_id = 'VCH001'
+    else:
+        next_voucher_id = 'VCH001'
+    
+    if request.method == "POST":
+        try:
+            cus_id = request.POST.get("customer_id")
+            vno = request.POST.get("voucher_no", "").strip()
+            vdate = request.POST.get("voucher_date")
+
+            # required validation
+            if not cus_id or not vno or not vdate:
+                messages.error(request, "Customer, voucher number, and date are required.")
+                return render(request, "admin/sales/vouchers/add_vouchers.html", {"customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees, "meals": meals})
+
+            if Voucher.objects.filter(voucher_no=vno).exists():
+                messages.error(request, "Voucher number already exists.")
+                return render(request, "admin/sales/vouchers/add_vouchers.html", {"customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees, "meals": meals})
+
+            Voucher.objects.create(
+                customer_id=cus_id,
+                voucher_no=vno,
+                voucher_date=vdate,
+                sales_person_id=request.POST.get("sales_person") or None,
+                resort_id=request.POST.get("resort") or None,
+                checkin_date=request.POST.get("checkin_date"),
+                checkout_date=request.POST.get("checkout_date"),
+                checkin_time=request.POST.get("checkin_time"),
+                checkout_time=request.POST.get("checkout_time"),
+                adults=request.POST.get("adults", 0),
+                children=request.POST.get("children", 0),
+                nights=request.POST.get("nights", 1),
+                pax_notes=request.POST.get("pax_notes", "").strip(),
+                room_type=request.POST.get("room_type", "").strip(),
+                no_of_rooms=request.POST.get("no_of_rooms", 1),
+                meals_plan_id=request.POST.get("meals_plan") or None,
+                bank_account_id=request.POST.get("bank_account") or None,
+                package_price=request.POST.get("package_price", 0),
+                resort_price=request.POST.get("resort_price", 0),
+                total_amount=request.POST.get("total_amount", 0),
+                received=request.POST.get("received", 0),
+                pending=request.POST.get("pending", 0),
+                from_whytehouse=request.POST.get("from_whytehouse", 0),
+                profit=request.POST.get("profit", 0),
+                note_for_resort=request.POST.get("note_for_resort", "").strip(),
+                note_for_guest=request.POST.get("note_for_guest", "").strip()
+            )
+            messages.success(request, f"Voucher added successfully!")
+            return redirect("sales:voucher_list")
+        except Exception as e:
+            messages.error(request, f"Error adding voucher: {str(e)}")
+            return render(request, "admin/sales/vouchers/add_vouchers.html", {"customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees, "meals": meals, "next_voucher_id": next_voucher_id})
+    return render(request, "admin/sales/vouchers/add_vouchers.html", {"customers": customers, "resorts": resorts, "accounts": accounts, "employees": employees, "meals": meals, "next_voucher_id": next_voucher_id})
+
 def toggle_meal_status(request, meal_id):
     if request.method != 'POST':
         return redirect('sales:meal_list')
@@ -2211,6 +2304,143 @@ def toggle_meal_status(request, meal_id):
     meal.status = 'Unavailable' if meal.status == 'Available' else 'Available'
     meal.save()
     return redirect('sales:meal_list')
+
+
+def view_voucher(request, voucher_id):
+    try:
+        voucher = Voucher.objects.get(id=voucher_id)
+        return render(request, "admin/sales/vouchers/view_vouchers.html", {"voucher": voucher})
+    except Voucher.DoesNotExist:
+        messages.error(request, "Voucher not found.")
+        return redirect("sales:voucher_list")
+
+def edit_voucher(request, voucher_id):
+    try:
+        voucher = Voucher.objects.get(id=voucher_id)
+    except Voucher.DoesNotExist:
+        messages.error(request, "Voucher not found.")
+        return redirect("sales:voucher_list")
+
+    employees = Employee.objects.filter(status='Active', role__in=['Manager', 'Sales Executive'])
+    customers = Customer.objects.all()
+    resorts = Resort.objects.all()
+    accounts = Account.objects.all()
+    meals = Meal.objects.filter(status='Available')
+
+    if request.method == "POST":
+        try:
+            voucher.customer_id = request.POST.get("customer_id") or None
+            voucher.voucher_date = request.POST.get("voucher_date")
+            voucher.sales_person_id = request.POST.get("sales_person") or None
+            voucher.resort_id = request.POST.get("resort") or None
+            voucher.checkin_date = request.POST.get("checkin_date") or None
+            voucher.checkout_date = request.POST.get("checkout_date") or None
+            voucher.checkin_time = request.POST.get("checkin_time") or None
+            voucher.checkout_time = request.POST.get("checkout_time") or None
+            voucher.adults = request.POST.get("adults", 0)
+            voucher.children = request.POST.get("children", 0)
+            voucher.nights = request.POST.get("nights", 1)
+            voucher.pax_notes = request.POST.get("pax_notes", "").strip()
+            voucher.room_type = request.POST.get("room_type", "").strip()
+            voucher.no_of_rooms = request.POST.get("no_of_rooms", 1)
+            voucher.meals_plan_id = request.POST.get("meals_plan") or None
+            voucher.bank_account_id = request.POST.get("bank_account") or None
+            voucher.package_price = request.POST.get("package_price", 0)
+            voucher.resort_price = request.POST.get("resort_price", 0)
+            voucher.total_amount = request.POST.get("total_amount", 0)
+            voucher.received = request.POST.get("received", 0)
+            voucher.pending = request.POST.get("pending", 0)
+            voucher.from_whytehouse = request.POST.get("from_whytehouse", 0)
+            voucher.profit = request.POST.get("profit", 0)
+            voucher.note_for_resort = request.POST.get("note_for_resort", "").strip()
+            voucher.note_for_guest = request.POST.get("note_for_guest", "").strip()
+            voucher.save()
+            messages.success(request, "Voucher updated successfully!")
+            return redirect("sales:voucher_list")
+        except Exception as e:
+            return render(request, "admin/sales/vouchers/edit_vouchers.html", {
+                "voucher": voucher, "employees": employees, "customers": customers,
+                "resorts": resorts, "accounts": accounts, "meals": meals,
+                "error": f"Error updating voucher: {str(e)}"
+            })
+    return render(request, "admin/sales/vouchers/edit_vouchers.html", {
+        "voucher": voucher, "employees": employees, "customers": customers,
+        "resorts": resorts, "accounts": accounts, "meals": meals,
+    })
+
+def delete_voucher(request, voucher_id):
+    if request.method != 'POST':
+        return redirect('sales:voucher_list')
+    
+    try:
+        voucher = Voucher.objects.get(id=voucher_id)
+        voucher_no = voucher.voucher_no
+        voucher.delete()
+        messages.success(request, f"Voucher '{voucher_no}' deleted successfully!")
+    except Voucher.DoesNotExist:
+        messages.error(request, "Voucher not found.")
+    except Exception as e:
+        messages.error(request, f"Error deleting voucher: {str(e)}")
+    return redirect("sales:voucher_list")
+
+def send_voucher(request, voucher_id):
+    """Send voucher details via WhatsApp or Email"""
+    import urllib.parse
+    try:
+        voucher = get_object_or_404(Voucher, id=voucher_id)
+        channel = request.GET.get('channel', 'email').lower()
+        
+        # Prepare voucher details
+        customer_name = voucher.customer.display_name if voucher.customer else "Guest"
+        resort_name = voucher.resort.resort_name if voucher.resort else "N/A"
+        checkin = voucher.checkin_date.strftime("%d %b %Y") if voucher.checkin_date else "N/A"
+        checkout = voucher.checkout_date.strftime("%d %b %Y") if voucher.checkout_date else "N/A"
+        
+        message = f"""Voucher Details:
+Voucher No: {voucher.voucher_no}
+Customer: {customer_name}
+Resort: {resort_name}
+Check-in: {checkin}
+Check-out: {checkout}
+Total Amount: ₹{voucher.total_amount}
+Guests: {voucher.adults} Adults, {voucher.children} Children
+Room Type: {voucher.room_type}
+Number of Rooms: {voucher.no_of_rooms}
+
+Thank you for choosing Whytehouse Holidays!"""
+        
+        if channel == 'whatsapp':
+            # Generate WhatsApp link
+            customer_phone = voucher.customer.contact_number if voucher.customer else ""
+            if customer_phone:
+                # Format phone number for WhatsApp (remove spaces/dashes)
+                phone = ''.join(filter(str.isdigit, customer_phone))
+                # Add India country code if not present
+                if not phone.startswith('91'):
+                    phone = '91' + phone
+                whatsapp_url = f"https://wa.me/{phone}?text={urllib.parse.quote(message)}"
+                return redirect(whatsapp_url)
+            else:
+                messages.warning(request, "Customer phone number not available for WhatsApp.")
+                return redirect('sales:voucher_list')
+        
+        elif channel == 'email':
+            customer_email = voucher.customer.email if voucher.customer else None
+            if customer_email:
+                # Redirect to Gmail compose with pre-filled fields
+                subject = f"Whytehouse Holidays - Voucher {voucher.voucher_no}"
+                gmail_compose_url = f"https://mail.google.com/mail/?view=cm&fs=1&to={urllib.parse.quote(customer_email)}&su={urllib.parse.quote(subject)}&body={urllib.parse.quote(message)}"
+                return redirect(gmail_compose_url)
+            else:
+                messages.warning(request, "Customer email not available.")
+                return redirect('sales:voucher_list')
+        
+        else:
+            messages.error(request, "Invalid channel specified.")
+            return redirect('sales:voucher_list')
+    except Exception as e:
+        messages.error(request, f"Error sending voucher: {str(e)}")
+        return redirect('sales:voucher_list')
 
 
 # INVOICE VIEWS
@@ -3067,6 +3297,128 @@ def invoice_report(request):
         "employees": employees,
         "resorts": resorts,
         "invoices": invoices,
+        "employee_view": employee_view,
+        "selected": selected,
+    })
+
+
+def voucher_report(request):
+    from openpyxl.styles import PatternFill, Font, Alignment
+    from openpyxl.utils import get_column_letter
+    
+    resorts = Resort.objects.all().order_by("resort_name")
+    vouchers = Voucher.objects.none()
+    employee_view = False
+    employees = Employee.objects.none()
+    
+    selected = {"from_date": "", "to_date": "", "resort": "", "employee": ""}
+    
+    if request.method == "POST":
+        from_date = request.POST.get("from_date")
+        to_date = request.POST.get("to_date")
+        resort_id = request.POST.get("resort")
+        employee_view = request.POST.get("employee_view") == "on"
+        employee_id = request.POST.get("employee")
+        action = request.POST.get("action")
+        
+        selected = {
+            "from_date": from_date or "",
+            "to_date": to_date or "",
+            "resort": resort_id or "",
+            "employee": employee_id or "",
+        }
+        
+        if from_date and to_date and resort_id:
+            try:
+                fd = datetime.strptime(from_date, "%Y-%m-%d").date()
+                td = datetime.strptime(to_date, "%Y-%m-%d").date()
+                
+                # Filter employees who have vouchers in the selected date range and resort
+                if employee_view:
+                    employee_ids = Voucher.objects.filter(
+                        resort_id=resort_id,
+                        voucher_date__range=(fd, td),
+                        sales_person__isnull=False
+                    ).values_list('sales_person_id', flat=True).distinct()
+                    
+                    employees = Employee.objects.filter(
+                        id__in=employee_ids,
+                        status="Active"
+                    ).order_by("name")
+                
+                # Base queryset
+                qs = Voucher.objects.select_related(
+                    "customer", "resort", "sales_person", "bank_account", "meals_plan"
+                ).filter(resort_id=resort_id, voucher_date__range=(fd, td))
+                
+                # Employee filter
+                if employee_view and employee_id:
+                    qs = qs.filter(sales_person_id=employee_id)
+                
+                vouchers = qs.order_by("-voucher_date", "-id")
+                
+                # Excel export
+                if action == "excel":
+                    wb = Workbook()
+                    ws = wb.active
+                    ws.title = "Voucher Report"
+                    
+                    # Header styling
+                    header_fill = PatternFill(start_color="D4A017", end_color="D4A017", fill_type="solid")
+                    header_font = Font(bold=True, color="FFFFFF")
+                    
+                    # Headers
+                    headers = ["Voucher No", "Date", "Customer", "Resort", "Total Amount"]
+                    if employee_view:
+                        headers.insert(3, "Sales Person")
+                    
+                    for col_num, header in enumerate(headers, 1):
+                        cell = ws.cell(row=1, column=col_num, value=header)
+                        cell.fill = header_fill
+                        cell.font = header_font
+                        cell.alignment = Alignment(horizontal="center", vertical="center")
+                    
+                    # Data rows
+                    for row_num, voucher in enumerate(vouchers, 2):
+                        ws.cell(row=row_num, column=1, value=voucher.voucher_no)
+                        ws.cell(row=row_num, column=2, value=voucher.voucher_date.strftime("%d/%m/%Y"))
+                        ws.cell(row=row_num, column=3, value=voucher.customer.display_name if voucher.customer else "-")
+                        
+                        if employee_view:
+                            ws.cell(row=row_num, column=4, value=voucher.sales_person.name if voucher.sales_person else "-")
+                            ws.cell(row=row_num, column=5, value=voucher.resort.resort_name if voucher.resort else "-")
+                            ws.cell(row=row_num, column=6, value=float(voucher.total_amount))
+                        else:
+                            ws.cell(row=row_num, column=4, value=voucher.resort.resort_name if voucher.resort else "-")
+                            ws.cell(row=row_num, column=5, value=float(voucher.total_amount))
+                    
+                    # Auto-adjust column widths
+                    for col in ws.columns:
+                        max_length = 0
+                        column = col[0].column_letter
+                        for cell in col:
+                            try:
+                                if len(str(cell.value)) > max_length:
+                                    max_length = len(str(cell.value))
+                            except:
+                                pass
+                        adjusted_width = min(max_length + 2, 50)
+                        ws.column_dimensions[column].width = adjusted_width
+                    
+                    response = HttpResponse(
+                        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
+                    response["Content-Disposition"] = f'attachment; filename="voucher_report_{fd.strftime("%d%m%Y")}_{td.strftime("%d%m%Y")}.xlsx"'
+                    wb.save(response)
+                    return response
+                
+            except ValueError:
+                messages.error(request, "Invalid date format.")
+    
+    return render(request, "admin/report/voucher_report.html", {
+        "resorts": resorts,
+        "vouchers": vouchers,
+        "employees": employees,
         "employee_view": employee_view,
         "selected": selected,
     })
