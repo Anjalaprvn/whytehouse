@@ -838,32 +838,15 @@ def travel_package_add(request):
             })
 
         package_id = request.POST.get('package_id')
-        
-        # Parse pricing fields
-        base_price = request.POST.get('base_price', '').strip() or None
-        discount_price = request.POST.get('discount_price', '').strip() or 0
-        tax_percentage = request.POST.get('tax_percentage', '0').strip() or 0
-        final_price = request.POST.get('final_price_display', '').strip() or None
-        price_type = request.POST.get('price_type', 'Per Person').strip()
         adult_price = request.POST.get('adult_price', '').strip() or '0'
-        child_price = request.POST.get('child_price', '').strip() or '0'
-        child_pricing_json = request.POST.get('child_pricing', '[]').strip() or '[]'
 
         TravelPackage.objects.create(
             package_id=package_id,
             name=name,
             category=category,
             destination=destination,
-            resort_id=request.POST.get('resort') or None,
-            price=adult_price or price,
-            price_type=price_type,
+            price=adult_price,
             adult_price=adult_price,
-            child_price=child_price,
-            child_pricing=child_pricing_json,
-            base_price=base_price,
-            discount_price=discount_price,
-            tax_percentage=tax_percentage,
-            final_price=final_price,
             duration=duration,
             location=location,
             country=request.POST.get('country'),
@@ -877,30 +860,6 @@ def travel_package_add(request):
             image=request.FILES.get('image')
         )
         messages.success(request, "Package added successfully!")
-
-        # Save transport options and meal plans
-        pkg_obj = TravelPackage.objects.get(name=name, category=category)
-        meal_plan_ids = request.POST.getlist('meal_plans')
-        if meal_plan_ids:
-            pkg_obj.meal_plans.set(meal_plan_ids)
-        else:
-            pkg_obj.meal_plans.clear()
-        for i, tname in enumerate(request.POST.getlist('transport_option_name[]')):
-            tname = tname.strip()
-            if tname:
-                prices = request.POST.getlist('transport_option_price[]')
-                min_persons_list = request.POST.getlist('transport_option_min_persons[]')
-                max_persons_list = request.POST.getlist('transport_option_max_persons[]')
-                price_val = prices[i].strip() if i < len(prices) and prices[i].strip() else '0'
-                min_p = min_persons_list[i].strip() if i < len(min_persons_list) and min_persons_list[i].strip() else '1'
-                max_p = max_persons_list[i].strip() if i < len(max_persons_list) and max_persons_list[i].strip() else '1'
-                PackageTransportOption.objects.create(
-                    package=pkg_obj,
-                    name=tname,
-                    price_per_person=price_val,
-                    min_persons=min_p,
-                    max_persons=max_p,
-                )
         
         # Redirect back to the same category and destination
         url = reverse('admin_panel:travel_packages')
@@ -965,11 +924,8 @@ def travel_package_edit(request, package_id):
         package.name = request.POST.get('name')
         package.category = new_category
         package.destination = destination
-        package.resort_id = request.POST.get('resort') or None
         package.price = request.POST.get('adult_price') or request.POST.get('price')
         package.adult_price = request.POST.get('adult_price') or 0
-        package.child_price = request.POST.get('child_price') or 0
-        package.child_pricing = request.POST.get('child_pricing', '[]') or '[]'
         package.duration = request.POST.get('duration')
         package.location = request.POST.get('location')
         package.country = request.POST.get('country')
@@ -989,30 +945,6 @@ def travel_package_edit(request, package_id):
         if request.FILES.get('story_side_image2'):
             package.story_side_image2 = request.FILES.get('story_side_image2')
         package.save()
-
-        # Update transport options — clear and rebuild
-        package.transport_options.all().delete()
-        meal_plan_ids = request.POST.getlist('meal_plans')
-        if meal_plan_ids:
-            package.meal_plans.set(meal_plan_ids)
-        else:
-            package.meal_plans.clear()
-        for i, tname in enumerate(request.POST.getlist('transport_option_name[]')):
-            tname = tname.strip()
-            if tname:
-                prices = request.POST.getlist('transport_option_price[]')
-                min_persons_list = request.POST.getlist('transport_option_min_persons[]')
-                max_persons_list = request.POST.getlist('transport_option_max_persons[]')
-                price_val = prices[i].strip() if i < len(prices) and prices[i].strip() else '0'
-                min_p = min_persons_list[i].strip() if i < len(min_persons_list) and min_persons_list[i].strip() else '1'
-                max_p = max_persons_list[i].strip() if i < len(max_persons_list) and max_persons_list[i].strip() else '1'
-                PackageTransportOption.objects.create(
-                    package=package,
-                    name=tname,
-                    price_per_person=price_val,
-                    min_persons=min_p,
-                    max_persons=max_p,
-                )
 
         messages.success(request, "Package updated successfully!")
         
