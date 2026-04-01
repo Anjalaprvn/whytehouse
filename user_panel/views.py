@@ -717,26 +717,9 @@ def package_detail(request, slug):
     import json
     from decimal import Decimal
 
-    # Room options from linked resort's room types
+    # No resort or meal options for TravelPackage
     room_options = []
-    if package.resort:
-        for r in package.resort.room_types.all():
-            room_options.append({
-                'id': r.id,
-                'room_type_name': r.room_type_name,
-                'price_per_night': float(r.price_per_night),
-                'max_guests': r.max_guests,
-            })
-
-    # Meal options from linked meal plans
     meal_options = []
-    for m in package.meal_plans.filter(status='Available'):
-        meal_options.append({
-            'id': m.id,
-            'name': m.name,
-            'price_per_person': float(m.price_per_person) if m.price_per_person else 0,
-            'children_pricing': m.get_children_pricing(),
-        })
 
     # Transport options
     transport_options = []
