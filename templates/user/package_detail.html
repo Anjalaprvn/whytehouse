@@ -572,74 +572,21 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Adults <span style="color: red;">*</span></label>
+                        <label>Number of Guests <span style="color: red;">*</span></label>
                         <div class="input-wrapper">
-                            <select name="adults" id="adults-select" required onchange="document.getElementById('calc-adults').textContent='\u20b9 ' + (parseFloat('{{ package.adult_price|default:package.price }}') * parseInt(this.value)).toLocaleString('en-IN'); document.getElementById('total-price-value').textContent = (parseFloat('{{ package.adult_price|default:package.price }}') * parseInt(this.value)).toLocaleString('en-IN');">
-                                <option value="1" selected>1 Adult</option>
-                                <option value="2">2 Adults</option>
-                                <option value="3">3 Adults</option>
-                                <option value="4">4 Adults</option>
-                                <option value="5">5 Adults</option>
-                                <option value="6">6 Adults</option>
-                                <option value="7">7 Adults</option>
-                                <option value="8">8 Adults</option>
-                                <option value="9">9 Adults</option>
-                                <option value="10">10 Adults</option>
+                            <select name="guests" id="guests-select" required onchange="calculateTotal()">
+                                <option value="1" selected>1 Guest</option>
+                                <option value="2">2 Guests</option>
+                                <option value="3">3 Guests</option>
+                                <option value="4">4 Guests</option>
+                                <option value="5">5 Guests</option>
+                                <option value="6">6 Guests</option>
+                                <option value="7">7 Guests</option>
+                                <option value="8">8 Guests</option>
+                                <option value="9">9 Guests</option>
+                                <option value="10">10 Guests</option>
                             </select>
                         </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Children</label>
-                        <div class="input-wrapper">
-                            <select name="children" id="children-count-select" onchange="updateChildAgeInputs();">
-                                <option value="0" selected>0 Children</option>
-                                <option value="1">1 Child</option>
-                                <option value="2">2 Children</option>
-                                <option value="3">3 Children</option>
-                                <option value="4">4 Children</option>
-                                <option value="5">5 Children</option>
-                                <option value="6">6 Children</option>
-                            </select>
-                        </div>
-                        <div id="children-ages-container" style="margin-top:8px;"></div>
-                    </div>
-
-
-
-                    <div class="form-group" id="room-group" style="display:none;">
-                        <label>Room Type</label>
-                        <div class="input-wrapper">
-                            <select id="room-select">
-                                <option value="0">No room selected</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group" id="meal-group" style="display:none;">
-                        <label>Meal Plan</label>
-                        <div class="input-wrapper">
-                            <select id="meal-select">
-                                <option value="0">No meal plan</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group" id="transport-group" style="display:none;">
-                        <label>Transport</label>
-                        <div class="input-wrapper">
-                            <select id="transport-select">
-                                <option value="0">No transport</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div id="price-breakdown" style="background:#f9f5ec; border-radius:12px; padding:14px 16px; margin-bottom:10px; font-size:13px; color:#555;">
-                        <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Adults</span><span id="calc-adults">&#8377; {{ package.adult_price|default:package.price|floatformat:0 }}</span></div>
-                        <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Children</span><span id="calc-children">&#8377; 0</span></div>
-                        <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Room</span><span id="calc-room">&#8377; 0</span></div>
-                        <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Meals</span><span id="calc-meal">&#8377; 0</span></div>
-                        <div style="display:flex;justify-content:space-between;"><span>Transport</span><span id="calc-transport">&#8377; 0</span></div>
                     </div>
 
                     <div class="total-price-box">
@@ -648,7 +595,7 @@
                     </div>
 
                     <div style="font-size: 12px; color: #666; margin-top: 10px; text-align: center;">
-                        Adult price: &#8377; <span id="price-per-person">{{ package.adult_price|default:package.price|floatformat:0 }}</span>
+                        Price per person: &#8377; <span id="price-per-person">{{ package.adult_price|default:package.price|floatformat:0 }}</span>
                     </div>
 
                     <button type="submit" class="book-now-btn">Book Now</button>
@@ -722,163 +669,19 @@
         });
     });
 
-    // Dynamic price calculation
-    const adultPrice = parseFloat('{{ package.adult_price }}') || parseFloat('{{ package.price }}') || 0;
-    const childPrice = parseFloat('{{ package.child_price }}') || 0;
-    const packageChildPricing = JSON.parse('{{ package.child_pricing|escapejs }}' || '[]');
-    const roomOptions = {{ room_options_json|default:'[]' }};
-    const mealOptions = {{ meal_options_json|default:'[]' }};
-    const transportOptions = {{ transport_options_json|default:'[]' }};
-
-    function getChildAges() {
-        return Array.from(document.querySelectorAll('.child-age-input'))
-            .map(function(i) { return parseInt(i.value); })
-            .filter(function(a) { return !isNaN(a); });
-    }
-
-    function getChildPrice(age) {
-        const brackets = packageChildPricing.length > 0 ? packageChildPricing : [];
-        for (var i = 0; i < brackets.length; i++) {
-            if (age >= brackets[i].min_age && age <= brackets[i].max_age) {
-                return parseFloat(brackets[i].price);
-            }
-        }
-        return childPrice;
-    }
+    // Price calculation
+    const pricePerPerson = parseFloat('{{ package.adult_price|default:package.price }}') || 0;
 
     function calculateTotal() {
-        var adults = parseInt(document.getElementById('adults-select').value) || 1;
-        var childAges = getChildAges();
-        var nightsEl = document.getElementById('nights-input');
-        var nights = nightsEl ? (parseInt(nightsEl.value) || 1) : 1;
-        var roomEl = document.getElementById('room-select');
-        var mealEl = document.getElementById('meal-select');
-        var transportEl = document.getElementById('transport-select');
-        var roomPrice = roomEl ? (parseFloat(roomEl.value) || 0) : 0;
-        var mealPrice = mealEl ? (parseFloat(mealEl.value) || 0) : 0;
-        var transportPrice = transportEl ? (parseFloat(transportEl.value) || 0) : 0;
-
-        var adultTotal = adultPrice * adults;
-        var childTotal = childAges.reduce(function(sum, age) { return sum + getChildPrice(age); }, 0);
-        var totalPax = adults + childAges.length;
-        var roomTotal = roomPrice * nights;
-        var mealTotal = mealPrice * (adults + childAges.length) * nights;
-        var transportTotal = transportPrice * totalPax;
-        var grandTotal = adultTotal + childTotal + roomTotal + mealTotal + transportTotal;
-
-        document.getElementById('calc-adults').textContent = '₹ ' + adultTotal.toLocaleString('en-IN');
-        document.getElementById('calc-children').textContent = '₹ ' + childTotal.toLocaleString('en-IN');
-        document.getElementById('calc-room').textContent = '₹ ' + roomTotal.toLocaleString('en-IN');
-        document.getElementById('calc-meal').textContent = '₹ ' + mealTotal.toLocaleString('en-IN');
-        document.getElementById('calc-transport').textContent = '₹ ' + transportTotal.toLocaleString('en-IN');
-        document.getElementById('total-price-value').textContent = grandTotal.toLocaleString('en-IN');
-        document.getElementById('price-per-person').textContent = adultPrice.toLocaleString('en-IN');
+        const guests = parseInt(document.getElementById('guests-select').value) || 1;
+        const totalPrice = pricePerPerson * guests;
+        document.getElementById('total-price-value').textContent = totalPrice.toLocaleString('en-IN');
     }
 
-    function updateChildAgeInputs() {
-        var count = parseInt(document.getElementById('children-count-select').value) || 0;
-        var container = document.getElementById('children-ages-container');
-        if (!container) {
-            console.error('Container not found!');
-            return;
-        }
-        container.innerHTML = '';
-        for (var i = 1; i <= count; i++) {
-            var div = document.createElement('div');
-            div.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px;margin-top:6px;';
-            div.innerHTML = '<span style="font-size:12px;color:#555;min-width:65px;">Child ' + i + ' age</span><div class="input-wrapper" style="flex:1;"><input type="number" name="child_age_' + i + '" class="child-age-input" placeholder="0-17" min="0" max="17" required></div>';
-            container.appendChild(div);
-        }
-        var inputs = container.querySelectorAll('.child-age-input');
-        inputs.forEach(function(inp) {
-            inp.addEventListener('input', function() {
-                filterTransportByGroupSize();
-                calculateTotal();
-            });
-        });
-        filterTransportByGroupSize();
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
         calculateTotal();
-    }
-
-    function filterTransportByGroupSize() {
-        var transportEl = document.getElementById('transport-select');
-        var transportGrp = document.getElementById('transport-group');
-        if (!transportEl || !transportGrp || transportOptions.length === 0) return;
-        var adults = parseInt(document.getElementById('adults-select').value) || 1;
-        var totalPax = adults + getChildAges().length;
-        var bestOpt = null;
-        Array.from(transportEl.options).forEach(function(opt) {
-            if (opt.value === '0') { opt.style.display = 'none'; return; }
-            var maxP = parseInt(opt.dataset.maxPersons) || 1;
-            if (maxP >= totalPax) {
-                opt.style.display = '';
-                if (!bestOpt) bestOpt = opt;
-            } else {
-                opt.style.display = 'none';
-                if (opt.selected) transportEl.value = '0';
-            }
-        });
-        if (bestOpt && (transportEl.value === '0' || !transportEl.options[transportEl.selectedIndex] || transportEl.options[transportEl.selectedIndex].style.display === 'none')) {
-            transportEl.value = bestOpt.value;
-        }
-        calculateTotal();
-    }
-
-    // Populate dropdowns
-    (function init() {
-        var roomSelect = document.getElementById('room-select');
-        var mealSelect = document.getElementById('meal-select');
-        var transportSelect = document.getElementById('transport-select');
-        var roomGroup = document.getElementById('room-group');
-        var mealGroup = document.getElementById('meal-group');
-
-        if (roomSelect && roomOptions.length > 0) {
-            roomOptions.forEach(function(r) {
-                var opt = document.createElement('option');
-                opt.value = r.price_per_night;
-                opt.textContent = (r.room_type_name || r.name) + ' \u2014 \u20b9' + r.price_per_night + '/night';
-                roomSelect.appendChild(opt);
-            });
-            roomGroup.style.display = 'block';
-        }
-
-        if (mealSelect && mealOptions.length > 0) {
-            mealOptions.forEach(function(m) {
-                var opt = document.createElement('option');
-                opt.value = m.price_per_person;
-                opt.textContent = m.name + ' \u2014 \u20b9' + m.price_per_person + '/person';
-                mealSelect.appendChild(opt);
-            });
-            mealGroup.style.display = 'block';
-        }
-
-        if (transportSelect && transportOptions.length > 0) {
-            var sortedTransport = transportOptions.slice().sort(function(a, b) { return a.max_persons - b.max_persons; });
-            sortedTransport.forEach(function(t) {
-                var opt = document.createElement('option');
-                opt.value = t.price_per_person;
-                opt.dataset.maxPersons = t.max_persons;
-                opt.textContent = t.name + ' \u2014 \u20b9' + t.price_per_person + '/person (max ' + t.max_persons + ')';
-                transportSelect.appendChild(opt);
-            });
-            document.getElementById('transport-group').style.display = 'block';
-        }
-
-        // Attach event listeners
-        document.getElementById('adults-select').addEventListener('change', function() {
-            filterTransportByGroupSize();
-            calculateTotal();
-        });
-        if (roomSelect) roomSelect.addEventListener('change', calculateTotal);
-        if (mealSelect) mealSelect.addEventListener('change', calculateTotal);
-        if (transportSelect) transportSelect.addEventListener('change', calculateTotal);
-        var nightsInput = document.getElementById('nights-input');
-        if (nightsInput) nightsInput.addEventListener('input', calculateTotal);
-
-        filterTransportByGroupSize();
-        calculateTotal();
-    }());
-    calculateTotal();
+    });
 
     // Itinerary accordion
     document.querySelectorAll('.itinerary-header').forEach(header => {
