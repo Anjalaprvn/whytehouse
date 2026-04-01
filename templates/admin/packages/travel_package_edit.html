@@ -411,23 +411,6 @@ renderPkgChildPricing();
 
 function addPricingRow(type) {
     const configs = {
-        room: {
-            container: 'room-options-container',
-            html: `<div class="pricing-row" style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:10px;">
-                <input type="text" name="room_option_name[]" class="form-control" placeholder="e.g. Suite" style="margin-bottom:0;">
-                <input type="number" name="room_option_price[]" class="form-control" placeholder="Price/night (\u20b9)" min="0" style="margin-bottom:0;">
-                <input type="number" name="room_option_guests[]" class="form-control" placeholder="Max guests" min="1" value="2" style="margin-bottom:0;">
-                <button type="button" onclick="this.closest('.pricing-row').remove()" style="background:#fee2e2;border:none;border-radius:6px;padding:0 12px;cursor:pointer;color:#ef4444;font-size:18px;">\u00d7</button>
-            </div>`
-        },
-        meal: {
-            container: 'meal-options-container',
-            html: `<div class="pricing-row" style="display:grid;grid-template-columns:2fr 1fr auto;gap:10px;margin-bottom:10px;">
-                <input type="text" name="meal_option_name[]" class="form-control" placeholder="e.g. Full Board" style="margin-bottom:0;">
-                <input type="number" name="meal_option_price[]" class="form-control" placeholder="Price/person (\u20b9)" min="0" style="margin-bottom:0;">
-                <button type="button" onclick="this.closest('.pricing-row').remove()" style="background:#fee2e2;border:none;border-radius:6px;padding:0 12px;cursor:pointer;color:#ef4444;font-size:18px;">\u00d7</button>
-            </div>`
-        },
         transport: {
             container: 'transport-options-container',
             html: `<div class="pricing-row" style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:10px;">
