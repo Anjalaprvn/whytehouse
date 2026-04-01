@@ -694,8 +694,8 @@
                             <div class="card-header">
                                 <h3>{{ package.name }}</h3>
                                 <div class="price-box">
-                                    <span class="price">₹ {{ package.price }}</span>
-                                    <span class="unit">Per person</span>
+                                    <span class="price">&#8377; {{ package.adult_price|default:package.price }}</span>
+                                    <span class="unit">Per adult</span>
                                 </div>
                             </div>
 

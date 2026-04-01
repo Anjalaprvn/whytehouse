@@ -438,9 +438,15 @@
 
         <div class="price-stats">
             <div class="stat-item">
-                <label>Price</label>
-                <span>₹ {{ package.price }}</span>
+                <label>Adult Price</label>
+                <span>&#8377; {{ package.adult_price|default:package.price }}</span>
             </div>
+            {% if package.child_pricing and package.child_pricing != '[]' %}
+            <div class="stat-item">
+                <label>Child Price</label>
+                <span>Age-based</span>
+            </div>
+            {% endif %}
             <div class="stat-item">
                 <label>Category</label>
                 <span>{{ package.category }}</span>
@@ -549,21 +555,27 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Guests <span style="color: red;">*</span></label>
+                        <label>Adults <span style="color: red;">*</span></label>
                         <div class="input-wrapper">
-                            <select name="guests" id="guests-select" required>
-                                <option value="1" {% if form_data.guests == '1' %}selected{% endif %}>1 Guest</option>
-                                <option value="2" {% if form_data.guests == '2' or not form_data.guests %}selected{% endif %}>2 Guests</option>
-                                <option value="3" {% if form_data.guests == '3' %}selected{% endif %}>3 Guests</option>
-                                <option value="4" {% if form_data.guests == '4' %}selected{% endif %}>4 Guests</option>
-                                <option value="5" {% if form_data.guests == '5' %}selected{% endif %}>5 Guests</option>
-                                <option value="6" {% if form_data.guests == '6' %}selected{% endif %}>6 Guests</option>
-                                <option value="7" {% if form_data.guests == '7' %}selected{% endif %}>7 Guests</option>
-                                <option value="8" {% if form_data.guests == '8' %}selected{% endif %}>8 Guests</option>
-                                <option value="9" {% if form_data.guests == '9' %}selected{% endif %}>9 Guests</option>
-                                <option value="10" {% if form_data.guests == '10' %}selected{% endif %}>10+ Guests</option>
+                            <select name="adults" id="adults-select" required>
+                                <option value="1">1 Adult</option>
+                                <option value="2" selected>2 Adults</option>
+                                <option value="3">3 Adults</option>
+                                <option value="4">4 Adults</option>
+                                <option value="5">5 Adults</option>
+                                <option value="6">6 Adults</option>
+                                <option value="7">7 Adults</option>
+                                <option value="8">8 Adults</option>
+                                <option value="9">9 Adults</option>
+                                <option value="10">10 Adults</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Children <span style="font-size:11px;color:#999;">(enter each child's age)</span></label>
+                        <div id="children-ages-container"></div>
+                        <button type="button" onclick="addChildAge()" style="background:none;border:1px dashed #ccc;border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer;color:#555;margin-top:4px;">+ Add Child</button>
                     </div>
 
                     <div class="form-group" id="nights-group" style="display:none;">
@@ -600,8 +612,9 @@
                         </div>
                     </div>
 
-                    <div id="price-breakdown" style="display:none; background:#f9f5ec; border-radius:12px; padding:14px 16px; margin-bottom:10px; font-size:13px; color:#555;">
-                        <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Base Package</span><span id="calc-base">&#8377; 0</span></div>
+                    <div id="price-breakdown" style="background:#f9f5ec; border-radius:12px; padding:14px 16px; margin-bottom:10px; font-size:13px; color:#555;">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Adults</span><span id="calc-adults">&#8377; 0</span></div>
+                        <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Children</span><span id="calc-children">&#8377; 0</span></div>
                         <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Room</span><span id="calc-room">&#8377; 0</span></div>
                         <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Meals</span><span id="calc-meal">&#8377; 0</span></div>
                         <div style="display:flex;justify-content:space-between;"><span>Transport</span><span id="calc-transport">&#8377; 0</span></div>
@@ -609,11 +622,11 @@
 
                     <div class="total-price-box">
                         <span>Total Cost</span>
-                        <h4 id="total-price">₹ {{ package.price|floatformat:0 }}</h4>
+                        <h4 id="total-price">&#8377; <span id="total-price-value">{{ package.adult_price|default:package.price|floatformat:0 }}</span></h4>
                     </div>
 
                     <div style="font-size: 12px; color: #666; margin-top: 10px; text-align: center;">
-                        Price per person: ₹ <span id="price-per-person">{{ package.price|floatformat:0 }}</span>
+                        Adult price: &#8377; <span id="price-per-person">{{ package.adult_price|default:package.price|floatformat:0 }}</span>
                     </div>
 
                     <button type="submit" class="book-now-btn">Book Now</button>
@@ -687,85 +700,146 @@
     });
 
     // Dynamic price calculation
-    const basePackagePrice = {{ package.price|default:0 }};
+    const adultPrice = parseFloat('{{ package.adult_price }}') || parseFloat('{{ package.price }}') || 0;
+    const childPrice = parseFloat('{{ package.child_price }}') || 0;
+    const packageChildPricing = JSON.parse('{{ package.child_pricing|escapejs }}' || '[]');
     const roomOptions = {{ room_options_json|default:'[]' }};
     const mealOptions = {{ meal_options_json|default:'[]' }};
     const transportOptions = {{ transport_options_json|default:'[]' }};
 
-    const roomSelect = document.getElementById('room-select');
-    const mealSelect = document.getElementById('meal-select');
-    const transportSelect = document.getElementById('transport-select');
-    const roomGroup = document.getElementById('room-group');
-    const mealGroup = document.getElementById('meal-group');
-    const transportGroup = document.getElementById('transport-group');
-    const priceBreakdown = document.getElementById('price-breakdown');
-
-    if (roomOptions.length > 0) {
-        roomOptions.forEach(function(r) {
-            const opt = document.createElement('option');
-            opt.value = r.price_per_night;
-            opt.textContent = (r.room_type_name || r.name) + ' — ₹' + r.price_per_night + '/night (max ' + r.max_guests + ' guests)';
-            roomSelect.appendChild(opt);
-        });
-        roomGroup.style.display = 'block';
+    function getChildAges() {
+        return Array.from(document.querySelectorAll('.child-age-input'))
+            .map(function(i) { return parseInt(i.value); })
+            .filter(function(a) { return !isNaN(a); });
     }
 
-    if (mealOptions.length > 0) {
-        mealOptions.forEach(function(m) {
-            const opt = document.createElement('option');
-            opt.value = m.price_per_person;
-            opt.textContent = m.name + ' — ₹' + m.price_per_person + '/person';
-            mealSelect.appendChild(opt);
-        });
-        mealGroup.style.display = 'block';
-    }
-
-    if (transportOptions.length > 0) {
-        transportOptions.forEach(function(t) {
-            const opt = document.createElement('option');
-            opt.value = t.price_per_person;
-            opt.textContent = t.name + ' — ₹' + t.price_per_person + '/person';
-            transportSelect.appendChild(opt);
-        });
-        transportGroup.style.display = 'block';
-    }
-
-    const hasAnyOption = roomOptions.length > 0 || mealOptions.length > 0 || transportOptions.length > 0;
-    if (hasAnyOption) {
-        document.getElementById('nights-group').style.display = 'block';
-        priceBreakdown.style.display = 'block';
+    function getChildPrice(age) {
+        const brackets = packageChildPricing.length > 0 ? packageChildPricing : [];
+        for (var i = 0; i < brackets.length; i++) {
+            if (age >= brackets[i].min_age && age <= brackets[i].max_age) {
+                return parseFloat(brackets[i].price);
+            }
+        }
+        return childPrice;
     }
 
     function calculateTotal() {
-        const guests = parseInt(document.getElementById('guests-select').value) || 1;
-        const nightsEl = document.getElementById('nights-input');
-        const nights = nightsEl ? (parseInt(nightsEl.value) || 1) : 1;
-        const roomPrice = parseFloat(roomSelect.value) || 0;
-        const mealPrice = parseFloat(mealSelect.value) || 0;
-        const transportPrice = parseFloat(transportSelect.value) || 0;
+        var adultsEl = document.getElementById('adults-select');
+        var adults = adultsEl ? (parseInt(adultsEl.value) || 1) : 1;
+        var childAges = getChildAges();
+        var nightsEl = document.getElementById('nights-input');
+        var nights = nightsEl ? (parseInt(nightsEl.value) || 1) : 1;
+        var roomEl = document.getElementById('room-select');
+        var mealEl = document.getElementById('meal-select');
+        var transportEl = document.getElementById('transport-select');
+        var roomPrice = roomEl ? (parseFloat(roomEl.value) || 0) : 0;
+        var mealPrice = mealEl ? (parseFloat(mealEl.value) || 0) : 0;
+        var transportPrice = transportEl ? (parseFloat(transportEl.value) || 0) : 0;
 
-        const baseTotal = basePackagePrice * guests;
-        const roomTotal = roomPrice * nights;
-        const mealTotal = mealPrice * guests * nights;
-        const transportTotal = transportPrice * guests;
-        const grandTotal = baseTotal + roomTotal + mealTotal + transportTotal;
+        var adultTotal = adultPrice * adults;
+        var childTotal = childAges.reduce(function(sum, age) { return sum + getChildPrice(age); }, 0);
+        var totalPax = adults + childAges.length;
+        var roomTotal = roomPrice * nights;
+        var mealTotal = mealPrice * (adults + childAges.length) * nights;
+        var transportTotal = transportPrice * totalPax;
+        var grandTotal = adultTotal + childTotal + roomTotal + mealTotal + transportTotal;
 
-        document.getElementById('total-price').textContent = '₹ ' + grandTotal.toLocaleString('en-IN');
-        document.getElementById('price-per-person').textContent = basePackagePrice.toLocaleString('en-IN');
-        document.getElementById('calc-base').textContent = '₹ ' + baseTotal.toLocaleString('en-IN');
-        document.getElementById('calc-room').textContent = '₹ ' + roomTotal.toLocaleString('en-IN');
-        document.getElementById('calc-meal').textContent = '₹ ' + mealTotal.toLocaleString('en-IN');
-        document.getElementById('calc-transport').textContent = '₹ ' + transportTotal.toLocaleString('en-IN');
+        var tv = document.getElementById('total-price-value');
+        var pp = document.getElementById('price-per-person');
+        var ca = document.getElementById('calc-adults');
+        var cc = document.getElementById('calc-children');
+        var cr = document.getElementById('calc-room');
+        var cm = document.getElementById('calc-meal');
+        var ct = document.getElementById('calc-transport');
+
+        if (tv) tv.textContent = grandTotal.toLocaleString('en-IN');
+        if (pp) pp.textContent = adultPrice.toLocaleString('en-IN');
+        if (ca) ca.textContent = '\u20b9 ' + adultTotal.toLocaleString('en-IN');
+        if (cc) cc.textContent = '\u20b9 ' + childTotal.toLocaleString('en-IN');
+        if (cr) cr.textContent = '\u20b9 ' + roomTotal.toLocaleString('en-IN');
+        if (cm) cm.textContent = '\u20b9 ' + mealTotal.toLocaleString('en-IN');
+        if (ct) ct.textContent = '\u20b9 ' + transportTotal.toLocaleString('en-IN');
     }
 
-    document.getElementById('guests-select').addEventListener('change', calculateTotal);
-    roomSelect.addEventListener('change', calculateTotal);
-    mealSelect.addEventListener('change', calculateTotal);
-    transportSelect.addEventListener('change', calculateTotal);
-    const nightsInput = document.getElementById('nights-input');
-    if (nightsInput) nightsInput.addEventListener('input', calculateTotal);
+    function addChildAge() {
+        var container = document.getElementById('children-ages-container');
+        var idx = container.children.length + 1;
+        var div = document.createElement('div');
+        div.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px;';
+        div.innerHTML = '<div class="input-wrapper" style="flex:1;"><input type="number" class="child-age-input" placeholder="Child ' + idx + ' age (years)" min="0" max="17" oninput="calculateTotal()"></div><button type="button" onclick="this.parentElement.remove();calculateTotal()" style="background:#fee2e2;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;color:#ef4444;font-size:16px;">&times;</button>';
+        container.appendChild(div);
+    }
 
-    calculateTotal();
+    function filterTransportByGroupSize() {
+        var transportEl = document.getElementById('transport-select');
+        var transportGrp = document.getElementById('transport-group');
+        if (!transportEl || !transportGrp) return;
+        var adults = parseInt(document.getElementById('adults-select').value) || 1;
+        var totalPax = adults + getChildAges().length;
+        var anyVisible = false;
+        Array.from(transportEl.options).forEach(function(opt) {
+            if (opt.value === '0') return;
+            var maxP = parseInt(opt.dataset.maxPersons) || 1;
+            if (maxP >= totalPax) { opt.style.display = ''; anyVisible = true; }
+            else { opt.style.display = 'none'; if (opt.selected) transportEl.value = '0'; }
+        });
+        transportGrp.style.display = (transportOptions.length > 0 && anyVisible) ? 'block' : 'none';
+    }
+
+    // Populate dropdowns
+    (function init() {
+        var roomSelect = document.getElementById('room-select');
+        var mealSelect = document.getElementById('meal-select');
+        var transportSelect = document.getElementById('transport-select');
+        var roomGroup = document.getElementById('room-group');
+        var mealGroup = document.getElementById('meal-group');
+
+        if (roomSelect && roomOptions.length > 0) {
+            roomOptions.forEach(function(r) {
+                var opt = document.createElement('option');
+                opt.value = r.price_per_night;
+                opt.textContent = (r.room_type_name || r.name) + ' \u2014 \u20b9' + r.price_per_night + '/night';
+                roomSelect.appendChild(opt);
+            });
+            roomGroup.style.display = 'block';
+            document.getElementById('nights-group').style.display = 'block';
+        }
+
+        if (mealSelect && mealOptions.length > 0) {
+            mealOptions.forEach(function(m) {
+                var opt = document.createElement('option');
+                opt.value = m.price_per_person;
+                opt.textContent = m.name + ' \u2014 \u20b9' + m.price_per_person + '/person';
+                mealSelect.appendChild(opt);
+            });
+            mealGroup.style.display = 'block';
+            document.getElementById('nights-group').style.display = 'block';
+        }
+
+        if (transportSelect && transportOptions.length > 0) {
+            transportOptions.forEach(function(t) {
+                var opt = document.createElement('option');
+                opt.value = t.price_per_person;
+                opt.dataset.maxPersons = t.max_persons;
+                opt.textContent = t.name + ' \u2014 \u20b9' + t.price_per_person + '/person (max ' + t.max_persons + ')';
+                transportSelect.appendChild(opt);
+            });
+        }
+
+        // Attach event listeners
+        document.getElementById('adults-select').addEventListener('change', function() {
+            filterTransportByGroupSize();
+            calculateTotal();
+        });
+        if (roomSelect) roomSelect.addEventListener('change', calculateTotal);
+        if (mealSelect) mealSelect.addEventListener('change', calculateTotal);
+        if (transportSelect) transportSelect.addEventListener('change', calculateTotal);
+        var nightsInput = document.getElementById('nights-input');
+        if (nightsInput) nightsInput.addEventListener('input', calculateTotal);
+
+        filterTransportByGroupSize();
+        calculateTotal();
+    })();
 
     // Itinerary accordion
     document.querySelectorAll('.itinerary-header').forEach(header => {

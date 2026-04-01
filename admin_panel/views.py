@@ -754,25 +754,25 @@ def travel_package_add(request):
     
     if request.method == "POST":
         name = request.POST.get('name', '').strip()
-        price = request.POST.get('price', '').strip()
+        price = request.POST.get('adult_price', '').strip()
         duration = request.POST.get('duration', '').strip()
         location = request.POST.get('location', '').strip()
         description = request.POST.get('description', '').strip()
         
         # Validation
         if not name or not price or not duration or not location:
-            messages.error(request, "Name, price, duration, and location are required.")
+            messages.error(request, "Name, adult price, duration, and location are required.")
             return render(request, 'admin/packages/travel_package_add.html', {
                 'default_category': default_category,
                 'selected_destination_id': int(destination_id) if destination_id else None,
                 'selected_destination_obj': selected_destination_obj,
             })
         
-        # Validate price
+        # Validate adult price
         try:
             price_val = float(price)
             if price_val < 0:
-                messages.error(request, "Price must be a positive number.")
+                messages.error(request, "Adult price must be a positive number.")
                 return render(request, 'admin/packages/travel_package_add.html', {
                     'default_category': default_category,
                     'selected_destination_id': int(destination_id) if destination_id else None,
@@ -829,7 +829,10 @@ def travel_package_add(request):
         discount_price = request.POST.get('discount_price', '').strip() or 0
         tax_percentage = request.POST.get('tax_percentage', '0').strip() or 0
         final_price = request.POST.get('final_price_display', '').strip() or None
-        price_type = request.POST.get('price_type', 'Per Package').strip()
+        price_type = request.POST.get('price_type', 'Per Person').strip()
+        adult_price = request.POST.get('adult_price', '').strip() or '0'
+        child_price = request.POST.get('child_price', '').strip() or '0'
+        child_pricing_json = request.POST.get('child_pricing', '[]').strip() or '[]'
 
         TravelPackage.objects.create(
             package_id=package_id,
@@ -837,8 +840,11 @@ def travel_package_add(request):
             category=category,
             destination=destination,
             resort_id=request.POST.get('resort') or None,
-            price=price,
+            price=adult_price or price,
             price_type=price_type,
+            adult_price=adult_price,
+            child_price=child_price,
+            child_pricing=child_pricing_json,
             base_price=base_price,
             discount_price=discount_price,
             tax_percentage=tax_percentage,
@@ -859,17 +865,23 @@ def travel_package_add(request):
 
         # Save transport options and meal plans
         pkg_obj = TravelPackage.objects.get(name=name, category=category)
-        meal_plan_ids = request.POST.getlist('meal_plans')
-        if meal_plan_ids:
-            pkg_obj.meal_plans.set(meal_plan_ids)
+        meal_plan_id = request.POST.get('meal_plans')
+        if meal_plan_id:
+            pkg_obj.meal_plans.set([meal_plan_id])
+        else:
+            pkg_obj.meal_plans.clear()
         for i, tname in enumerate(request.POST.getlist('transport_option_name[]')):
             tname = tname.strip()
             if tname:
                 prices = request.POST.getlist('transport_option_price[]')
+                max_persons_list = request.POST.getlist('transport_option_max_persons[]')
+                price_val = prices[i].strip() if i < len(prices) and prices[i].strip() else '0'
+                max_p = max_persons_list[i].strip() if i < len(max_persons_list) and max_persons_list[i].strip() else '1'
                 PackageTransportOption.objects.create(
                     package=pkg_obj,
                     name=tname,
-                    price_per_person=prices[i] if i < len(prices) else 0,
+                    price_per_person=price_val,
+                    max_persons=max_p,
                 )
         
         # Redirect back to the same category and destination
@@ -918,7 +930,10 @@ def travel_package_edit(request, package_id):
         package.category = new_category
         package.destination = destination
         package.resort_id = request.POST.get('resort') or None
-        package.price = request.POST.get('price')
+        package.price = request.POST.get('adult_price') or request.POST.get('price')
+        package.adult_price = request.POST.get('adult_price') or 0
+        package.child_price = request.POST.get('child_price') or 0
+        package.child_pricing = request.POST.get('child_pricing', '[]') or '[]'
         package.duration = request.POST.get('duration')
         package.location = request.POST.get('location')
         package.country = request.POST.get('country')
@@ -941,16 +956,23 @@ def travel_package_edit(request, package_id):
 
         # Update transport options — clear and rebuild
         package.transport_options.all().delete()
-        meal_plan_ids = request.POST.getlist('meal_plans')
-        package.meal_plans.set(meal_plan_ids)
+        meal_plan_id = request.POST.get('meal_plans')
+        if meal_plan_id:
+            package.meal_plans.set([meal_plan_id])
+        else:
+            package.meal_plans.clear()
         for i, tname in enumerate(request.POST.getlist('transport_option_name[]')):
             tname = tname.strip()
             if tname:
                 prices = request.POST.getlist('transport_option_price[]')
+                max_persons_list = request.POST.getlist('transport_option_max_persons[]')
+                price_val = prices[i].strip() if i < len(prices) and prices[i].strip() else '0'
+                max_p = max_persons_list[i].strip() if i < len(max_persons_list) and max_persons_list[i].strip() else '1'
                 PackageTransportOption.objects.create(
                     package=package,
                     name=tname,
-                    price_per_person=prices[i] if i < len(prices) else 0,
+                    price_per_person=price_val,
+                    max_persons=max_p,
                 )
 
         messages.success(request, "Package updated successfully!")

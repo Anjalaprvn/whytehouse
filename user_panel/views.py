@@ -719,6 +719,7 @@ def package_detail(request, slug):
             'id': m.id,
             'name': m.name,
             'price_per_person': float(m.price_per_person) if m.price_per_person else 0,
+            'children_pricing': m.get_children_pricing(),
         })
 
     # Transport options
@@ -728,6 +729,7 @@ def package_detail(request, slug):
             'id': t.id,
             'name': t.name,
             'price_per_person': float(t.price_per_person),
+            'max_persons': t.max_persons,
         })
 
     return render(request, 'user/package_detail.html', {
