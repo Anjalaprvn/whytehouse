@@ -164,6 +164,19 @@ class TravelPackage(models.Model):
     meta_title = models.CharField(max_length=255, blank=True, null=True)
     meta_description = models.TextField(blank=True, null=True)
 
+    resort = models.ForeignKey(
+        'Resort',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='packages'
+    )
+    meal_plans = models.ManyToManyField(
+        'Meal',
+        blank=True,
+        related_name='packages'
+    )
+
     story_main_image = models.ImageField(upload_to='package_stories/', blank=True, null=True)
     story_side_image1 = models.ImageField(upload_to='package_stories/', blank=True, null=True)
     story_side_image2 = models.ImageField(upload_to='package_stories/', blank=True, null=True)
@@ -527,6 +540,18 @@ class Meal(models.Model):
     
     class Meta:
         ordering = ['-created_at']
+
+
+class PackageTransportOption(models.Model):
+    package = models.ForeignKey(TravelPackage, on_delete=models.CASCADE, related_name='transport_options')
+    name = models.CharField(max_length=150)
+    price_per_person = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    def __str__(self):
+        return f"{self.name} - ₹{self.price_per_person}/person ({self.package.name})"
+
+    class Meta:
+        ordering = ['price_per_person']
 
 
 class Voucher(models.Model):

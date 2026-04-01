@@ -268,6 +268,60 @@
 </div>
 
         <div class="card">
+            <h4>Pricing Options</h4>
+            <p style="color:#6b7280;font-size:0.85rem;margin-bottom:20px;">Link a resort and meal plans so the user-side price calculator can use their room types and meal prices.</p>
+
+            <div class="grid-row">
+                <div>
+                    <label>Linked Resort</label>
+                    <select name="resort" class="form-control">
+                        <option value="">-- No resort --</option>
+                        {% for r in resorts %}
+                        <option value="{{ r.id }}" {% if package.resort_id == r.id %}selected{% endif %}>{{ r.resort_name }} &mdash; {{ r.resort_place }}</option>
+                        {% endfor %}
+                    </select>
+                    <div style="font-size:12px;color:#6b7280;margin-top:-14px;margin-bottom:14px;">Room types &amp; prices will be pulled from this resort.</div>
+                </div>
+
+                <div>
+                    <label>Meal Plans</label>
+                    <div style="background:#f3f4f6;border-radius:8px;padding:12px;max-height:160px;overflow-y:auto;">
+                        {% for m in meals %}
+                        <label style="display:flex;align-items:center;gap:8px;font-weight:400;margin-bottom:8px;">
+                            <input type="checkbox" name="meal_plans" value="{{ m.id }}" {% if m in package.meal_plans.all %}checked{% endif %}>
+                            {{ m.name }} &mdash; &#8377;{{ m.price_per_person }}/person
+                        </label>
+                        {% empty %}
+                        <span style="color:#999;font-size:0.85rem;">No meal plans available.</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h4 style="margin:0;">Transport Options <span style="font-size:0.85rem;color:#6b7280;font-weight:400;">(for price calculator)</span></h4>
+                <button type="button" onclick="addPricingRow('transport')" style="background:none;border:1px solid #ddd;padding:5px 12px;border-radius:6px;cursor:pointer;">+ Add Transport</button>
+            </div>
+            <div id="transport-options-container">
+                {% for t in package.transport_options.all %}
+                <div class="pricing-row" style="display:grid;grid-template-columns:2fr 1fr auto;gap:10px;margin-bottom:10px;">
+                    <input type="text" name="transport_option_name[]" class="form-control" value="{{ t.name }}" style="margin-bottom:0;">
+                    <input type="number" name="transport_option_price[]" class="form-control" value="{{ t.price_per_person }}" min="0" style="margin-bottom:0;">
+                    <button type="button" onclick="this.closest('.pricing-row').remove()" style="background:#fee2e2;border:none;border-radius:6px;padding:0 12px;cursor:pointer;color:#ef4444;font-size:18px;">&times;</button>
+                </div>
+                {% empty %}
+                <div class="pricing-row" style="display:grid;grid-template-columns:2fr 1fr auto;gap:10px;margin-bottom:10px;">
+                    <input type="text" name="transport_option_name[]" class="form-control" placeholder="e.g. AC Bus" style="margin-bottom:0;">
+                    <input type="number" name="transport_option_price[]" class="form-control" placeholder="Price/person (&#8377;)" min="0" style="margin-bottom:0;">
+                    <button type="button" onclick="this.closest('.pricing-row').remove()" style="background:#fee2e2;border:none;border-radius:6px;padding:0 12px;cursor:pointer;color:#ef4444;font-size:18px;">&times;</button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card">
             <h4>SEO Settings</h4>
 
             <label>Meta Title</label>
@@ -286,6 +340,40 @@
 </div>
 
 <script>
+function addPricingRow(type) {
+    const configs = {
+        room: {
+            container: 'room-options-container',
+            html: `<div class="pricing-row" style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:10px;">
+                <input type="text" name="room_option_name[]" class="form-control" placeholder="e.g. Suite" style="margin-bottom:0;">
+                <input type="number" name="room_option_price[]" class="form-control" placeholder="Price/night (\u20b9)" min="0" style="margin-bottom:0;">
+                <input type="number" name="room_option_guests[]" class="form-control" placeholder="Max guests" min="1" value="2" style="margin-bottom:0;">
+                <button type="button" onclick="this.closest('.pricing-row').remove()" style="background:#fee2e2;border:none;border-radius:6px;padding:0 12px;cursor:pointer;color:#ef4444;font-size:18px;">\u00d7</button>
+            </div>`
+        },
+        meal: {
+            container: 'meal-options-container',
+            html: `<div class="pricing-row" style="display:grid;grid-template-columns:2fr 1fr auto;gap:10px;margin-bottom:10px;">
+                <input type="text" name="meal_option_name[]" class="form-control" placeholder="e.g. Full Board" style="margin-bottom:0;">
+                <input type="number" name="meal_option_price[]" class="form-control" placeholder="Price/person (\u20b9)" min="0" style="margin-bottom:0;">
+                <button type="button" onclick="this.closest('.pricing-row').remove()" style="background:#fee2e2;border:none;border-radius:6px;padding:0 12px;cursor:pointer;color:#ef4444;font-size:18px;">\u00d7</button>
+            </div>`
+        },
+        transport: {
+            container: 'transport-options-container',
+            html: `<div class="pricing-row" style="display:grid;grid-template-columns:2fr 1fr auto;gap:10px;margin-bottom:10px;">
+                <input type="text" name="transport_option_name[]" class="form-control" placeholder="e.g. Private Car" style="margin-bottom:0;">
+                <input type="number" name="transport_option_price[]" class="form-control" placeholder="Price/person (\u20b9)" min="0" style="margin-bottom:0;">
+                <button type="button" onclick="this.closest('.pricing-row').remove()" style="background:#fee2e2;border:none;border-radius:6px;padding:0 12px;cursor:pointer;color:#ef4444;font-size:18px;">\u00d7</button>
+            </div>`
+        }
+    };
+    const cfg = configs[type];
+    const div = document.createElement('div');
+    div.innerHTML = cfg.html;
+    document.getElementById(cfg.container).appendChild(div.firstElementChild);
+}
+
 function validateLettersField(input, errorId) {
     const valid = errorId === 'title-error'
         ? /^[a-zA-Z\s&,]*$/.test(input.value)

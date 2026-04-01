@@ -566,6 +566,47 @@
                         </div>
                     </div>
 
+                    <div class="form-group" id="nights-group" style="display:none;">
+                        <label>Nights</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="nights-input" name="nights" min="1" value="1" placeholder="Number of nights">
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="room-group" style="display:none;">
+                        <label>Room Type</label>
+                        <div class="input-wrapper">
+                            <select id="room-select">
+                                <option value="0">No room selected</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="meal-group" style="display:none;">
+                        <label>Meal Plan</label>
+                        <div class="input-wrapper">
+                            <select id="meal-select">
+                                <option value="0">No meal plan</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="transport-group" style="display:none;">
+                        <label>Transport</label>
+                        <div class="input-wrapper">
+                            <select id="transport-select">
+                                <option value="0">No transport</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="price-breakdown" style="display:none; background:#f9f5ec; border-radius:12px; padding:14px 16px; margin-bottom:10px; font-size:13px; color:#555;">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Base Package</span><span id="calc-base">&#8377; 0</span></div>
+                        <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Room</span><span id="calc-room">&#8377; 0</span></div>
+                        <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Meals</span><span id="calc-meal">&#8377; 0</span></div>
+                        <div style="display:flex;justify-content:space-between;"><span>Transport</span><span id="calc-transport">&#8377; 0</span></div>
+                    </div>
+
                     <div class="total-price-box">
                         <span>Total Cost</span>
                         <h4 id="total-price">₹ {{ package.price|floatformat:0 }}</h4>
@@ -646,23 +687,85 @@
     });
 
     // Dynamic price calculation
-    const pricePerPerson = {{ package.price|default:0 }};
-    const guestsSelect = document.getElementById('guests-select');
-    const totalPriceElement = document.getElementById('total-price');
-    const pricePerPersonElement = document.getElementById('price-per-person');
+    const basePackagePrice = {{ package.price|default:0 }};
+    const roomOptions = {{ room_options_json|default:'[]' }};
+    const mealOptions = {{ meal_options_json|default:'[]' }};
+    const transportOptions = {{ transport_options_json|default:'[]' }};
 
-    if (guestsSelect) {
-        guestsSelect.addEventListener('change', function() {
-            let guests = parseInt(this.value);
-            if (isNaN(guests)) guests = 10;
+    const roomSelect = document.getElementById('room-select');
+    const mealSelect = document.getElementById('meal-select');
+    const transportSelect = document.getElementById('transport-select');
+    const roomGroup = document.getElementById('room-group');
+    const mealGroup = document.getElementById('meal-group');
+    const transportGroup = document.getElementById('transport-group');
+    const priceBreakdown = document.getElementById('price-breakdown');
 
-            const totalPrice = pricePerPerson * guests;
-            totalPriceElement.textContent = '₹ ' + totalPrice.toLocaleString('en-IN');
-            pricePerPersonElement.textContent = pricePerPerson.toLocaleString('en-IN');
+    if (roomOptions.length > 0) {
+        roomOptions.forEach(function(r) {
+            const opt = document.createElement('option');
+            opt.value = r.price_per_night;
+            opt.textContent = (r.room_type_name || r.name) + ' — ₹' + r.price_per_night + '/night (max ' + r.max_guests + ' guests)';
+            roomSelect.appendChild(opt);
         });
-
-        guestsSelect.dispatchEvent(new Event('change'));
+        roomGroup.style.display = 'block';
     }
+
+    if (mealOptions.length > 0) {
+        mealOptions.forEach(function(m) {
+            const opt = document.createElement('option');
+            opt.value = m.price_per_person;
+            opt.textContent = m.name + ' — ₹' + m.price_per_person + '/person';
+            mealSelect.appendChild(opt);
+        });
+        mealGroup.style.display = 'block';
+    }
+
+    if (transportOptions.length > 0) {
+        transportOptions.forEach(function(t) {
+            const opt = document.createElement('option');
+            opt.value = t.price_per_person;
+            opt.textContent = t.name + ' — ₹' + t.price_per_person + '/person';
+            transportSelect.appendChild(opt);
+        });
+        transportGroup.style.display = 'block';
+    }
+
+    const hasAnyOption = roomOptions.length > 0 || mealOptions.length > 0 || transportOptions.length > 0;
+    if (hasAnyOption) {
+        document.getElementById('nights-group').style.display = 'block';
+        priceBreakdown.style.display = 'block';
+    }
+
+    function calculateTotal() {
+        const guests = parseInt(document.getElementById('guests-select').value) || 1;
+        const nightsEl = document.getElementById('nights-input');
+        const nights = nightsEl ? (parseInt(nightsEl.value) || 1) : 1;
+        const roomPrice = parseFloat(roomSelect.value) || 0;
+        const mealPrice = parseFloat(mealSelect.value) || 0;
+        const transportPrice = parseFloat(transportSelect.value) || 0;
+
+        const baseTotal = basePackagePrice * guests;
+        const roomTotal = roomPrice * nights;
+        const mealTotal = mealPrice * guests * nights;
+        const transportTotal = transportPrice * guests;
+        const grandTotal = baseTotal + roomTotal + mealTotal + transportTotal;
+
+        document.getElementById('total-price').textContent = '₹ ' + grandTotal.toLocaleString('en-IN');
+        document.getElementById('price-per-person').textContent = basePackagePrice.toLocaleString('en-IN');
+        document.getElementById('calc-base').textContent = '₹ ' + baseTotal.toLocaleString('en-IN');
+        document.getElementById('calc-room').textContent = '₹ ' + roomTotal.toLocaleString('en-IN');
+        document.getElementById('calc-meal').textContent = '₹ ' + mealTotal.toLocaleString('en-IN');
+        document.getElementById('calc-transport').textContent = '₹ ' + transportTotal.toLocaleString('en-IN');
+    }
+
+    document.getElementById('guests-select').addEventListener('change', calculateTotal);
+    roomSelect.addEventListener('change', calculateTotal);
+    mealSelect.addEventListener('change', calculateTotal);
+    transportSelect.addEventListener('change', calculateTotal);
+    const nightsInput = document.getElementById('nights-input');
+    if (nightsInput) nightsInput.addEventListener('input', calculateTotal);
+
+    calculateTotal();
 
     // Itinerary accordion
     document.querySelectorAll('.itinerary-header').forEach(header => {

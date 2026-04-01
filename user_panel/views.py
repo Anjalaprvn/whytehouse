@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Q
 from admin_panel.models import TravelPackage, Property, Inquiry, Lead, Blog, Destination
-from admin_panel.models import Feedback,BlogCategory,Property
+from admin_panel.models import Feedback, BlogCategory, Property, PackageTransportOption
 from django.shortcuts import render, get_object_or_404
 from admin_panel.models import Blog
 
@@ -698,9 +698,45 @@ def package_detail(request, slug):
             messages.success(request, 'Your message has been sent successfully! Our team will contact you soon.')
             return redirect('user_panel:package_detail', slug=slug)
     
+    import json
+    from decimal import Decimal
+
+    # Room options from linked resort's room types
+    room_options = []
+    if package.resort:
+        for r in package.resort.room_types.all():
+            room_options.append({
+                'id': r.id,
+                'room_type_name': r.room_type_name,
+                'price_per_night': float(r.price_per_night),
+                'max_guests': r.max_guests,
+            })
+
+    # Meal options from linked meal plans
+    meal_options = []
+    for m in package.meal_plans.filter(status='Available'):
+        meal_options.append({
+            'id': m.id,
+            'name': m.name,
+            'price_per_person': float(m.price_per_person) if m.price_per_person else 0,
+        })
+
+    # Transport options
+    transport_options = []
+    for t in package.transport_options.all():
+        transport_options.append({
+            'id': t.id,
+            'name': t.name,
+            'price_per_person': float(t.price_per_person),
+        })
+
     return render(request, 'user/package_detail.html', {
         'package': package,
-        'today': datetime.now()
+        'today': datetime.now(),
+        'room_options_json': json.dumps(room_options),
+        'meal_options_json': json.dumps(meal_options),
+        'transport_options_json': json.dumps(transport_options),
+        'has_pricing_options': bool(room_options or meal_options or transport_options),
     })
 
 def hospitality_enquiry(request):
