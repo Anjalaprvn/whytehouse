@@ -444,37 +444,78 @@
                 </div>
                 <div class="meals-list" id="morning-meals">
                   <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="Breakfast">
+                    <input type="checkbox" name="included_meals" value="Breakfast" checked>
                     <span>Breakfast</span>
                   </label>
                   <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="Morning Snacks">
-                    <span>Morning Snacks</span>
+                    <input type="checkbox" name="included_meals" value="Tea">
+                    <span>Tea</span>
+                  </label>
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="Coffee">
+                    <span>Coffee</span>
+                  </label>
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="Bread">
+                    <span>Bread</span>
                   </label>
                 </div>
               </div>
 
-              <!-- Afternoon Meals -->
+              <!-- Lunch Meals -->
               <div class="meal-category">
                 <div class="category-line">
-                  <h4 class="category-title">Afternoon</h4>
+                  <h4 class="category-title">Lunch</h4>
                   <div class="add-controls">
-                    <input type="text" class="input category-input" id="afternoon-input" placeholder="Add custom meal" style="width:150px;margin-right:8px;">
-                    <button type="button" class="add-category-btn" data-category="afternoon">Add</button>
+                    <input type="text" class="input category-input" id="lunch-input" placeholder="Add custom meal" style="width:150px;margin-right:8px;">
+                    <button type="button" class="add-category-btn" data-category="lunch">Add</button>
                   </div>
                 </div>
-                <div class="meals-list" id="afternoon-meals">
+                <div class="meals-list" id="lunch-meals">
                   <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="Lunch">
-                    <span>Lunch</span>
+                    <input type="checkbox" name="included_meals" value="Rice">
+                    <span>Rice</span>
                   </label>
                   <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="High Tea">
-                    <span>High Tea</span>
+                    <input type="checkbox" name="included_meals" value="Chapati">
+                    <span>Chapati</span>
                   </label>
                   <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="Evening Snacks">
-                    <span>Evening Snacks</span>
+                    <input type="checkbox" name="included_meals" value="Curry">
+                    <span>Curry</span>
+                  </label>
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="Dal">
+                    <span>Dal</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Evening Meals -->
+              <div class="meal-category">
+                <div class="category-line">
+                  <h4 class="category-title">Evening</h4>
+                  <div class="add-controls">
+                    <input type="text" class="input category-input" id="evening-input" placeholder="Add custom meal" style="width:150px;margin-right:8px;">
+                    <button type="button" class="add-category-btn" data-category="evening">Add</button>
+                  </div>
+                </div>
+                <div class="meals-list" id="evening-meals">
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="Tea">
+                    <span>Tea</span>
+                  </label>
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="Coffee">
+                    <span>Coffee</span>
+                  </label>
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="Snacks">
+                    <span>Snacks</span>
+                  </label>
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="Biscuits">
+                    <span>Biscuits</span>
                   </label>
                 </div>
               </div>
@@ -490,33 +531,33 @@
                 </div>
                 <div class="meals-list" id="night-meals">
                   <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="Dinner">
-                    <span>Dinner</span>
+                    <input type="checkbox" name="included_meals" value="Chapati">
+                    <span>Chapati</span>
                   </label>
                   <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="Late Night Snacks">
-                    <span>Late Night Snacks</span>
+                    <input type="checkbox" name="included_meals" value="Rice">
+                    <span>Rice</span>
+                  </label>
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="Curry">
+                    <span>Curry</span>
+                  </label>
+                  <label class="meal-option">
+                    <input type="checkbox" name="included_meals" value="Soup">
+                    <span>Soup</span>
                   </label>
                 </div>
               </div>
 
-              <!-- Special Meals -->
+              <!-- Select All Meals -->
               <div class="meal-category">
                 <div class="category-line">
-                  <h4 class="category-title">Special</h4>
-                  <div class="add-controls">
-                    <input type="text" class="input category-input" id="special-input" placeholder="Add custom meal" style="width:150px;margin-right:8px;">
-                    <button type="button" class="add-category-btn" data-category="special">Add</button>
-                  </div>
+                  <h4 class="category-title">Options</h4>
                 </div>
-                <div class="meals-list" id="special-meals">
+                <div class="meals-list">
                   <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="All Meals">
-                    <span>All Meals</span>
-                  </label>
-                  <label class="meal-option">
-                    <input type="checkbox" name="included_meals" value="Welcome Drink">
-                    <span>Welcome Drink</span>
+                    <input type="checkbox" id="select-all-meals" name="select_all_meals" value="select_all">
+                    <span>Select All Meals</span>
                   </label>
                 </div>
               </div>
@@ -774,6 +815,28 @@
       }
 
       if (!valid) e.preventDefault();
+    });
+
+    // Select All Meals functionality
+    document.getElementById('select-all-meals').addEventListener('change', function() {
+      const isChecked = this.checked;
+      const allMealCheckboxes = document.querySelectorAll('input[name="included_meals"]:not(#select-all-meals)');
+      
+      allMealCheckboxes.forEach(checkbox => {
+        checkbox.checked = isChecked;
+      });
+    });
+
+    // Update select all checkbox when individual meals are changed
+    document.addEventListener('change', function(e) {
+      if (e.target.name === 'included_meals' && e.target.id !== 'select-all-meals') {
+        const allMealCheckboxes = document.querySelectorAll('input[name="included_meals"]:not(#select-all-meals)');
+        const selectAllCheckbox = document.getElementById('select-all-meals');
+        const checkedCount = document.querySelectorAll('input[name="included_meals"]:not(#select-all-meals):checked').length;
+        
+        selectAllCheckbox.checked = checkedCount === allMealCheckboxes.length;
+        selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < allMealCheckboxes.length;
+      }
     });
 
     document.addEventListener('DOMContentLoaded', function() {

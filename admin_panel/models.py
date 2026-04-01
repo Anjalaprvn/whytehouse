@@ -372,15 +372,15 @@ class Resort(models.Model):
     owner_manager_name = models.CharField(max_length=200, blank=True, null=True)
     gst_number = models.CharField(max_length=15, blank=True, null=True)
     business_registration_number = models.CharField(max_length=50, blank=True, null=True)
-    registration_certificate = models.FileField(upload_to='resorts/certificates/', blank=True, null=True)
-    id_proof = models.FileField(upload_to='resorts/id_proofs/', blank=True, null=True, help_text="Aadhaar/PAN Upload")
+    registration_certificate = models.FileField(upload_to='resort/certificates/', blank=True, null=True)
+    id_proof = models.FileField(upload_to='resort/id_proofs/', blank=True, null=True, help_text="Aadhaar/PAN Upload")
 
     # Property Details
     description = models.TextField(blank=True, null=True)
     number_of_rooms = models.PositiveIntegerField(blank=True, null=True)
     amenities = models.TextField(blank=True, null=True, help_text="Comma-separated amenities")
-    resort_images = models.FileField(upload_to='resorts/images/', blank=True, null=True, help_text="Multiple images can be uploaded separately")
-    resort_video = models.FileField(upload_to='resorts/videos/', blank=True, null=True)
+    resort_images = models.FileField(upload_to='resort/images/', blank=True, null=True, help_text="Multiple images can be uploaded separately")
+    resort_video = models.FileField(upload_to='resort/videos/', blank=True, null=True)
 
     # Online Presence (Optional)
     website_url = models.URLField(blank=True, null=True)
@@ -429,7 +429,7 @@ class ResortRoomType(models.Model):
     max_guests = models.PositiveIntegerField(default=1)
     room_size = models.CharField(max_length=100, blank=True, null=True)
     amenities = models.TextField(blank=True, null=True, help_text='Comma-separated amenity values (AC, WiFi, Balcony, etc.)')
-    room_images = models.FileField(upload_to='resorts/room_types/', blank=True, null=True)
+    room_images = models.FileField(upload_to='resort/room_types/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -460,7 +460,7 @@ class ResortRoomType(models.Model):
 
 class ResortRoomTypeImage(models.Model):
     room_type = models.ForeignKey('ResortRoomType', on_delete=models.CASCADE, related_name='room_type_images')
-    image = models.ImageField(upload_to='resorts/room_type_images/')
+    image = models.ImageField(upload_to='resort/room_type_images/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -472,7 +472,7 @@ class ResortRoomTypeImage(models.Model):
 
 class ResortImage(models.Model):
     resort = models.ForeignKey('Resort', on_delete=models.CASCADE, related_name='resort_images_list')
-    image = models.ImageField(upload_to='resorts/images/')
+    image = models.ImageField(upload_to='resort/images/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
