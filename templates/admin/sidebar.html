@@ -360,8 +360,8 @@ body{
     </a>
 
     <div class="accordion">
-      <input type="checkbox" id="sales-toggle" {% if request.resolver_match.namespace == 'sales' and request.resolver_match.url_name != 'invoice_report' and request.resolver_match.url_name != 'voucher_report' and request.resolver_match.url_name != 'leads_report' and request.resolver_match.url_name != 'profit_report' and request.resolver_match.url_name != 'customer_report' %}checked{% endif %}>
-      <label for="sales-toggle" {% if request.resolver_match.namespace == 'sales' and request.resolver_match.url_name != 'invoice_report' and request.resolver_match.url_name != 'voucher_report' and request.resolver_match.url_name != 'leads_report' and request.resolver_match.url_name != 'profit_report' and request.resolver_match.url_name != 'customer_report' %}class="active"{% endif %}>
+      <input type="checkbox" id="sales-toggle" {% if request.resolver_match.namespace == 'sales' and request.resolver_match.url_name != 'invoice_report' and request.resolver_match.url_name != 'leads_report' and request.resolver_match.url_name != 'profit_report' and request.resolver_match.url_name != 'customer_report' %}checked{% endif %}>
+      <label for="sales-toggle" {% if request.resolver_match.namespace == 'sales' and request.resolver_match.url_name != 'invoice_report' and request.resolver_match.url_name != 'leads_report' and request.resolver_match.url_name != 'profit_report' and request.resolver_match.url_name != 'customer_report' %}class="active"{% endif %}>
         <svg fill="none" viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
         <span>Sales</span>
         <span class="arrow">⌄</span>
@@ -388,8 +388,8 @@ body{
           <svg fill="none" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"/><path d="M4 8h16M4 12h10M4 16h8"/></svg>
           <span>Invoice</span>
         </a>
-        <a href="{% url 'sales:voucher_list' %}" {% if request.resolver_match.url_name == 'voucher_list' %}class="active"{% endif %}>
-          <svg fill="none" viewBox="0 0 24 24"><path d="M3 5h18v3l-2 6v7H5v-7l-2-6V5z"/><circle cx="8" cy="13" r="2"/><circle cx="16" cy="13" r="2"/></svg>
+        <a href="{% url 'sales:voucher_list' %}" {% if request.resolver_match.url_name == 'voucher_list' or request.resolver_match.url_name == 'add_voucher' or request.resolver_match.url_name == 'view_voucher' or request.resolver_match.url_name == 'edit_voucher' %}class="active"{% endif %}>
+          <svg fill="none" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"/><path d="M4 8h16M4 12h10M4 16h8"/></svg>
           <span>Vouchers</span>
         </a>
       </div>
