@@ -566,6 +566,20 @@ function syncDuration() {
     const nights = Math.max(0, parseInt(document.getElementById('nights-input').value) || 0);
     document.getElementById('days-input').value = days;
     document.getElementById('nights-input').value = nights;
+    
+    // Validate nights = days - 1
+    const expectedNights = days - 1;
+    const durationError = document.getElementById('duration-error');
+    
+    if (nights !== expectedNights) {
+        durationError.textContent = `Nights must be ${expectedNights} for ${days} days (nights = days - 1).`;
+        durationError.style.display = 'block';
+        document.getElementById('edit_duration').classList.add('invalid');
+    } else {
+        durationError.style.display = 'none';
+        document.getElementById('edit_duration').classList.remove('invalid');
+    }
+    
     document.getElementById('edit_duration').value = `${days} Days / ${nights} Nights`;
     updateItineraryDays();
 }
@@ -725,6 +739,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelector('form').addEventListener('submit', function(e) {
         let valid = true;
+        
+        // Validate nights = days - 1
+        const days = parseInt(document.getElementById('days-input').value) || 1;
+        const nights = parseInt(document.getElementById('nights-input').value) || 0;
+        const expectedNights = days - 1;
+        
+        if (nights !== expectedNights) {
+            const durationError = document.getElementById('duration-error');
+            durationError.textContent = `Nights must be ${expectedNights} for ${days} days (nights = days - 1).`;
+            durationError.style.display = 'block';
+            valid = false;
+        }
+        
         const checks = [
             { id: 'edit_pkg_name', errId: 'title-error', pattern: /^[a-zA-Z\s&,]+$/ },
             { id: 'edit_location', errId: 'location-error', pattern: /^[a-zA-Z\s,]+$/ },

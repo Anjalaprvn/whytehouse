@@ -795,6 +795,21 @@ def travel_package_add(request):
                 'selected_destination_obj': selected_destination_obj,
             })
         
+        # Validate nights = days - 1
+        import re
+        days_match = re.search(r'(\d+)\s*(?:day|days)', duration.lower())
+        nights_match = re.search(r'(\d+)\s*(?:night|nights)', duration.lower())
+        if days_match and nights_match:
+            days = int(days_match.group(1))
+            nights = int(nights_match.group(1))
+            if nights != days - 1:
+                messages.error(request, f"Invalid duration: Nights must be one less than days. For {days} days, nights should be {days - 1}.")
+                return render(request, 'admin/packages/travel_package_add.html', {
+                    'default_category': default_category,
+                    'selected_destination_id': int(destination_id) if destination_id else None,
+                    'selected_destination_obj': selected_destination_obj,
+                })
+        
         destination_id = request.POST.get('destination')
         destination = None
         if destination_id:
@@ -928,6 +943,24 @@ def travel_package_edit(request, package_id):
                 'package': package,
                 'destinations': destinations,
             })
+        
+        # Validate duration: nights = days - 1
+        duration = request.POST.get('duration', '').strip()
+        if duration:
+            import re
+            days_match = re.search(r'(\d+)\s*(?:day|days)', duration.lower())
+            nights_match = re.search(r'(\d+)\s*(?:night|nights)', duration.lower())
+            if days_match and nights_match:
+                days = int(days_match.group(1))
+                nights = int(nights_match.group(1))
+                if nights != days - 1:
+                    messages.error(request, f"Invalid duration: Nights must be one less than days. For {days} days, nights should be {days - 1}.")
+                    return render(request, 'admin/packages/travel_package_edit.html', {
+                        'package': package,
+                        'destinations': destinations,
+                        'resorts': Resort.objects.filter(status='Active').order_by('resort_name'),
+                        'meals': Meal.objects.filter(status='Available').order_by('name'),
+                    })
 
         package.name = request.POST.get('name')
         package.category = new_category

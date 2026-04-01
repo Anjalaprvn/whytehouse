@@ -498,7 +498,19 @@ window.addEventListener('DOMContentLoaded', function() {
             document.getElementById('duration-error').style.display = 'block';
             formValid = false;
         } else {
-            document.getElementById('duration-error').style.display = 'none';
+            // Validate nights = days - 1
+            const days = parseInt(document.getElementById('days-input').value) || 1;
+            const nights = parseInt(document.getElementById('nights-input').value) || 0;
+            const expectedNights = days - 1;
+            
+            if (nights !== expectedNights) {
+                const durationError = document.getElementById('duration-error');
+                durationError.textContent = `Nights must be ${expectedNights} for ${days} days (nights = days - 1).`;
+                durationError.style.display = 'block';
+                formValid = false;
+            } else {
+                document.getElementById('duration-error').style.display = 'none';
+            }
         }
 
         const adultPriceEl = document.getElementById('adult_price');
@@ -670,9 +682,21 @@ function syncDuration() {
     document.getElementById('days-input').value = days;
     document.getElementById('nights-input').value = nights;
 
+    // Validate nights = days - 1
+    const expectedNights = days - 1;
+    const durationError = document.getElementById('duration-error');
+    
+    if (nights !== expectedNights) {
+        durationError.textContent = `Nights must be ${expectedNights} for ${days} days (nights = days - 1).`;
+        durationError.style.display = 'block';
+        document.getElementById('duration').classList.add('invalid-field');
+    } else {
+        durationError.style.display = 'none';
+        document.getElementById('duration').classList.remove('invalid-field');
+    }
+
     const val = `${days} Days / ${nights} Nights`;
     document.getElementById('duration').value = val;
-    document.getElementById('duration-error').style.display = 'none';
 
     updateItineraryDays();
 }
