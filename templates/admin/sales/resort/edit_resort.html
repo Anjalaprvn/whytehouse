@@ -232,7 +232,7 @@
           <div class="field">
             <label>Resort Name <span class="req">*</span></label>
             <input type="text" name="resort_name" placeholder="Paradise Beach Resort" required
-              value="{% if form_data %}{{ form_data.resort_name }}{% else %}{{ resort.resort_name }}{% endif %}"
+              value="{{ form_data.resort_name|default:resort.resort_name }}"
               class="{% if errors.resort_name %}input-error{% endif %}">
             {% if errors.resort_name %}<div class="field-error">{{ errors.resort_name }}</div>{% endif %}
           </div>
@@ -240,30 +240,30 @@
           <div class="field">
             <label>Resort Place <span class="req">*</span></label>
             <input type="text" name="resort_place" placeholder="e.g., Goa" required
-              value="{% if form_data %}{{ form_data.resort_place }}{% else %}{{ resort.resort_place }}{% endif %}"
+              value="{{ form_data.resort_place|default:resort.resort_place }}"
               class="{% if errors.resort_place %}input-error{% endif %}">
             {% if errors.resort_place %}<div class="field-error">{{ errors.resort_place }}</div>{% endif %}
           </div>
 
           <div class="field span-2">
             <label>Full Address</label>
-            <textarea name="full_address" placeholder="Enter complete address">{% if form_data %}{{ form_data.full_address }}{% else %}{{ resort.full_address }}{% endif %}</textarea>
+            <textarea name="full_address" placeholder="Enter complete address">{{ form_data.full_address|default:resort.full_address }}</textarea>
           </div>
 
           <div class="field">
             <label>City</label>
-            <input type="text" name="city" placeholder="e.g., Panaji" value="{% if form_data %}{{ form_data.city }}{% else %}{{ resort.city }}{% endif %}">
+            <input type="text" name="city" placeholder="e.g., Panaji" value="{{ form_data.city|default:resort.city }}">
           </div>
 
           <div class="field">
             <label>State</label>
-            <input type="text" name="state" placeholder="e.g., Goa" value="{% if form_data %}{{ form_data.state }}{% else %}{{ resort.state }}{% endif %}">
+            <input type="text" name="state" placeholder="e.g., Goa" value="{{ form_data.state|default:resort.state }}">
           </div>
 
           <div class="field">
             <label>PIN Code</label>
             <input type="text" name="pin_code" placeholder="e.g., 403001" maxlength="6"
-              value="{% if form_data %}{{ form_data.pin_code }}{% else %}{{ resort.pin_code }}{% endif %}"
+              value="{{ form_data.pin_code|default:resort.pin_code }}"
               class="{% if errors.pin_code %}input-error{% endif %}">
             {% if errors.pin_code %}<div class="field-error">{{ errors.pin_code }}</div>{% endif %}
           </div>
@@ -271,7 +271,7 @@
           <div class="field span-2">
             <label>Location (Google Map Link)</label>
             <input type="url" name="location_map_link" placeholder="https://maps.google.com/..."
-              value="{% if form_data %}{{ form_data.location_map_link }}{% else %}{{ resort.location_map_link }}{% endif %}">  
+              value="{{ form_data.location_map_link|default:resort.location_map_link }}">
           </div>
         </div>
       </section>
@@ -283,7 +283,7 @@
           <div class="field">
             <label>Mobile <span class="req">*</span></label>
             <input type="text" name="mobile" placeholder="9876543210" maxlength="15"
-              value="{% if form_data %}{{ form_data.mobile }}{% else %}{{ resort.mobile }}{% endif %}"
+              value="{{ form_data.mobile|default:resort.mobile }}"
               class="{% if errors.mobile %}input-error{% endif %}">
             {% if errors.mobile %}<div class="field-error">{{ errors.mobile }}</div>{% endif %}
           </div>
@@ -291,7 +291,7 @@
           <div class="field">
             <label>Email</label>
             <input type="email" name="email" placeholder="resort@example.com"
-              value="{% if form_data %}{{ form_data.email }}{% else %}{{ resort.email }}{% endif %}"
+              value="{{ form_data.email|default:resort.email }}"
               class="{% if errors.email %}input-error{% endif %}">
             {% if errors.email %}<div class="field-error">{{ errors.email }}</div>{% endif %}
           </div>
@@ -302,7 +302,7 @@
               <input id="cc-email-input" type="email" placeholder="user@example.com" style="flex:1;" />
               <button type="button" id="cc-email-add" class="btn">Add</button>
             </div>
-            <input type="hidden" name="cc_emails" id="cc_emails_hidden" value="{% if form_data %}{{ form_data.cc_emails }}{% else %}{{ resort.cc_emails }}{% endif %}" />
+            <input type="hidden" name="cc_emails" id="cc_emails_hidden" value="{{ form_data.cc_emails|default:resort.cc_emails }}" />
             <div id="cc-email-tags" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;"></div>
             <small style="color:#6b7280;display:block;margin-top:6px;">Add multiple CC email addresses one-by-one.</small>
           </div>
@@ -316,13 +316,13 @@
           <div class="field span-2">
             <label>Owner / Manager Name</label>
             <input type="text" name="owner_manager_name" placeholder="John Doe"
-              value="{% if form_data %}{{ form_data.owner_manager_name }}{% else %}{{ resort.owner_manager_name }}{% endif %}">
+              value="{{ form_data.owner_manager_name|default:resort.owner_manager_name }}">
           </div>
 
           <div class="field">
             <label>GST Number</label>
             <input type="text" name="gst_number" placeholder="22AAAAA0000A1Z5" maxlength="15"
-              value="{% if form_data %}{{ form_data.gst_number }}{% else %}{{ resort.gst_number }}{% endif %}"
+              value="{{ form_data.gst_number|default:resort.gst_number }}"
               class="{% if errors.gst_number %}input-error{% endif %}">
             {% if errors.gst_number %}<div class="field-error">{{ errors.gst_number }}</div>{% endif %}
           </div>
@@ -330,7 +330,7 @@
           <div class="field">
             <label>Business Registration Number</label>
             <input type="text" name="business_registration_number" placeholder="Enter registration number"
-              value="{% if form_data %}{{ form_data.business_registration_number }}{% else %}{{ resort.business_registration_number }}{% endif %}">
+              value="{{ form_data.business_registration_number|default:resort.business_registration_number }}">
           </div>
 
           <div class="field">
@@ -392,19 +392,19 @@
           <div class="field">
             <label>Number of Rooms</label>
             <input type="number" name="number_of_rooms" placeholder="50" min="1"
-              value="{% if form_data %}{{ form_data.number_of_rooms }}{% else %}{{ resort.number_of_rooms }}{% endif %}"
+              value="{{ form_data.number_of_rooms|default:resort.number_of_rooms }}"
               class="{% if errors.number_of_rooms %}input-error{% endif %}">
             {% if errors.number_of_rooms %}<div class="field-error">{{ errors.number_of_rooms }}</div>{% endif %}
           </div>
 
           <div class="field">
             <label>Amenities (comma-separated)</label>
-            <textarea name="amenities" placeholder="WiFi, Swimming Pool, Gym, Restaurant">{% if form_data %}{{ form_data.amenities }}{% else %}{{ resort.amenities }}{% endif %}</textarea>
+            <textarea name="amenities" placeholder="WiFi, Swimming Pool, Gym, Restaurant">{{ form_data.amenities|default:resort.amenities }}</textarea>
           </div>
 
           <div class="field span-2">
             <label>Resort Description</label>
-            <textarea name="description" placeholder="Describe your resort...">{% if form_data %}{{ form_data.description }}{% else %}{{ resort.description }}{% endif %}</textarea>
+            <textarea name="description" placeholder="Describe your resort...">{{ form_data.description|default:resort.description }}</textarea>
           </div>
 
           <div class="field">
@@ -518,21 +518,16 @@
       <section class="card">
         <h3>🔹 Online Presence (Optional)</h3>
         <div class="grid">
-          <div class="field">
+          <div class="field span-2">
             <label>Website URL</label>
             <input type="url" name="website_url" placeholder="https://www.resort.com"
-              value="{% if form_data %}{{ form_data.website_url }}{% else %}{{ resort.website_url }}{% endif %}">
-          </div>
-
-          <div class="field">
-            <label>Google Listing Link</label>
-            <input type="url" name="google_listing_link" placeholder="https://maps.google.com/?..."
-              value="{% if form_data %}{{ form_data.google_listing_link }}{% else %}{{ resort.google_listing_link }}{% endif %}">
+              value="{{ form_data.website_url|default:resort.website_url }}">
           </div>
 
           <div class="field span-2">
             <label>Social Media Links (comma-separated)</label>
-            <textarea name="social_media_links" placeholder="https://facebook.com/resort, https://instagram.com/resort">{% if form_data %}{{ form_data.social_media_links }}{% else %}{{ resort.social_media_links }}{% endif %}</textarea>
+            <input type="text" name="social_media_links" placeholder="https://facebook.com/resort, https://instagram.com/resort"
+              value="{{ form_data.social_media_links|default:resort.social_media_links }}">
           </div>
         </div>
       </section>

@@ -163,7 +163,7 @@ input[type="date"].invalid{border-color:#dc2626 !important;background:#fff5f5 !i
           <td>{{ voucher.customer.display_name }}</td>
           {% if employee_view %}<td>{{ voucher.sales_person.name|default:"-" }}</td>{% endif %}
           <td>{{ voucher.resort.resort_name|default:"-" }}</td>
-          <td style="text-align:right;">₹{{ voucher.total }}</td>
+          <td style="text-align:right;">₹{{ voucher.total_amount }}</td>
         </tr>
         {% endfor %}
       </tbody>

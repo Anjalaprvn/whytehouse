@@ -1,4 +1,4 @@
-{% extends 'admin/sidebar.html' %}
+g{% extends 'admin/sidebar.html' %}
 {% load static %}
 
 {% block extra_css %}
@@ -503,21 +503,16 @@
       <section class="card">
         <h3>🔹 Online Presence (Optional)</h3>
         <div class="grid">
-          <div class="field">
+          <div class="field span-2">
             <label>Website URL</label>
             <input type="url" name="website_url" placeholder="https://www.resort.com"
               value="{{ form_data.website_url }}">
           </div>
 
-          <div class="field">
-            <label>Google Listing Link</label>
-            <input type="url" name="google_listing_link" placeholder="https://maps.google.com/?..."
-              value="{{ form_data.google_listing_link }}">
-          </div>
-
           <div class="field span-2">
             <label>Social Media Links (comma-separated)</label>
-            <textarea name="social_media_links" placeholder="https://facebook.com/resort, https://instagram.com/resort">{{ form_data.social_media_links }}</textarea>
+            <input type="text" name="social_media_links" placeholder="https://facebook.com/resort, https://instagram.com/resort"
+              value="{{ form_data.social_media_links }}">
           </div>
         </div>
       </section>

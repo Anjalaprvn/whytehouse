@@ -355,7 +355,7 @@ class Resort(models.Model):
     ]
 
     # Basic Information
-    resort_name = models.CharField(max_length=255, unique=True)
+    resort_name = models.CharField(max_length=255)
     resort_place = models.CharField(max_length=255)
     full_address = models.TextField(blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)

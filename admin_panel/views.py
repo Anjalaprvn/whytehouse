@@ -2131,7 +2131,11 @@ def edit_resort(request, resort_id):
 
             messages.success(request, "Resort updated successfully!")
             return redirect("sales:resort_list")
+
         except Exception as e:
+            import traceback
+            traceback.print_exc()
+            messages.error(request, f"Error updating resort: {str(e)}")
             return render(request, "admin/sales/resort/edit_resort.html", {
                 "resort": resort,
                 "error": f"Error updating resort: {str(e)}"
