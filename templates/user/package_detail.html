@@ -791,17 +791,25 @@
     function filterTransportByGroupSize() {
         var transportEl = document.getElementById('transport-select');
         var transportGrp = document.getElementById('transport-group');
-        if (!transportEl || !transportGrp) return;
+        if (!transportEl || !transportGrp || transportOptions.length === 0) return;
         var adults = parseInt(document.getElementById('adults-select').value) || 1;
         var totalPax = adults + getChildAges().length;
-        var anyVisible = false;
+        var bestOpt = null;
         Array.from(transportEl.options).forEach(function(opt) {
-            if (opt.value === '0') return;
+            if (opt.value === '0') { opt.style.display = 'none'; return; }
             var maxP = parseInt(opt.dataset.maxPersons) || 1;
-            if (maxP >= totalPax) { opt.style.display = ''; anyVisible = true; }
-            else { opt.style.display = 'none'; if (opt.selected) transportEl.value = '0'; }
+            if (maxP >= totalPax) {
+                opt.style.display = '';
+                if (!bestOpt) bestOpt = opt;
+            } else {
+                opt.style.display = 'none';
+                if (opt.selected) transportEl.value = '0';
+            }
         });
-        transportGrp.style.display = (transportOptions.length > 0 && anyVisible) ? 'block' : 'none';
+        if (bestOpt && (transportEl.value === '0' || !transportEl.options[transportEl.selectedIndex] || transportEl.options[transportEl.selectedIndex].style.display === 'none')) {
+            transportEl.value = bestOpt.value;
+        }
+        calculateTotal();
     }
 
     // Populate dropdowns
@@ -835,13 +843,15 @@
         }
 
         if (transportSelect && transportOptions.length > 0) {
-            transportOptions.forEach(function(t) {
+            var sortedTransport = transportOptions.slice().sort(function(a, b) { return a.max_persons - b.max_persons; });
+            sortedTransport.forEach(function(t) {
                 var opt = document.createElement('option');
                 opt.value = t.price_per_person;
                 opt.dataset.maxPersons = t.max_persons;
                 opt.textContent = t.name + ' \u2014 \u20b9' + t.price_per_person + '/person (max ' + t.max_persons + ')';
                 transportSelect.appendChild(opt);
             });
+            document.getElementById('transport-group').style.display = 'block';
         }
 
         // Attach event listeners
