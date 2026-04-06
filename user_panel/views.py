@@ -3,8 +3,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Q
 from admin_panel.models import TravelPackage, Property, Inquiry, Lead, Blog, Destination
-from admin_panel.models import Feedback, BlogCategory, Property, PackageTransportOption
-from admin_panel.models import PackageBooking
+from admin_panel.models import Feedback, BlogCategory, PackageBooking
 from django.shortcuts import render, get_object_or_404
 from admin_panel.models import Blog
 

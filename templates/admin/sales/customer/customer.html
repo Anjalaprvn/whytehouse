@@ -98,19 +98,7 @@ tbody tr:hover td{background:#fef9e7}
                     </svg>
                   </a>
 
-                  <!-- Delete -->
-                  <form method="POST" action="{% url 'sales:delete_customer' c.id %}" style="display:inline;" onsubmit="return confirm('Delete {{ c.display_name }}?');">
-                    {% csrf_token %}
-                    <button type="submit" class="icon-btn delete" title="Delete" aria-label="Delete">
-                      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 6H21"/>
-                        <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
-                        <path d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/>
-                        <path d="M10 11v6"/>
-                        <path d="M14 11v6"/>
-                      </svg>
-                    </button>
-                  </form>
+
                 </div>
               </td>
             </tr>

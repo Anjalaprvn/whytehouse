@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     Lead, Inquiry, TravelPackage, Destination, Property,
     BlogCategory, Blog, BlogImage, Feedback, FeedbackImage,
-    Customer, Employee, Account, Resort, ResortRoomType, ResortRoomTypeImage, ResortImage, Meal, Invoice
+    Customer, Employee, Account, Resort, Meal, Invoice
 )
 
 # Inquiry Admin Inline

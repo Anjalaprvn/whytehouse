@@ -1,4 +1,5 @@
 from django.db import models
+
 from datetime import time
 from django.utils import timezone
 from django.utils.text import slugify
@@ -128,65 +129,6 @@ class Destination(models.Model):
         ordering = ['-created_at']
 
 
-class ResortRoomType(models.Model):
-    resort = models.ForeignKey('Resort', on_delete=models.CASCADE, related_name='room_types')
-    room_type_name = models.CharField(max_length=150)
-    total_rooms = models.PositiveIntegerField(default=0)
-    price_per_night = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    max_guests = models.PositiveIntegerField(default=1)
-    room_size = models.CharField(max_length=100, blank=True, null=True)
-    amenities = models.TextField(blank=True, null=True, help_text='Comma-separated amenity values (AC, WiFi, Balcony, etc.)')
-    room_images = models.FileField(upload_to='resort/room_types/', blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.room_type_name} ({self.resort.resort_name})"
-
-    @property
-    def amenities_list(self):
-        if self.amenities:
-            return [x.strip() for x in self.amenities.split(',') if x.strip()]
-        return []
-
-    @property
-    def room_type_image_list(self):
-        if hasattr(self, 'room_type_images') and self.room_type_images.exists():
-            return self.room_type_images.all()
-        if self.room_images:
-            class LegacyImageObject:
-                def __init__(self, image):
-                    self.image = image
-            return [LegacyImageObject(self.room_images)]
-        return []
-
-    class Meta:
-        ordering = ['-created_at']
-
-
-class ResortRoomTypeImage(models.Model):
-    room_type = models.ForeignKey('ResortRoomType', on_delete=models.CASCADE, related_name='room_type_images')
-    image = models.ImageField(upload_to='resort/room_type_images/')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.room_type.room_type_name} - {self.image.name}"
-
-    class Meta:
-        ordering = ['-uploaded_at']
-
-
-class ResortImage(models.Model):
-    resort = models.ForeignKey('Resort', on_delete=models.CASCADE, related_name='resort_images_list')
-    image = models.ImageField(upload_to='resort/images/')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.resort.resort_name} - {self.image.name}"
-
-    class Meta:
-        ordering = ['-uploaded_at']
-
 # TRAVEL PACKAGE MODEL
 class TravelPackage(models.Model):
     CATEGORY_CHOICES = (
@@ -302,16 +244,6 @@ class Employee(models.Model):
         ordering = ['-created_at']
 
         
-class EmployeeRole(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        ordering = ['name']
-
 
 # Create your models here.
 class Account(models.Model):
@@ -434,24 +366,10 @@ class Meal(models.Model):
     class Meta:
         ordering = ['-created_at']
 
-class PackageTransportOption(models.Model):
-    package = models.ForeignKey(TravelPackage, on_delete=models.CASCADE, related_name='transport_options')
-    name = models.CharField(max_length=150)
-    price_per_person = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    min_persons = models.PositiveIntegerField(default=1)
-    max_persons = models.PositiveIntegerField(default=1)
-
-    def __str__(self):
-        return f"{self.name} - ₹{self.price_per_person}/person ({self.package.name})"
-
-    class Meta:
-        ordering = ['price_per_person']
-
-
 class Voucher(models.Model):
     customer = models.ForeignKey('Customer', on_delete=models.CASCADE)
     voucher_no = models.CharField(max_length=50, unique=True, blank=True)
-    voucher_date = models.DateField()
+    voucher_date = models.DateField(null=True, blank=True)
 
     sales_person = models.ForeignKey(
         'Employee',
@@ -467,10 +385,10 @@ class Voucher(models.Model):
         blank=True
     )
 
-    checkin_date = models.DateField()
-    checkout_date = models.DateField()
-    checkin_time = models.TimeField()
-    checkout_time = models.TimeField()
+    checkin_date = models.DateField(null=True, blank=True)
+    checkout_date = models.DateField(null=True, blank=True)
+    checkin_time = models.TimeField(null=True, blank=True)
+    checkout_time = models.TimeField(null=True, blank=True)
 
     adults = models.IntegerField(default=0)
     children = models.IntegerField(default=0)
@@ -658,7 +576,6 @@ class BlogImage(models.Model):
         return f"Image {self.order + 1} for {self.blog.title}"
 
 
-from django.db import models
 
 class Feedback(models.Model):
 

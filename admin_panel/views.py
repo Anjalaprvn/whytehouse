@@ -16,8 +16,7 @@ from django.http import JsonResponse
 import re
 
 from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry, Destination, Feedback
-from .models import Employee, Blog, BlogImage, EmployeeRole, ResortRoomType, ResortRoomTypeImage, ResortImage
-from .models import PackageTransportOption
+from .models import Employee, Blog, BlogImage
 
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
@@ -1147,7 +1146,7 @@ def employee_list(request):
         'active_count': active_count,
         'department_count': department_count,
         'now': datetime.now().strftime('%B %d, %Y'),
-        'roles': EmployeeRole.objects.all(),
+        'roles': [],
     }
     return render(request, "admin/employee/employee.html", context)
 
@@ -1190,7 +1189,7 @@ def add_employee(request):
 
         if errors:
             messages.error(request, 'Please fix the errors below.')
-            return render(request, 'admin/employee/add_employee.html', {'errors': errors, 'form_data': request.POST, 'roles': EmployeeRole.objects.all()})
+            return render(request, 'admin/employee/add_employee.html', {'errors': errors, 'form_data': request.POST, 'roles': []})
 
         try:
             employee = Employee.objects.create(
@@ -1228,7 +1227,7 @@ def edit_employee(request, pk):
             phone = request.POST.get('phone', '').strip()
             if not name or not email or not phone:
                 messages.error(request, "Name, email and phone are required.")
-                return render(request, "admin/employee/edit_employee.html", {'employee': employee, 'roles': EmployeeRole.objects.all()})
+                return render(request, "admin/employee/edit_employee.html", {'employee': employee, 'roles': []})
 
             employee.name = name
             employee.email = email
@@ -1249,7 +1248,7 @@ def edit_employee(request, pk):
         except Exception as e:
             messages.error(request, f'Error updating employee: {str(e)}')
     
-    return render(request, "admin/employee/edit_employee.html", {'employee': employee, 'roles': EmployeeRole.objects.all()})
+    return render(request, "admin/employee/edit_employee.html", {'employee': employee, 'roles': []})
 
 def delete_employee(request, pk):
     if request.method != 'POST':
@@ -3879,7 +3878,7 @@ def manage_employee_roles(request):
         EmployeeRole.objects.create(name=name)
         messages.success(request, f'Role "{name}" added successfully!')
         return redirect(reverse('employee:manage_roles'))
-    roles = EmployeeRole.objects.all()
+    roles = []
     return render(request, 'admin/employee/manage_roles.html', {'roles': roles})
 
 
