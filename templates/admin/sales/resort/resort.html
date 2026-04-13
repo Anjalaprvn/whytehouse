@@ -358,12 +358,12 @@
                     <td class="name-text">{{ resort.resort_name|default:"—" }}</td>
                     <td class="email-text">{{ resort.email|default:"—" }}</td>
                     <td>{{ resort.resort_place|default:"—" }}</td>
-                    <td>{{ resort.contact_number|default:"—" }}</td>
+                    <td>{{ resort.mobile|default:"—" }}</td>
                     <td>
                         <div class="action-cell">
                             <div class="action-btns">
-                            {% if resort.location_link %}
-                            <a href="{{ resort.location_link }}" target="_blank" class="location-btn" title="View Location">
+                            {% if resort.location_map_link %}
+                            <a href="{{ resort.location_map_link }}" target="_blank" class="location-btn" title="View Location">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M12 21s-6-5.33-6-11a6 6 0 1 1 12 0c0 5.67-6 11-6 11z"></path>
                                     <circle cx="12" cy="10" r="2.5"></circle>

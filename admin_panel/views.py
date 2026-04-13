@@ -18,14 +18,14 @@ from django.http import JsonResponse
 import re
 
 from .models import Account, Customer, Resort, Meal, Voucher, Invoice, Lead, Property, TravelPackage, Inquiry, Destination, Feedback
-from .models import Employee, Blog, BlogImage, EmployeeRole, ResortRoomType, ResortRoomTypeImage, ResortImage
-from .models import PackageTransportOption
+from .models import Employee, Blog, BlogImage
 
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from django.http import HttpResponse
 from django.utils import timezone
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+from decimal import Decimal
 # Create your views here.
 
 # Lead Assignment Functions
@@ -891,7 +891,7 @@ def travel_package_add(request):
         'selected_destination_obj': selected_destination_obj,
         'package': None,
         'resorts': Resort.objects.filter(status='Active').order_by('resort_name'),
-        'meals': Meal.objects.filter(status='Available').order_by('name'),
+        'meals': Meal.objects.all().order_by('name'),
     }
     return render(request, 'admin/packages/travel_package_add.html', context)
 
@@ -935,7 +935,7 @@ def travel_package_edit(request, package_id):
                         'package': package,
                         'destinations': destinations,
                         'resorts': Resort.objects.filter(status='Active').order_by('resort_name'),
-                        'meals': Meal.objects.filter(status='Available').order_by('name'),
+                        'meals': Meal.objects.all().order_by('name'),
                     })
 
         package.name = request.POST.get('name')
@@ -976,7 +976,7 @@ def travel_package_edit(request, package_id):
         'package': package,
         'destinations': destinations,
         'resorts': Resort.objects.filter(status='Active').order_by('resort_name'),
-        'meals': Meal.objects.filter(status='Available').order_by('name'),
+        'meals': Meal.objects.all().order_by('name'),
     }
     return render(request, 'admin/packages/travel_package_edit.html', context)
 
@@ -1161,7 +1161,7 @@ def employee_list(request):
         'active_count': active_count,
         'department_count': department_count,
         'now': datetime.now().strftime('%B %d, %Y'),
-        'roles': EmployeeRole.objects.all(),
+        'roles': [],
     }
     return render(request, "admin/employee/employee.html", context)
 
@@ -1204,7 +1204,7 @@ def add_employee(request):
 
         if errors:
             messages.error(request, 'Please fix the errors below.')
-            return render(request, 'admin/employee/add_employee.html', {'errors': errors, 'form_data': request.POST, 'roles': EmployeeRole.objects.all()})
+            return render(request, 'admin/employee/add_employee.html', {'errors': errors, 'form_data': request.POST, 'roles': []})
 
         try:
             employee = Employee.objects.create(
@@ -1242,7 +1242,7 @@ def edit_employee(request, pk):
             phone = request.POST.get('phone', '').strip()
             if not name or not email or not phone:
                 messages.error(request, "Name, email and phone are required.")
-                return render(request, "admin/employee/edit_employee.html", {'employee': employee, 'roles': EmployeeRole.objects.all()})
+                return render(request, "admin/employee/edit_employee.html", {'employee': employee, 'roles': []})
 
             employee.name = name
             employee.email = email
@@ -1263,7 +1263,7 @@ def edit_employee(request, pk):
         except Exception as e:
             messages.error(request, f'Error updating employee: {str(e)}')
     
-    return render(request, "admin/employee/edit_employee.html", {'employee': employee, 'roles': EmployeeRole.objects.all()})
+    return render(request, "admin/employee/edit_employee.html", {'employee': employee, 'roles': []})
 
 def delete_employee(request, pk):
     if request.method != 'POST':
@@ -1318,35 +1318,23 @@ def add_account(request):
             ifsc_code = request.POST.get('ifsc_code', '').strip()
             account_type = request.POST.get('account_type', 'current')
             branch_name = request.POST.get('branch_name', '').strip()
-            
-            # Validation
-            if not account_name or not account_number or not bank_name or not ifsc_code:
-                messages.error(request, 'All fields are required.')
+            # Minimal validation: require name and number
+            if not account_name or not account_number:
+                messages.error(request, 'Account name and number are required.')
                 return render(request, 'admin/sales/account/add_account.html')
-            
-            # Validate account number (digits only, 9-18 characters)
-            if not account_number.isdigit() or len(account_number) < 9 or len(account_number) > 18:
-                messages.error(request, 'Account number must be 9-18 digits.')
-                return render(request, 'admin/sales/account/add_account.html')
-            
-            # Validate IFSC code format (11 characters, alphanumeric)
-            import re
-            if not re.match(r'^[A-Z]{4}0[A-Z0-9]{6}$', ifsc_code.upper()):
-                messages.error(request, 'Invalid IFSC code format. Must be 11 characters (e.g., SBIN0001234).')
-                return render(request, 'admin/sales/account/add_account.html')
-            
+
             # Check for duplicate account number
             if Account.objects.filter(account_number=account_number).exists():
                 messages.error(request, 'Account number already exists.')
                 return render(request, 'admin/sales/account/add_account.html')
-            
-            # Create account
+
+            # Create account (do not enforce strict format checks here)
             account = Account.objects.create(
                 account_name=account_name,
                 account_number=account_number,
                 bank_name=bank_name,
                 branch_name=branch_name or None,
-                ifsc_code=ifsc_code.upper(),
+                ifsc_code=ifsc_code.upper() if ifsc_code else None,
                 account_type=account_type
             )
             
@@ -1386,20 +1374,27 @@ def edit_account(request, account_id):
             ifsc_code = request.POST.get('ifsc_code', '').strip()
             account_type = request.POST.get('account_type', '').strip()
             branch_name = request.POST.get('branch_name', '').strip()
-            
-            # Validation
-            if not account_name or not account_number or not bank_name:
-                messages.error(request, 'Account name, number, and bank name are required.')
+
+            # Minimal validation: require name and number
+            if not account_name or not account_number:
+                messages.error(request, 'Account name and number are required.')
                 return render(request, 'admin/sales/account/edit_account.html', {
                     'account': account
                 })
-            
-            # Update account
+
+            # Prevent duplicate account numbers (exclude current)
+            if Account.objects.filter(account_number=account_number).exclude(id=account_id).exists():
+                messages.error(request, 'Another account with this number already exists.')
+                return render(request, 'admin/sales/account/edit_account.html', {
+                    'account': account
+                })
+
+            # Update account fields
             account.account_name = account_name
             account.account_number = account_number
             account.bank_name = bank_name
             account.branch_name = branch_name or None
-            account.ifsc_code = ifsc_code
+            account.ifsc_code = ifsc_code if ifsc_code else None
             account.account_type = account_type
             
             account.save()
@@ -1673,8 +1668,9 @@ def resort_list(request):
     if search_query:
         resorts = resorts.filter(
             Q(resort_name__icontains=search_query) |
-            Q(location__icontains=search_query) |
-            Q(contact_person__icontains=search_query)
+            Q(resort_place__icontains=search_query) |
+            Q(mobile__icontains=search_query) |
+            Q(email__icontains=search_query)
         )
     
     return render(request, "admin/sales/resort/resort.html", {"resorts": resorts, "search_query": search_query})
@@ -1685,10 +1681,6 @@ def add_resort(request):
             # Basic Information
             resort_name = request.POST.get("resort_name", "").strip()
             resort_place = request.POST.get("resort_place", "").strip()
-            full_address = request.POST.get("full_address", "").strip()
-            city = request.POST.get("city", "").strip()
-            state = request.POST.get("state", "").strip()
-            pin_code = request.POST.get("pin_code", "").strip()
             location_map_link = request.POST.get("location_map_link", "").strip()
 
             # Contact Details
@@ -1702,20 +1694,7 @@ def add_resort(request):
             else:
                 cc_emails = None
 
-            # Owner / Legal Details
-            owner_manager_name = request.POST.get("owner_manager_name", "").strip()
-            gst_number = request.POST.get("gst_number", "").strip()
-            business_registration_number = request.POST.get("business_registration_number", "").strip()
-
-            # Property Details
-            description = request.POST.get("description", "").strip()
-            number_of_rooms_str = request.POST.get("number_of_rooms", "").strip()
-            amenities = request.POST.get("amenities", "").strip()
-
-            # Online Presence
-            website_url = request.POST.get("website_url", "").strip()
-            social_media_links = request.POST.get("social_media_links", "").strip()
-            google_listing_link = request.POST.get("google_listing_link", "").strip()
+            # (Only minimal fields are used by the model now)
 
             # Room Type (multiple rows)
             room_type_uids = request.POST.getlist("room_type_uid[]")
@@ -1726,11 +1705,8 @@ def add_resort(request):
             room_size_list = request.POST.getlist("room_size[]")
             room_type_amenities_list = request.POST.getlist("room_type_amenities[]")
 
-            # File uploads
-            registration_certificate = request.FILES.get("registration_certificate")
-            id_proof = request.FILES.get("id_proof")
+            # File uploads (images will be saved to ResortImage objects)
             resort_images_files = request.FILES.getlist("resort_images")
-            resort_video = request.FILES.get("resort_video")
 
             errors = {}
 
@@ -1751,18 +1727,7 @@ def add_resort(request):
             if gst_number and len(gst_number) != 15:
                 errors["gst_number"] = "GST Number must be 15 characters."
 
-            if pin_code and (not pin_code.isdigit() or len(pin_code) != 6):
-                errors["pin_code"] = "PIN Code must be 6 digits."
-
-            if number_of_rooms_str:
-                try:
-                    number_of_rooms = int(number_of_rooms_str)
-                    if number_of_rooms <= 0:
-                        errors["number_of_rooms"] = "Number of rooms must be positive."
-                except ValueError:
-                    errors["number_of_rooms"] = "Number of rooms must be a valid number."
-            else:
-                number_of_rooms = None
+            # number_of_rooms, pin_code and other fields removed from model; skip related validation
 
             # Check for duplicate resort
             if not errors and Resort.objects.filter(
@@ -1774,14 +1739,8 @@ def add_resort(request):
             if errors:
                 form_data = {
                     "resort_name": resort_name, "resort_place": resort_place,
-                    "full_address": full_address, "city": city, "state": state,
-                    "pin_code": pin_code, "location_map_link": location_map_link,
+                    "location_map_link": location_map_link,
                     "mobile": mobile, "email": email, "cc_emails": cc_emails,
-                    "owner_manager_name": owner_manager_name, "gst_number": gst_number,
-                    "business_registration_number": business_registration_number,
-                    "description": description, "number_of_rooms": number_of_rooms_str,
-                    "amenities": amenities, "website_url": website_url,
-                    "social_media_links": social_media_links, "google_listing_link": google_listing_link,
                     "room_type_names": room_type_names, "total_rooms_list": total_rooms_list,
                     "price_per_night_list": price_per_night_list, "max_guests_list": max_guests_list,
                     "room_size_list": room_size_list, "room_type_amenities_list": room_type_amenities_list,
@@ -1794,27 +1753,10 @@ def add_resort(request):
             resort = Resort.objects.create(
                 resort_name=resort_name,
                 resort_place=resort_place,
-                full_address=full_address or None,
-                city=city or None,
-                state=state or None,
-                pin_code=pin_code or None,
                 location_map_link=location_map_link or None,
                 mobile=mobile or None,
                 email=email or None,
                 cc_emails=cc_emails or None,
-                owner_manager_name=owner_manager_name or None,
-                gst_number=gst_number or None,
-                business_registration_number=business_registration_number or None,
-                description=description or None,
-                number_of_rooms=number_of_rooms,
-                amenities=amenities or None,
-                website_url=website_url or None,
-                social_media_links=social_media_links or None,
-                google_listing_link=google_listing_link or None,
-                registration_certificate=registration_certificate,
-                id_proof=id_proof,
-                resort_images=resort_images_files[0] if resort_images_files else None,
-                resort_video=resort_video,
             )
 
             # Resort images (multiple uploads)
@@ -1886,13 +1828,9 @@ def edit_resort(request, resort_id):
 
     if request.method == "POST":
         try:
-            # Basic Information
+            # Basic Information (only minimal fields used)
             resort_name = request.POST.get("resort_name", "").strip()
             resort_place = request.POST.get("resort_place", "").strip()
-            full_address = request.POST.get("full_address", "").strip()
-            city = request.POST.get("city", "").strip()
-            state = request.POST.get("state", "").strip()
-            pin_code = request.POST.get("pin_code", "").strip()
             location_map_link = request.POST.get("location_map_link", "").strip()
 
             # Contact Details
@@ -1906,20 +1844,7 @@ def edit_resort(request, resort_id):
             else:
                 cc_emails = None
 
-            # Owner / Legal Details
-            owner_manager_name = request.POST.get("owner_manager_name", "").strip()
-            gst_number = request.POST.get("gst_number", "").strip()
-            business_registration_number = request.POST.get("business_registration_number", "").strip()
-
-            # Property Details
-            description = request.POST.get("description", "").strip()
-            number_of_rooms_str = request.POST.get("number_of_rooms", "").strip()
-            amenities = request.POST.get("amenities", "").strip()
-
-            # Online Presence
-            website_url = request.POST.get("website_url", "").strip()
-            social_media_links = request.POST.get("social_media_links", "").strip()
-            google_listing_link = request.POST.get("google_listing_link", "").strip()
+            # (Only minimal fields are used by the model now)
 
             # Room Type (multiple rows)
             room_type_uids = request.POST.getlist("room_type_uid[]")
@@ -1931,12 +1856,7 @@ def edit_resort(request, resort_id):
             room_type_amenities_list = request.POST.getlist("room_type_amenities[]")
             room_type_images_list = request.FILES.getlist("room_type_images[]")
 
-            # File uploads
-            registration_certificate = request.FILES.get("registration_certificate")
-            id_proof = request.FILES.get("id_proof")
-            resort_images = None
             resort_images_files = request.FILES.getlist("resort_images")
-            resort_video = request.FILES.get("resort_video")
 
             errors = {}
 
@@ -1954,21 +1874,7 @@ def edit_resort(request, resort_id):
             if email and "@" not in email:
                 errors["email"] = "Please enter a valid email address."
 
-            if gst_number and len(gst_number) != 15:
-                errors["gst_number"] = "GST Number must be 15 characters."
-
-            if pin_code and (not pin_code.isdigit() or len(pin_code) != 6):
-                errors["pin_code"] = "PIN Code must be 6 digits."
-
-            if number_of_rooms_str:
-                try:
-                    number_of_rooms = int(number_of_rooms_str)
-                    if number_of_rooms <= 0:
-                        errors["number_of_rooms"] = "Number of rooms must be positive."
-                except ValueError:
-                    errors["number_of_rooms"] = "Number of rooms must be a valid number."
-            else:
-                number_of_rooms = None
+            # Remove validations for fields no longer present on the model
 
             # Check for duplicate resort
             if not errors and Resort.objects.filter(
@@ -1980,50 +1886,21 @@ def edit_resort(request, resort_id):
             if errors:
                 form_data = {
                     "resort_name": resort_name, "resort_place": resort_place,
-                    "full_address": full_address, "city": city, "state": state,
-                    "pin_code": pin_code, "location_map_link": location_map_link,
+                    "location_map_link": location_map_link,
                     "mobile": mobile, "email": email, "cc_emails": cc_emails or "",
-                    "owner_manager_name": owner_manager_name, "gst_number": gst_number,
-                    "business_registration_number": business_registration_number,
-                    "description": description, "number_of_rooms": number_of_rooms_str,
-                    "amenities": amenities, "website_url": website_url,
-                    "social_media_links": social_media_links, "google_listing_link": google_listing_link,
                 }
                 return render(request, "admin/sales/resort/edit_resort.html", {
                     "resort": resort, "errors": errors, "form_data": form_data
                 })
 
-            # Update resort
+
+            # Update only existing model fields
             resort.resort_name = resort_name
             resort.resort_place = resort_place
-            resort.full_address = full_address or None
-            resort.city = city or None
-            resort.state = state or None
-            resort.pin_code = pin_code or None
             resort.location_map_link = location_map_link or None
             resort.mobile = mobile or None
             resort.email = email or None
             resort.cc_emails = cc_emails or None
-            resort.owner_manager_name = owner_manager_name or None
-            resort.gst_number = gst_number or None
-            resort.business_registration_number = business_registration_number or None
-            resort.description = description or None
-            resort.number_of_rooms = number_of_rooms
-            resort.amenities = amenities or None
-            resort.website_url = website_url or None
-            resort.social_media_links = social_media_links or None
-            resort.google_listing_link = google_listing_link or None
-
-            # Update files only if new ones are uploaded
-            if registration_certificate:
-                resort.registration_certificate = registration_certificate
-            if id_proof:
-                resort.id_proof = id_proof
-            if resort_images_files:
-                # Optionally set first file to legacy 'resort_images' field and keep all in ResortImage model
-                resort.resort_images = resort_images_files[0]
-            if resort_video:
-                resort.resort_video = resort_video
 
             resort.save()
 
@@ -2127,9 +2004,6 @@ def add_meal(request):
             description = request.POST.get("description", "").strip()
             included_meals = request.POST.getlist("included_meals")
             included_meals_str = ", ".join(included_meals) if included_meals else ""
-            meal_type = request.POST.get("meal_type", "both")
-            price_per_person = request.POST.get("price_per_person", "").strip()
-            children_pricing_json = request.POST.get("children_pricing", "[]")
             
             if not name:
                 messages.error(request, "Meal Plan Name is required.")
@@ -2145,51 +2019,14 @@ def add_meal(request):
                 messages.error(request, "Please select at least one meal type.")
                 return render(request, "admin/sales/meals/add_meals.html")
             
-            # Validate price if provided
-            if price_per_person:
-                try:
-                    price_per_person = float(price_per_person)
-                    if price_per_person < 0:
-                        messages.error(request, "Price per person cannot be negative.")
-                        return render(request, "admin/sales/meals/add_meals.html")
-                except ValueError:
-                    messages.error(request, "Please enter a valid price per person.")
-                    return render(request, "admin/sales/meals/add_meals.html")
-            else:
-                price_per_person = None
-            
-            # Parse and validate children's pricing
-            import json
-            children_pricing = []
-            if children_pricing_json and children_pricing_json != "[]":
-                try:
-                    children_pricing = json.loads(children_pricing_json)
-                    # Validate each pricing entry
-                    for item in children_pricing:
-                        if not all(k in item for k in ['min_age', 'max_age', 'price']):
-                            raise ValueError("Invalid pricing data structure")
-                        if item['min_age'] < 0 or item['max_age'] > 17 or item['min_age'] >= item['max_age']:
-                            raise ValueError(f"Invalid age range: {item['min_age']}-{item['max_age']}")
-                        if item['price'] < 0:
-                            raise ValueError(f"Invalid price: {item['price']}")
-                except (json.JSONDecodeError, ValueError) as e:
-                    messages.error(request, f"Invalid children's pricing: {str(e)}")
-                    return render(request, "admin/sales/meals/add_meals.html")
-            
             if Meal.objects.filter(name=name).exists():
                 messages.error(request, "Meal plan name already exists.")
                 return render(request, "admin/sales/meals/add_meals.html")
-            
             meal = Meal.objects.create(
                 name=name,
                 description=description,
                 included_meals=included_meals_str,
-                meal_type=meal_type,
-                price_per_person=price_per_person
             )
-            if children_pricing:
-                meal.set_children_pricing(children_pricing)
-                meal.save()
             messages.success(request, f"Meal plan '{name}' added successfully!")
             return redirect("sales:meal_list")
         except Exception as e:
@@ -2221,53 +2058,6 @@ def edit_meal(request, meal_id):
             meal.description = request.POST.get("description", "").strip()
             included_meals = request.POST.getlist("included_meals")
             meal.included_meals = ", ".join(included_meals) if included_meals else ""
-            meal.meal_type = request.POST.get("meal_type", "both")
-            price_per_person = request.POST.get("price_per_person", "").strip()
-            children_pricing_json = request.POST.get("children_pricing", "[]")
-            
-            # Validate price if provided
-            if price_per_person:
-                try:
-                    price_per_person = float(price_per_person)
-                    if price_per_person < 0:
-                        messages.error(request, "Price per person cannot be negative.")
-                        return render(request, "admin/sales/meals/edit_meals.html", {
-                            "meal": meal,
-                            "extra_meals": extra_meals
-                        })
-                    meal.price_per_person = price_per_person
-                except ValueError:
-                    messages.error(request, "Please enter a valid price per person.")
-                    return render(request, "admin/sales/meals/edit_meals.html", {
-                        "meal": meal,
-                        "extra_meals": extra_meals
-                    })
-            else:
-                meal.price_per_person = None
-            
-            # Parse and validate children's pricing
-            import json
-            children_pricing = []
-            if children_pricing_json and children_pricing_json != "[]":
-                try:
-                    children_pricing = json.loads(children_pricing_json)
-                    # Validate each pricing entry
-                    for item in children_pricing:
-                        if not all(k in item for k in ['min_age', 'max_age', 'price']):
-                            raise ValueError("Invalid pricing data structure")
-                        if item['min_age'] < 0 or item['max_age'] > 17 or item['min_age'] >= item['max_age']:
-                            raise ValueError(f"Invalid age range: {item['min_age']}-{item['max_age']}")
-                        if item['price'] < 0:
-                            raise ValueError(f"Invalid price: {item['price']}")
-                except (json.JSONDecodeError, ValueError) as e:
-                    messages.error(request, f"Invalid children's pricing: {str(e)}")
-                    return render(request, "admin/sales/meals/edit_meals.html", {
-                        "meal": meal,
-                        "extra_meals": extra_meals
-                    })
-            meal.set_children_pricing(children_pricing if children_pricing else None)
-            
-            meal.status = request.POST.get("status", "Available")
             meal.save()
             messages.success(request, f"Meal '{meal.name}' updated successfully!")
             return redirect("sales:meal_list")
@@ -2327,9 +2117,11 @@ def add_voucher(request):
     resorts = Resort.objects.all()
     accounts = Account.objects.all()
     employees = Employee.objects.filter(status='Active').order_by('name')
-    meals = Meal.objects.filter(status='Available')
+    # Meal model no longer has a 'status' field; show all meals
+    meals = Meal.objects.all().order_by('name')
     
     # Get next voucher ID
+    last_voucher = Voucher.objects.filter(voucher_no__startswith='VCH').order_by('-voucher_no').first()
     if last_voucher and last_voucher.voucher_no:
         try:
             last_num = int(last_voucher.voucher_no[3:])
@@ -2364,21 +2156,17 @@ def add_voucher(request):
                 checkout_date=request.POST.get("checkout_date"),
                 checkin_time=request.POST.get("checkin_time"),
                 checkout_time=request.POST.get("checkout_time"),
-                adults=request.POST.get("adults", 0),
-                children=request.POST.get("children", 0),
+                adults=int(request.POST.get("adults") or 0),
+                children=int(request.POST.get("children") or 0),
                 nights=request.POST.get("nights", 1),
                 pax_notes=request.POST.get("pax_notes", "").strip(),
                 room_type=request.POST.get("room_type", "").strip(),
-                no_of_rooms=request.POST.get("no_of_rooms", 1),
+                no_of_rooms=int(request.POST.get("no_of_rooms") or 1),
                 meals_plan_id=request.POST.get("meals_plan") or None,
                 bank_account_id=request.POST.get("bank_account") or None,
-                package_price=request.POST.get("package_price", 0),
-                resort_price=request.POST.get("resort_price", 0),
-                total_amount=request.POST.get("total_amount", 0),
-                received=request.POST.get("received", 0),
-                pending=request.POST.get("pending", 0),
-                from_whytehouse=request.POST.get("from_whytehouse", 0),
-                profit=request.POST.get("profit", 0),
+                package_price=Decimal(str(request.POST.get("package_price") or '0')),
+                resort_price=Decimal(str(request.POST.get("resort_price") or '0')),
+                received=Decimal(str(request.POST.get("received") or '0')),
                 note_for_resort=request.POST.get("note_for_resort", "").strip(),
                 note_for_guest=request.POST.get("note_for_guest", "").strip()
             )
@@ -2392,20 +2180,14 @@ def add_voucher(request):
 def toggle_meal_status(request, meal_id):
     if request.method != 'POST':
         return redirect('sales:meal_list')
-
-    meal = get_object_or_404(Meal, id=meal_id)
-    meal.status = 'Unavailable' if meal.status == 'Available' else 'Available'
-    meal.save()
-
-    # Check if this is an AJAX request
+    # The `status` field was removed from the Meal model; toggling status is no longer supported.
+    from django.http import JsonResponse
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        from django.http import JsonResponse
         return JsonResponse({
-            'success': True,
-            'new_status': meal.status,
-            'meal_id': meal.id
-        })
-
+            'success': False,
+            'message': 'Meal status toggle not supported (field removed).'
+        }, status=400)
+    messages.error(request, 'Meal status toggle not supported (field removed).')
     return redirect('sales:meal_list')
 
 
@@ -2428,7 +2210,7 @@ def edit_voucher(request, voucher_id):
     customers = Customer.objects.all()
     resorts = Resort.objects.all()
     accounts = Account.objects.all()
-    meals = Meal.objects.filter(status='Available')
+    meals = Meal.objects.all().order_by('name')
 
     if request.method == "POST":
         try:
@@ -2440,21 +2222,17 @@ def edit_voucher(request, voucher_id):
             voucher.checkout_date = request.POST.get("checkout_date") or None
             voucher.checkin_time = request.POST.get("checkin_time") or None
             voucher.checkout_time = request.POST.get("checkout_time") or None
-            voucher.adults = request.POST.get("adults", 0)
-            voucher.children = request.POST.get("children", 0)
-            voucher.nights = request.POST.get("nights", 1)
+            voucher.adults = int(request.POST.get("adults") or 0)
+            voucher.children = int(request.POST.get("children") or 0)
+            voucher.nights = int(request.POST.get("nights") or 1)
             voucher.pax_notes = request.POST.get("pax_notes", "").strip()
             voucher.room_type = request.POST.get("room_type", "").strip()
-            voucher.no_of_rooms = request.POST.get("no_of_rooms", 1)
+            voucher.no_of_rooms = int(request.POST.get("no_of_rooms") or 1)
             voucher.meals_plan_id = request.POST.get("meals_plan") or None
             voucher.bank_account_id = request.POST.get("bank_account") or None
-            voucher.package_price = request.POST.get("package_price", 0)
-            voucher.resort_price = request.POST.get("resort_price", 0)
-            voucher.total_amount = request.POST.get("total_amount", 0)
-            voucher.received = request.POST.get("received", 0)
-            voucher.pending = request.POST.get("pending", 0)
-            voucher.from_whytehouse = request.POST.get("from_whytehouse", 0)
-            voucher.profit = request.POST.get("profit", 0)
+            voucher.package_price = Decimal(str(request.POST.get("package_price") or '0'))
+            voucher.resort_price = Decimal(str(request.POST.get("resort_price") or '0'))
+            voucher.received = Decimal(str(request.POST.get("received") or '0'))
             voucher.note_for_resort = request.POST.get("note_for_resort", "").strip()
             voucher.note_for_guest = request.POST.get("note_for_guest", "").strip()
             voucher.save()
@@ -2566,7 +2344,7 @@ def add_invoice(request):
     resorts = Resort.objects.all()
     accounts = Account.objects.all()
     employees = Employee.objects.filter(status='Active').order_by('name')
-    meals = Meal.objects.filter(status='Available')
+    meals = Meal.objects.all().order_by('name')
     
     # Get next invoice ID
     from .models import Invoice
@@ -4115,7 +3893,7 @@ def manage_employee_roles(request):
         EmployeeRole.objects.create(name=name)
         messages.success(request, f'Role "{name}" added successfully!')
         return redirect(reverse('employee:manage_roles'))
-    roles = EmployeeRole.objects.all()
+    roles = []
     return render(request, 'admin/employee/manage_roles.html', {'roles': roles})
 
 
