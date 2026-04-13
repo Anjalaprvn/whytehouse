@@ -15,6 +15,8 @@ class AdminOTPVerificationMiddleware:
             '/verify-otp/',
             '/resend-otp/',
             '/forgot-password/',
+            '/verify-reset-otp/',
+            '/reset-password/',
         ]
     
     def __call__(self, request):

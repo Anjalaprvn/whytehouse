@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Verify OTP | Whyte House</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -140,6 +143,7 @@
         // Handle OTP input
         const inputs = document.querySelectorAll('.otp-field');
         const otpValue = document.getElementById('otpValue');
+        const form = document.getElementById('otpForm');
         
         inputs.forEach((input, index) => {
             input.addEventListener('keyup', (e) => {
@@ -160,12 +164,15 @@
             });
         });
         
-        // Auto-submit when all 6 digits are entered
-        document.getElementById('otpForm').addEventListener('input', () => {
+        // Ensure OTP value is set before form submission
+        form.addEventListener('submit', (e) => {
             let otp = '';
             inputs.forEach(inp => otp += inp.value);
-            if (otp.length === 6) {
-                otpValue.value = otp;
+            otpValue.value = otp;
+            
+            if (otp.length !== 6) {
+                e.preventDefault();
+                alert('Please enter all 6 digits of the OTP');
             }
         });
     </script>

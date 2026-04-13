@@ -7,6 +7,8 @@ from django.db.models import Q
 from django.utils.text import slugify
 from django.db import transaction
 from django.urls import reverse
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_protect
 import random
 from django.core.mail import send_mail
 from django.contrib import messages
@@ -184,6 +186,7 @@ def resend_otp(request):
     
     return redirect('admin_panel:verify_otp')
 
+@never_cache
 def forgot_password(request):
     if request.method == 'POST':
         email = request.POST.get('email', '').strip().lower()
@@ -211,6 +214,8 @@ def forgot_password(request):
 
     return render(request, 'admin/forgotpassword.html')
 
+@never_cache
+@csrf_protect
 def verify_reset_otp(request):
     # Check if session has required data
     session_otp = request.session.get('reset_otp')
@@ -224,8 +229,13 @@ def verify_reset_otp(request):
     if request.method == 'POST':
         entered_otp = request.POST.get('otp', '').strip()
         
+        if not entered_otp:
+            messages.error(request, 'Please enter the OTP.')
+            return render(request, 'admin/verify_reset_otp.html', {'email': email})
+        
         if entered_otp == session_otp:
-            # OTP is correct, redirect to reset password
+            # OTP is correct, mark as verified and redirect to reset password
+            request.session['otp_verified'] = True
             return redirect('admin_panel:reset_password')
         else:
             messages.error(request, 'Invalid OTP. Please try again.')
@@ -233,14 +243,17 @@ def verify_reset_otp(request):
     
     return render(request, 'admin/verify_reset_otp.html', {'email': email})
 
+@never_cache
+@csrf_protect
 def reset_password(request):
     # Check if user has verified OTP
     session_otp = request.session.get('reset_otp')
     user_id = request.session.get('reset_user_id')
     email = request.session.get('reset_email')
+    otp_verified = request.session.get('otp_verified', False)
     
-    if not session_otp or not user_id or not email:
-        messages.error(request, 'Session expired. Please start the password reset process again.')
+    if not session_otp or not user_id or not email or not otp_verified:
+        messages.error(request, 'Session expired or OTP not verified. Please start the password reset process again.')
         return redirect('admin_panel:forgot_password')
     
     if request.method == 'POST':
@@ -268,6 +281,7 @@ def reset_password(request):
             request.session.pop('reset_otp', None)
             request.session.pop('reset_user_id', None)
             request.session.pop('reset_email', None)
+            request.session.pop('otp_verified', None)
             
             messages.success(request, 'Password reset successfully! You can now login with your new password.')
             return redirect('admin_panel:login')
@@ -276,6 +290,7 @@ def reset_password(request):
             return redirect('admin_panel:forgot_password')
     
     return render(request, 'admin/reset_password.html')
+
 
 def dashboard(request):
     # Check if user has completed OTP verification (custom session check)
