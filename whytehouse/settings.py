@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'user_panel',
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_spectacular',
 ]
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
@@ -53,6 +54,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 from datetime import timedelta
@@ -172,3 +174,48 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'whytehousee@gmail.com'
 EMAIL_HOST_PASSWORD = 'jtaa dvaf fvbl wtgu' 
+
+
+# DRF Spectacular (Swagger/OpenAPI) Settings
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'WhyteHouse API',
+    'DESCRIPTION': 'Complete API documentation for WhyteHouse Travel Management System with OTP-based JWT authentication',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SCHEMA_PATH_PREFIX': '/api/',
+    'SECURITY': [
+        {
+            'Bearer': []
+        }
+    ],
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+            'description': 'JWT Authorization header using the Bearer scheme. Example: "Bearer {token}"'
+        }
+    },
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'displayOperationId': True,
+    },
+    'TAGS': [
+        {'name': 'Authentication', 'description': 'OTP-based JWT authentication endpoints'},
+        {'name': 'Customers', 'description': 'Customer management operations'},
+        {'name': 'Resorts', 'description': 'Resort management operations'},
+        {'name': 'Meals', 'description': 'Meal plan management operations'},
+        {'name': 'Accounts', 'description': 'Bank account management operations'},
+        {'name': 'Invoices', 'description': 'Invoice management operations'},
+        {'name': 'Vouchers', 'description': 'Voucher management operations'},
+        {'name': 'Leads', 'description': 'Lead/Enquiry management operations'},
+        {'name': 'Properties', 'description': 'Property management operations'},
+        {'name': 'Feedbacks', 'description': 'Customer feedback operations'},
+        {'name': 'Blogs', 'description': 'Blog management operations'},
+        {'name': 'Destinations', 'description': 'Destination management operations'},
+        {'name': 'Employees', 'description': 'Employee management operations'},
+        {'name': 'Packages', 'description': 'Travel package management operations'},
+    ],
+}

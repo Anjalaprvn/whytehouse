@@ -19,6 +19,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from admin_panel.urls import sales_patterns, employee_patterns, blog_patterns, feedback_patterns
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -34,9 +35,13 @@ urlpatterns = [
     # Feedback URLs (Admin)
     path('feedback/', include((feedback_patterns, 'feedback'))),
 
-    #API URLS
+    # API URLS
     path("api/", include("admin_panel.api_urls")),
-     
+    
+    # API Documentation URLs
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
 
 if settings.DEBUG:
