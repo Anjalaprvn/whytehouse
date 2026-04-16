@@ -1,5 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from .api_views import (
     CustomerViewSet,
@@ -15,6 +16,9 @@ from .api_views import (
     DestinationViewSet,
     EmployeeViewSet,
     TravelPackageViewSet,
+    request_otp,
+    verify_otp_and_login,
+    resend_otp,
 )
 
 router = DefaultRouter()
@@ -34,5 +38,12 @@ router.register(r'employees', EmployeeViewSet, basename='employee')
 router.register(r'packages', TravelPackageViewSet, basename='package')
 
 urlpatterns = [
+    # OTP-based JWT Authentication endpoints
+    path('auth/request-otp/', request_otp, name='request_otp'),
+    path('auth/verify-otp/', verify_otp_and_login, name='verify_otp'),
+    path('auth/resend-otp/', resend_otp, name='resend_otp'),
+    path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    
+    # API endpoints
     path('', include(router.urls)),
 ]
