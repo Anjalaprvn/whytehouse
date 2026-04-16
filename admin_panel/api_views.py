@@ -582,7 +582,30 @@ def resend_otp(request):
 @extend_schema(
     tags=['Dashboard'],
     summary='Get dashboard statistics',
-    description='Returns comprehensive dashboard statistics including counts, recent items, and upcoming bookings.',
+    description='Returns comprehensive dashboard statistics including counts, recent items, and upcoming bookings. Supports pagination for lists.',
+    parameters=[
+        OpenApiParameter(
+            name='upcoming_limit',
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.QUERY,
+            description='Number of upcoming bookings to return (default: 10, max: 50)',
+            required=False,
+        ),
+        OpenApiParameter(
+            name='invoices_limit',
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.QUERY,
+            description='Number of recent invoices to return (default: 10, max: 50)',
+            required=False,
+        ),
+        OpenApiParameter(
+            name='leads_limit',
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.QUERY,
+            description='Number of recent leads to return (default: 10, max: 50)',
+            required=False,
+        ),
+    ],
     responses={
         200: {
             'description': 'Dashboard statistics retrieved successfully',
@@ -602,36 +625,28 @@ def resend_otp(request):
                             'domestic_packages': 8,
                             'hospitality_properties': 8
                         },
-                        'upcoming_bookings': [
-                            {
-                                'id': 1,
-                                'invoice_no': 'INV001',
-                                'customer_name': 'John Doe',
-                                'resort_name': 'Paradise Resort',
-                                'checkin_date': '2026-05-01',
-                                'checkout_date': '2026-05-05',
-                                'total': 47500
-                            }
-                        ],
-                        'recent_invoices': [
-                            {
-                                'id': 1,
-                                'invoice_no': 'INV001',
-                                'customer_name': 'John Doe',
-                                'created_at': '2026-04-16T10:30:00Z',
-                                'total': 47500,
-                                'pending': 37500
-                            }
-                        ],
-                        'recent_leads': [
-                            {
-                                'id': 1,
-                                'full_name': 'jhg',
-                                'mobile_number': '8754555555',
-                                'enquiry_type': 'package',
-                                'created_at': '2026-04-01T10:00:00Z'
-                            }
-                        ]
+                        'upcoming_bookings': {
+                            'count': 2,
+                            'results': [
+                                {
+                                    'id': 1,
+                                    'invoice_no': 'INV001',
+                                    'customer_name': 'John Doe',
+                                    'resort_name': 'Paradise Resort',
+                                    'checkin_date': '2026-05-01',
+                                    'checkout_date': '2026-05-05',
+                                    'total': 47500
+                                }
+                            ]
+                        },
+                        'recent_invoices': {
+                            'count': 5,
+                            'results': []
+                        },
+                        'recent_leads': {
+                            'count': 5,
+                            'results': []
+                        }
                     }
                 }
             }
@@ -641,10 +656,15 @@ def resend_otp(request):
 @api_view(['GET'])
 def dashboard_statistics(request):
     """
-    Get comprehensive dashboard statistics
+    Get comprehensive dashboard statistics with pagination support
     """
     from django.db.models import Sum, Avg
     from datetime import datetime, timedelta
+    
+    # Get pagination limits from query parameters (default: 10, max: 50)
+    upcoming_limit = min(int(request.GET.get('upcoming_limit', 10)), 50)
+    invoices_limit = min(int(request.GET.get('invoices_limit', 10)), 50)
+    leads_limit = min(int(request.GET.get('leads_limit', 10)), 50)
     
     # Calculate statistics
     total_invoices = Invoice.objects.count()
@@ -664,9 +684,12 @@ def dashboard_statistics(request):
     total_properties = Property.objects.count()
     
     # Upcoming bookings (invoices with future check-in dates)
-    upcoming_bookings = Invoice.objects.filter(
+    upcoming_bookings_queryset = Invoice.objects.filter(
         checkin_date__gte=datetime.now()
-    ).select_related('customer', 'resort').order_by('checkin_date')[:3]
+    ).select_related('customer', 'resort').order_by('checkin_date')
+    
+    upcoming_bookings_count = upcoming_bookings_queryset.count()
+    upcoming_bookings = upcoming_bookings_queryset[:upcoming_limit]
     
     upcoming_bookings_data = [
         {
@@ -676,15 +699,21 @@ def dashboard_statistics(request):
             'resort_name': booking.resort.resort_name if booking.resort else 'N/A',
             'checkin_date': booking.checkin_date,
             'checkout_date': booking.checkout_date,
+            'checkin_time': booking.checkin_time,
+            'checkout_time': booking.checkout_time,
             'total': float(booking.total) if booking.total else 0,
             'nights': booking.nights,
             'rooms': booking.rooms,
+            'adults': booking.adults,
+            'children': booking.children,
         }
         for booking in upcoming_bookings
     ]
     
     # Recent invoices
-    recent_invoices = Invoice.objects.select_related('customer').order_by('-created_at')[:5]
+    recent_invoices_queryset = Invoice.objects.select_related('customer').order_by('-created_at')
+    recent_invoices_count = recent_invoices_queryset.count()
+    recent_invoices = recent_invoices_queryset[:invoices_limit]
     
     recent_invoices_data = [
         {
@@ -696,22 +725,28 @@ def dashboard_statistics(request):
             'total': float(invoice.total) if invoice.total else 0,
             'received': float(invoice.received) if invoice.received else 0,
             'pending': float(invoice.pending) if invoice.pending else 0,
+            'profit': float(invoice.profit) if invoice.profit else 0,
         }
         for invoice in recent_invoices
     ]
     
     # Recent leads
-    recent_leads = Lead.objects.order_by('-created_at')[:5]
+    recent_leads_queryset = Lead.objects.order_by('-created_at')
+    recent_leads_count = recent_leads_queryset.count()
+    recent_leads = recent_leads_queryset[:leads_limit]
     
     recent_leads_data = [
         {
             'id': lead.id,
             'full_name': lead.full_name,
             'mobile_number': lead.mobile_number,
+            'alternate_number': lead.alternate_number,
             'place': lead.place,
+            'email': lead.email,
             'enquiry_type': lead.enquiry_type,
             'status': lead.status,
             'is_viewed': lead.is_viewed,
+            'source': lead.source,
             'created_at': lead.created_at,
         }
         for lead in recent_leads
@@ -731,7 +766,19 @@ def dashboard_statistics(request):
             'domestic_packages': domestic_packages,
             'hospitality_properties': total_properties,
         },
-        'upcoming_bookings': upcoming_bookings_data,
-        'recent_invoices': recent_invoices_data,
-        'recent_leads': recent_leads_data,
+        'upcoming_bookings': {
+            'count': upcoming_bookings_count,
+            'limit': upcoming_limit,
+            'results': upcoming_bookings_data,
+        },
+        'recent_invoices': {
+            'count': recent_invoices_count,
+            'limit': invoices_limit,
+            'results': recent_invoices_data,
+        },
+        'recent_leads': {
+            'count': recent_leads_count,
+            'limit': leads_limit,
+            'results': recent_leads_data,
+        },
     }, status=status.HTTP_200_OK)
