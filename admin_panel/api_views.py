@@ -572,3 +572,166 @@ def resend_otp(request):
         'message': 'OTP resent to your registered email',
         'email': user.email
     }, status=status.HTTP_200_OK)
+
+
+
+# ============================================
+# Dashboard Statistics API
+# ============================================
+
+@extend_schema(
+    tags=['Dashboard'],
+    summary='Get dashboard statistics',
+    description='Returns comprehensive dashboard statistics including counts, recent items, and upcoming bookings.',
+    responses={
+        200: {
+            'description': 'Dashboard statistics retrieved successfully',
+            'content': {
+                'application/json': {
+                    'example': {
+                        'statistics': {
+                            'total_bookings': 0,
+                            'total_vouchers': 0,
+                            'total_invoices': 15,
+                            'total_profit': 50000,
+                            'new_leads': 6,
+                            'total_customers': 6,
+                            'avg_feedback_rating': 3.9,
+                            'total_blogs': 3,
+                            'international_packages': 10,
+                            'domestic_packages': 8,
+                            'hospitality_properties': 8
+                        },
+                        'upcoming_bookings': [
+                            {
+                                'id': 1,
+                                'invoice_no': 'INV001',
+                                'customer_name': 'John Doe',
+                                'resort_name': 'Paradise Resort',
+                                'checkin_date': '2026-05-01',
+                                'checkout_date': '2026-05-05',
+                                'total': 47500
+                            }
+                        ],
+                        'recent_invoices': [
+                            {
+                                'id': 1,
+                                'invoice_no': 'INV001',
+                                'customer_name': 'John Doe',
+                                'created_at': '2026-04-16T10:30:00Z',
+                                'total': 47500,
+                                'pending': 37500
+                            }
+                        ],
+                        'recent_leads': [
+                            {
+                                'id': 1,
+                                'full_name': 'jhg',
+                                'mobile_number': '8754555555',
+                                'enquiry_type': 'package',
+                                'created_at': '2026-04-01T10:00:00Z'
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+)
+@api_view(['GET'])
+def dashboard_statistics(request):
+    """
+    Get comprehensive dashboard statistics
+    """
+    from django.db.models import Sum, Avg
+    from datetime import datetime, timedelta
+    
+    # Calculate statistics
+    total_invoices = Invoice.objects.count()
+    total_vouchers = Voucher.objects.count()
+    total_profit = Invoice.objects.aggregate(Sum('profit'))['profit__sum'] or 0
+    new_leads_count = Lead.objects.filter(created_at__gte=datetime.now() - timedelta(days=30)).count()
+    total_customers = Customer.objects.count()
+    
+    # Feedback statistics
+    avg_feedback_raw = Feedback.objects.aggregate(Avg('rating'))['rating__avg']
+    avg_feedback = round(avg_feedback_raw, 1) if avg_feedback_raw else 0
+    
+    # Content statistics
+    total_blogs = Blog.objects.count()
+    international_packages = TravelPackage.objects.filter(category='International').count()
+    domestic_packages = TravelPackage.objects.filter(category='Domestic').count()
+    total_properties = Property.objects.count()
+    
+    # Upcoming bookings (invoices with future check-in dates)
+    upcoming_bookings = Invoice.objects.filter(
+        checkin_date__gte=datetime.now()
+    ).select_related('customer', 'resort').order_by('checkin_date')[:3]
+    
+    upcoming_bookings_data = [
+        {
+            'id': booking.id,
+            'invoice_no': booking.invoice_no,
+            'customer_name': booking.customer.display_name if booking.customer else 'N/A',
+            'resort_name': booking.resort.resort_name if booking.resort else 'N/A',
+            'checkin_date': booking.checkin_date,
+            'checkout_date': booking.checkout_date,
+            'total': float(booking.total) if booking.total else 0,
+            'nights': booking.nights,
+            'rooms': booking.rooms,
+        }
+        for booking in upcoming_bookings
+    ]
+    
+    # Recent invoices
+    recent_invoices = Invoice.objects.select_related('customer').order_by('-created_at')[:5]
+    
+    recent_invoices_data = [
+        {
+            'id': invoice.id,
+            'invoice_no': invoice.invoice_no,
+            'customer_name': invoice.customer.display_name if invoice.customer else 'N/A',
+            'invoice_date': invoice.invoice_date,
+            'created_at': invoice.created_at,
+            'total': float(invoice.total) if invoice.total else 0,
+            'received': float(invoice.received) if invoice.received else 0,
+            'pending': float(invoice.pending) if invoice.pending else 0,
+        }
+        for invoice in recent_invoices
+    ]
+    
+    # Recent leads
+    recent_leads = Lead.objects.order_by('-created_at')[:5]
+    
+    recent_leads_data = [
+        {
+            'id': lead.id,
+            'full_name': lead.full_name,
+            'mobile_number': lead.mobile_number,
+            'place': lead.place,
+            'enquiry_type': lead.enquiry_type,
+            'status': lead.status,
+            'is_viewed': lead.is_viewed,
+            'created_at': lead.created_at,
+        }
+        for lead in recent_leads
+    ]
+    
+    return Response({
+        'statistics': {
+            'total_bookings': 0,  # You can add booking model count if you have it
+            'total_vouchers': total_vouchers,
+            'total_invoices': total_invoices,
+            'total_profit': float(total_profit),
+            'new_leads': new_leads_count,
+            'total_customers': total_customers,
+            'avg_feedback_rating': avg_feedback,
+            'total_blogs': total_blogs,
+            'international_packages': international_packages,
+            'domestic_packages': domestic_packages,
+            'hospitality_properties': total_properties,
+        },
+        'upcoming_bookings': upcoming_bookings_data,
+        'recent_invoices': recent_invoices_data,
+        'recent_leads': recent_leads_data,
+    }, status=status.HTTP_200_OK)

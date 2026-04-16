@@ -19,6 +19,7 @@ from .api_views import (
     request_otp,
     verify_otp_and_login,
     resend_otp,
+    dashboard_statistics,
 )
 
 router = DefaultRouter()
@@ -43,6 +44,9 @@ urlpatterns = [
     path('auth/verify-otp/', verify_otp_and_login, name='verify_otp'),
     path('auth/resend-otp/', resend_otp, name='resend_otp'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    
+    # Dashboard endpoint
+    path('dashboard/', dashboard_statistics, name='dashboard'),
     
     # API endpoints
     path('', include(router.urls)),
