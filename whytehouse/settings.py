@@ -11,6 +11,13 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+import warnings
+import sys
+
+# Suppress naive datetime warnings for existing data
+# (New data is correctly timezone-aware)
+if not sys.warnoptions:
+    warnings.filterwarnings("ignore", category=RuntimeWarning, module="django.db.models.fields")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,6 +31,10 @@ SECRET_KEY = 'django-insecure-&=hais)9%=9&d()cmf*oa6d7^+vc_5g582zj$+d8m9y+_7sflb
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+# Silence naive datetime warnings
+import warnings
+warnings.filterwarnings('ignore', r".*received a naive datetime.*", RuntimeWarning, r'django\.db\.models\.fields')
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver', '*']
 

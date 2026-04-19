@@ -3,6 +3,10 @@
 import os
 import sys
 
+# Suppress all RuntimeWarnings before Django loads
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+
 
 def main():
     """Run administrative tasks."""

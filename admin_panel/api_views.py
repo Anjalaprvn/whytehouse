@@ -659,7 +659,8 @@ def dashboard_statistics(request):
     Get comprehensive dashboard statistics with pagination support
     """
     from django.db.models import Sum, Avg
-    from datetime import datetime, timedelta
+    from django.utils import timezone
+    from datetime import timedelta
     
     # Get pagination limits from query parameters (default: 10, max: 50)
     upcoming_limit = min(int(request.GET.get('upcoming_limit', 10)), 50)
@@ -670,7 +671,7 @@ def dashboard_statistics(request):
     total_invoices = Invoice.objects.count()
     total_vouchers = Voucher.objects.count()
     total_profit = Invoice.objects.aggregate(Sum('profit'))['profit__sum'] or 0
-    new_leads_count = Lead.objects.filter(created_at__gte=datetime.now() - timedelta(days=30)).count()
+    new_leads_count = Lead.objects.filter(created_at__gte=timezone.now() - timedelta(days=30)).count()
     total_customers = Customer.objects.count()
     
     # Feedback statistics
@@ -685,7 +686,7 @@ def dashboard_statistics(request):
     
     # Upcoming bookings (invoices with future check-in dates)
     upcoming_bookings_queryset = Invoice.objects.filter(
-        checkin_date__gte=datetime.now()
+        checkin_date__gte=timezone.now().date()
     ).select_related('customer', 'resort').order_by('checkin_date')
     
     upcoming_bookings_count = upcoming_bookings_queryset.count()

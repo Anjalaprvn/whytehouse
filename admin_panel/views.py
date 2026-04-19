@@ -301,12 +301,13 @@ def dashboard(request):
         return redirect('admin_panel:login')
     
     from django.db.models import Sum, Count, Avg
-    from datetime import datetime, timedelta
+    from django.utils import timezone
+    from datetime import timedelta
     
     # Stats
     total_invoices = Invoice.objects.count()
     total_profit = Invoice.objects.aggregate(Sum('profit'))['profit__sum'] or 0
-    new_leads = Lead.objects.filter(created_at__gte=datetime.now() - timedelta(days=30)).count()
+    new_leads = Lead.objects.filter(created_at__gte=timezone.now() - timedelta(days=30)).count()
     total_customers = Customer.objects.count()
     total_feedbacks = Feedback.objects.count()
     avg_feedback_raw = Feedback.objects.aggregate(Avg('rating'))['rating__avg']
@@ -317,7 +318,7 @@ def dashboard(request):
     total_properties = Property.objects.count()
     
     # Upcoming bookings (invoices with future check-in dates)
-    upcoming_bookings = Invoice.objects.filter(checkin_date__gte=datetime.now()).order_by('checkin_date')[:3]
+    upcoming_bookings = Invoice.objects.filter(checkin_date__gte=timezone.now().date()).order_by('checkin_date')[:3]
     
     # Recent invoices
     recent_invoices = Invoice.objects.select_related('customer').order_by('-created_at')[:5]
