@@ -1,7 +1,8 @@
 from rest_framework import viewsets, filters, status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
@@ -178,6 +179,7 @@ class LeadViewSet(viewsets.ModelViewSet):
 class PropertyViewSet(viewsets.ModelViewSet):
     queryset = Property.objects.all().order_by('-id')
     serializer_class = PropertySerializer
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'property_type', 'location', 'owner_name', 'owner_contact', 'summary']
     ordering_fields = ['id', 'created_at']
@@ -226,9 +228,90 @@ class BlogViewSet(viewsets.ModelViewSet):
 class DestinationViewSet(viewsets.ModelViewSet):
     queryset = Destination.objects.all().order_by('-id')
     serializer_class = DestinationSerializer
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'country', 'category', 'description']
     ordering_fields = ['id', 'created_at', 'packages_start_from']
+
+    @extend_schema(
+        tags=['Destinations'],
+        summary='List Domestic Destinations',
+        description='Get all domestic destinations',
+        responses={200: DestinationSerializer(many=True)}
+    )
+    @action(detail=False, methods=['get'], url_path='domestic')
+    def domestic_destinations(self, request):
+        """
+        Get all domestic destinations
+        """
+        destinations = Destination.objects.filter(category='Domestic', is_active=True).order_by('-created_at')
+        serializer = self.get_serializer(destinations, many=True)
+        return Response({
+            'count': destinations.count(),
+            'category': 'Domestic',
+            'results': serializer.data
+        }, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        tags=['Destinations'],
+        summary='List International Destinations',
+        description='Get all international destinations',
+        responses={200: DestinationSerializer(many=True)}
+    )
+    @action(detail=False, methods=['get'], url_path='international')
+    def international_destinations(self, request):
+        """
+        Get all international destinations
+        """
+        destinations = Destination.objects.filter(category='International', is_active=True).order_by('-created_at')
+        serializer = self.get_serializer(destinations, many=True)
+        return Response({
+            'count': destinations.count(),
+            'category': 'International',
+            'results': serializer.data
+        }, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        tags=['Destinations'],
+        summary='Add Domestic Destination',
+        description='Create a new domestic destination',
+        request=DestinationSerializer,
+        responses={201: DestinationSerializer}
+    )
+    @action(detail=False, methods=['post'], url_path='add-domestic')
+    def add_domestic_destination(self, request):
+        """
+        Add a new domestic destination
+        """
+        data = request.data.copy()
+        data['category'] = 'Domestic'
+        
+        serializer = self.get_serializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        tags=['Destinations'],
+        summary='Add International Destination',
+        description='Create a new international destination',
+        request=DestinationSerializer,
+        responses={201: DestinationSerializer}
+    )
+    @action(detail=False, methods=['post'], url_path='add-international')
+    def add_international_destination(self, request):
+        """
+        Add a new international destination
+        """
+        data = request.data.copy()
+        data['category'] = 'International'
+        
+        serializer = self.get_serializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @extend_schema_view(
@@ -258,6 +341,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 class TravelPackageViewSet(viewsets.ModelViewSet):
     queryset = TravelPackage.objects.all().order_by('-id')
     serializer_class = TravelPackageSerializer
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = [
         'package_id',
@@ -272,6 +356,127 @@ class TravelPackageViewSet(viewsets.ModelViewSet):
         'meta_description',
     ]
     ordering_fields = ['id', 'price', 'adult_price', 'created_at']
+
+    @extend_schema(
+        tags=['Packages'],
+        summary='Add Domestic Package under Destination',
+        description='Create a domestic travel package under a specific destination',
+        request=TravelPackageSerializer,
+        responses={201: TravelPackageSerializer}
+    )
+    @action(detail=False, methods=['post'], url_path='add-domestic')
+    def add_domestic_package(self, request):
+        """
+        Add a domestic package under a specific destination
+        """
+        destination_id = request.data.get('destination')
+        
+        if not destination_id:
+            return Response(
+                {'error': 'destination field is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Verify destination exists and is domestic
+        try:
+            destination = Destination.objects.get(id=destination_id)
+            if destination.category != 'Domestic':
+                return Response(
+                    {'error': 'Destination must be of category "Domestic"'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except Destination.DoesNotExist:
+            return Response(
+                {'error': 'Destination not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Force category to Domestic
+        data = request.data.copy()
+        data['category'] = 'Domestic'
+        
+        serializer = self.get_serializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        tags=['Packages'],
+        summary='Add International Package under Destination',
+        description='Create an international travel package under a specific destination',
+        request=TravelPackageSerializer,
+        responses={201: TravelPackageSerializer}
+    )
+    @action(detail=False, methods=['post'], url_path='add-international')
+    def add_international_package(self, request):
+        """
+        Add an international package under a specific destination
+        """
+        destination_id = request.data.get('destination')
+        
+        if not destination_id:
+            return Response(
+                {'error': 'destination field is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Verify destination exists and is international
+        try:
+            destination = Destination.objects.get(id=destination_id)
+            if destination.category != 'International':
+                return Response(
+                    {'error': 'Destination must be of category "International"'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except Destination.DoesNotExist:
+            return Response(
+                {'error': 'Destination not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Force category to International
+        data = request.data.copy()
+        data['category'] = 'International'
+        
+        serializer = self.get_serializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        tags=['Packages'],
+        summary='Get Packages by Destination',
+        description='Get all packages under a specific destination',
+        responses={200: TravelPackageSerializer(many=True)}
+    )
+    @action(detail=False, methods=['get'], url_path='by-destination/(?P<destination_id>[^/.]+)')
+    def packages_by_destination(self, request, destination_id=None):
+        """
+        Get all packages for a specific destination
+        """
+        try:
+            destination = Destination.objects.get(id=destination_id)
+        except Destination.DoesNotExist:
+            return Response(
+                {'error': 'Destination not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        packages = TravelPackage.objects.filter(destination_id=destination_id).order_by('-created_at')
+        serializer = self.get_serializer(packages, many=True)
+        
+        return Response({
+            'destination': {
+                'id': destination.id,
+                'name': destination.name,
+                'country': destination.country,
+                'category': destination.category
+            },
+            'count': packages.count(),
+            'packages': serializer.data
+        }, status=status.HTTP_200_OK)
 
 
 
