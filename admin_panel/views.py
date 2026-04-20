@@ -411,6 +411,7 @@ def add_lead(request):
         Lead.objects.create(
             full_name=request.POST.get('full_name'),
             mobile_number=request.POST.get('mobile_number'),
+            email=request.POST.get('email'),
             place=request.POST.get('place'),
             source=request.POST.get('source'),
             enquiry_type=request.POST.get('enquiry_type', 'General'),

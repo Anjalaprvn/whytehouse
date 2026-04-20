@@ -573,9 +573,10 @@ def package_detail(request, slug):
             if not start_date:
                 errors.append('Start date is required.')
             else:
+                from django.utils import timezone
                 try:
                     date_obj = datetime.strptime(start_date, '%Y-%m-%d')
-                    today = datetime.now().date()
+                    today = timezone.now().date()
                     if date_obj.date() < today:
                         errors.append('Start date cannot be in the past.')
                 except ValueError:
@@ -586,7 +587,7 @@ def package_detail(request, slug):
                     messages.error(request, error)
                 return render(request, 'user/package_detail.html', {
                     'package': package,
-                    'today': datetime.now(),
+                    'today': timezone.now(),
                     'form_data': {
                         'name': name,
                         'email': email,
@@ -674,11 +675,12 @@ def package_detail(request, slug):
                 errors.append('Message is required and must be at least 10 characters.')
             
             if errors:
+                from django.utils import timezone
                 for error in errors:
                     messages.error(request, error)
                 return render(request, 'user/package_detail.html', {
                     'package': package,
-                    'today': datetime.now()
+                    'today': timezone.now()
                 })
             
             # If validation passes, create customer and lead
@@ -715,24 +717,18 @@ def package_detail(request, slug):
     
     import json
     from decimal import Decimal
+    from django.utils import timezone
 
     # No resort or meal options for TravelPackage
     room_options = []
     meal_options = []
 
-    # Transport options
+    # Transport options - removed as model doesn't have this field
     transport_options = []
-    for t in package.transport_options.all():
-        transport_options.append({
-            'id': t.id,
-            'name': t.name,
-            'price_per_person': float(t.price_per_person),
-            'max_persons': t.max_persons,
-        })
 
     return render(request, 'user/package_detail.html', {
         'package': package,
-        'today': datetime.now(),
+        'today': timezone.now(),
         'room_options_json': json.dumps(room_options),
         'meal_options_json': json.dumps(meal_options),
         'transport_options_json': json.dumps(transport_options),

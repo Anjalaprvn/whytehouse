@@ -327,10 +327,20 @@
     .figma-field input[type="date"]{
         color:#6F6F6F;
         cursor:pointer;
+        position: relative;
     }
 
     .figma-field input[type="date"]::-webkit-calendar-picker-indicator{
-        display:none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: auto;
+        height: auto;
+        color: transparent;
+        background: transparent;
+        cursor: pointer;
     }
 
     .figma-field input[type="date"]::-webkit-inner-spin-button,
@@ -805,6 +815,24 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         calculateTotal();
+
+        // Fix date input - make it clickable
+        const dateInput = document.querySelector('input[name="start_date"]');
+        if (dateInput) {
+            dateInput.addEventListener('click', function(e) {
+                this.showPicker();
+            });
+            
+            // Also trigger on parent click
+            const dateField = dateInput.closest('.figma-field');
+            if (dateField) {
+                dateField.addEventListener('click', function(e) {
+                    if (e.target !== dateInput) {
+                        dateInput.showPicker();
+                    }
+                });
+            }
+        }
 
         document.querySelectorAll('.itinerary-header').forEach(header => {
             header.addEventListener('click', function () {
