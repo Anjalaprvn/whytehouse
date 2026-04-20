@@ -395,6 +395,29 @@ class DestinationSerializer(serializers.ModelSerializer):
             'is_active',
             'created_at',
         ]
+    
+    def validate_name(self, value):
+        """
+        Check that destination name is unique (case-insensitive)
+        """
+        # Normalize the name (strip whitespace and convert to title case)
+        normalized_name = value.strip()
+        
+        # For update operations, exclude the current instance
+        if self.instance:
+            # Updating existing destination - check for duplicates excluding self
+            if Destination.objects.filter(name__iexact=normalized_name).exclude(id=self.instance.id).exists():
+                raise serializers.ValidationError(
+                    f"A destination with the name '{normalized_name}' already exists."
+                )
+        else:
+            # Creating new destination - check for any duplicates
+            if Destination.objects.filter(name__iexact=normalized_name).exists():
+                raise serializers.ValidationError(
+                    f"A destination with the name '{normalized_name}' already exists."
+                )
+        
+        return normalized_name
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
