@@ -651,7 +651,7 @@
 
             {% if messages %}
                 {% for message in messages %}
-                <div style="padding:12px; border-radius:10px; margin-bottom:15px; font-size:14px;" class="message-{{ message.tags }}">
+                <div style="padding:12px; border-radius:10px; margin-bottom:15px; font-size:14px;" class="message-{{ message.tags }} auto-dismiss">
                     {{ message }}
                 </div>
                 {% endfor %}
@@ -671,14 +671,14 @@
                     <div class="form-group">
                         <div class="figma-field">
                             <div class="field-label">Email</div>
-                            <input type="email" name="email" placeholder="your.email@example.com" value="{{ form_data.email|default:'' }}" required>
+                            <input type="text" name="email" placeholder="your.email@example.com" value="{{ form_data.email|default:'' }}" required oninput="validateEmail(this)">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <div class="figma-field">
                             <div class="field-label">Phone</div>
-                            <input type="tel" name="phone" placeholder="Enter 10 digit phone number" value="{{ form_data.phone|default:'' }}" maxlength="10" pattern="[0-9]{10}" required>
+                            <input type="text" inputmode="numeric" name="phone" placeholder="Enter 10 digit phone number" value="{{ form_data.phone|default:'' }}" maxlength="10" required oninput="validatePhone(this)" onkeydown="return /[\d\b]/.test(event.key) || ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'].includes(event.key)">
                         </div>
                     </div>
 
@@ -795,20 +795,63 @@
         });
     }
 
-    function validateName(input) {
-        const valid = /^[a-zA-Z\s]*$/.test(input.value);
+    function validatePhone(input) {
+        input.value = input.value.replace(/[^\d]/g, '').slice(0, 10);
         const formGroup = input.closest('.form-group');
-        let msg = formGroup.querySelector('.name-error');
+        const field = input.closest('.figma-field');
+        let msg = formGroup.querySelector('.phone-error-msg');
 
-        if (!valid && input.value !== '') {
+        if (input.value.length > 0 && input.value.length < 10) {
+            if (field) field.style.boxShadow = 'inset 0 0 0 1.5px #ef4444';
             if (!msg) {
                 msg = document.createElement('div');
-                msg.className = 'name-error';
-                msg.style.cssText = 'color:#ef4444; font-size:12px; margin-top:5px;';
-                msg.textContent = 'Only letters and spaces are allowed.';
+                msg.className = 'phone-error-msg';
+                msg.style.cssText = 'color:#ef4444; font-size:12px; margin-top:5px; padding-left:2px;';
                 formGroup.appendChild(msg);
             }
+            msg.textContent = 'Phone number must be exactly 10 digits.';
         } else {
+            if (field) field.style.boxShadow = '';
+            if (msg) msg.remove();
+        }
+    }
+
+    function validateEmail(input) {
+        const formGroup = input.closest('.form-group');
+        const field = input.closest('.figma-field');
+        let msg = formGroup.querySelector('.email-error-msg');
+
+        if (input.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value)) {
+            if (field) field.style.boxShadow = 'inset 0 0 0 1.5px #ef4444';
+            if (!msg) {
+                msg = document.createElement('div');
+                msg.className = 'email-error-msg';
+                msg.style.cssText = 'color:#ef4444; font-size:12px; margin-top:5px; padding-left:2px;';
+                formGroup.appendChild(msg);
+            }
+            msg.textContent = 'Please enter a valid email.';
+        } else {
+            if (field) field.style.boxShadow = '';
+            if (msg) msg.remove();
+        }
+    }
+
+    function validateName(input) {
+        const formGroup = input.closest('.form-group');
+        const field = input.closest('.figma-field');
+        let msg = formGroup.querySelector('.name-error-msg');
+
+        if (input.value && !/^[a-zA-Z\s]+$/.test(input.value)) {
+            if (field) field.style.boxShadow = 'inset 0 0 0 1.5px #ef4444';
+            if (!msg) {
+                msg = document.createElement('div');
+                msg.className = 'name-error-msg';
+                msg.style.cssText = 'color:#ef4444; font-size:12px; margin-top:5px; padding-left:2px;';
+                formGroup.appendChild(msg);
+            }
+            msg.textContent = 'Only letters and spaces are allowed.';
+        } else {
+            if (field) field.style.boxShadow = '';
             if (msg) msg.remove();
         }
     }
@@ -816,36 +859,47 @@
     document.addEventListener('DOMContentLoaded', function () {
         calculateTotal();
 
-        // Fix date input - make it clickable
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        function showError(input, message) {
+            const formGroup = input.closest('.form-group');
+            if (!formGroup) return;
+            let err = formGroup.querySelector('.error-msg');
+            if (!err) {
+                err = document.createElement('div');
+                err.className = 'error-msg';
+                err.style.cssText = 'color:#ef4444; font-size:12px; margin-top:5px;';
+                formGroup.appendChild(err);
+            }
+            err.textContent = message;
+        }
+
+        function clearError(input) {
+            const formGroup = input.closest('.form-group');
+            if (!formGroup) return;
+            const err = formGroup.querySelector('.error-msg');
+            if (err) err.remove();
+        }
+
+        // Date input
         const dateInput = document.querySelector('input[name="start_date"]');
         if (dateInput) {
-            dateInput.addEventListener('click', function(e) {
-                this.showPicker();
-            });
-            
-            // Also trigger on parent click
+            dateInput.addEventListener('click', function() { this.showPicker(); });
             const dateField = dateInput.closest('.figma-field');
             if (dateField) {
                 dateField.addEventListener('click', function(e) {
-                    if (e.target !== dateInput) {
-                        dateInput.showPicker();
-                    }
+                    if (e.target !== dateInput) dateInput.showPicker();
                 });
             }
         }
 
-        // Fix guest dropdown - make arrow and field clickable
+        // Guest dropdown
         const guestsSelect = document.getElementById('guests-select');
         if (guestsSelect) {
-            const guestField = guestsSelect.closest('.figma-field');
-            const guestArrow = guestField.querySelector('.field-icon');
-            
+            const guestArrow = guestsSelect.closest('.figma-field').querySelector('.field-icon');
             if (guestArrow) {
-                // Remove pointer-events:none from arrow
                 guestArrow.style.pointerEvents = 'auto';
                 guestArrow.style.cursor = 'pointer';
-                
-                // Click arrow to open dropdown
                 guestArrow.addEventListener('click', function(e) {
                     e.stopPropagation();
                     guestsSelect.focus();
@@ -854,24 +908,23 @@
             }
         }
 
+        // Itinerary accordion
         document.querySelectorAll('.itinerary-header').forEach(header => {
             header.addEventListener('click', function () {
                 const content = this.parentElement.querySelector('.itinerary-content');
                 const icon = this.querySelector('i');
-
                 if (content.style.display === 'block') {
                     content.style.display = 'none';
-                    icon.classList.remove('fa-chevron-up');
-                    icon.classList.add('fa-chevron-down');
+                    icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
                 } else {
                     content.style.display = 'block';
-                    icon.classList.remove('fa-chevron-down');
-                    icon.classList.add('fa-chevron-up');
+                    icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
                 }
             });
         });
 
-        document.querySelectorAll('.message-success, .message-error, .message-warning, .message-info').forEach(function(msg) {
+        // Auto-dismiss messages
+        document.querySelectorAll('.auto-dismiss').forEach(function(msg) {
             setTimeout(function() {
                 msg.style.transition = 'opacity 0.5s ease';
                 msg.style.opacity = '0';
@@ -879,87 +932,32 @@
             }, 3000);
         });
 
-        const forms = document.querySelectorAll('form');
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // Phone validation handled via oninput="validatePhone()"
 
-        function showError(input, message) {
-            const formGroup = input.closest('.form-group');
-            if (!formGroup) return;
-
-            const existingError = formGroup.querySelector('.error-msg');
-            if (existingError) existingError.remove();
-
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error-msg';
-            errorDiv.style.color = '#dc2626';
-            errorDiv.style.fontSize = '12px';
-            errorDiv.style.marginTop = '5px';
-            errorDiv.textContent = message;
-            formGroup.appendChild(errorDiv);
-        }
-
-        function clearError(input) {
-            const formGroup = input.closest('.form-group');
-            if (!formGroup) return;
-
-            const existingError = formGroup.querySelector('.error-msg');
-            if (existingError) existingError.remove();
-        }
-
-        document.querySelectorAll('input[type="tel"]').forEach(phoneInput => {
-            phoneInput.addEventListener('input', function() {
-                this.value = this.value.replace(/[^\d]/g, '').slice(0, 10);
-
-                if (this.value && this.value.length < 10) {
-                    showError(this, 'Phone number must be exactly 10 digits');
-                } else {
-                    clearError(this);
-                }
-            });
-        });
-
-        document.querySelectorAll('input[type="email"]').forEach(emailInput => {
-            emailInput.addEventListener('input', function() {
-                if (this.value && !emailPattern.test(this.value)) {
-                    showError(this, 'Please enter a valid email address');
-                } else {
-                    clearError(this);
-                }
-            });
-        });
-
-        forms.forEach(form => {
-            form.addEventListener('submit', function(e) {
+        // Form submit validation
+        const bookingForm = document.getElementById('booking-form');
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', function(e) {
                 let isValid = true;
-                const requiredInputs = form.querySelectorAll('input[required], textarea[required], select[required]');
-
-                requiredInputs.forEach(input => {
+                this.querySelectorAll('input[required], select[required]').forEach(input => {
+                    clearError(input);
                     if (!input.value.trim()) {
                         showError(input, 'This field is required');
                         isValid = false;
-                    } else {
-                        clearError(input);
-                    }
-
-                    if ((input.name === 'name' || input.name === 'message_name') && input.value && !/^[a-zA-Z\s]+$/.test(input.value)) {
-                        showError(input, 'Only letters and spaces are allowed.');
+                    } else if (input.name === 'name' && !/^[a-zA-Z\s]+$/.test(input.value)) {
+                        showError(input, 'Only letters and spaces are allowed');
                         isValid = false;
-                    }
-
-                    if (input.type === 'email' && input.value && !emailPattern.test(input.value)) {
-                        showError(input, 'Please enter a valid email address');
+                    } else if (input.type === 'email' && !emailPattern.test(input.value)) {
+                        showError(input, 'Please enter a valid email');
                         isValid = false;
-                    }
-
-                    if (input.type === 'tel' && input.value && input.value.length !== 10) {
+                    } else if (input.type === 'tel' && input.value.length !== 10) {
                         showError(input, 'Phone number must be exactly 10 digits');
                         isValid = false;
                     }
                 });
-
                 if (!isValid) e.preventDefault();
             });
-        });
+        }
     });
 </script>
 {% endautoescape %}
