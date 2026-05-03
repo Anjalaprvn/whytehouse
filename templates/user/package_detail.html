@@ -723,10 +723,10 @@
                             <span>Total Cost / Pax</span>
                             <span>₹ <span id="per-person-cost">{{ package.adult_price|default:package.price|floatformat:1 }}</span></span>
                         </div>
-                        <div class="price-row">
+                        <!-- <div class="price-row">
                             <span>Tax%</span>
                             <span>₹ <span id="tax-amount">0.0</span></span>
-                        </div>
+                        </div> -->
                         <div class="price-row total">
                             <span>Total</span>
                             <span>₹ <span id="total-price-value">{{ package.adult_price|default:package.price|floatformat:1 }}</span></span>
@@ -830,6 +830,26 @@
                     if (e.target !== dateInput) {
                         dateInput.showPicker();
                     }
+                });
+            }
+        }
+
+        // Fix guest dropdown - make arrow and field clickable
+        const guestsSelect = document.getElementById('guests-select');
+        if (guestsSelect) {
+            const guestField = guestsSelect.closest('.figma-field');
+            const guestArrow = guestField.querySelector('.field-icon');
+            
+            if (guestArrow) {
+                // Remove pointer-events:none from arrow
+                guestArrow.style.pointerEvents = 'auto';
+                guestArrow.style.cursor = 'pointer';
+                
+                // Click arrow to open dropdown
+                guestArrow.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    guestsSelect.focus();
+                    guestsSelect.click();
                 });
             }
         }
