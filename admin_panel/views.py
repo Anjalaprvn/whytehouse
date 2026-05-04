@@ -1703,7 +1703,9 @@ def resort_list(request):
             Q(email__icontains=search_query)
         )
     
-    return render(request, "admin/sales/resort/resort.html", {"resorts": resorts, "search_query": search_query})
+    paginator = Paginator(resorts, 10)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return render(request, "admin/sales/resort/resort.html", {"resorts": page_obj, "page_obj": page_obj, "search_query": search_query})
 
 def add_resort(request):
     if request.method == "POST":
@@ -2025,7 +2027,9 @@ def meal_list(request):
             Q(description__icontains=search_query)
         )
     
-    return render(request, "admin/sales/meals/meals.html", {"meals": meals, "search_query": search_query})
+    paginator = Paginator(meals, 10)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return render(request, "admin/sales/meals/meals.html", {"meals": page_obj, "page_obj": page_obj, "search_query": search_query})
 
 def add_meal(request):
     if request.method == "POST":
@@ -2367,7 +2371,9 @@ def invoice_list(request):
         )
     
     invoices = invoices.order_by('-invoice_date', '-id')
-    return render(request, "admin/sales/invoice/invoice.html", {"invoices": invoices, "search_query": search_query})
+    paginator = Paginator(invoices, 10)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return render(request, "admin/sales/invoice/invoice.html", {"invoices": page_obj, "page_obj": page_obj, "search_query": search_query})
 
 def add_invoice(request):
     customers = Customer.objects.all()

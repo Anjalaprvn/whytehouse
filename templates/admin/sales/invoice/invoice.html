@@ -134,6 +134,14 @@ tbody tr:hover td{background:#fef9e7}
   </div>
 </section>
 
+{% if page_obj.has_other_pages %}
+<div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-top:20px;flex-wrap:wrap;">
+  {% if page_obj.has_previous %}<a href="?search={{ search_query }}&page={{ page_obj.previous_page_number }}" style="padding:7px 13px;border:1px solid #e5e7eb;border-radius:8px;text-decoration:none;color:#374151;font-size:13px;background:#fff;">&laquo;</a>{% endif %}
+  {% for num in page_obj.paginator.page_range %}{% if page_obj.number == num %}<span style="padding:7px 13px;border-radius:8px;background:#d4a017;color:#fff;font-size:13px;font-weight:600;">{{ num }}</span>{% else %}<a href="?search={{ search_query }}&page={{ num }}" style="padding:7px 13px;border:1px solid #e5e7eb;border-radius:8px;text-decoration:none;color:#374151;font-size:13px;background:#fff;">{{ num }}</a>{% endif %}{% endfor %}
+  {% if page_obj.has_next %}<a href="?search={{ search_query }}&page={{ page_obj.next_page_number }}" style="padding:7px 13px;border:1px solid #e5e7eb;border-radius:8px;text-decoration:none;color:#374151;font-size:13px;background:#fff;">&raquo;</a>{% endif %}
+</div>
+{% endif %}
+
 <script>
 let t;
 document.getElementById('searchInput').addEventListener('input', function() {
