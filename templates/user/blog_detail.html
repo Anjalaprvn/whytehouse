@@ -156,11 +156,11 @@ body {
 
 /* ===== RIGHT SIDEBAR FIXED IN ITS COLUMN ===== */
 .image-sidebar {
-    position: static !important;
-    top: auto !important;
+    position: sticky;
+    top: 100px;
     align-self: start;
     width: 100%;
-    height: 700px;
+    max-height: 80vh;
     background: linear-gradient(145deg, #ffffff 0%, #fcfcfc 100%);
     border-radius: 28px;
     padding: 25px 0 25px 25px;
@@ -172,7 +172,7 @@ body {
         0 0 0 1px rgba(212, 163, 115, 0.15);
     border: 1px solid rgba(255,255,255,0.8);
     backdrop-filter: blur(10px);
-    overflow: hidden;
+    overflow: visible;
     transform: none !important;
 }
 
@@ -268,8 +268,9 @@ body {
     background: var(--brand-gold);
 }
 .gallery-item {
-    display: flex;
-    gap: 15px;
+    display: block;
+    padding: 8px;
+    text-align: center;
     align-items: flex-start;
     cursor: pointer;
     padding: 12px;
@@ -294,8 +295,9 @@ body {
 }
 
 .gallery-thumb {
-    width: 100px;
-    height: 100px;
+    width: 220px;
+    
+    height: 160px;
     border-radius: 14px;
     overflow: hidden;
     flex-shrink: 0;
