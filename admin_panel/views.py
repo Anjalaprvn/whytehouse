@@ -527,6 +527,15 @@ def assign_lead_employee(request, lead_id):
     employee_id = request.POST.get('employee')
     next_url = request.POST.get('next', 'admin_panel:leads')
     
+    # Prevent reassignment if employee is already assigned
+    if lead.employee:
+        messages.warning(request, 'This lead is already assigned. Cannot reassign.')
+        if next_url and next_url.startswith('/'):
+            from django.utils.http import url_has_allowed_host_and_scheme
+            if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                return redirect(next_url)
+        return redirect('admin_panel:leads')
+    
     if employee_id:
         try:
             employee = Employee.objects.get(id=employee_id)
@@ -536,10 +545,7 @@ def assign_lead_employee(request, lead_id):
         except Employee.DoesNotExist:
             messages.error(request, 'Selected employee not found.')
     else:
-        # Unassign the lead
-        lead.employee = None
-        lead.save()
-        messages.success(request, 'Lead unassigned successfully.')
+        messages.error(request, 'Please select an employee.')
     
     # Redirect back to the referring page or default to leads list
     if next_url and next_url.startswith('/'):
@@ -557,6 +563,15 @@ def update_lead_status(request, lead_id):
     lead = get_object_or_404(Lead, id=lead_id)
     new_status = request.POST.get('status')
     next_url = request.POST.get('next', 'admin_panel:leads')
+    
+    # Check if employee is assigned before allowing status change
+    if not lead.employee:
+        messages.error(request, 'Please assign an employee before changing the status.')
+        if next_url and next_url.startswith('/'):
+            from django.utils.http import url_has_allowed_host_and_scheme
+            if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                return redirect(next_url)
+        return redirect('admin_panel:leads')
     
     if new_status:
         # Validate status choice
