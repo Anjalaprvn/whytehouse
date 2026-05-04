@@ -660,17 +660,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 {% block extra_js %}
 <script>
-// Override Home link to redirect to hospitality page
-setTimeout(function() {
-    const homeLink = document.getElementById('nav-home-link');
-    if (homeLink) {
-        homeLink.href = "{% url 'user_panel:hospitality' %}";
-        homeLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = "{% url 'user_panel:hospitality' %}";
-        });
-    }
-}, 200);
+(function(){
+    var homeLink = document.getElementById('nav-home-link');
+    if (homeLink) homeLink.href = "{% url 'user_panel:hospitality' %}";
+})();
 </script>
 {% endblock %}
 
