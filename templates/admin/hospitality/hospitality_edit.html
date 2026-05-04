@@ -256,15 +256,15 @@
             <div class="form-group">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                     <label style="margin:0;">Amenities</label>
-                    <button type="button" onclick="addNewAmenity()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer; font-size: 12px;">+ Add Amenity</button>
+                    <button type="button" onclick="addNewAmenity()" style="background:#d4a017; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-size: 13px; font-weight:600;">+ Add Amenity</button>
                 </div>
                 <div id="new-amenities-container">
                     {% if property.amenities %}
                         {% for amenity in property.amenity_list %}
-                        <input type="text" name="new_amenities[]" class="form-control" value="{{ amenity }}" style="margin-bottom: 10px;" oninput="validateAmenityDuplicate(this)">
+                        <input type="text" name="new_amenities[]" class="form-control amenity-input" value="{{ amenity }}" style="margin-bottom: 10px;" oninput="validateAmenityDuplicate(this)">
                         {% endfor %}
                     {% else %}
-                        <input type="text" name="new_amenities[]" class="form-control" placeholder="Enter amenity name" style="margin-bottom: 10px;" oninput="validateLetters(this, null)">
+                        <input type="text" name="new_amenities[]" class="form-control amenity-input" placeholder="Enter amenity name and press Enter" style="margin-bottom: 10px;" oninput="validateLetters(this, null)">
                     {% endif %}
                 </div>
             </div>
@@ -358,12 +358,31 @@ function addNewAmenity() {
     const input = document.createElement('input');
     input.type = 'text';
     input.name = 'new_amenities[]';
-    input.className = 'form-control';
-    input.placeholder = 'Enter new amenity name';
+    input.className = 'form-control amenity-input';
+    input.placeholder = 'Enter amenity name and press Enter';
     input.style.marginBottom = '10px';
     input.addEventListener('input', function() { validateAmenityDuplicate(this); });
+    input.addEventListener('keydown', handleAmenityEnter);
     container.appendChild(input);
+    input.focus();
 }
+
+function handleAmenityEnter(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const input = e.target;
+        if (input.value.trim() && !input.classList.contains('invalid')) {
+            addNewAmenity();
+        }
+    }
+}
+
+// Add Enter key handler to existing amenity inputs
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.amenity-input').forEach(input => {
+        input.addEventListener('keydown', handleAmenityEnter);
+    });
+});
 
 function validateLocation(input) {
     const valid = /^[a-zA-Z\s,]*$/.test(input.value);

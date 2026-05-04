@@ -49,7 +49,7 @@
 <div class="form-container">
 
     <div style="display:flex; align-items:center; gap:15px; margin-bottom:30px;">
-        <a href="{% url 'admin_panel:travel_packages' %}" style="text-decoration:none; color:#000; font-size:24px;">←</a>
+        <a href="{% url 'admin_panel:travel_packages' %}" style="text-decoration:none; background:#c89b2d; color:#fff; font-size:20px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">←</a>
         <div>
             <h2 style="margin:0; font-size: 1.5rem;">Edit Package</h2>
             <small style="color:#6b7280;">Update package details</small>
@@ -238,17 +238,17 @@
         <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <h4 style="margin:0;">Inclusions</h4>
-        <button type="button" onclick="addInclusion()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer;">+ Add Inclusion</button>
+        <button type="button" onclick="addInclusion()" style="background:#c89b2d; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:600;">+ Add Inclusion</button>
     </div>
     <div id="inclusion-container">
         {% if package.inclusions %}
             {% for item in package.inclusions.splitlines %}
                 {% if item.strip %}
-                <input type="text" name="inclusions[]" class="form-control" value="{{ item }}" oninput="validateLettersField(this, null); checkDuplicate(this, 'inclusion')">
+                <input type="text" name="inclusions[]" class="form-control inclusion-input" value="{{ item }}" oninput="validateLettersField(this, null); checkDuplicate(this, 'inclusion')">
                 {% endif %}
             {% endfor %}
         {% else %}
-        <input type="text" name="inclusions[]" class="form-control" placeholder="e.g., Hotel accommodation" oninput="validateLettersField(this, null); checkDuplicate(this, 'inclusion')">
+        <input type="text" name="inclusions[]" class="form-control inclusion-input" placeholder="e.g., Hotel accommodation (press Enter to add more)" oninput="validateLettersField(this, null); checkDuplicate(this, 'inclusion')">
         {% endif %}
     </div>
 </div>
@@ -256,17 +256,17 @@
         <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <h4 style="margin:0;">Exclusions</h4>
-        <button type="button" onclick="addExclusion()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer;">+ Add Exclusion</button>
+        <button type="button" onclick="addExclusion()" style="background:#c89b2d; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:600;">+ Add Exclusion</button>
     </div>
     <div id="exclusion-container">
         {% if package.exclusions %}
             {% for item in package.exclusions.splitlines %}
                 {% if item.strip %}
-                <input type="text" name="exclusions[]" class="form-control" value="{{ item }}" oninput="validateLettersField(this, null); checkDuplicate(this, 'exclusion')">
+                <input type="text" name="exclusions[]" class="form-control exclusion-input" value="{{ item }}" oninput="validateLettersField(this, null); checkDuplicate(this, 'exclusion')">
                 {% endif %}
             {% endfor %}
         {% else %}
-        <input type="text" name="exclusions[]" class="form-control" placeholder="e.g., Flight tickets" oninput="validateLettersField(this, null); checkDuplicate(this, 'exclusion')">
+        <input type="text" name="exclusions[]" class="form-control exclusion-input" placeholder="e.g., Flight tickets (press Enter to add more)" oninput="validateLettersField(this, null); checkDuplicate(this, 'exclusion')">
         {% endif %}
     </div>
 </div>
@@ -490,10 +490,12 @@ function addInclusion() {
     const input = document.createElement('input');
     input.type = 'text';
     input.name = 'inclusions[]';
-    input.className = 'form-control';
-    input.placeholder = 'e.g., Breakfast included';
+    input.className = 'form-control inclusion-input';
+    input.placeholder = 'e.g., Breakfast included (press Enter to add more)';
     input.addEventListener('input', function() { validateLettersField(this, null); checkDuplicate(this, 'inclusion'); });
+    input.addEventListener('keydown', handleInclusionEnter);
     container.appendChild(input);
+    input.focus();
 }
 
 function addExclusion() {
@@ -501,10 +503,32 @@ function addExclusion() {
     const input = document.createElement('input');
     input.type = 'text';
     input.name = 'exclusions[]';
-    input.className = 'form-control';
-    input.placeholder = 'e.g., Personal expenses';
+    input.className = 'form-control exclusion-input';
+    input.placeholder = 'e.g., Personal expenses (press Enter to add more)';
     input.addEventListener('input', function() { validateLettersField(this, null); checkDuplicate(this, 'exclusion'); });
+    input.addEventListener('keydown', handleExclusionEnter);
     container.appendChild(input);
+    input.focus();
+}
+
+function handleInclusionEnter(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const input = e.target;
+        if (input.value.trim() && !input.classList.contains('invalid')) {
+            addInclusion();
+        }
+    }
+}
+
+function handleExclusionEnter(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const input = e.target;
+        if (input.value.trim() && !input.classList.contains('invalid')) {
+            addExclusion();
+        }
+    }
 }
 
 function checkDuplicate(input, type) {
@@ -576,6 +600,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const durField = document.getElementById('edit_duration');
     if (durField.value) updateItineraryDays();
     syncAddDayBtn();
+
+    // Add Enter key handler to existing inputs
+    document.querySelectorAll('.inclusion-input').forEach(input => {
+        input.addEventListener('keydown', handleInclusionEnter);
+    });
+    document.querySelectorAll('.exclusion-input').forEach(input => {
+        input.addEventListener('keydown', handleExclusionEnter);
+    });
 
     const pkgFileInput = document.getElementById('pkg-file-upload');
     const pkgPreviewImg = document.getElementById('pkg-preview-img');
