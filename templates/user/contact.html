@@ -569,11 +569,11 @@
                     <div class="form-group">
                         <label class="field-label">Enquiry Type</label>
                         <select name="subject">
-                            <option value="" disabled selected>Select an option</option>
-                            <option value="Package related" {% if form_data.subject == 'Package related' %}selected{% endif %}>Package related</option>
-                            <option value="Holiday Package" {% if form_data.subject == 'Holiday Package' %}selected{% endif %}>Holiday Package</option>
-                            <option value="Property Management" {% if form_data.subject == 'Property Management' %}selected{% endif %}>Property Management</option>
-                            <option value="General Enquiry" {% if form_data.subject == 'General Enquiry' %}selected{% endif %}>General Enquiry</option>
+                            <option value="" disabled {% if not form_data.subject and not default_subject %}selected{% endif %}>Select an option</option>
+                            <option value="Package related" {% if form_data.subject == 'Package related' or default_subject == 'Package related' %}selected{% endif %}>Package related</option>
+                            <option value="Holiday Package" {% if form_data.subject == 'Holiday Package' or default_subject == 'Holiday Package' %}selected{% endif %}>Holiday Package</option>
+                            <option value="Property Management" {% if form_data.subject == 'Property Management' or default_subject == 'Property Management' %}selected{% endif %}>Property Management</option>
+                            <option value="General Enquiry" {% if form_data.subject == 'General Enquiry' or default_subject == 'General Enquiry' %}selected{% endif %}>General Enquiry</option>
                         </select>
                         <div class="error-message">Please select an enquiry type</div>
                     </div>

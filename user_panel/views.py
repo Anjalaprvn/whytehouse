@@ -383,10 +383,9 @@ def contact(request):
             traceback.print_exc()
         
         # If successful, add success message and redirect
-        messages.success(request, 'Thank you! Your message has been sent successfully.')
         return render(request, 'user/contact.html', {'success': True})
 
-    return render(request, 'user/contact.html')
+    return render(request, 'user/contact.html', {'default_subject': request.GET.get('subject', '')})
 
 def packages(request):
     country = request.GET.get('country', 'all')

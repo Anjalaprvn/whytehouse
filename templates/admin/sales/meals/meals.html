@@ -3,124 +3,57 @@
 
 {% block extra_css %}
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-
-  .page-title { font-size: 38px; font-weight: 700; margin-bottom: 14px; }
-  .page-subtitle { font-size: 18px; color: #667085; margin-bottom: 36px; }
-
-  .card {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 24px;
-    padding: 36px 36px 18px;
-  }
-
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 42px;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-
-  .card-title { font-size: 24px; font-weight: 700; }
-
-  .add-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 14px;
-    background: #d4a437;
-    color: #000;
-    text-decoration: none;
-    border: none;
-    border-radius: 14px;
-    padding: 16px 24px;
-    font-size: 18px;
-    font-weight: 500;
-    cursor: pointer;
-  }
-
-  .add-btn .plus { font-size: 32px; line-height: 1; font-weight: 400; }
-
-  .table-wrap { width: 100%; overflow-x: auto; }
-
-  table { width: 100%; border-collapse: collapse; }
-
-  thead th {
-    text-align: left;
-    font-size: 22px;
-    font-weight: 700;
-    padding: 28px 22px;
-    border-bottom: 1px solid #e5e7eb;
-  }
-
-  tbody td {
-    padding: 24px 22px;
-    font-size: 20px;
-    font-weight: 500;
-    border-bottom: 1px solid #e5e7eb;
-    vertical-align: middle;
-  }
-
-  tbody tr:hover td { background: #fef9e7; }
-
-  .col-sl { width: 140px; }
-  .col-actions { width: 200px; }
-
-  .actions { display: flex; gap: 12px; align-items: center; }
-
-  .icon-btn {
-    width: 56px;
-    height: 50px;
-    border: 1px solid #d9d9d9;
-    background: #fff;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    text-decoration: none;
-  }
-
-  .icon-btn svg { width: 23px; height: 23px; stroke: #111; fill: none; stroke-width: 2; }
-  .icon-btn.delete svg { stroke: #ff2147; }
-
-  @media (max-width: 768px) {
-    .page-title { font-size: 30px; }
-    .page-subtitle { font-size: 16px; }
-    .card { padding: 24px 18px 12px; }
-    .card-title { font-size: 22px; }
-    .add-btn { font-size: 16px; padding: 14px 18px; }
-    thead th, tbody td { font-size: 18px; padding: 20px 14px; }
-    .col-sl { width: 90px; }
-    .col-actions { width: 160px; }
-    .icon-btn { width: 48px; height: 46px; }
-  }
+.page-title{font-size:32px;font-weight:600;margin-bottom:8px;color:#111}
+.page-sub{color:#666;font-size:15px;margin-bottom:24px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.card-head h2{font-size:18px;font-weight:600;color:#111}
+.head-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.search{position:relative;min-width:280px;flex:1;max-width:400px}
+.search input{width:100%;border:1px solid #e5e7eb;background:#f9fafb;border-radius:10px;padding:10px 12px 10px 40px;outline:none;font-size:14px}
+.search input:focus{border-color:#d4a017;background:#fff}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;opacity:0.5;pointer-events:none}
+.btn-add{display:inline-flex;align-items:center;gap:8px;background:#d4a017;color:#000;border:none;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer;text-decoration:none;font-size:14px}
+.btn-add svg{width:16px;height:16px}
+.table-wrap{border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-size:13px;font-weight:600;padding:14px 16px;border-bottom:1px solid #e5e7eb;background:#f9fafb;color:#374151;white-space:nowrap}
+tbody td{padding:14px 16px;font-size:14px;border-bottom:1px solid #f3f4f6;color:#111;white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#fef9e7}
+.actions{display:flex;gap:8px;align-items:center}
+.icon-btn{width:36px;height:36px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none;padding:0}
+.icon-btn svg{width:16px;height:16px;fill:none;stroke:#111;stroke-width:2}
+.icon-btn.delete svg{stroke:#ef4444}
 </style>
 {% endblock %}
 
 {% block content %}
-
 <h1 class="page-title">Meals Plan</h1>
-<p class="page-subtitle">Manage meal plan options</p>
+<p class="page-sub">Manage meal plan options</p>
 
 <div class="card">
-  <div class="card-header">
-    <h2 class="card-title">Meal Plans</h2>
-    <a href="{% url 'sales:add_meal' %}" class="add-btn">
-      <span class="plus">+</span>
-      <span>Add Meal Plan</span>
-    </a>
+  <div class="card-head">
+    <h2>Meal Plans</h2>
+    <div class="head-right">
+      <form method="GET" action="{% url 'sales:meal_list' %}" class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" name="search" placeholder="Search meals..." value="{{ search_query }}" id="searchInput">
+      </form>
+      <a href="{% url 'sales:add_meal' %}" class="btn-add">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 5V19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/><path d="M5 12H19" stroke="#111" stroke-width="2.4" stroke-linecap="round"/></svg>
+        Add Meal Plan
+      </a>
+    </div>
   </div>
 
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
-          <th class="col-sl">Sl No</th>
+          <th style="width:90px;">Sl No</th>
           <th>Meals</th>
-          <th class="col-actions">Actions</th>
+          <th style="width:160px;">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -131,27 +64,15 @@
           <td>
             <div class="actions">
               <a href="{% url 'sales:view_meal' meal.id %}" class="icon-btn" title="View">
-                <svg viewBox="0 0 24 24">
-                  <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
+                <svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
               </a>
               <a href="{% url 'sales:edit_meal' meal.id %}" class="icon-btn" title="Edit">
-                <svg viewBox="0 0 24 24">
-                  <path d="M12 20H21"/>
-                  <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
-                </svg>
+                <svg viewBox="0 0 24 24"><path d="M12 20H21"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
               </a>
               <form method="POST" action="{% url 'sales:delete_meal' meal.id %}" onsubmit="return confirm('Delete {{ meal.name }}?');" style="display:contents;">
                 {% csrf_token %}
                 <button type="submit" class="icon-btn delete" title="Delete">
-                  <svg viewBox="0 0 24 24">
-                    <path d="M3 6h18"/>
-                    <path d="M8 6V4h8v2"/>
-                    <path d="M19 6l-1 14H6L5 6"/>
-                    <path d="M10 11v6"/>
-                    <path d="M14 11v6"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
                 </button>
               </form>
             </div>
@@ -159,9 +80,8 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="3" style="text-align:center;padding:40px;color:#777;">
-            No meal plans found.
-            <a href="{% url 'sales:add_meal' %}" style="color:#d4a437;font-weight:600;">Add your first meal plan</a>
+          <td colspan="3" style="text-align:center;padding:22px;color:#777;">
+            No meal plans found. <a href="{% url 'sales:add_meal' %}" style="color:#d4a017;font-weight:600;">Add your first meal plan</a>
           </td>
         </tr>
         {% endfor %}
@@ -170,4 +90,11 @@
   </div>
 </div>
 
+<script>
+let t;
+document.getElementById('searchInput').addEventListener('input', function() {
+  clearTimeout(t);
+  t = setTimeout(() => this.closest('form').submit(), 500);
+});
+</script>
 {% endblock %}
