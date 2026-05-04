@@ -151,38 +151,8 @@
       </div>
 
       <div class="kv">
-        <div class="k">Meal Type</div>
-        <div class="v">
-          {% if meal.meal_type == 'veg' %}
-            <span class="badge" style="background:#dcfce7;color:#166534;">Vegetarian</span>
-          {% elif meal.meal_type == 'non-veg' %}
-            <span class="badge" style="background:#fee2e2;color:#991b1b;">Non-Vegetarian</span>
-          {% else %}
-            <span class="badge" style="background:#fef3c7;color:#92400e;">Both</span>
-          {% endif %}
-        </div>
-      </div>
-
-      <div class="kv">
-        <div class="k">Price Per Person</div>
-        <div class="v">
-          {% if meal.price_per_person %}
-            ₹{{ meal.price_per_person }}
-          {% else %}
-            <span class="v small">Not set</span>
-          {% endif %}
-        </div>
-      </div>
-
-      <div class="kv">
-        <div class="k">Status</div>
-        <div class="v">
-          {% if meal.status == 'Available' %}
-            <span class="badge available">{{ meal.status }}</span>
-          {% else %}
-            <span class="badge unavailable">{{ meal.status }}</span>
-          {% endif %}
-        </div>
+        <div class="k">Updated</div>
+        <div class="v small">{{ meal.updated_at|date:"d M Y, h:i A" }}</div>
       </div>
 
       <div class="kv" style="grid-column:1/-1">
