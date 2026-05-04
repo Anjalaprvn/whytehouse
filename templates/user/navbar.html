@@ -163,16 +163,19 @@
     } else if (currentPage === 'index' || currentPage === 'international_packages') {
         sessionStorage.setItem('currentSection', 'international');
     }
-    
+
     // Get current section from storage
     const currentSection = sessionStorage.getItem('currentSection') || 'international';
-    
+
     // Update Home and Packages links based on section
     const homeLink = document.getElementById('nav-home-link');
     const packagesLink = document.getElementById('nav-packages-link');
     const internationalToggle = document.getElementById('international-toggle');
-    
-    if (currentSection === 'domestic') {
+
+    // Special case for hospitality detail and enquiry pages
+    if (currentPage === 'hospitality_detail' || currentPage === 'hospitality_enquiry') {
+        if (homeLink) homeLink.href = "{% url 'user_panel:hospitality' %}";
+    } else if (currentSection === 'domestic') {
         if (homeLink) homeLink.href = "{% url 'user_panel:domestic' %}";
         if (packagesLink) packagesLink.href = "{% url 'user_panel:domestic_packages' %}";
     } else {
