@@ -527,21 +527,17 @@ def assign_lead_employee(request, lead_id):
     employee_id = request.POST.get('employee')
     next_url = request.POST.get('next', 'admin_panel:leads')
     
-    # Prevent reassignment if employee is already assigned
-    if lead.employee:
-        messages.warning(request, 'This lead is already assigned. Cannot reassign.')
-        if next_url and next_url.startswith('/'):
-            from django.utils.http import url_has_allowed_host_and_scheme
-            if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
-                return redirect(next_url)
-        return redirect('admin_panel:leads')
-    
     if employee_id:
         try:
             employee = Employee.objects.get(id=employee_id)
+            old_employee = lead.employee.name if lead.employee else None
             lead.employee = employee
             lead.save()
-            messages.success(request, f'Lead assigned to {employee.name} successfully!')
+            
+            if old_employee:
+                messages.success(request, f'Lead reassigned from {old_employee} to {employee.name} successfully!')
+            else:
+                messages.success(request, f'Lead assigned to {employee.name} successfully!')
         except Employee.DoesNotExist:
             messages.error(request, 'Selected employee not found.')
     else:

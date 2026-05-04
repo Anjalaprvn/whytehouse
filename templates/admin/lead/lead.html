@@ -82,7 +82,7 @@ tbody tr:hover td{background:#fef9e7}
           <path d="M21 21L16.6 16.6" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
           <path d="M10.8 18.2C14.887 18.2 18.2 14.887 18.2 10.8C18.2 6.713 14.887 3.4 10.8 3.4C6.713 3.4 3.4 6.713 3.4 10.8C3.4 14.887 6.713 18.2 10.8 18.2Z" stroke="#111" stroke-width="2.2"/>
         </svg>
-        <input type="text" placeholder="Search leads..." />
+        <input type="text" placeholder="Search leads..." id="searchInput" value="{{ search_query }}" />
       </div>
 
       <a href="{% url 'admin_panel:add_lead' %}" class="btn-add">
@@ -143,20 +143,16 @@ tbody tr:hover td{background:#fef9e7}
             {% endif %}
           </td>
           <td>
-            {% if lead.employee %}
-              <span style="padding:6px 10px;border-radius:8px;background:#dcfce7;color:#16a34a;font-size:12px;font-weight:600;display:inline-block;border:1px solid #86efac;">{{ lead.employee.name }}</span>
-            {% else %}
             <form method="POST" action="{% url 'admin_panel:assign_lead_employee' lead.id %}" class="assign-form">
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <select name="employee" onchange="this.style.color='#111'; this.style.background='#f9fafb'; this.form.submit()" style="padding:6px 10px;border-radius:8px;border:1px solid #fca5a5;background:#fee2e2;color:#dc2626;font-size:12px;font-weight:700;outline:none;cursor:pointer;max-width:130px;">
+              <select name="employee" onchange="this.form.submit()" style="padding:6px 10px;border-radius:8px;border:1px solid {% if not lead.employee %}#fca5a5{% else %}#86efac{% endif %};background:{% if not lead.employee %}#fee2e2{% else %}#dcfce7{% endif %};color:{% if not lead.employee %}#dc2626{% else %}#16a34a{% endif %};font-size:12px;font-weight:{% if not lead.employee %}700{% else %}600{% endif %};outline:none;cursor:pointer;max-width:150px;">
                 <option value="">-- Select Employee --</option>
                 {% for emp in employees %}
-                  <option value="{{ emp.id }}">{{ emp.name }}{% if emp.id == lead.suggested_emp_id %} ←{% endif %}</option>
+                  <option value="{{ emp.id }}" {% if lead.employee and lead.employee.id == emp.id %}selected{% endif %}>{{ emp.name }}{% if emp.id == lead.suggested_emp_id %} ←{% endif %}</option>
                 {% endfor %}
               </select>
             </form>
-            {% endif %}
           </td>
           <td>
             {% if lead.employee %}
@@ -201,5 +197,27 @@ tbody tr:hover td{background:#fef9e7}
     </table>
   </div>
 </section>
+
+<script>
+let timeout;
+const input = document.getElementById('searchInput');
+
+input.addEventListener('input', function() {
+  clearTimeout(timeout);
+  const searchValue = this.value.trim();
+  
+  timeout = setTimeout(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (searchValue) {
+      urlParams.set('search', searchValue);
+    } else {
+      urlParams.delete('search');
+    }
+    
+    window.location.search = urlParams.toString();
+  }, 500);
+});
+</script>
 
 {% endblock %}
