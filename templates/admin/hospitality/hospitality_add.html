@@ -256,7 +256,7 @@
             <div class="form-group">
                 <label>Summary <span>*</span></label>
                 <textarea id="prop_summary" name="summary" class="form-control" style="height: 100px;" oninput="validateSummary(this)">{{ property.summary|default:'' }}</textarea>
-                <div class="field-error" id="summary-error">Only letters, numbers, !, ., , and &amp; are allowed.</div>
+                <div class="field-error" id="summary-error">Only letters, numbers, !, ., , - and &amp; are allowed.</div>
             </div>
 
             <!-- Amenities -->
@@ -397,9 +397,9 @@ function validateSummary(input) {
     if (!val) {
         input.classList.add('invalid');
         showErr('summary-error', 'This field is required.');
-    } else if (!/^[a-zA-Z0-9\s!.,&]*$/.test(input.value)) {
+    } else if (!/^[a-zA-Z0-9\s!.,&-]*$/.test(input.value)) {
         input.classList.add('invalid');
-        showErr('summary-error', 'Only letters, numbers, !, ., , and & are allowed.');
+        showErr('summary-error', 'Only letters, numbers, !, ., , - and & are allowed.');
     } else {
         input.classList.remove('invalid');
         hideErr('summary-error');

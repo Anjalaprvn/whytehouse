@@ -249,7 +249,7 @@
             <div class="form-group">
                 <label>Summary <span>*</span></label>
                 <textarea id="edit_prop_summary" name="summary" class="form-control" style="height: 100px;" required oninput="validateSummary(this)">{{ property.summary }}</textarea>
-                <div class="field-error" id="summary-error">Only letters, numbers, !, ., , and &amp; are allowed.</div>
+                <div class="field-error" id="summary-error">Only letters, numbers, !, ., , - and &amp; are allowed.</div>
             </div>
 
             <!-- Amenities -->
@@ -391,7 +391,7 @@ function validateLocation(input) {
 }
 
 function validateSummary(input) {
-    const valid = /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
+    const valid = /^[a-zA-Z0-9\s!.,&-]*$/.test(input.value);
     input.classList.toggle('invalid', !valid);
     document.getElementById('summary-error').style.display = valid ? 'none' : 'block';
 }
@@ -422,7 +422,7 @@ document.querySelector('form').addEventListener('submit', function(e) {
         { id: 'edit_prop_name', errId: 'prop-name-error', pattern: /^[a-zA-Z\s]+$/ },
         { id: 'edit_prop_location', errId: 'location-error', pattern: /^[a-zA-Z\s,]+$/ },
         { id: 'edit_prop_address', errId: 'address-error', pattern: /^[a-zA-Z0-9\s,\.]+$/ },
-        { id: 'edit_prop_summary', errId: 'summary-error', pattern: /^[a-zA-Z0-9\s!.,&]+$/ },
+        { id: 'edit_prop_summary', errId: 'summary-error', pattern: /^[a-zA-Z0-9\s!.,&-]+$/ },
     ];
     fields.forEach(function(f) {
         const el = document.getElementById(f.id);

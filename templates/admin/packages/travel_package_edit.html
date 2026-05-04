@@ -145,7 +145,7 @@
 
             <label>Description</label>
             <textarea id="edit_description" name="description" class="form-control" oninput="validateDescField(this)">{{ package.description|default:'' }}</textarea>
-            <div id="desc-error" class="field-error">Only letters, numbers, !, ., , and &amp; are allowed.</div>
+            <div id="desc-error" class="field-error">Only letters, numbers, !, ., , - and &amp; are allowed.</div>
 
             <label>Package Image</label>
             <div id="pkg-preview-wrapper" style="display:{% if package.image %}block{% else %}none{% endif %}; position:relative; width:fit-content; margin-bottom:10px;">
@@ -353,14 +353,14 @@ function addPricingRow(type) {
 function validateLettersField(input, errorId) {
     const valid = errorId === 'title-error'
         ? /^[a-zA-Z\s&,]*$/.test(input.value)
-        : /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
+        : /^[a-zA-Z0-9\s!.,&-]*$/.test(input.value);
     if (!valid) {
         if (!errorId) {
             let msg = input.nextElementSibling;
             if (!msg || !msg.classList.contains('letters-msg')) {
                 msg = document.createElement('div');
                 msg.className = 'letters-msg field-error';
-                msg.textContent = 'Only letters, numbers, !, ., , and & are allowed.';
+                msg.textContent = 'Only letters, numbers, !, ., commas, ampersand and hyphens are allowed.';
                 msg.style.display = 'block';
                 input.insertAdjacentElement('afterend', msg);
             }
@@ -384,13 +384,13 @@ function validateLettersOnly(input, errorId) {
 }
 
 function validateDescField(input) {
-    const valid = /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
+    const valid = /^[a-zA-Z0-9\s!.,&-]*$/.test(input.value);
     input.classList.toggle('invalid', !valid);
     document.getElementById('desc-error').style.display = valid ? 'none' : 'block';
 }
 
 function validateItineraryField(input) {
-    const valid = /^[a-zA-Z0-9\s!.,&]*$/.test(input.value);
+    const valid = /^[a-zA-Z0-9\s!.,&-]*$/.test(input.value);
     input.classList.toggle('invalid', !valid);
     let msg = input.nextElementSibling;
     if (!valid) {
@@ -398,7 +398,7 @@ function validateItineraryField(input) {
             msg = document.createElement('div');
             msg.className = 'itin-err field-error';
             msg.style.display = 'block';
-            msg.textContent = 'Only letters, numbers, !, ., , and & are allowed.';
+            msg.textContent = 'Only letters, numbers, !, ., , - and & are allowed.';
             input.insertAdjacentElement('afterend', msg);
         }
     } else if (msg && msg.classList.contains('itin-err')) {
@@ -685,14 +685,14 @@ document.addEventListener('DOMContentLoaded', function() {
             valid = false;
         }
         const desc = document.getElementById('edit_description');
-        if (desc.value && !/^[a-zA-Z0-9\s!.,&]*$/.test(desc.value)) {
+        if (desc.value && !/^[a-zA-Z0-9\s!.,&-]*$/.test(desc.value)) {
             desc.classList.add('invalid');
             document.getElementById('desc-error').style.display = 'block';
             valid = false;
         }
         const itin = document.querySelectorAll('#itinerary-container textarea');
         itin.forEach(function(t) {
-            if (t.value && !/^[a-zA-Z0-9\s!.,&]*$/.test(t.value)) {
+            if (t.value && !/^[a-zA-Z0-9\s!.,&-]*$/.test(t.value)) {
                 t.classList.add('invalid');
                 valid = false;
             }
