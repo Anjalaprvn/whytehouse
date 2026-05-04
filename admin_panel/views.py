@@ -363,6 +363,19 @@ def lead_management(request):
     hospitality_count = Lead.objects.filter(enquiry_type='Hospitality').count()
     new_leads_count = Lead.objects.filter(is_viewed=False).count()
     
+    # Attach per-lead suggested next employee id directly onto each lead object
+    all_active_employees = list(Employee.objects.filter(status='Active').order_by('id'))
+    global_next_emp = get_next_employee_for_lead()
+    for lead in leads:
+        if lead.employee and all_active_employees:
+            try:
+                idx = next(i for i, e in enumerate(all_active_employees) if e.id == lead.employee_id)
+                lead.suggested_emp_id = all_active_employees[(idx + 1) % len(all_active_employees)].id
+            except StopIteration:
+                lead.suggested_emp_id = all_active_employees[0].id
+        else:
+            lead.suggested_emp_id = global_next_emp.id if global_next_emp else None
+
     context = {
         'leads': leads,
         'selected_type': enquiry_type,
@@ -375,7 +388,7 @@ def lead_management(request):
         'hospitality_count': hospitality_count,
         'new_leads_count': new_leads_count,
         'employees': Employee.objects.filter(status='Active').order_by('name'),
-        'next_emp_id': get_next_employee_for_lead().id if get_next_employee_for_lead() else None,
+        'next_emp_id': global_next_emp.id if global_next_emp else None,
     }
     return render(request, 'admin/lead/lead.html', context)
 

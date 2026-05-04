@@ -149,18 +149,7 @@ tbody tr:hover td{background:#fef9e7}
               <select name="employee" onchange="this.style.color='#111'; this.style.background='#f9fafb'; this.form.submit()" style="padding:6px 10px;border-radius:8px;border:1px solid {% if not lead.employee %}#fca5a5{% else %}#e5e7eb{% endif %};background:{% if not lead.employee %}#fee2e2{% else %}#f9fafb{% endif %};color:{% if not lead.employee %}#dc2626{% else %}#111{% endif %};font-size:12px;font-weight:{% if not lead.employee %}700{% else %}400{% endif %};outline:none;cursor:pointer;max-width:130px;">
                 <option value="">-- Select Employee --</option>
                 {% for emp in employees %}
-                  {% if not lead.employee and emp.id == next_emp_id %}
-                    <option value="{{ emp.id }}">{{ emp.name }} ←</option>
-                  {% endif %}
-                {% endfor %}
-                {% for emp in employees %}
-                  {% if lead.employee and lead.employee.id == emp.id %}
-                    <option value="{{ emp.id }}" selected>{{ emp.name }}</option>
-                  {% elif not lead.employee and emp.id != next_emp_id %}
-                    <option value="{{ emp.id }}">{{ emp.name }}</option>
-                  {% elif lead.employee and lead.employee.id != emp.id %}
-                    <option value="{{ emp.id }}">{{ emp.name }}</option>
-                  {% endif %}
+                  <option value="{{ emp.id }}" {% if lead.employee and lead.employee.id == emp.id %}selected{% endif %}>{{ emp.name }}{% if emp.id == lead.suggested_emp_id %} ←{% endif %}</option>
                 {% endfor %}
               </select>
 
