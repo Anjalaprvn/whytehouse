@@ -217,14 +217,12 @@
         <button type="button" id="add-day-btn" onclick="addDay()" style="background:none; border:1px solid #ddd; padding:5px 12px; border-radius:6px; cursor:pointer;">+ Add Day</button>
     </div>
     <div id="itinerary-container">
-        {% if package.itinerary %}
-            {% for item in package.itinerary.splitlines %}
-                {% if item.strip %}
+        {% if itinerary_items %}
+            {% for item in itinerary_items %}
                 <div class="itinerary-item">
                     <label>Day {{ forloop.counter }}</label>
                     <textarea name="itinerary[]" class="form-control" placeholder="Activities for this day..." oninput="validateItineraryField(this)">{{ item }}</textarea>
                 </div>
-                {% endif %}
             {% endfor %}
         {% else %}
         <div class="itinerary-item">
@@ -290,11 +288,13 @@
 </div>
 
 <script>
-// Child pricing brackets
-let pkgChildPricing = JSON.parse(document.getElementById('pkg_child_pricing_json').value || '[]');
+// Child pricing brackets - only initialize if element exists
+const pkgChildPricingEl = document.getElementById('pkg_child_pricing_json');
+let pkgChildPricing = pkgChildPricingEl ? JSON.parse(pkgChildPricingEl.value || '[]') : [];
 
 function renderPkgChildPricing() {
     const container = document.getElementById('pkg_child_pricing_list');
+    if (!container) return;
     container.innerHTML = '';
     pkgChildPricing.forEach(function(item, idx) {
         const row = document.createElement('div');
@@ -302,14 +302,20 @@ function renderPkgChildPricing() {
         row.innerHTML = '<span style="flex:1;"><strong>Ages ' + item.min_age + '\u2013' + item.max_age + ':</strong></span><span style="flex:1;">\u20b9' + parseFloat(item.price).toFixed(2) + '</span><button type="button" onclick="removePkgChildBracket(' + idx + ')" style="background:#fee2e2;border:none;border-radius:6px;padding:5px 10px;cursor:pointer;color:#ef4444;">&times;</button>';
         container.appendChild(row);
     });
-    document.getElementById('pkg_child_pricing_json').value = JSON.stringify(pkgChildPricing);
+    const jsonEl = document.getElementById('pkg_child_pricing_json');
+    if (jsonEl) jsonEl.value = JSON.stringify(pkgChildPricing);
 }
 
 function addPkgChildBracket() {
-    const minAge = parseInt(document.getElementById('pkg_child_min_age').value);
-    const maxAge = parseInt(document.getElementById('pkg_child_max_age').value);
-    const price = parseFloat(document.getElementById('pkg_child_bracket_price').value);
+    const minAgeEl = document.getElementById('pkg_child_min_age');
+    const maxAgeEl = document.getElementById('pkg_child_max_age');
+    const priceEl = document.getElementById('pkg_child_bracket_price');
     const errEl = document.getElementById('pkg_child_pricing_error');
+    if (!minAgeEl || !maxAgeEl || !priceEl || !errEl) return;
+    
+    const minAge = parseInt(minAgeEl.value);
+    const maxAge = parseInt(maxAgeEl.value);
+    const price = parseFloat(priceEl.value);
     if (isNaN(minAge) || isNaN(maxAge)) { errEl.textContent = 'Enter valid ages.'; errEl.style.display = 'block'; return; }
     if (minAge < 0 || maxAge > 17 || minAge >= maxAge) { errEl.textContent = 'Min age must be less than max age (0\u201317).'; errEl.style.display = 'block'; return; }
     if (isNaN(price) || price < 0) { errEl.textContent = 'Enter a valid price.'; errEl.style.display = 'block'; return; }
@@ -319,9 +325,9 @@ function addPkgChildBracket() {
     errEl.style.display = 'none';
     pkgChildPricing.push({min_age: minAge, max_age: maxAge, price: price});
     pkgChildPricing.sort(function(a,b){return a.min_age - b.min_age;});
-    document.getElementById('pkg_child_min_age').value = '';
-    document.getElementById('pkg_child_max_age').value = '';
-    document.getElementById('pkg_child_bracket_price').value = '';
+    minAgeEl.value = '';
+    maxAgeEl.value = '';
+    priceEl.value = '';
     renderPkgChildPricing();
 }
 
@@ -587,18 +593,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Init duration spinners from existing value
     const existingDuration = document.getElementById('edit_duration').value;
+    console.log('Existing duration:', existingDuration);
     if (existingDuration) {
-        const dMatch = existingDuration.match(/(\d+)\s*days?/i);
-        const nMatch = existingDuration.match(/(\d+)\s*nights?/i);
-        if (dMatch) document.getElementById('days-input').value = parseInt(dMatch[1]);
-        if (nMatch) document.getElementById('nights-input').value = parseInt(nMatch[1]);
+        // Match patterns like "3 Days / 2 Nights" or "3 Days 2 Nights" or "3 Day / 2 Night"
+        const dMatch = existingDuration.match(/(\d+)\s*(?:day|days)/i);
+        const nMatch = existingDuration.match(/(\d+)\s*(?:night|nights)/i);
+        console.log('Days match:', dMatch, 'Nights match:', nMatch);
+        if (dMatch) {
+            const daysValue = parseInt(dMatch[1]);
+            document.getElementById('days-input').value = daysValue;
+            console.log('Set days to:', daysValue);
+        }
+        if (nMatch) {
+            const nightsValue = parseInt(nMatch[1]);
+            document.getElementById('nights-input').value = nightsValue;
+            console.log('Set nights to:', nightsValue);
+        }
     }
     updateItineraryDays();
-    syncAddDayBtn();
-
-    // Init itinerary day limit from existing duration
-    const durField = document.getElementById('edit_duration');
-    if (durField.value) updateItineraryDays();
     syncAddDayBtn();
 
     // Add Enter key handler to existing inputs

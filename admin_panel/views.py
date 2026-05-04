@@ -1002,11 +1002,19 @@ def travel_package_edit(request, package_id):
         else:
             return redirect(f'{url}?cat={new_category}')
     
+    # Split itinerary by ||| separator and log for debugging
+    itinerary_items = []
+    if package.itinerary:
+        print(f"DEBUG: Raw itinerary from DB: {repr(package.itinerary)}")
+        itinerary_items = [item.strip() for item in package.itinerary.split('|||') if item.strip()]
+        print(f"DEBUG: Split itinerary items: {itinerary_items}")
+    
     context = {
         'package': package,
         'destinations': destinations,
         'resorts': Resort.objects.filter(status='Active').order_by('resort_name'),
         'meals': Meal.objects.all().order_by('name'),
+        'itinerary_items': itinerary_items,
     }
     return render(request, 'admin/packages/travel_package_edit.html', context)
 
