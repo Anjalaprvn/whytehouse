@@ -365,7 +365,21 @@
         font-size:16px;
     }
 
-    .readonly-field{
+    .figma-field select{
+        position:absolute;
+        inset:0;
+        width:100%;
+        height:100%;
+        opacity:0;
+        cursor:pointer;
+        z-index:2;
+    }
+
+    .guests-display{
+        font-size:14px;
+        color:#6F6F6F;
+        pointer-events:none;
+    }
         color:#7A7A7A;
         pointer-events:none;
     }
@@ -625,7 +639,7 @@
         <section class="itinerary-section">
             <h2>Travel Plans</h2>
             {% if package.itinerary %}
-                {% for day in package.itinerary.splitlines %}
+                {% for day in package.itinerary.split('|||') %}
                     {% if day.strip %}
                     <div class="itinerary-item">
                         <div class="itinerary-header">
@@ -701,7 +715,8 @@
                     <div class="form-group">
                         <div class="figma-field has-icon">
                             <div class="field-label">Guests</div>
-                            <select name="guests" id="guests-select" required onchange="calculateTotal()">
+                            <span class="guests-display" id="guests-display">1 Guest</span>
+                            <select name="guests" id="guests-select" required onchange="calculateTotal(); document.getElementById('guests-display').textContent = this.options[this.selectedIndex].text;">
                                 <option value="1" selected>1 Guest</option>
                                 <option value="2">2 Guests</option>
                                 <option value="3">3 Guests</option>
@@ -775,24 +790,10 @@
 
     function calculateTotal() {
         const guests = parseInt(document.getElementById('guests-select').value) || 1;
-        const subtotal = pricePerPerson * guests;
-        const taxAmount = (subtotal * taxPercent) / 100;
-        const total = subtotal + taxAmount;
+        const total = pricePerPerson * guests;
 
-        document.getElementById('per-person-cost').textContent = pricePerPerson.toLocaleString('en-IN', {
-            minimumFractionDigits: 1,
-            maximumFractionDigits: 1
-        });
-
-        document.getElementById('tax-amount').textContent = taxAmount.toLocaleString('en-IN', {
-            minimumFractionDigits: 1,
-            maximumFractionDigits: 1
-        });
-
-        document.getElementById('total-price-value').textContent = total.toLocaleString('en-IN', {
-            minimumFractionDigits: 1,
-            maximumFractionDigits: 1
-        });
+        document.getElementById('per-person-cost').textContent = pricePerPerson.toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        document.getElementById('total-price-value').textContent = total.toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
     }
 
     function validatePhone(input) {
@@ -893,22 +894,7 @@
             }
         }
 
-        // Guest dropdown
-        const guestsSelect = document.getElementById('guests-select');
-        if (guestsSelect) {
-            const guestArrow = guestsSelect.closest('.figma-field').querySelector('.field-icon');
-            if (guestArrow) {
-                guestArrow.style.pointerEvents = 'auto';
-                guestArrow.style.cursor = 'pointer';
-                guestArrow.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    guestsSelect.focus();
-                    guestsSelect.click();
-                });
-            }
-        }
-
-        // Itinerary accordion
+ accordion
         document.querySelectorAll('.itinerary-header').forEach(header => {
             header.addEventListener('click', function () {
                 const content = this.parentElement.querySelector('.itinerary-content');

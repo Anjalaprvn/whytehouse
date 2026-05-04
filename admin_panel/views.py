@@ -870,7 +870,7 @@ def travel_package_add(request):
             location=location,
             country=request.POST.get('country'),
             description=description,
-            itinerary='\n'.join(request.POST.getlist('itinerary[]')),
+            itinerary='|||'.join(request.POST.getlist('itinerary[]')),
             inclusions='\n'.join(request.POST.getlist('inclusions[]')),
             exclusions='\n'.join(request.POST.getlist('exclusions[]')),
             meta_title=request.POST.get('meta_title'),
@@ -949,7 +949,7 @@ def travel_package_edit(request, package_id):
         package.location = request.POST.get('location')
         package.country = request.POST.get('country')
         package.description = request.POST.get('description')
-        package.itinerary = '\n'.join(filter(None, [i.strip() for i in request.POST.getlist('itinerary[]')]))
+        package.itinerary = '|||'.join(filter(None, [i.strip() for i in request.POST.getlist('itinerary[]')]))
         package.inclusions = '\n'.join(filter(None, [i.strip() for i in request.POST.getlist('inclusions[]')]))
         package.exclusions = '\n'.join(filter(None, [i.strip() for i in request.POST.getlist('exclusions[]')]))
         package.meta_title = request.POST.get('meta_title')
