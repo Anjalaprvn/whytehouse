@@ -134,18 +134,33 @@ th{color:#777;font-weight:500}
     </div>
   </div>
 
-  <!-- Upcoming Bookings -->
+  <!-- Recent Bookings -->
   <div class="section">
     <div class="section-head">
       <div>
-        <h2>Upcoming Bookings</h2>
-        <p>Next check-ins scheduled</p>
+        <h2>Recent Bookings</h2>
+        <p>Latest 5 customers</p>
       </div>
+      <a href="{% url 'sales:customer_list' %}" class="view-btn" style="text-decoration:none;color:inherit;">View All</a>
     </div>
 
-    <div class="row">
-      <div style="text-align:center;width:100%;color:#999;">No upcoming bookings</div>
-    </div>
+    {% if recent_customers %}
+      {% for customer in recent_customers %}
+      <div class="row">
+        <div>
+          <strong>{{ customer.display_name }}</strong><br>
+          <small>{{ customer.contact_number }} • {{ customer.place|default:"N/A" }}</small>
+        </div>
+        <div style="text-align:right;">
+          <small>{{ customer.created_at|date:"M d, Y" }}</small>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="row">
+        <div style="text-align:center;width:100%;color:#999;">No recent customers</div>
+      </div>
+    {% endif %}
   </div>
 
   <!-- Recent Invoices -->

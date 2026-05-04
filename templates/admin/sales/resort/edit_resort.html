@@ -182,7 +182,7 @@
 
           <div class="field">
             <label>Mobile</label>
-            <input type="text" name="mobile" placeholder="9876543210" maxlength="15"
+            <input type="text" name="mobile" placeholder="9876543210" maxlength="10"
               value="{{ form_data.mobile|default:resort.mobile }}"
               class="{% if errors.mobile %}input-error{% endif %}">
             {% if errors.mobile %}<div class="field-error">{{ errors.mobile }}</div>{% endif %}
@@ -225,9 +225,88 @@
   </main>
 
   <script>
-    // Mobile: digits only
-    document.querySelector('input[name="mobile"]').addEventListener('input', function() {
-      this.value = this.value.replace(/\D/g, '').slice(0, 15);
+    // Resort Name: letters, spaces, commas, hyphens, parentheses only
+    const resortNameInput = document.querySelector('input[name="resort_name"]');
+    const resortNameError = document.createElement('div');
+    resortNameError.className = 'field-error';
+    resortNameError.style.display = 'none';
+    resortNameInput.parentElement.appendChild(resortNameError);
+
+    resortNameInput.addEventListener('input', function() {
+      const value = this.value;
+      const pattern = /^[A-Za-z\s,\-()]*$/;
+      
+      if (value && !pattern.test(value)) {
+        this.classList.add('input-error');
+        resortNameError.textContent = 'Resort Name can only contain letters, spaces, commas, hyphens, and parentheses.';
+        resortNameError.style.display = 'block';
+      } else {
+        this.classList.remove('input-error');
+        resortNameError.style.display = 'none';
+      }
+    });
+
+    // Resort Place: letters, numbers, spaces, commas only
+    const resortPlaceInput = document.querySelector('input[name="resort_place"]');
+    const resortPlaceError = document.createElement('div');
+    resortPlaceError.className = 'field-error';
+    resortPlaceError.style.display = 'none';
+    resortPlaceInput.parentElement.appendChild(resortPlaceError);
+
+    resortPlaceInput.addEventListener('input', function() {
+      const value = this.value;
+      const pattern = /^[A-Za-z0-9\s,]*$/;
+      
+      if (value && !pattern.test(value)) {
+        this.classList.add('input-error');
+        resortPlaceError.textContent = 'Resort Place can only contain letters, numbers, spaces, and commas.';
+        resortPlaceError.style.display = 'block';
+      } else {
+        this.classList.remove('input-error');
+        resortPlaceError.style.display = 'none';
+      }
+    });
+
+    // Mobile: digits only with validation
+    const mobileInput = document.querySelector('input[name="mobile"]');
+    const mobileError = document.createElement('div');
+    mobileError.className = 'field-error';
+    mobileError.style.display = 'none';
+    mobileInput.parentElement.appendChild(mobileError);
+
+    mobileInput.addEventListener('input', function() {
+      this.value = this.value.replace(/\D/g, '').slice(0, 10);
+      const value = this.value;
+      
+      if (value && value.length !== 10) {
+        this.classList.add('input-error');
+        mobileError.textContent = 'Mobile number must be exactly 10 digits.';
+        mobileError.style.display = 'block';
+      } else {
+        this.classList.remove('input-error');
+        mobileError.style.display = 'none';
+      }
+    });
+
+    // Email validation
+    const emailInput = document.querySelector('input[name="email"]');
+    const emailError = document.createElement('div');
+    emailError.className = 'field-error';
+    emailError.style.display = 'none';
+    emailInput.parentElement.appendChild(emailError);
+
+    emailInput.addEventListener('input', function() {
+      const value = this.value.trim();
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
+      if (value && !emailPattern.test(value)) {
+        this.classList.add('input-error');
+        emailError.textContent = 'Please enter a valid email address.';
+        emailError.style.display = 'block';
+      } else {
+        this.classList.remove('input-error');
+        emailError.style.display = 'none';
+      }
     });
 
     // CC Email chip input
@@ -236,6 +315,27 @@
     const ccTags = document.getElementById('cc-email-tags');
     const ccHidden = document.getElementById('cc_emails_hidden');
     let ccEmails = (ccHidden.value || '').split(',').map(e => e.trim()).filter(Boolean);
+
+    // Add error message element for CC email
+    const ccEmailError = document.createElement('div');
+    ccEmailError.className = 'field-error';
+    ccEmailError.style.display = 'none';
+    ccInput.parentElement.parentElement.appendChild(ccEmailError);
+
+    // Real-time validation for CC email input
+    ccInput.addEventListener('input', function() {
+      const value = this.value.trim();
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
+      if (value && !emailPattern.test(value)) {
+        this.classList.add('input-error');
+        ccEmailError.textContent = 'Please enter a valid email address.';
+        ccEmailError.style.display = 'block';
+      } else {
+        this.classList.remove('input-error');
+        ccEmailError.style.display = 'none';
+      }
+    });
 
     function renderCCTags() {
       ccTags.innerHTML = '';
@@ -261,10 +361,17 @@
       const value = ccInput.value.trim();
       if (!value) return;
       const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailPattern.test(value)) { alert('Enter a valid email address.'); return; }
+      if (!emailPattern.test(value)) { 
+        ccInput.classList.add('input-error');
+        ccEmailError.textContent = 'Please enter a valid email address.';
+        ccEmailError.style.display = 'block';
+        return; 
+      }
       if (!ccEmails.includes(value)) ccEmails.push(value);
       ccHidden.value = ccEmails.join(',');
       ccInput.value = '';
+      ccInput.classList.remove('input-error');
+      ccEmailError.style.display = 'none';
       renderCCTags();
     }
 

@@ -304,8 +304,8 @@ def dashboard(request):
     domestic_packages = TravelPackage.objects.filter(category='Domestic').count()
     total_properties = Property.objects.count()
     
-    # Upcoming bookings (invoices with future check-in dates)
-    upcoming_bookings = Invoice.objects.filter(checkin_date__gte=timezone.now().date()).order_by('checkin_date')[:3]
+    # Recent customers (5 most recent)
+    recent_customers = Customer.objects.order_by('-created_at')[:5]
     
     # Recent invoices
     recent_invoices = Invoice.objects.select_related('customer').order_by('-created_at')[:5]
@@ -324,7 +324,7 @@ def dashboard(request):
         'international_packages': international_packages,
         'domestic_packages': domestic_packages,
         'total_properties': total_properties,
-        'upcoming_bookings': upcoming_bookings,
+        'recent_customers': recent_customers,
         'recent_invoices': recent_invoices,
         'recent_leads': recent_leads,
     }
@@ -1220,8 +1220,8 @@ def add_employee(request):
             errors['phone'] = 'Phone is required.'
         elif not phone.isdigit():
             errors['phone'] = 'Phone must contain digits only.'
-        elif len(phone) < 10 or len(phone) > 15:
-            errors['phone'] = 'Phone must be 10–15 digits.'
+        elif len(phone) != 10:
+            errors['phone'] = 'Phone must be exactly 10 digits.'
         elif Employee.objects.filter(phone=phone).exists():
             errors['phone'] = 'An employee with this phone number already exists.'
 
@@ -1745,8 +1745,12 @@ def add_resort(request):
             # Validation
             if not resort_name:
                 errors["resort_name"] = "Resort Name is required."
+            elif not re.match(r'^[A-Za-z\s,\-()]+$', resort_name):
+                errors["resort_name"] = "Resort Name can only contain letters, spaces, commas, hyphens, and parentheses."
             if not resort_place:
                 errors["resort_place"] = "Resort Place is required."
+            elif not re.match(r'^[A-Za-z0-9\s,]+$', resort_place):
+                errors["resort_place"] = "Resort Place can only contain letters, numbers, spaces, and commas."
 
             if mobile and not mobile.isdigit():
                 errors["mobile"] = "Mobile number must contain only digits."
@@ -1755,11 +1759,6 @@ def add_resort(request):
 
             if email and "@" not in email:
                 errors["email"] = "Please enter a valid email address."
-
-            if gst_number and len(gst_number) != 15:
-                errors["gst_number"] = "GST Number must be 15 characters."
-
-            # number_of_rooms, pin_code and other fields removed from model; skip related validation
 
             # Check for duplicate resort
             if not errors and Resort.objects.filter(
@@ -1895,8 +1894,12 @@ def edit_resort(request, resort_id):
             # Validation
             if not resort_name:
                 errors["resort_name"] = "Resort Name is required."
+            elif not re.match(r'^[A-Za-z\s,\-()]+$', resort_name):
+                errors["resort_name"] = "Resort Name can only contain letters, spaces, commas, hyphens, and parentheses."
             if not resort_place:
                 errors["resort_place"] = "Resort Place is required."
+            elif not re.match(r'^[A-Za-z0-9\s,]+$', resort_place):
+                errors["resort_place"] = "Resort Place can only contain letters, numbers, spaces, and commas."
 
             if mobile and not mobile.isdigit():
                 errors["mobile"] = "Mobile number must contain only digits."
@@ -1940,52 +1943,7 @@ def edit_resort(request, resort_id):
             for img_file in resort_images_files:
                 ResortImage.objects.create(resort=resort, image=img_file)
 
-            # Update room types: clear existing and rebuild
-            resort.room_types.all().delete()
-
-            def safe_int(v, default=0):
-                try:
-                    return int(v)
-                except (ValueError, TypeError):
-                    return default
-
-            if not room_type_uids:
-                room_type_uids = [f"room-{i}" for i in range(len(room_type_names))]
-
-            for i, uid in enumerate(room_type_uids):
-                name = room_type_names[i].strip() if i < len(room_type_names) else ''
-                if not name:
-                    continue
-
-                total_rooms_entry = safe_int(total_rooms_list[i] if i < len(total_rooms_list) else None)
-                price_val = 0.0
-                try:
-                    price_val = float(price_per_night_list[i]) if i < len(price_per_night_list) and price_per_night_list[i] else 0
-                except ValueError:
-                    price_val = 0
-                max_guests_entry = safe_int(max_guests_list[i] if i < len(max_guests_list) else None, default=1)
-                room_size_entry = room_size_list[i].strip() if i < len(room_size_list) else None
-                amenities_entry = room_type_amenities_list[i].strip() if i < len(room_type_amenities_list) else None
-
-                room_type_files = request.FILES.getlist(f"room_type_images_{uid}[]")
-
-                # Fallback when legacy single list is provided
-                if not room_type_files and room_type_images_list:
-                    room_type_files = [room_type_images_list[i]] if i < len(room_type_images_list) else []
-
-                room_type_obj = ResortRoomType.objects.create(
-                    resort=resort,
-                    room_type_name=name,
-                    total_rooms=total_rooms_entry,
-                    price_per_night=price_val,
-                    max_guests=max_guests_entry,
-                    room_size=room_size_entry or None,
-                    amenities=amenities_entry or None,
-                    room_images=room_type_files[0] if room_type_files else None,
-                )
-
-                for room_img in room_type_files:
-                    ResortRoomTypeImage.objects.create(room_type=room_type_obj, image=room_img)
+            # Room types are not being used, skip room type processing
 
             messages.success(request, "Resort updated successfully!")
             return redirect("sales:resort_list")

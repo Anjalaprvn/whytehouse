@@ -482,15 +482,17 @@ document.getElementById('email').addEventListener('input', function() {
     document.getElementById('dup-email').style.display = 'none';
 });
 
-document.getElementById('phone').addEventListener('blur', function() {
-    if (/^\d{10}$/.test(this.value.trim())) {
-        checkDuplicate('phone', this.value.trim(), 'dup-phone', 'field-phone');
+let phoneTimeout;
+document.getElementById('phone').addEventListener('input', function() {
+    clearTimeout(phoneTimeout);
+    const val = this.value.trim();
+    if (/^\d{10}$/.test(val)) {
+        phoneTimeout = setTimeout(() => {
+            checkDuplicate('phone', val, 'dup-phone', 'field-phone');
+        }, 500);
     } else {
         document.getElementById('dup-phone').style.display = 'none';
     }
-});
-document.getElementById('phone').addEventListener('input', function() {
-    document.getElementById('dup-phone').style.display = 'none';
 });
 
 // =====================
