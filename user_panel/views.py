@@ -726,9 +726,12 @@ def package_detail(request, slug):
     # Transport options - removed as model doesn't have this field
     transport_options = []
 
+    itinerary_days = [d.strip() for d in package.itinerary.split('|||') if d.strip()] if package.itinerary else []
+
     return render(request, 'user/package_detail.html', {
         'package': package,
         'today': timezone.now(),
+        'itinerary_days': itinerary_days,
         'room_options_json': json.dumps(room_options),
         'meal_options_json': json.dumps(meal_options),
         'transport_options_json': json.dumps(transport_options),

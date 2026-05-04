@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block title %}Hospitality Enquiry | Whyte House Holidays{% endblock %}
-
 {% block nav_contact %}class="active"{% endblock %}
 
 {% block extra_css %}
@@ -39,15 +38,6 @@
         background: #fff;
         color: var(--text-dark);
         overflow-x: hidden;
-    }
-
-    nav {
-        position: absolute;
-        top: 20px;
-        left: 0;
-        width: 100%;
-        background: transparent !important;
-        z-index: 20;
     }
 
     /* ================= HERO ================= */
@@ -649,11 +639,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // If valid, submit the form
         if (isValid) {
             successMessage.classList.add('show');
-            form.reset();
             
             setTimeout(() => {
-                form.submit();
-            }, 1000);
+                successMessage.classList.remove('show');
+                form.reset();
+            }, 3000);
         }
     });
 
@@ -664,6 +654,22 @@ document.addEventListener('DOMContentLoaded', function() {
         this.value = value;
     });
 });
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Override Home link to redirect to hospitality page
+setTimeout(function() {
+    const homeLink = document.getElementById('nav-home-link');
+    if (homeLink) {
+        homeLink.href = "{% url 'user_panel:hospitality' %}";
+        homeLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = "{% url 'user_panel:hospitality' %}";
+        });
+    }
+}, 200);
 </script>
 {% endblock %}
 

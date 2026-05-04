@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block title %}Whyte House Stories | Blog{% endblock %}
+{% block nav_class %}sticky-nav{% endblock %}
 {% block nav_blog %}class="active"{% endblock %}
 
 {% block extra_css %}
@@ -41,19 +42,6 @@
         overflow-x:hidden;
     }
 
-    nav,
-    .navbar{
-        position:absolute !important;
-        top:20px;
-        left:0;
-        width:100%;
-        background:transparent !important;
-        z-index:1000 !important;
-    }
-
-    /* =========================
-       HERO
-    ========================= */
     .hero{
         position:relative;
         min-height:480px;

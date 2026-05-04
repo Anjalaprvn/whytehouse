@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block title %}{{ blog.title }} | Whyte House{% endblock %}
+{% block nav_class %}sticky-nav{% endblock %}
 {% block nav_blog %}class="active"{% endblock %}
 
 {% block content %}
@@ -28,16 +29,6 @@ body {
     background: #fff !important;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     overflow-x: hidden;
-}
-
-body > nav {
-    position: absolute !important;
-    top: 20px;
-    left: 0;
-    right: 0;
-    width: 100%;
-    background: transparent;
-    z-index: 9999;
 }
 
 /* ===== HERO SECTION ===== */

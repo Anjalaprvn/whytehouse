@@ -365,7 +365,7 @@
         font-size:16px;
     }
 
-    .figma-field select{
+    .figma-field .guests-select{
         position:absolute;
         inset:0;
         width:100%;
@@ -380,6 +380,8 @@
         color:#6F6F6F;
         pointer-events:none;
     }
+
+    .readonly-field{
         color:#7A7A7A;
         pointer-events:none;
     }
@@ -639,8 +641,8 @@
         <section class="itinerary-section">
             <h2>Travel Plans</h2>
             {% if package.itinerary %}
-                {% for day in package.itinerary.split('|||') %}
-                    {% if day.strip %}
+                {% for day in itinerary_days %}
+                    {% if day %}
                     <div class="itinerary-item">
                         <div class="itinerary-header">
                             <span><span class="day-label">DAY {{ forloop.counter }}</span>{{ day|truncatewords:5 }}</span>
@@ -716,7 +718,7 @@
                         <div class="figma-field has-icon">
                             <div class="field-label">Guests</div>
                             <span class="guests-display" id="guests-display">1 Guest</span>
-                            <select name="guests" id="guests-select" required onchange="calculateTotal(); document.getElementById('guests-display').textContent = this.options[this.selectedIndex].text;">
+                            <select name="guests" id="guests-select" class="guests-select" required onchange="calculateTotal(); document.getElementById('guests-display').textContent = this.options[this.selectedIndex].text;">
                                 <option value="1" selected>1 Guest</option>
                                 <option value="2">2 Guests</option>
                                 <option value="3">3 Guests</option>
@@ -894,11 +896,11 @@
             }
         }
 
- accordion
+        // Itinerary accordion
         document.querySelectorAll('.itinerary-header').forEach(header => {
+            const content = header.parentElement.querySelector('.itinerary-content');
+            const icon = header.querySelector('i');
             header.addEventListener('click', function () {
-                const content = this.parentElement.querySelector('.itinerary-content');
-                const icon = this.querySelector('i');
                 if (content.style.display === 'block') {
                     content.style.display = 'none';
                     icon.classList.replace('fa-chevron-up', 'fa-chevron-down');

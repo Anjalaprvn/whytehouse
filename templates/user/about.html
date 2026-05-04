@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}About Us | Whyte House Holidays{% endblock %}
-
+{% block nav_class %}sticky-nav{% endblock %}
 {% block nav_about %}class="active"{% endblock %}
 
 {% block extra_css %}
@@ -18,13 +18,6 @@
     }
 
     .serif { font-family: 'Playfair Display', serif; }
-
-    nav {
-        position: absolute;
-        top: 20px;
-        width: 100%;
-        background: transparent;
-    }
 
     .hero {
         position: relative;

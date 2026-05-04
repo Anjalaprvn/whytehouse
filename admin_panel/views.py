@@ -78,34 +78,9 @@ def login(request):
         user = User.objects.filter(email__iexact=email).first()
 
         if user and password and user.check_password(password):
-            # Check if user has email configured
-            if not user.email:
-                return render(request, "admin/login.html", {
-                    "error": "Email not configured for this account"
-                })
-
-            # Generate OTP
-            otp = random.randint(100000, 999999)
-
-            # Store in session
-            request.session["admin_otp"] = str(otp)
-            request.session["admin_user_id"] = user.id
-
-            # Send OTP email
-            try:
-                send_mail(
-                    subject="Admin Login OTP",
-                    message=f"Your OTP for login is: {otp}",
-                    from_email="whytehousee@gmail.com",
-                    recipient_list=[user.email],
-                    fail_silently=False,
-                )
-                messages.success(request, "OTP sent to your registered email.")
-                return redirect("admin_panel:verify_otp")
-            except Exception as e:
-                return render(request, "admin/login.html", {
-                    "error": f"Failed to send OTP: {str(e)}"
-                })
+            auth_login(request, user)
+            request.session['admin_otp_verified'] = True
+            return redirect("admin_panel:dashboard")
 
         else:
             return render(request, "admin/login.html", {

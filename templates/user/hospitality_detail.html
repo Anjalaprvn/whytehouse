@@ -21,14 +21,6 @@
         -webkit-font-smoothing: antialiased;
     }
 
-    /* Make navbar stay above hero like package page */
-    nav {
-        position: relative;
-        z-index: 1000;
-        padding-top: 20px !important;
-        background: transparent !important;
-    }
-
     /* =========================
        HERO SECTION
     ========================= */
@@ -483,4 +475,20 @@
 </section>
 {% endif %}
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Override Home link to redirect to hospitality page
+setTimeout(function() {
+    const homeLink = document.getElementById('nav-home-link');
+    if (homeLink) {
+        homeLink.href = "{% url 'user_panel:hospitality' %}";
+        homeLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = "{% url 'user_panel:hospitality' %}";
+        });
+    }
+}, 200);
+</script>
 {% endblock %}
