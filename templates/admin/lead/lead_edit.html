@@ -4,6 +4,16 @@
 {% block title %}Edit Lead | Whyte House{% endblock %}
 
 {% block content %}
+<script>
+(function(){
+    var c = document.querySelector('.alert-container');
+    if (c) c.style.display = 'none';
+    document.addEventListener('DOMContentLoaded', function() {
+        var c = document.querySelector('.alert-container');
+        if (c) c.style.display = 'none';
+    });
+})();
+</script>
 <style>
     body {
         background-color: #f8f9fa !important;

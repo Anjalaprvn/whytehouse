@@ -546,7 +546,7 @@
                     <div class="form-group">
                         <label class="field-label">Full Name</label>
                         <input type="text" name="name" placeholder="Your full name" value="{{ form_data.name|default:'' }}">
-                        <div class="error-message">Please enter your full name</div>
+                        <div class="error-message">Enter valid name</div>
                     </div>
 
                     <div class="form-group">
@@ -569,7 +569,7 @@
                     <div class="form-group">
                         <label class="field-label">Enquiry Type</label>
                         <select name="subject">
-                            <option value="">Select an option</option>
+                            <option value="" disabled selected>Select an option</option>
                             <option value="Package related" {% if form_data.subject == 'Package related' %}selected{% endif %}>Package related</option>
                             <option value="Holiday Package" {% if form_data.subject == 'Holiday Package' %}selected{% endif %}>Holiday Package</option>
                             <option value="Property Management" {% if form_data.subject == 'Property Management' %}selected{% endif %}>Property Management</option>
@@ -671,6 +671,15 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    var successMsg = document.getElementById('successMessage');
+    if (successMsg && successMsg.classList.contains('show')) {
+        setTimeout(function() {
+            successMsg.style.transition = 'opacity 0.4s';
+            successMsg.style.opacity = '0';
+            setTimeout(function() { successMsg.style.display = 'none'; }, 400);
+        }, 2000);
+    }
+
     const form = document.getElementById('contactForm');
 
     function setError(field) {

@@ -537,6 +537,21 @@ def update_lead_status(request, lead_id):
         if new_status in valid_statuses:
             lead.status = new_status
             lead.save()
+            if new_status == 'Converted':
+                name_parts = lead.full_name.split(' ', 1)
+                Customer.objects.get_or_create(
+                    contact_number=lead.mobile_number,
+                    defaults={
+                        'first_name': name_parts[0],
+                        'last_name': name_parts[1] if len(name_parts) > 1 else '',
+                        'display_name': lead.full_name,
+                        'email': lead.email or '',
+                        'whatsapp_number': lead.mobile_number,
+                        'same_as_whatsapp': True,
+                        'customer_type': 'Individual',
+                        'place': lead.place or '',
+                    }
+                )
             messages.success(request, f'Lead status updated to {new_status} successfully!')
         else:
             messages.error(request, 'Invalid status selected.')

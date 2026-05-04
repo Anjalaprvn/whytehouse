@@ -255,8 +255,24 @@
     }
 
     .back-link {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
         margin-bottom: 30px;
+        padding: 10px 20px;
+        background: #d4a017;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: background 0.2s ease;
+    }
+
+    .back-link:hover {
+        background: #b88a14;
+        color: #fff;
+    }
 
     /* =========================
        RESPONSIVE
@@ -362,7 +378,16 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    var successMessage = document.getElementById('successMessage');
+    if (successMessage) {
+        setTimeout(function() {
+            successMessage.classList.add('fade-out');
+            setTimeout(function() { successMessage.style.display = 'none'; }, 300);
+        }, 2000);
+    }
+
     const nameInput  = document.getElementById('name');
+    if (!nameInput) return;
     const phoneInput = document.getElementById('phone');
     const emailInput = document.getElementById('email');
     const msgInput   = document.getElementById('message');
@@ -398,9 +423,13 @@ document.addEventListener('DOMContentLoaded', function() {
         else clearErr(this, 'email-error');
     });
 
+    const msgAllowed = /^[a-zA-Z0-9\s,.()\-]*$/;
+
     msgInput.addEventListener('input', function() {
         if (!this.value.trim() || this.value.trim().length < 10)
             showErr(this, 'message-error', 'Message must be at least 10 characters.');
+        else if (!msgAllowed.test(this.value))
+            showErr(this, 'message-error', 'Only letters, numbers, spaces, , . ( ) - are allowed.');
         else clearErr(this, 'message-error');
     });
 
@@ -410,16 +439,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (phoneInput.value.length !== 10) { showErr(phoneInput, 'phone-error', 'Enter a valid 10-digit number.'); valid = false; }
         if (!emailInput.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value)) { showErr(emailInput, 'email-error', 'Enter a valid email address.'); valid = false; }
         if (!msgInput.value.trim() || msgInput.value.trim().length < 10) { showErr(msgInput, 'message-error', 'Message must be at least 10 characters.'); valid = false; }
+        else if (!msgAllowed.test(msgInput.value)) { showErr(msgInput, 'message-error', 'Only letters, numbers, spaces, , . ( ) - are allowed.'); valid = false; }
         if (!valid) e.preventDefault();
     });
 
-    const successMessage = document.getElementById('successMessage');
-    if (successMessage && successMessage.classList.contains('success')) {
-        setTimeout(function() {
-            successMessage.classList.add('fade-out');
-            setTimeout(function() { successMessage.style.display = 'none'; }, 300);
-        }, 3000);
-    }
 });
 </script>
 
