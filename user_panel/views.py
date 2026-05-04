@@ -526,7 +526,6 @@ def package_detail(request, slug):
     
     if request.method == 'POST':
         import re
-        from admin_panel.models import Customer
         
         form_type = request.POST.get('form_type', 'booking').strip()
         
@@ -598,45 +597,20 @@ def package_detail(request, slug):
                     }
                 })
             
-            # Split name into first and last
-            name_parts = name.split(' ', 1)
-            first_name = name_parts[0]
-            last_name = name_parts[1] if len(name_parts) > 1 else ''
-
-            try:
-                customer, created = Customer.objects.get_or_create(
-                    contact_number=phone,
-                    defaults={
-                        'first_name': first_name,
-                        'last_name': last_name,
-                        'display_name': name,
-                        'email': email,
-                        'whatsapp_number': phone,
-                        'same_as_whatsapp': True,
-                        'customer_type': 'Individual',
-                        'place': ''
-                    }
-                )
-                if not created and email and not customer.email:
-                    customer.email = email
-                    customer.save()
-                
-                adults_int = int(adults) if str(adults).isdigit() else 1
-                children_int = int(children) if str(children).isdigit() else 0
-                total_cost = float(package.adult_price or package.price or 0) * adults_int
-                PackageBooking.objects.create(
-                    customer=customer,
-                    package=package,
-                    package_name=package.name,
-                    email=email,
-                    phone=phone,
-                    start_date=start_date,
-                    adults=adults_int,
-                    children=children_int,
-                    total_cost=total_cost
-                )
-            except Exception:
-                pass
+            adults_int = int(adults) if str(adults).isdigit() else 1
+            children_int = int(children) if str(children).isdigit() else 0
+            remarks = f'Package: {package.name} | Adults: {adults_int} | Children: {children_int} | Start Date: {start_date}'
+            if child_ages:
+                remarks += f' | Child Ages: {", ".join(child_ages)}'
+            Lead.objects.create(
+                full_name=name,
+                mobile_number=phone,
+                email=email,
+                source='Website',
+                enquiry_type=package.category,
+                package_name=package.name,
+                remarks=remarks
+            )
             
             messages.success(request, 'Booking request submitted! Our team will contact you soon.')
             return redirect('user_panel:package_detail', slug=slug)
