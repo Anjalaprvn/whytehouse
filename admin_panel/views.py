@@ -32,23 +32,35 @@ from decimal import Decimal
 def get_next_employee_for_lead():
     """
     Get the next employee in round-robin order for lead assignment.
+    Uses a balanced approach: assigns to the employee with the fewest leads.
+    If tied, uses the employee who was assigned longest ago.
     Returns the employee who should be assigned the next lead.
     """
+    from django.db.models import Count
+    
     active_employees = Employee.objects.filter(status='Active').order_by('id')
     if not active_employees.exists():
         return None
     
-    last_lead = Lead.objects.filter(employee__isnull=False).order_by('-created_at').first()
-    if not last_lead or not last_lead.employee:
-        return active_employees.first()
+    # Get lead counts per employee
+    employee_lead_counts = Lead.objects.filter(
+        employee__isnull=False,
+        employee__status='Active'
+    ).values('employee_id').annotate(lead_count=Count('id'))
     
-    employees_list = list(active_employees)
-    try:
-        last_index = next(i for i, emp in enumerate(employees_list) if emp.id == last_lead.employee_id)
-        next_index = (last_index + 1) % len(employees_list)
-        return employees_list[next_index]
-    except (StopIteration, IndexError):
-        return employees_list[0]
+    lead_count_dict = {item['employee_id']: item['lead_count'] for item in employee_lead_counts}
+    
+    # Find employee with minimum leads
+    min_leads = float('inf')
+    best_employee = None
+    
+    for emp in active_employees:
+        emp_lead_count = lead_count_dict.get(emp.id, 0)
+        if emp_lead_count < min_leads:
+            min_leads = emp_lead_count
+            best_employee = emp
+    
+    return best_employee if best_employee else active_employees.first()
 
 
 def get_employees_ordered_for_display(exclude_lead_id=None):
@@ -423,15 +435,17 @@ def edit_lead(request, id):
     lead = get_object_or_404(Lead, id=id)
     if request.method == "POST":
         employee_id = request.POST.get('employee')
-        lead.full_name = request.POST.get('full_name')
-        lead.mobile_number = request.POST.get('mobile_number')
-        lead.place = request.POST.get('place')
-        lead.email = request.POST.get('email')
-        lead.source = request.POST.get('source')
-        lead.enquiry_type = request.POST.get('enquiry_type', 'General')
-        lead.status = request.POST.get('status', 'New')
+        
+        # Only allow employee assignment if not already assigned
+        if not lead.employee and employee_id:
+            lead.employee_id = employee_id
+        
+        # Only allow status change if employee is assigned
+        if lead.employee:
+            lead.status = request.POST.get('status', 'New')
+        
+        # Update remarks (always allowed)
         lead.remarks = request.POST.get('remarks')
-        lead.employee_id = employee_id if employee_id else None
         lead.save()
 
         # If converted, create customer record

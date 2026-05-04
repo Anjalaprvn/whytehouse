@@ -169,6 +169,19 @@
         border-color: #ef4444;
         background: #fff5f5;
     }
+
+    .warning-text {
+        color: #d97706;
+        font-weight: 600;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    .helper-text {
+        color: #999;
+        font-size: 12px;
+        margin-top: 4px;
+    }
 </style>
 
 <div class="lead-form-container">
@@ -185,7 +198,7 @@
     <div class="form-card">
         <h3>Lead Information</h3>
 
-        <form method="POST">
+        <form method="POST" id="leadForm">
             {% csrf_token %}
 
             <div class="form-grid">
@@ -223,15 +236,35 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Status</label>
-                    <input type="text" value="{{ lead.status }}" readonly style="background:#f0f0f0;color:#666;cursor:not-allowed;border-color:#d0d0d0;">
-                    <input type="hidden" name="status" value="{{ lead.status }}">
+                    <label>Assign Employee *</label>
+                    {% if lead.employee %}
+                        <input type="text" value="{{ lead.employee.name }}" readonly style="background:#f0f0f0;color:#666;cursor:not-allowed;border-color:#d0d0d0;">
+                        <input type="hidden" name="employee" value="{{ lead.employee.id }}">
+                    {% else %}
+                        <select name="employee" required style="background:#fff3cd;border-color:#ffc107;">
+                            <option value="">-- Select Employee --</option>
+                            {% for emp in employees %}
+                                <option value="{{ emp.id }}">{{ emp.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="warning-text">⚠ Assign an employee first to edit other fields</div>
+                    {% endif %}
                 </div>
 
                 <div class="form-group">
-                    <label>Assign Employee</label>
-                    <input type="text" value="{{ lead.employee.name|default:'Not Assigned' }}" readonly style="background:#f0f0f0;color:#666;cursor:not-allowed;border-color:#d0d0d0;">
-                    <input type="hidden" name="employee" value="{{ lead.employee.id|default:'' }}">
+                    <label>Status</label>
+                    {% if lead.employee %}
+                        <select name="status" style="background:#fff;border-color:#e2e8f0;">
+                            <option value="New" {% if lead.status == 'New' %}selected{% endif %}>New</option>
+                            <option value="Contacted" {% if lead.status == 'Contacted' %}selected{% endif %}>Contacted</option>
+                            <option value="Converted" {% if lead.status == 'Converted' %}selected{% endif %}>Converted</option>
+                            <option value="Junk" {% if lead.status == 'Junk' %}selected{% endif %}>Junk</option>
+                        </select>
+                    {% else %}
+                        <input type="text" value="{{ lead.status }}" readonly style="background:#f0f0f0;color:#666;cursor:not-allowed;border-color:#d0d0d0;">
+                        <input type="hidden" name="status" value="{{ lead.status }}">
+                        <div class="helper-text">Assign employee first to change status</div>
+                    {% endif %}
                 </div>
 
                 <div class="form-group">
@@ -285,7 +318,6 @@
     let message = '';
 
     if (raw.startsWith('Subject:')) {
-        // Format: "Subject: xxx\nmessage text"
         const lines = raw.split('\n');
         for (const line of lines) {
             if (line.startsWith('Subject:')) {
@@ -295,11 +327,9 @@
             }
         }
     } else if (raw.includes('Package:') && raw.includes('|')) {
-        // Format: "Package: xxx | Email: yyy | Guests: z | Start Date: ..."
         subject = 'Package Booking';
         message = raw.trim();
     } else if (raw.includes('Message:')) {
-        // Format: "Package Inquiry: xxx\n\nMessage: yyy"
         const msgMatch = raw.match(/Message:\s*([\s\S]*)/);
         const subjectMatch = raw.match(/^([^\n]+)/);
         subject = subjectMatch ? subjectMatch[1].trim() : '';
@@ -314,11 +344,6 @@
     const remarksField = document.getElementById('edit_remarks');
     if (remarksField) remarksField.value = message;
 })();
-function validateLetters(input, errorId) {
-    const valid = /^[a-zA-Z\s]*$/.test(input.value);
-    input.classList.toggle('invalid', !valid);
-    document.getElementById(errorId).style.display = valid ? 'none' : 'block';
-}
 
 function validateRemarks(input) {
     const valid = /^[a-zA-Z0-9\s!.,&@|:\-\/]*$/.test(input.value);
@@ -326,27 +351,13 @@ function validateRemarks(input) {
     document.getElementById('remarks-error').style.display = valid ? 'none' : 'block';
 }
 
-document.querySelector('form').addEventListener('submit', function(e) {
-    let valid = true;
-    const name = document.getElementById('edit_full_name');
-    if (!name.value.trim() || !/^[a-zA-Z\s]+$/.test(name.value)) {
-        name.classList.add('invalid');
-        document.getElementById('full-name-error').style.display = 'block';
-        valid = false;
+document.getElementById('leadForm').addEventListener('submit', function(e) {
+    const employeeField = document.querySelector('input[name="employee"], select[name="employee"]');
+    if (!employeeField || !employeeField.value) {
+        alert('Please assign an employee before updating the lead.');
+        e.preventDefault();
+        return false;
     }
-    const mobile = document.getElementById('edit_mobile');
-    if (!mobile.value || mobile.value.length !== 10) {
-        mobile.classList.add('invalid');
-        document.getElementById('mobile-error').style.display = 'block';
-        valid = false;
-    }
-    const remarks = document.getElementById('edit_remarks');
-    if (remarks.value && !/^[a-zA-Z0-9\s!.,&@|:\-\/]*$/.test(remarks.value)) {
-        remarks.classList.add('invalid');
-        document.getElementById('remarks-error').style.display = 'block';
-        valid = false;
-    }
-    if (!valid) e.preventDefault();
 });
 </script>
 
