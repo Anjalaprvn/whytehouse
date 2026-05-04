@@ -143,19 +143,23 @@ tbody tr:hover td{background:#fef9e7}
             {% endif %}
           </td>
           <td>
+            {% if lead.employee %}
+              <span style="padding:6px 10px;border-radius:8px;background:#dcfce7;color:#16a34a;font-size:12px;font-weight:600;display:inline-block;border:1px solid #86efac;">{{ lead.employee.name }}</span>
+            {% else %}
             <form method="POST" action="{% url 'admin_panel:assign_lead_employee' lead.id %}" class="assign-form">
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <select name="employee" onchange="this.style.color='#111'; this.style.background='#f9fafb'; this.form.submit()" style="padding:6px 10px;border-radius:8px;border:1px solid {% if not lead.employee %}#fca5a5{% else %}#e5e7eb{% endif %};background:{% if not lead.employee %}#fee2e2{% else %}#f9fafb{% endif %};color:{% if not lead.employee %}#dc2626{% else %}#111{% endif %};font-size:12px;font-weight:{% if not lead.employee %}700{% else %}400{% endif %};outline:none;cursor:pointer;max-width:130px;">
+              <select name="employee" onchange="this.style.color='#111'; this.style.background='#f9fafb'; this.form.submit()" style="padding:6px 10px;border-radius:8px;border:1px solid #fca5a5;background:#fee2e2;color:#dc2626;font-size:12px;font-weight:700;outline:none;cursor:pointer;max-width:130px;">
                 <option value="">-- Select Employee --</option>
                 {% for emp in employees %}
-                  <option value="{{ emp.id }}" {% if lead.employee and lead.employee.id == emp.id %}selected{% endif %}>{{ emp.name }}{% if emp.id == lead.suggested_emp_id %} ←{% endif %}</option>
+                  <option value="{{ emp.id }}">{{ emp.name }}{% if emp.id == lead.suggested_emp_id %} ←{% endif %}</option>
                 {% endfor %}
               </select>
-
             </form>
+            {% endif %}
           </td>
           <td>
+            {% if lead.employee %}
             <form method="POST" action="{% url 'admin_panel:update_lead_status' lead.id %}">
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
@@ -166,6 +170,9 @@ tbody tr:hover td{background:#fef9e7}
                 <option value="Junk" {% if lead.status == 'Junk' %}selected{% endif %}>Junk</option>
               </select>
             </form>
+            {% else %}
+            <span style="padding:6px 10px;border-radius:8px;background:#f3f4f6;color:#9ca3af;font-size:12px;font-weight:600;display:inline-block;">{{ lead.status }}</span>
+            {% endif %}
           </td>
           <td>
             <div class="actions">
