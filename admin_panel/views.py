@@ -643,6 +643,23 @@ def add_property(request):
                 messages.error(request, "Owner contact must be a valid phone number (minimum 10 digits).")
                 return render(request, "admin/hospitality/hospitality_add.html")
         
+        # Check for duplicate property (name + location + owner_name) - case-insensitive
+        print(f"DEBUG: Checking duplicate - name='{name}', location='{location}', owner_name='{owner_name}'")
+        
+        # Check if property with same name, location, and owner_name exists
+        duplicate_exists = Property.objects.filter(
+            name__iexact=name,
+            location__iexact=location,
+            owner_name__iexact=owner_name
+        ).exists()
+        
+        print(f"DEBUG: Duplicate exists = {duplicate_exists}")
+        
+        if duplicate_exists:
+            print("DEBUG: Blocking duplicate property creation")
+            messages.error(request, "This property already exists")
+            return render(request, "admin/hospitality/hospitality_add.html")
+        
         new_amenities = request.POST.getlist("new_amenities[]")
 
         
@@ -673,8 +690,25 @@ def edit_property(request, property_id):
         name = request.POST.get("name", "").strip()
         prop_type = request.POST.get("property_type", "").strip()
         location = request.POST.get("location", "").strip()
+        owner_name = request.POST.get("owner_name", "").strip()
+        
         if not name or not prop_type or not location:
             messages.error(request, "Name, type and location are required.")
+            return render(
+                request,
+                "admin/hospitality/hospitality_edit.html",
+                {"property": prop}
+            )
+        
+        # Check for duplicate property (exclude current property)
+        duplicate_exists = Property.objects.filter(
+            name__iexact=name,
+            location__iexact=location,
+            owner_name__iexact=owner_name
+        ).exclude(id=property_id).exists()
+        
+        if duplicate_exists:
+            messages.error(request, "This property already exists")
             return render(
                 request,
                 "admin/hospitality/hospitality_edit.html",
@@ -687,7 +721,7 @@ def edit_property(request, property_id):
         prop.website = request.POST.get("website") or None
         prop.address = request.POST.get("address")
         prop.summary = request.POST.get("summary")
-        prop.owner_name = request.POST.get("owner_name") or None
+        prop.owner_name = owner_name or None
         prop.owner_contact = request.POST.get("owner_contact") or None
 
         # Get amenities from individual inputs
@@ -3882,6 +3916,21 @@ def check_employee_duplicate(request):
         exists = Employee.objects.filter(phone=value).exists()
     else:
         exists = False
+    return JsonResponse({'exists': exists})
+
+
+def check_destination_name(request):
+    name = (request.GET.get('name') or '').strip()
+    category = (request.GET.get('category') or '').strip()
+    exists = Destination.objects.filter(name__iexact=name, category=category).exists() if name and category else False
+    return JsonResponse({'exists': exists})
+
+
+def check_property_duplicate(request):
+    name = (request.GET.get('name') or '').strip()
+    location = (request.GET.get('location') or '').strip()
+    owner_name = (request.GET.get('owner_name') or '').strip()
+    exists = Property.objects.filter(name__iexact=name, location__iexact=location, owner_name__iexact=owner_name).exists() if name and location and owner_name else False
     return JsonResponse({'exists': exists})
 
 

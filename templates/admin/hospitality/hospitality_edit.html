@@ -188,8 +188,9 @@
             <div class="form-group">
                 <label>Property Name <span>*</span></label>
                 <input type="text" id="edit_prop_name" name="name" class="form-control"
-                       value="{{ property.name }}" required oninput="validateLetters(this, 'prop-name-error')">
+                       value="{{ property.name }}" required oninput="validateLetters(this, 'prop-name-error'); checkPropertyDuplicate();">
                 <div class="field-error" id="prop-name-error">Only letters and spaces are allowed.</div>
+                <div class="field-error" id="property-duplicate-error" style="display:none;">This property already exists</div>
             </div>
 
             <!-- Property Type -->
@@ -209,7 +210,7 @@
             <div class="form-group">
                 <label>Location <span>*</span></label>
                 <input type="text" id="edit_prop_location" name="location" class="form-control"
-                       value="{{ property.location }}" required oninput="validateLocation(this)">
+                       value="{{ property.location }}" required oninput="validateLocation(this); checkPropertyDuplicate();">
                 <div class="field-error" id="location-error">Only letters, spaces, and commas are allowed.</div>
             </div>
 
@@ -217,7 +218,7 @@
             <div class="form-group">
                 <label>Property Owner Name (POC)</label>
                 <input type="text" id="edit_owner_name" name="owner_name" class="form-control"
-                       value="{{ property.owner_name }}" oninput="validateLetters(this, 'owner-name-error')">
+                       value="{{ property.owner_name }}" oninput="validateLetters(this, 'owner-name-error'); checkPropertyDuplicate();">
                 <div class="field-error" id="owner-name-error">Only letters and spaces are allowed.</div>
             </div>
 
@@ -297,6 +298,50 @@
 </div>
 
 <script>
+const originalName = "{{ property.name }}";
+const originalLocation = "{{ property.location }}";
+const originalOwnerName = "{{ property.owner_name }}";
+let checkPropertyTimeout;
+
+function checkPropertyDuplicate() {
+    const name = document.getElementById('edit_prop_name').value.trim();
+    const location = document.getElementById('edit_prop_location').value.trim();
+    const ownerName = document.getElementById('edit_owner_name').value.trim();
+    
+    const duplicateError = document.getElementById('property-duplicate-error');
+    
+    // Skip check if values haven't changed from original
+    if (name.toLowerCase() === originalName.toLowerCase() && 
+        location.toLowerCase() === originalLocation.toLowerCase() && 
+        ownerName.toLowerCase() === originalOwnerName.toLowerCase()) {
+        duplicateError.style.display = 'none';
+        return;
+    }
+    
+    if (!name || !location || !ownerName || name.length < 2 || location.length < 2 || ownerName.length < 2) {
+        duplicateError.style.display = 'none';
+        return;
+    }
+    
+    clearTimeout(checkPropertyTimeout);
+    checkPropertyTimeout = setTimeout(() => {
+        fetch(`/hospitality-management/check-duplicate/?name=${encodeURIComponent(name)}&location=${encodeURIComponent(location)}&owner_name=${encodeURIComponent(ownerName)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists) {
+                    duplicateError.style.display = 'block';
+                    document.getElementById('edit_prop_name').classList.add('invalid');
+                } else {
+                    duplicateError.style.display = 'none';
+                    if (!document.getElementById('prop-name-error').style.display || document.getElementById('prop-name-error').style.display === 'none') {
+                        document.getElementById('edit_prop_name').classList.remove('invalid');
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }, 200);
+}
+
 function validateLetters(input, errorId) {
     const valid = /^[a-zA-Z\s]*$/.test(input.value);
     input.classList.toggle('invalid', !valid);
@@ -468,6 +513,13 @@ document.querySelector('form').addEventListener('submit', function(e) {
             seen.push(val);
         }
     });
+    
+    const duplicateError = document.getElementById('property-duplicate-error');
+    if (duplicateError.style.display === 'block') {
+        valid = false;
+        document.getElementById('edit_prop_name').focus();
+    }
+    
     if (!valid) e.preventDefault();
 });
 

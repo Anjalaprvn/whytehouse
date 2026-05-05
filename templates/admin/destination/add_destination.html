@@ -180,6 +180,7 @@
                 <label>Destination Name <span>*</span></label>
                 <input type="text" id="name" name="name" class="form-control" placeholder="e.g., Goa, Paris, Tokyo">
                 <div class="field-error" id="name-error">Destination name is required and must contain only letters and spaces.</div>
+                <div class="field-error" id="name-duplicate-error" style="display:none;">This destination already exists</div>
             </div>
 
             <div class="form-group">
@@ -242,12 +243,49 @@
         const nameInput = document.getElementById('name');
         const countryInput = document.getElementById('country');
         const packagesInput = document.getElementById('packages_start_from');
+        const categoryInput = document.querySelector('input[name="category"]');
+
+        let checkTimeout;
+        function checkDuplicateName() {
+            const name = nameInput.value.trim();
+            const category = categoryInput ? categoryInput.value : 'Domestic';
+            
+            if (!name || name.length < 2) {
+                document.getElementById('name-duplicate-error').style.display = 'none';
+                return;
+            }
+
+            clearTimeout(checkTimeout);
+            checkTimeout = setTimeout(() => {
+                fetch(`/admin/destinations/check-name/?name=${encodeURIComponent(name)}&category=${encodeURIComponent(category)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const duplicateError = document.getElementById('name-duplicate-error');
+                        if (data.exists) {
+                            duplicateError.style.display = 'block';
+                            nameInput.classList.add('invalid');
+                        } else {
+                            duplicateError.style.display = 'none';
+                            if (nameInput.value.trim() && /^[a-zA-Z\s]+$/.test(nameInput.value.trim())) {
+                                nameInput.classList.remove('invalid');
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }, 200);
+        }
 
         function validateName() {
             const val = nameInput.value.trim();
             const valid = val !== '' && /^[a-zA-Z\s]+$/.test(val);
             nameInput.classList.toggle('invalid', !valid);
             document.getElementById('name-error').style.display = valid ? 'none' : 'block';
+            
+            if (valid) {
+                checkDuplicateName();
+            } else {
+                document.getElementById('name-duplicate-error').style.display = 'none';
+            }
             return valid;
         }
 
@@ -288,7 +326,15 @@
             const c = validateCountry();
             const d = validateDescription();
             const p = validatePackages();
-            if (!n || !c || !d || !p) e.preventDefault();
+            const duplicateError = document.getElementById('name-duplicate-error');
+            const hasDuplicate = duplicateError.style.display === 'block';
+            
+            if (!n || !c || !d || !p || hasDuplicate) {
+                e.preventDefault();
+                if (hasDuplicate) {
+                    nameInput.focus();
+                }
+            }
         });
 
         const fileInput = document.getElementById('file-upload');
